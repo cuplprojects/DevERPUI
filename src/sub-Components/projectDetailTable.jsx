@@ -411,7 +411,6 @@ console.log(tableData)
         />
       ),
       key: "selectAll",
-      fixed:"left",
       render: (_, record) => (
         <input
           type="checkbox"
@@ -438,7 +437,6 @@ console.log(tableData)
       title: t("srNo"),
       fixed:'left',
       key: "srNo",
-      fixed:"left",
       align: "center",
       render: (_, __, index) => (currentPage - 1) * pageSize + index + 1,
       responsive: ["sm"],
@@ -449,7 +447,6 @@ console.log(tableData)
       dataIndex: "catchNumber",
       key: "catchNumber",
       align: "center",
-      fixed:"left",
       width: "15%",
       sorter: (a, b) => a.catchNumber.localeCompare(b.catchNumber),
       render: (text, record) => (
@@ -754,7 +751,6 @@ console.log(tableData)
       dataIndex: "status",
       fixed: 'right',
       key: "status",
-      fixed:"right",
       align: "center",
       render: (text, record) => {
         // Add debug logging
