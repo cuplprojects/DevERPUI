@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FaUserTie } from "react-icons/fa";
-import API from "../../../CustomHooks/MasterApiHooks/api";
-import { useUserData } from "../../../store/userDataStore";
+import API from "./../../CustomHooks/MasterApiHooks/api";
+import { useUserData } from "./../../store/userDataStore";
 import Spinner from "react-bootstrap/Spinner";
 import Marquee from "./Components/Marquee";
 import FullScreen from "./Components/FullScreen";
@@ -59,60 +59,6 @@ const DisplayPage = () => {
 
   const userData = useUserData();
 
-  // useEffect(() => {
-  //   let intervalId;
-  //   const fetchNotifications = async () => {
-  //     try {
-  //       const response = await API.get(`/Notifications/today`);
-  //       if (response.data) {
-  //         const filteredNotifications = response.data;
-  //         setNotifications((prevNotifications) => {
-  //           const newNotifications = filteredNotifications.filter(
-  //             (newNotif) =>
-  //               !prevNotifications.some(
-  //                 (notif) => notif.notificationId === newNotif.notificationId
-  //               )
-  //           );
-
-  //           // Separate typeId 2 notifications
-  //           const type2Notifications = newNotifications.filter(
-  //             (notif) => notif.typeID === 2
-  //           );
-  //           if (type2Notifications.length > 0) {
-  //             setFullScreenNotifications((prevFullScreen) => [
-  //               ...prevFullScreen,
-  //               ...type2Notifications,
-  //             ]);
-  //             setIsPaused(true); // Pause other operations
-  //           }
-
-  //           return [...prevNotifications, ...newNotifications];
-  //         });
-
-  //         const totalDuration = filteredNotifications.reduce(
-  //           (sum, notif) => sum + notif.duration,
-  //           0
-  //         ) + 2;
-  //         if (intervalId) clearInterval(intervalId);
-  //         intervalId = setInterval(fetchNotifications, totalDuration * 1000);
-  //         if (retryIntervalId) clearInterval(retryIntervalId);
-  //       }
-  //     } catch (error) {
-  //       console.log("No notifications found:");
-  //       if (retryIntervalId) clearInterval(retryIntervalId);
-  //       setRetryIntervalId(setInterval(fetchNotifications, 300 * 1000));
-  //     }
-  //   };
-
-  //   if (!isLoading) {
-  //     fetchNotifications();
-  //   }
-
-  //   return () => {
-  //     if (intervalId) clearInterval(intervalId);
-  //     if (retryIntervalId) clearInterval(retryIntervalId);
-  //   };
-  // }, [  ]);
 
   useEffect(() => {
     let intervalId;

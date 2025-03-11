@@ -20,6 +20,7 @@ import ProtectedRoute from "./Security/ProtectedRoute";
 import useUserTokenStore from "./store/useUserToken";
 import { jwtDecode } from "jwt-decode";
 import AuthService from "./CustomHooks/ApiServices/AuthService";
+import DisplayPage from './pages/ZonalDisplay/DisplayPage';
 
 function App() {
   const { initializeLanguage } = useLanguageStore();
@@ -67,6 +68,7 @@ function App() {
           <Route path="/setpassword" element={<Setpassword />} />
           <Route path="/forgotpassword" element={<Forgotpassword />} />
           <Route path="/server-error" element={<ErrorPage />} />
+          <Route path="/zonal-display" element={<DisplayPage />} />
           <Route path="/*" element={<ProtectedRoute component={Userlayout} />} />
         </Routes>
       </Router>
