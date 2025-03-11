@@ -1,9 +1,13 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend, Tooltip, Cell } from 'recharts';
 import { useTranslation } from 'react-i18next';
+import themeStore from "./../store/themeStore";
+import { useStore } from 'zustand';
 
 const StatusPieChart = ({ data }) => {
     const { t } = useTranslation();
+    const customLight = useStore(themeStore, (state) => state.customLight);
+    const customDark = useStore(themeStore, (state) => state.customDark);
 
     const updateData = (jsonData) => {
         let pending = 0;
@@ -47,8 +51,8 @@ const StatusPieChart = ({ data }) => {
     ];
 
     return (
-        <ResponsiveContainer width="100%" height={360}>
-            <BarChart data={chartData} barSize={40}> {/* Added barSize prop to reduce width */}
+        <ResponsiveContainer width="100%" height={360} >
+            <BarChart data={chartData} barSize={40} > {/* Added barSize prop to reduce width */}
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis domain={[0, 100]} />

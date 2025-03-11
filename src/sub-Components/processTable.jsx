@@ -1033,7 +1033,7 @@ const ProcessTable = () => {
             lg={12}
             md={12}
             sm={12}
-            className="mt-1 d-fle justify-content-center"
+            className={`mt-3 d-fle justify-content-center ${customLight} shadow rounded border`}
           >
             <StatusPieChart data={combinedTableData} />
           </Col>

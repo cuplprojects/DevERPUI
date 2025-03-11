@@ -54,7 +54,7 @@ const StatusBarChart = ({ data, catchNumbers }) => {
   };
 
   return (
-    <div style={{ position: "relative", zIndex: "1" }} className='rounded '>
+    <div style={{ position: "relative", zIndex: "1" }} className={`rounded ${customLight} border shadow`}>
       <ResponsiveContainer width="100%" height={300}>
         <BarChart
           data={chartData}
