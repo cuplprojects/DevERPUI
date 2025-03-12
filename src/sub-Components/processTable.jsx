@@ -623,7 +623,6 @@ const ProcessTable = () => {
               pages: item.pages,
               quantity: item.quantity,
               percentageCatch: item.percentageCatch,
-              pages: item.pages,
               projectId: selectedProject?.value || id,
               processId: processId,
               status: item.transactions[0]?.status || 0,
@@ -947,33 +946,6 @@ const ProcessTable = () => {
 
       )}
 
-      {/* <Row>
-        <Col lg={12} md={12} className="pe-0">
-          <div className="d-flex flex-wrap gap-2 justify-content-center">
-            {projectLots.map((lot, index) => (
-              <button
-                key={index}
-                className={`${selectedLot === lot.lotNo
-                    ? "bg-white text-dark border-dark"
-                    : customBtn
-                  } ${customDark === "dark-dark" ? "border" : "custom-light-border"
-                  } d-flex align-items-center justify-content-center p-2 rounded-2 ${customDark === "dark-dark"
-                    ? "text-dark border-dark"
-                    : "text-dark"
-                  } ${customDarkBorder}`}
-                onClick={() => handleLotClick(lot.lotNo)}
-                style={{
-                  minWidth: "100px",
-                  transition: "all 0.2s",
-                }}
-              >
-                {t("lot")} {lot.lotNo}
-              </button>
-            ))}
-          </div>
-        </Col>
-      </Row> */}
-
       {processName === "Dispatch" ? (
         <DispatchPage
           projectId={selectedProject?.value || id}
@@ -1061,7 +1033,7 @@ const ProcessTable = () => {
             lg={12}
             md={12}
             sm={12}
-            className="mt-1 d-fle justify-content-center"
+            className={`mt-3 d-fle justify-content-center ${customLight} shadow rounded border`}
           >
             <StatusPieChart data={combinedTableData} />
           </Col>

@@ -8,7 +8,6 @@ import Masters from './../pages/Masters';
 import PageNotFound from '../pages/PageNotFound';
 import Profile from './../user/Profile'
 import ChangePassword from './../user/ChangePassword'
-import UserSettings from './../user/UserSettings'
 import CustomUi from './../menus/CustomUi';
 import LockOverlay from './../components/LockOverlay';
 import ProcessTable from './../sub-Components/processTable';
@@ -59,7 +58,6 @@ const UserLayout = () => {
 
               {/* --------------- User Menu Routes -------------- */}
               <Route path="/profile" element={<Profile />} />
-              {/* <Route path="/settings" element={<UserSettings />} /> */}
               <Route path="/change-password" element={<ChangePassword />} />
 
               <Route path="/quantity-sheet-uploads/:encryptedProjectId" element={checkPermissionAndRender("6", QtySheetUpload)} />
@@ -72,8 +70,8 @@ const UserLayout = () => {
               <Route path="/404" element={<PageNotFound />} />
             </Routes>
           </div>
-          <div className={`${customDark === 'dark-dark' ? "d-none" : ""} fixed-bottom w-100 border ${customMid}`} style={{ zIndex: "1", height: "150px", borderRadius: "20%  ", borderStyle: "wavy" }}></div>
-          <Footer className="sticky-bottom " style={{ zIndex: "1" }} />
+          <div className={`${customDark === 'dark-dark' ? "d-none" : ""} fixed-bottom w-100 border ${customMid}`} style={{ zIndex: "1", height: "120px", borderTopLeftRadius: "40%  ", borderTopRightRadius: "40%  ", borderStyle: "wavy" }}></div>
+          {/* <Footer className="sticky-bottom " style={{ zIndex: "1" }} /> */}
         </Col>
       </Row>
     </div>

@@ -1,0 +1,342 @@
+[
+    {
+      "zoneId": 1,
+      "zoneNo": "ZONE 2",
+      "processes": [
+        {
+          "processId": 1,
+          "processName": "Front Sealing",
+          "supervisor": "Somu Pal, Shashi Tiwari, Jawhar Yadav, Sanjay Kumar",
+          "projects": [
+            {
+              "projectId": 1,
+              "projectName": "A4-Booklet 1,3,5 Semester Dec 2024",
+              "lots": [
+                {
+                  "lotNo": 1,
+                  "catches": [
+                    {
+                      "quantity": 100,
+                      "catchNo": "FS-101", 
+                      "machine": "FS-01",
+                      "team": "Rajesh Kumar, Amit Singh",
+                      "previousProcess": "Cutting",
+                      "previousCompleted": "95%"
+                    },
+                    {
+                      "quantity": 100,
+                      "catchNo": "FS-102",
+                      "machine": "FS-02", 
+                      "team": "Sunil Sharma, Deepak Verma",
+                      "previousProcess": "Cutting",
+                      "previousCompleted": "90%"
+                    },
+                    {
+                      "quantity": 100,
+                      "catchNo": "FS-103",
+                      "machine": "FS-03",
+                      "team": "Rakesh Patel, Vinod Kumar",
+                      "previousProcess": "Cutting", 
+                      "previousCompleted": "85%"
+                    },
+                    {
+                      "quantity": 100,
+                      "catchNo": "FS-104",
+                      "machine": "FS-04",
+                      "team": "Manoj Singh, Arun Gupta",
+                      "previousProcess": "Cutting",
+                      "previousCompleted": "75%"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "processId": 2,
+          "processName": "Outer Filling",
+          "supervisor": "Somu Pal, Shashi Tiwari, Jawhar Yadav, Sanjay Kumar, Manoj Kumar, Nitin Pandey",
+          "projects": [
+            {
+              "projectId": 2,
+              "projectName": "JBL-Booklet (4-Series) (Lot-8)",
+              "lots": [
+                {
+                  "lotNo": 2,
+                  "catches": [
+                    {
+                      "quantity": 100,
+                      "catchNo": "OF-101",
+                      "machine": "OF-01", 
+                      "team": "Sajid Siddhiki, Pawan Sarma, Shani Kashyap",
+                      "previousProcess": "Cutting",
+                      "previousCompleted": "95%"
+                    },
+                    {
+                      "quantity": 100,
+                      "catchNo": "OF-102",
+                      "machine": "OF-02",
+                      "team": "Arjun Gupta, Vinod Sadiyapur",
+                      "previousProcess": "Cutting", 
+                      "previousCompleted": "90%"
+                    },
+                    {
+                      "quantity": 100,
+                      "catchNo": "OF-103",
+                      "machine": "OF-03",
+                      "team": "Bablu Kumar, Rakesh Patel",
+                      "previousProcess": "Cutting",
+                      "previousCompleted": "85%"
+                    },
+                    {
+                      "quantity": 100,
+                      "catchNo": "OF-104", 
+                      "machine": "OF-04",
+                      "team": "Manoj Kumar, Dev Nishad",
+                      "previousProcess": "Cutting",
+                      "previousCompleted": "75%"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "projectId": 3,
+              "projectName": "BHU 1st 3rd 5th Sem. Booklets Exam-2025",
+              "lots": [
+                {
+                  "lotNo": 3,
+                  "catches": [
+                    {
+                      "quantity": 100,
+                      "catchNo": "BHU-101",
+                      "machine": "BHU-01",
+                      "team": "Team A",
+                      "previousProcess": "Numbering",
+                      "previousCompleted": "80%"
+                    },
+                    {
+                      "quantity": 100,
+                      "catchNo": "BHU-102",
+                      "machine": "BHU-02",
+                      "team": "Team B",
+                      "previousProcess": "Numbering",
+                      "previousCompleted": "80%"
+                    },
+                    {
+                      "quantity": 100,
+                      "catchNo": "BHU-103",
+                      "machine": "BHU-03",
+                      "team": "Team C",
+                      "previousProcess": "Numbering",
+                      "previousCompleted": "80%"
+                    },
+                    {
+                      "quantity": 100,
+                      "catchNo": "BHU-104",
+                      "machine": "BHU-04",
+                      "team": "Team D",
+                      "previousProcess": "Numbering",
+                      "previousCompleted": "80%"
+                    }
+                  ]
+                },
+                {
+                  "lotNo": 4,
+                  "catches": [
+                    {
+                      "quantity": 100,
+                      "catchNo": "BHU-201",
+                      "machine": "BHU-05",
+                      "team": "Team E",
+                      "previousProcess": "Numbering",
+                      "previousCompleted": "80%"
+                    },
+                    {
+                      "quantity": 100,
+                      "catchNo": "BHU-202",
+                      "machine": null,
+                      "team": "Team F",
+                      "previousProcess": "Numbering",
+                      "previousCompleted": "80%"
+                    },
+                    {
+                      "quantity": 100,
+                      "catchNo": "BHU-203",
+                      "machine": "BHU-07",
+                      "team": "Team G",
+                      "previousProcess": "Numbering",
+                      "previousCompleted": "80%"
+                    },
+                    {
+                      "quantity": 100,
+                      "catchNo": "BHU-204",
+                      "machine": null,
+                      "team": "Team H",
+                      "previousProcess": "Numbering",
+                      "previousCompleted": "80%"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "zoneId": 2,
+      "zoneNo": "ZONE 3",
+      "processes": [
+        {
+          "processId": 3,
+          "processName": "Inner Filling",
+          "supervisor": "Somu Pal, Shashi Tiwari, Jawhar Yadav, Sanjay Kumar, Manoj Kumar, Nitin Pandey",
+          "projects": [
+            {
+              "projectId": 4,
+              "projectName": "H-Paper (NEP Lot-2)",
+              "lots": [
+                {
+                  "lotNo": 5,
+                  "catches": [
+                    {
+                      "quantity": 100,
+                      "catchNo": "NEP-101",
+                      "machine": null,
+                      "team": "Vinod Verma, Raja Nisad, Somesh Roy",
+                      "previousProcess": "Cutting",
+                      "previousCompleted": "80%"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "zoneId": 3,
+      "zoneNo": "ZONE 1",
+      "processes": [
+        {
+          "processId": 4,
+          "processName": "Outer Filling",
+          "supervisor": "Somu Pal, Shashi Tiwari, Jawhar Yadav, Sanjay Kumar, Manoj Kumar, Nitin Pandey",
+          "projects": [
+            {
+              "projectId": 5,
+              "projectName": "JBL-Booklet (4-Series) (Lot-9)",
+              "lots": [
+                {
+                  "lotNo": 6,
+                  "catches": [
+                    {
+                      "quantity": 100,
+                      "catchNo": "JBL-101",
+                      "machine": "JBL-01",
+                      "team": "Team I",
+                      "previousProcess": "Numbering",
+                      "previousCompleted": "80%"
+                    },
+                    {
+                      "quantity": 100,
+                      "catchNo": "JBL-102",
+                      "machine": "JBL-02",
+                      "team": "Team J",
+                      "previousProcess": "Numbering",
+                      "previousCompleted": "80%"
+                    },
+                    {
+                      "quantity": 100,
+                      "catchNo": "JBL-103",
+                      "machine": "JBL-03",
+                      "team": "Team K",
+                      "previousProcess": "Numbering",
+                      "previousCompleted": "80%"
+                    },
+                    {
+                      "quantity": 100,
+                      "catchNo": "JBL-104",
+                      "machine": "JBL-04",
+                      "team": "Team L",
+                      "previousProcess": "Numbering",
+                      "previousCompleted": "80%"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "processId": 5,
+          "processName": "Inner Filling",
+          "supervisor": "Somu Pal, Shashi Tiwari, Jawhar Yadav, Sanjay Kumar, Manoj Kumar, Nitin Pandey",
+          "projects": [
+            {
+              "projectId": 6,
+              "projectName": "Alpha-Paper (10)",
+              "lots": [
+                {
+                  "lotNo": 7,
+                  "catches": [
+                    {
+                      "quantity": 100,
+                      "catchNo": "ALP-101",
+                      "machine": "ALP-01",
+                      "team": "Team M",
+                      "previousProcess": "Cutting",
+                      "previousCompleted": "80%"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "zoneId": 4,
+      "zoneNo": "ZONE 4",
+      "processes": [
+        {
+          "processId": 6,
+          "processName": "Quality Check",
+          "supervisor": "Rahul Sharma, Vikram Singh",
+          "projects": [
+            {
+              "projectId": 7,
+              "projectName": "Quality Inspection Batch-1",
+              "lots": [
+                {
+                  "lotNo": 8,
+                  "catches": [
+                    {
+                      "quantity": 100,
+                      "catchNo": "QC-101",
+                      "machine": "QC-01",
+                      "team": "Team N",
+                      "previousProcess": "Inner Filling",
+                      "previousCompleted": "100%"
+                    },
+                    {
+                      "quantity": 100,
+                      "catchNo": "QC-102",
+                      "machine": "QC-02",
+                      "team": "Team O",
+                      "previousProcess": "Inner Filling",
+                      "previousCompleted": "100%"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
