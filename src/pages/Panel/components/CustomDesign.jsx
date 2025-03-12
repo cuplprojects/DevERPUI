@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
-import { Stage, Layer, Text, Transformer, Line } from 'react-konva';
+// import { Stage, Layer, Text, Transformer, Line } from 'react-konva';
 import { FaPlus, FaFont, FaPalette, FaAlignLeft, FaAlignCenter, FaAlignRight, 
          FaBold, FaItalic, FaUnderline, FaDownload, FaCode, FaImage, 
          FaTrash, FaCopy, FaThLarge } from 'react-icons/fa';
