@@ -9,7 +9,7 @@ import {
   FaEye,
 } from "react-icons/fa";
 import Modal from "react-bootstrap/Modal";
-import Notifications from "./../../../ZonalDisplay/Display/Components/Notifications";
+import Notifications from "./../../ZonalDisplay/Components/Notifications";
 import CustomDesign from "./CustomDesign";
 
 const TemplatesContainer = styled.div`
