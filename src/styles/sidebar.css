@@ -1,29 +1,49 @@
 .sidebar {
+  min-height: 90vh;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   background-color: #f8f9fa;
-  height: 90vh;
-  padding: 20px;
+  width: 282px;
 }
 
-.sidebar-item ,.sidebar-item-dark {
-  padding: 10px;
-  transition: background-color 0.3s;
+.sidebar-item, .sidebar-item-dark {
+  margin: 6px 10px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.sidebar-item:hover {
-  background-color: #e9ecef; /* Change background on hover */
+.sidebar-item:hover, .sidebar-item-dark:hover {
+  transform: translateX(5px);
+  background-color: rgba(209, 236, 241, 0.3);
 }
-.sidebar-item-dark:hover {
-  background-color: #345675 !important;
+
+.menu-icon {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #555;
+}
+
+.active .menu-icon {
+  transform: scale(1.1);
+  color: #2196f3;
 }
 
 .active {
-  background-color: #d1ecf1; /* Highlight active item */
-  font-weight: bold;
+  background: linear-gradient(145deg, #e3f2fd, #bbdefb);
+  font-weight: 500;
+  box-shadow: 0 4px 6px rgba(33, 150, 243, 0.08);
+  transition: all 0.3s ease;
+}
+
+.active:hover {
+  background: linear-gradient(145deg, #bbdefb, #90caf9);
+  transform: translateX(5px);
 }
 
 .content-area {
-  padding: 20px;
-  background-color: #f0f2f5;
+  padding: 24px;
+  background-color: #f8f9fa;
+  border-radius: 12px;
 }
 
 /* Adjusting icon spacing */
@@ -36,11 +56,11 @@
 }
 
 .menu-icon {
-  margin-right: 10px; /* Adjust spacing between icon and label */
-  font-size: 25px; /* Ensure the icon size matches the menu item */
+  margin-right: 9px; /* Adjust spacing between icon and label */
+  font-size: 22px; /* Slightly smaller for better proportion */
 }
 
 /* Optionally, you might want to adjust the padding or margins of the sidebar items */
 .sidebar-item {
-  padding: 12px 15px; /* Adjust as needed for visual balance */
+  padding: 12px 16px; /* Adjust as needed for visual balance */
 }
