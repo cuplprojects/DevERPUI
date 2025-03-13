@@ -177,32 +177,44 @@ const Import = () => {
     
                     // Fetch courseId based on course name
                     try {
-                        const courseName = rowData['courseId']; // Assuming column contains course name
-                        const courseResponse = await API.get(`Course?courseName=${courseName}`);
-                        const courseId = courseResponse.data || 0;
-                        rowData['courseId'] = courseId; // Set courseId to the row data
+                        let courseId = await getCourseIdByName(rowData['CourseId']);
+                        rowData['CourseId'] = courseId; // Set courseId to the row data
                     } catch (err) {
-                        console.error("Error fetching courseId:", err);
-                        rowData['courseId'] = 0; // Fallback if no course is found
+                        console.error("Error fetching or inserting courseId:", err);
+                        rowData['CourseId'] = 0; // Fallback if no course is found or insertion fails
                     }
 
                     try {
-                        const subject = rowData['subjectId']; // Assuming column contains course name
-                        const subjectResponse = await API.get(`Course?courseName=${subject}`);
-                        const subjectId = subjectResponse.data || 0;
-                        rowData['subjectId'] = subjectId; // Set courseId to the row data
+                        let subjectId = await getSubjectIdByName(rowData['SubjectId']);
+                        rowData['SubjectId'] = subjectId; // Set courseId to the row data
                     } catch (err) {
-                        console.error("Error fetching subjectId:", err);
-                        rowData['subjectId'] = 0; // Fallback if no course is found
+                        console.error("Error fetching or inserting Subject:", err);
+                        rowData['SubjectId'] = 0; // Fallback if no course is found or insertion fails
                     }
+                    
+
                     try {
-                        const subject = rowData['subjectId']; // Assuming column contains course name
-                        const subjectResponse = await API.get(`Subject?courseName=${subject}`);
-                        const subjectId = subjectResponse.data || 0;
-                        rowData['subjectId'] = subjectId; // Set courseId to the row data
+                        let typeId = await getTypeIdByName(rowData['TypeId']);
+                        rowData['TypeId'] = typeId; // Set courseId to the row data
                     } catch (err) {
-                        console.error("Error fetching subjectId:", err);
-                        rowData['subjectId'] = 0; // Fallback if no course is found
+                        console.error("Error fetching or inserting TypeId:", err);
+                        rowData['TypeId'] = 0; // Fallback if no course is found or insertion fails
+                    }
+
+                    try {
+                        let languageId = await getLanguageIdByName(rowData['LanguageId']);
+                        rowData['LanguageId'] = languageId; // Set courseId to the row data
+                    } catch (err) {
+                        console.error("Error fetching or inserting Language:", err);
+                        rowData['LanguageId'] = 0; // Fallback if no course is found or insertion fails
+                    }
+
+                    try {
+                        let examtypeId = await getExamTypeIdByName(rowData['ExamTypeId']);
+                        rowData['ExamTypeId'] = examtypeId; // Set courseId to the row data
+                    } catch (err) {
+                        console.error("Error fetching or inserting ExamTypeId:", err);
+                        rowData['ExamTypeId'] = 0; // Fallback if no course is found or insertion fails
                     }
                     
     
@@ -216,6 +228,116 @@ const Import = () => {
     
             reader.readAsArrayBuffer(selectedFile);
         });
+    };
+
+    const getCourseIdByName = async (courseName) => {
+        try {
+            // Attempt to get the courseId based on course name
+            const courseResponse = await API.get(`Course?courseName=${courseName}`);
+            let courseId = courseResponse.data;
+    
+            if (!courseId) {
+                // If course not found, insert a new course
+                console.log("Course not found. Inserting new course.");
+                const newCourseResponse = await API.post('/Course', {
+                    CourseName: courseName,
+                });
+                courseId = newCourseResponse.data.courseId; // Get the ID of the newly created course
+            }
+    
+            return courseId;
+        } catch (err) {
+            console.error("Error in fetching or inserting course:", err);
+            throw err; // Propagate the error
+        }
+    };
+
+    const getSubjectIdByName = async (subject) => {
+        try {
+            // Attempt to get the courseId based on course name
+            const subjectResponse = await API.get(`Subject?subject=${subject}`);
+            let subjectId = subjectResponse.data;
+    
+            if (!subjectId) {
+                // If course not found, insert a new course
+                console.log("subject not found. Inserting new subject.");
+                const newsubjectResponse = await API.post('/Subject', {
+                    SubjectName: subject,
+                });
+                subjectId = newsubjectResponse.data.subjectId; // Get the ID of the newly created course
+            }
+    
+            return subjectId;
+        } catch (err) {
+            console.error("Error in fetching or inserting course:", err);
+            throw err; // Propagate the error
+        }
+    };
+    
+    const getTypeIdByName = async (type) => {
+        try {
+            // Attempt to get the courseId based on course name
+            const typeResponse = await API.get(`PaperTypes/Type?type=${type}`);
+            let typeId = typeResponse.data;
+    
+            if (!typeId) {
+                // If course not found, insert a new course
+                console.log("Type not found. Inserting new type.");
+                const newTypeResponse = await API.post("Course", {
+                    types: type,
+                });
+                typeId = newTypeResponse.data.typeId; // Get the ID of the newly created course
+            }
+    
+            return typeId;
+        } catch (err) {
+            console.error("Error in fetching or inserting type:", err);
+            throw err; // Propagate the error
+        }
+    };
+
+    const getLanguageIdByName = async (language) => {
+        try {
+            // Attempt to get the courseId based on course name
+            const languageResponse = await API.get(`Language/Language?language=${language}`);
+            let languageId = languageResponse.data;
+    
+            if (!languageId) {
+                // If course not found, insert a new course
+                console.log("Type not found. Inserting new type.");
+                const newLanguageResponse = await API.post("/Language", {
+                    languages: language,
+                });
+                languageId = newLanguageResponse.data.languageId; // Get the ID of the newly created course
+            }
+    
+            return languageId;
+        } catch (err) {
+            console.error("Error in fetching or inserting type:", err);
+            throw err; // Propagate the error
+        }
+    };
+
+    const getExamTypeIdByName = async (examtype) => {
+        try {
+            // Attempt to get the courseId based on course name
+            const examtypeResponse = await API.get(`ExamType/ExamType?examtype=${examtype}`);
+            let examtypeId = examtypeResponse.data;
+    
+            if (!examtypeId) {
+                // If course not found, insert a new course
+                console.log("Type not found. Inserting new type.");
+                const newexamtypeResponse = await API.post("/ExamType", {
+                    typeName: examtype,
+                });
+                examtypeId = newexamtypeResponse.data.examtypeId; // Get the ID of the newly created course
+            }
+    
+            return examtypeId;
+        } catch (err) {
+            console.error("Error in fetching or inserting type:", err);
+            throw err; // Propagate the error
+        }
     };
     
     const handleUpload = async () => {
@@ -234,20 +356,20 @@ const Import = () => {
     
             const finalPayload = mappedData.map((item) => ({
                 groupId: item.groupId || 0, // Ensure groupId is passed
-                typeId: item.typeId || 0,
+                typeId: item.TypeId || 0,
                 nepCode: String(item.NEPCode || "string"),
                 privateCode: item.PrivateCode || "string",
-                subjectId: item.subjectId || 0,
-                paperNumber: item.paperNumber || "string",
-                paperTitle: item.paperTitle || "string",
-                maxMarks: item.maxMarks || 0,
-                duration: item.duration || "string",
-                languageId: item.languageId || 0,
+                subjectId: item.SubjectId || 0,
+                paperNumber: item.PaperNumber || "string",
+                paperTitle: item.PaperTitle || "string",
+                maxMarks: item.MaxMarks || 0,
+                duration: item.Duration || "string",
+                languageId: item.LanguageId || 0,
                 customizedField1: item.customizedField1 || "string",
                 customizedField2: item.customizedField2 || "string",
                 customizedField3: item.customizedField3 || "string",
-                courseId: item.courseId || 0, // Now we use courseId instead of courseName
-                examTypeId: item.examTypeId || 0
+                courseId: item.CourseId || 0, // Now we use courseId instead of courseName
+                examTypeId: item.ExamTypeId || 0
             }));
     
             const response = await API.post("/QPMasters", finalPayload, {
@@ -264,6 +386,16 @@ const Import = () => {
         } finally {
             setIsLoading(false);
         }
+    };
+    
+
+    const handleMappingChange = (property, value) => {
+        setFieldMappings((prevMappings) => {
+            return {
+                ...prevMappings,
+                [property]: value,
+            };
+        });
     };
     
 
