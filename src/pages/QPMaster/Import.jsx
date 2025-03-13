@@ -127,26 +127,30 @@ const Import = () => {
                 const workbook = XLSX.read(data, { type: "array" });
                 const firstSheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[firstSheetName];
-
+    
                 const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-
+    
                 if (!Array.isArray(jsonData[0])) {
                     console.error("The first row (headers) is not an array.", jsonData[0]);
                     resolve([]);
                     return;
                 }
+    
                 const rows = jsonData.slice(1);
-                const mappedData = rows.map((row) => {
+                const mappedData = [];
+    
+                // For each row, map the data
+                for (let row of rows) {
                     const rowData = {};
-
+    
                     // Iterate over each field in fieldMappings
                     for (let property in fieldMappings) {
                         let headers = fieldMappings[property];
-
+    
                         if (!Array.isArray(headers)) {
                             headers = [headers];
                         }
-
+    
                         if (headers.length > 1) {
                             const valueString = headers
                                 .map((header) => {
@@ -159,7 +163,7 @@ const Import = () => {
                                 })
                                 .filter(Boolean)
                                 .join(", ");
-
+    
                             rowData[property] = valueString;
                         } else {
                             const header = headers[0];
@@ -170,57 +174,88 @@ const Import = () => {
                             }
                         }
                     }
-                    rowData["groupId"] = groupId; // Add the selected group ID here
-                    return rowData;
-                });
+    
+                    // Fetch courseId based on course name
+                    try {
+                        const courseName = rowData['courseId']; // Assuming column contains course name
+                        const courseResponse = await API.get(`Course?courseName=${courseName}`);
+                        const courseId = courseResponse.data || 0;
+                        rowData['courseId'] = courseId; // Set courseId to the row data
+                    } catch (err) {
+                        console.error("Error fetching courseId:", err);
+                        rowData['courseId'] = 0; // Fallback if no course is found
+                    }
 
+                    try {
+                        const subject = rowData['subjectId']; // Assuming column contains course name
+                        const subjectResponse = await API.get(`Course?courseName=${subject}`);
+                        const subjectId = subjectResponse.data || 0;
+                        rowData['subjectId'] = subjectId; // Set courseId to the row data
+                    } catch (err) {
+                        console.error("Error fetching subjectId:", err);
+                        rowData['subjectId'] = 0; // Fallback if no course is found
+                    }
+                    try {
+                        const subject = rowData['subjectId']; // Assuming column contains course name
+                        const subjectResponse = await API.get(`Subject?courseName=${subject}`);
+                        const subjectId = subjectResponse.data || 0;
+                        rowData['subjectId'] = subjectId; // Set courseId to the row data
+                    } catch (err) {
+                        console.error("Error fetching subjectId:", err);
+                        rowData['subjectId'] = 0; // Fallback if no course is found
+                    }
+                    
+    
+                    rowData["groupId"] = groupId; // Add group ID
+                    mappedData.push(rowData);
+                }
+    
                 setMappedData(mappedData);
                 resolve(mappedData);
             };
-
+    
             reader.readAsArrayBuffer(selectedFile);
         });
     };
-
+    
     const handleUpload = async () => {
         setIsLoading(true);
         setShowMappingFields(false);
         let mappedData;
-
+    
         try {
             mappedData = await createMappedData();
-
+    
             if (!mappedData || mappedData.length === 0) {
                 console.error(t("mappedDataInvalidOrEmpty"));
                 setIsLoading(false);
                 return;
             }
-           
-            const finalPayload = mappedData.map((item) => {
-                return {
-                        groupId: item.groupId || 0, // ensure groupId is passed
-                        typeId: item.typeId || 0,
-                        nepCode: String(item.NEPCode || "string"),
-                        privateCode: item.privateCode || "string",
-                        subjectId: item.subjectId || 0,
-                        paperNumber: item.paperNumber || "string",
-                        paperTitle: item.paperTitle || "string",
-                        maxMarks: item.maxMarks || 0,
-                        duration: item.duration || "string",
-                        languageId: item.languageId || 0,
-                        customizedField1: item.customizedField1 || "string",
-                        customizedField2: item.customizedField2 || "string",
-                        customizedField3: item.customizedField3 || "string",
-                        courseId: item.courseId || 0,
-                        examTypeId: item.examTypeId || 0
-                };
-            });
+    
+            const finalPayload = mappedData.map((item) => ({
+                groupId: item.groupId || 0, // Ensure groupId is passed
+                typeId: item.typeId || 0,
+                nepCode: String(item.NEPCode || "string"),
+                privateCode: item.PrivateCode || "string",
+                subjectId: item.subjectId || 0,
+                paperNumber: item.paperNumber || "string",
+                paperTitle: item.paperTitle || "string",
+                maxMarks: item.maxMarks || 0,
+                duration: item.duration || "string",
+                languageId: item.languageId || 0,
+                customizedField1: item.customizedField1 || "string",
+                customizedField2: item.customizedField2 || "string",
+                customizedField3: item.customizedField3 || "string",
+                courseId: item.courseId || 0, // Now we use courseId instead of courseName
+                examTypeId: item.examTypeId || 0
+            }));
+    
             const response = await API.post("/QPMasters", finalPayload, {
                 headers: {
                     "Content-Type": "application/json",
                 },
             });
-
+    
             console.log("Upload Success:", response.data);
             setMappedData(finalPayload); // Update state with the final payload
             console.log(t("quantitySheetUploadedSuccessfully"));
@@ -230,6 +265,7 @@ const Import = () => {
             setIsLoading(false);
         }
     };
+    
 
     return (
         <div>
