@@ -10,7 +10,7 @@ import {
 } from "react-icons/fa";
 import Modal from "react-bootstrap/Modal";
 import Notifications from "./../../ZonalDisplay/Components/Notifications";
-import CustomDesign from "./CustomDesign";
+//import CustomDesign from "./CustomDesign";
 
 const TemplatesContainer = styled.div`
   padding: 1.5rem;
@@ -283,7 +283,7 @@ const NotificationTemplates = ({ onUseTemplate }) => {
           Create Template
         </CreateButton>
       </Header>
-      {showCustomDesign && <CustomDesign onClose={() => setShowCustomDesign(false)} />}
+      {/* {showCustomDesign && <CustomDesign onClose={() => setShowCustomDesign(false)} />} */}
       <FilterBar>
         <div>
           <label className="form-label">Search</label>
