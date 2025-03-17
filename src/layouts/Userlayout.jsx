@@ -3,7 +3,7 @@ import { Row, Col } from 'react-bootstrap';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './../components/Navbar';
 import MainDashboard from './../pages/MainDashboard';
-import Footer from '../components/Footer';
+// import Footer from '../components/Footer';
 import Masters from './../pages/Masters';
 import PageNotFound from '../pages/PageNotFound';
 import Profile from './../user/Profile'
@@ -16,12 +16,12 @@ import { useStore } from 'zustand';
 import QtySheetUpload from '../pages/QtySheetUpload';
 import Labels from '../pages/Message/Message';
 import Reports from './../pages/Report/Reports'
-import QCMaster from './../pages/QPMaster/Import'
+import QPImport from './../pages/QPMaster/Import'
+import QPMaster from './../pages/QPMaster/QP'
 import CuDashboard from '../pages/CuDashboard';
 import AddProjectProcess from '../pages/ProjectMaster/Tabs/AddProjectProcess';
 import { hasPermission } from '../CustomHooks/Services/permissionUtils';
 import { ToastContainer } from 'react-toastify';
-
 
 const UserLayout = () => {
   const { getCssClasses } = useStore(themeStore);
@@ -64,8 +64,8 @@ const UserLayout = () => {
               <Route path="/project-details/:encryptedProjectId" element={<ProcessTable />} />
               <Route path="/labels" element={checkPermissionAndRender("3", Labels)} />
               <Route path="/reports" element={checkPermissionAndRender("4", Reports)} />
-              <Route path="/Import" element={checkPermissionAndRender("5", QCMaster)} />
-
+              <Route path="/ImportPaper" element={checkPermissionAndRender("5", QPImport)} />
+              <Route path="/QP-Masters" element={checkPermissionAndRender("5", QPMaster)} />
               <Route path="/*" element={<Navigate to="/404" replace />} />
               <Route path="/404" element={<PageNotFound />} />
             </Routes>
