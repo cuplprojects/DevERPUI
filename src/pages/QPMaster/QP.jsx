@@ -84,10 +84,14 @@ const QPMiddleArea = () => {
           <Row className="mb-3 w-100 justify-content-center">
             <Col className="d-flex justify-content-between w-100">
               <Select
+                showSearch
                 placeholder="Select Group"
                 className="m-2 w-100"
                 onChange={handleGroupChange}
                 value={selectedGroupId}
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().includes(input.toLowerCase())
+                }
               >
                 {groups.map((group) => (
                   <Option key={group.id} value={group.id}>

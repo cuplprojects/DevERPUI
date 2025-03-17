@@ -6,29 +6,21 @@ import { UploadOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import { useStore } from 'zustand'
 import themeStore from '../../store/themeStore'
-import { useNavigate, useParams } from 'react-router-dom'
 import * as XLSX from "xlsx";
 
-
 const Import = () => {
-    const navigate = useNavigate();
-    const { groupId, groupName } = useParams();
     const [form] = Form.useForm();
     const [columns, setColumns] = useState([]);
     const [fileList, setFileList] = useState([]);
     const [selectedFile, setSelectedFile] = useState(null);
     const [fieldMappings, setFieldMappings] = useState({});
     const [headers, setHeaders] = useState([]);
-    const [isProcessingFile, setIsProcessingFile] = useState(false);
-    const [showBtn, setShowBtn] = useState(true);
-    const [mappedData, setMappedData] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [showMappingFields, setShowMappingFields] = useState(false);
     const { t } = useTranslation();
     const { getCssClasses } = useStore(themeStore);
     const cssClasses = getCssClasses();
     const [customBtn] = cssClasses;
-
     useEffect(() => {
         const getColumns = async () => {
             try {
@@ -40,15 +32,12 @@ const Import = () => {
         };
         getColumns();
     }, []);
-
-
     const getAvailableOptions = (property) => {
         const selectedValues = Object.values(fieldMappings).flat();
         return headers
             .filter((header) => !selectedValues.includes(header))
             .map((header) => ({ label: header, value: header }));
     };
-
     const handleFileUpload = (file) => {
         setFileList([file]);
         setSelectedFile(file);
@@ -57,7 +46,6 @@ const Import = () => {
         processFile(file);
         return false;
     };
-
     const processFile = async (file) => {
         const reader = new FileReader();
         reader.onload = async (e) => {
@@ -101,7 +89,6 @@ const Import = () => {
         };
         reader.readAsArrayBuffer(file);
     };
-
     const createMappedData = async () => {
         const reader = new FileReader();
         return new Promise((resolve) => {
@@ -118,22 +105,17 @@ const Import = () => {
                     resolve([]);
                     return;
                 }
-
                 const rows = jsonData.slice(1);
                 const mappedData = [];
-
                 // For each row, map the data
                 for (let row of rows) {
                     const rowData = {};
-
                     // Iterate over each field in fieldMappings
                     for (let property in fieldMappings) {
                         let headers = fieldMappings[property];
-
                         if (!Array.isArray(headers)) {
                             headers = [headers];
                         }
-
                         if (headers.length > 1) {
                             const valueString = headers
                                 .map((header) => {
@@ -146,7 +128,6 @@ const Import = () => {
                                 })
                                 .filter(Boolean)
                                 .join(", ");
-
                             rowData[property] = valueString;
                         } else {
                             const header = headers[0];
@@ -157,7 +138,6 @@ const Import = () => {
                             }
                         }
                     }
-
                     try {
                         let courseId = await getCourseIdByName(rowData['CourseId']);
                         rowData['CourseId'] = courseId; // Set courseId to the row data
@@ -165,7 +145,6 @@ const Import = () => {
                         console.error("Error fetching or inserting courseId:", err);
                         rowData['CourseId'] = 0; // Fallback if no course is found or insertion fails
                     }
-
                     try {
                         let subjectId = await getSubjectIdByName(rowData['SubjectId']);
                         rowData['SubjectId'] = subjectId; // Set courseId to the row data
@@ -173,8 +152,6 @@ const Import = () => {
                         console.error("Error fetching or inserting Subject:", err);
                         rowData['SubjectId'] = 0; // Fallback if no course is found or insertion fails
                     }
-
-
                     try {
                         let typeId = await getTypeIdByName(rowData['TypeId']);
                         rowData['TypeId'] = typeId; // Set courseId to the row data
@@ -182,7 +159,6 @@ const Import = () => {
                         console.error("Error fetching or inserting TypeId:", err);
                         rowData['TypeId'] = 0; // Fallback if no course is found or insertion fails
                     }
-
                     try {
                         let languageId = await getLanguageIdByName(rowData['LanguageId']);
                         rowData['LanguageId'] = languageId; // Set courseId to the row data
@@ -190,7 +166,6 @@ const Import = () => {
                         console.error("Error fetching or inserting Language:", err);
                         rowData['LanguageId'] = 0; // Fallback if no course is found or insertion fails
                     }
-
                     try {
                         let examtypeId = await getExamTypeIdByName(rowData['ExamTypeId']);
                         rowData['ExamTypeId'] = examtypeId; // Set courseId to the row data
@@ -198,16 +173,11 @@ const Import = () => {
                         console.error("Error fetching or inserting ExamTypeId:", err);
                         rowData['ExamTypeId'] = 0; // Fallback if no course is found or insertion fails
                     }
-
-
                     rowData["groupId"] = groupId; // Add group ID
                     mappedData.push(rowData);
                 }
-
-                setMappedData(mappedData);
                 resolve(mappedData);
             };
-
             reader.readAsArrayBuffer(selectedFile);
         });
     };
@@ -217,7 +187,6 @@ const Import = () => {
             // Attempt to get the courseId based on course name
             const courseResponse = await API.get(`Course?courseName=${courseName}`);
             let courseId = courseResponse.data;
-
             if (!courseId) {
                 // If course not found, insert a new course
                 console.log("Course not found. Inserting new course.");
@@ -226,14 +195,12 @@ const Import = () => {
                 });
                 courseId = newCourseResponse.data.courseId; // Get the ID of the newly created course
             }
-
             return courseId;
         } catch (err) {
             console.error("Error in fetching or inserting course:", err);
             throw err; // Propagate the error
         }
     };
-
     const getSubjectIdByName = async (subject) => {
         try {
             // Attempt to get the courseId based on course name
@@ -248,20 +215,17 @@ const Import = () => {
                 });
                 subjectId = newsubjectResponse.data.subjectId; // Get the ID of the newly created course
             }
-
             return subjectId;
         } catch (err) {
             console.error("Error in fetching or inserting course:", err);
             throw err; // Propagate the error
         }
     };
-
     const getTypeIdByName = async (type) => {
         try {
             // Attempt to get the courseId based on course name
             const typeResponse = await API.get(`PaperTypes/Type?type=${type}`);
             let typeId = typeResponse.data;
-
             if (!typeId) {
                 // If course not found, insert a new course
                 console.log("Type not found. Inserting new type.");
@@ -270,14 +234,12 @@ const Import = () => {
                 });
                 typeId = newTypeResponse.data.typeId; // Get the ID of the newly created course
             }
-
             return typeId;
         } catch (err) {
             console.error("Error in fetching or inserting type:", err);
             throw err; // Propagate the error
         }
     };
-
     const getLanguageIdByName = async (language) => {
         try {
             // Attempt to get the courseId based on course name
@@ -292,20 +254,17 @@ const Import = () => {
                 });
                 languageId = newLanguageResponse.data.languageId; // Get the ID of the newly created course
             }
-
             return languageId;
         } catch (err) {
             console.error("Error in fetching or inserting type:", err);
             throw err; // Propagate the error
         }
     };
-
     const getExamTypeIdByName = async (examtype) => {
         try {
             // Attempt to get the courseId based on course name
             const examtypeResponse = await API.get(`ExamType/ExamType?examtype=${examtype}`);
             let examtypeId = examtypeResponse.data;
-
             if (!examtypeId) {
                 // If course not found, insert a new course
                 console.log("Type not found. Inserting new type.");
@@ -314,28 +273,23 @@ const Import = () => {
                 });
                 examtypeId = newexamtypeResponse.data.examtypeId; // Get the ID of the newly created course
             }
-
             return examtypeId;
         } catch (err) {
             console.error("Error in fetching or inserting type:", err);
             throw err; // Propagate the error
         }
     };
-
     const handleUpload = async () => {
         setIsLoading(true);
         setShowMappingFields(false);
         let mappedData;
-
         try {
             mappedData = await createMappedData();
-
             if (!mappedData || mappedData.length === 0) {
                 console.error(t("mappedDataInvalidOrEmpty"));
                 setIsLoading(false);
                 return;
             }
-
             const finalPayload = mappedData.map((item) => ({
                 groupId: groupId, // Ensure groupId is passed
                 typeId: item.TypeId || 0,
@@ -353,15 +307,12 @@ const Import = () => {
                 courseId: item.CourseId || 0, // Now we use courseId instead of courseName
                 examTypeId: item.ExamTypeId || 0
             }));
-
             const response = await API.post("/QPMasters", finalPayload, {
                 headers: {
                     "Content-Type": "application/json",
                 },
             });
-
             console.log("Upload Success:", response.data);
-            setMappedData(finalPayload); // Update state with the final payload
             console.log(t("quantitySheetUploadedSuccessfully"));
             setFileList([]);
             setSelectedFile(null);
@@ -372,8 +323,6 @@ const Import = () => {
             setIsLoading(false);
         }
     };
-
-
     const handleMappingChange = (property, value) => {
         setFieldMappings((prevMappings) => {
             return {
@@ -382,8 +331,6 @@ const Import = () => {
             };
         });
     };
-
-
     return (
         <div>
             <h4>Import Excel</h4>
@@ -428,8 +375,6 @@ const Import = () => {
                         </Button>
                     </Form.Item>
                 )}
-
-
                 {showMappingFields && headers.length > 0 && (
                     <Row className="mt-2 mb-2">
                         <Col lg={12}>
@@ -464,9 +409,7 @@ const Import = () => {
                     </Row>
                 )}
             </Form>
-
         </div>
     );
 };
-
 export default Import;
