@@ -7,193 +7,279 @@ import themeStore from "./../../store/themeStore";
 import { useStore } from "zustand";
 import { useNavigate, useParams } from "react-router-dom";
 import { FaHome } from "react-icons/fa";
+import API from "../../CustomHooks/MasterApiHooks/api";
 const { Option } = Select;
 
 const ImportPage = () => {
-  const { groupId, groupName } = useParams();
-  const navigate = useNavigate();
-  const [selectedColumns, setSelectedColumns] = useState({});
-  const [manualInputs, setManualInputs] = useState({});
-  const [excelData, setExcelData] = useState([]);
-  const [isFileUploaded, setIsFileUploaded] = useState(false);
-  const themeState = useStore(themeStore);
-  const cssClasses = useMemo(() => themeState.getCssClasses(), [themeState]);
-  const [
-    customDark,
-    customMid,
-    customLight,
-    customBtn,
-    customDarkText,
-    customLightText,
-    customLightBorder,
-    customDarkBorder,
-  ] = cssClasses;
+    const { groupId, groupName } = useParams();
+    const navigate = useNavigate();
+    const [manualInputs, setManualInputs] = useState({});
+    const [courses, setCourses] = useState([]);
+    const [subject, setSubject] = useState([]);
+    const [examtype, setExamType] = useState([]);
+    const [type, setType] = useState([]);
+    const [language, setLanguage] = useState([]);
+    const themeState = useStore(themeStore);
+    const cssClasses = useMemo(() => themeState.getCssClasses(), [themeState]);
+    const [
+        customDark,
+        customMid,
+        customLight,
+        customBtn,
+        customDarkText,
+        customLightText,
+        customLightBorder,
+        customDarkBorder,
+    ] = cssClasses;
 
-  const handleHomeClick = () => {
-    navigate("/QP-Masters");
-  };
+    const handleHomeClick = () => {
+        navigate("/QP-Masters");
+    };
 
-  const handleImportClick = () => {
-    navigate(`/Import-Paper/${groupId}/${groupName}`);
-  };
+    const handleImportClick = () => {
+        navigate(`/Import-Paper/${groupId}/${groupName}`);
+    };
 
-  const handleManualInput = (e, field) => {
-    const { value } = e.target;
-    setManualInputs((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
+    const handleManualInput = (e, field) => {
+        const { value } = e.target;
+        setManualInputs((prev) => ({
+            ...prev,
+            [field]: value,
+        }));
+    };
 
-  useEffect(() => {
-    setManualInputs((prev) => ({
-      ...prev,
-      group: groupId, // or you can use groupName if needed
-    }));
-  }, [groupId, groupName]);
-
-  const renderField = (
-    label,
-    field,
-    isDropdown,
-    isDisabled = false,
-    fixedValue = null
-  ) => {
-    return (
-      <>
-        <h5>{label}</h5>
-        {isDropdown ? (
-          <Select
-            placeholder={`Select ${label}`}
-            className="mb-3"
-            style={{ width: "100%" }}
-            onChange={(value) =>
-              handleManualInput({ target: { value } }, field)
-            }
-            value={manualInputs[field]}
-            disabled={isDisabled}
-          >
-            {fixedValue ? (
-              <Option value={fixedValue.value}>{fixedValue.label}</Option>
-            ) : (
-              <>
-                <Option value="option1">Option 1</Option>
-                <Option value="option2">Option 2</Option>
-              </>
-            )}
-          </Select>
-        ) : (
-          <Input
-            placeholder={`Enter ${label}`}
-            className="mb-3"
-            onChange={(e) => handleManualInput(e, field)}
-            value={manualInputs[field] || ""}
-            disabled={isDisabled}
-          />
-        )}
-      </>
-    );
-  };
-
-  const handleClear = () => {
-    setManualInputs((prev) => ({}));
-  };
-
-  const handleAdd = () => {
-    if (isFileUploaded) {
-      const mappedData = excelData.map((row) => {
-        const mappedRow = {};
-        Object.entries(selectedColumns).forEach(([key, colName]) => {
-          mappedRow[key] = row[colName] ?? "";
-        });
-        return mappedRow;
-      });
-
-      console.log("Mapped Row Data:");
-      console.log(mappedData);
-    } else {
-      console.log("Manual Input Data:");
-      console.log(manualInputs);
+    const getCourse = async () => {
+        try {
+            const response = await API.get('/Course')
+            setCourses(response.data)
+        }
+        catch (error) {
+            console.error("Failed to fetch courses")
+        }
     }
-  };
 
-  return (
-    <Container
-      fluid
-      className=" d-flex flex-column justify-content-center align-items-center bg-light rounded p-3"
-    >
-      <Row className="w-75">
-        <Col>
-          <Row className="mb-3">
-            <Col>
-              <h1 className={`mb-4 ${customDarkText}`}>Add Paper</h1>
-            </Col>
-            <Col className="d-flex justify-content-end align-items-center">
-              <div>
-                <FaHome
-                  className="me-2 c-pointer"
-                  color="blue"
-                  size={30}
-                  onClick={handleHomeClick}
-                />
-                <Button
-                  type="primary"
-                  className={` border-0 ${customBtn}`}
-                  onClick={handleImportClick}
-                >
-                  Import
-                </Button>
-              </div>
-            </Col>
-          </Row>
-          {isFileUploaded && (
-            <h2 className="text-center">Map Fields from Selected Excel File</h2>
-          )}
-          <Row>
-            <Col md={6}>
-              {renderField("Group", "group", true, true, {
-                label: `${groupName} (ID: ${groupId})`,
-                value: groupId,
-              })}
-              {renderField("Paper Title", "paperTitle", false)}
-              {renderField("Paper Number", "paperNumber", false)}
-              {renderField("Exam Type", "examType", true)}
-              {renderField("Max Marks", "maxMarks", false)}
-              {renderField("Duration", "duration", false)}
-            </Col>
-            <Col md={6}>
-              {renderField("Subject", "subject", true)}
-              {renderField("Course", "course", true)}
-              {renderField("NEP Code / Paper Code", "nepCode", false)}
-              {renderField("Course Code / Private Code", "courseCode", false)}
-              {renderField("Language", "language", true)}
-              {renderField("Type", "type", true)}
-              <Row>
-                <Col md={6}>
-                  <Button
-                    type="primary"
-                    className={`mt-3 w-100 border-0 ${customBtn}`}
-                    onClick={handleAdd}
-                  >
-                    Add
-                  </Button>
+    const getSubject = async () => {
+        try {
+            const response = await API.get('/Subject')
+            setSubject(response.data)
+        }
+        catch (error) {
+            console.error("Failed to fetch courses")
+        }
+    }
+
+    const getExamType = async () => {
+        try {
+            const response = await API.get('/ExamType')
+            setExamType(response.data)
+        }
+        catch (error) {
+            console.error("Failed to fetch courses")
+        }
+    }
+
+    const getLanguage = async () => {
+        try {
+            const response = await API.get('/Language')
+            setLanguage(response.data)
+        }
+        catch (error) {
+            console.error("Failed to fetch courses")
+        }
+    }
+
+    const getType = async () => {
+        try {
+            const response = await API.get('/PaperTypes')
+            setType(response.data)
+        }
+        catch (error) {
+            console.error("Failed to fetch courses")
+        }
+    }
+
+    useEffect(() => {
+        getCourse();
+        getSubject();
+        getType();
+        getLanguage();
+        getExamType();
+    }, [])
+    useEffect(() => {
+        setManualInputs((prev) => ({
+            ...prev,
+            groupId: groupId, // or you can use groupName if needed
+        }));
+
+    }, [groupId, groupName]);
+
+    const renderField = (
+        label,
+        field,
+        isDropdown,
+        isDisabled = false,
+        fixedValue = null,
+        options = [],
+        labelField = "name",
+        valueField = "id"
+    ) => {
+        return (
+            <>
+                <h5>{label}</h5>
+                {isDropdown ? (
+                    <Select
+                        placeholder={`Select ${label}`}
+                        className="mb-3"
+                        style={{ width: "100%" }}
+                        onChange={(value) =>
+                            handleManualInput({ target: { value } }, field)
+                        }
+                        value={manualInputs[field]}
+                        disabled={isDisabled}
+                        showSearch
+                        filterOption={(input, option) =>
+                            option.children?.toString().toLowerCase().includes(input.toLowerCase())
+                        }
+                    >
+                        {fixedValue ? (
+                            <Option value={fixedValue.value}>{fixedValue.label}</Option>
+                        ) : (
+                            options.map((option) => (
+                                <Option key={option[valueField]} value={option[valueField]}>
+                                    {option[labelField]} {/* Dynamic label */}
+                                </Option>
+                            ))
+                        )}
+                    </Select>
+                ) : (
+                    <Input
+                        placeholder={`Enter ${label}`}
+                        className="mb-3"
+                        onChange={(e) => handleManualInput(e, field)}
+                        value={manualInputs[field] || ""}
+                        disabled={isDisabled}
+                    />
+                )}
+            </>
+        );
+    };
+
+
+    const handleClear = () => {
+        setManualInputs((prev) => ({}));
+    };
+
+    const handleAdd = async () => {
+        const dataToSend = [{
+            qpMasterId: 0, // Assuming you want to set this as 0 or get it from somewhere
+            groupId: manualInputs.groupId || 0, // Use the group ID from form or default to 0
+            typeId: manualInputs.type || 0, // Assuming type field is for typeId
+            nepCode: manualInputs.nepCode || "string", // Use the nepCode field or default to "string"
+            privateCode: manualInputs.courseCode || "string", // Assuming courseCode is for privateCode
+            subjectId: manualInputs.subject || 0, // Use subject field or default to 0
+            paperNumber: manualInputs.paperNumber || "string", // paperNumber from form
+            paperTitle: manualInputs.paperTitle || "string", // paperTitle from form
+            maxMarks: manualInputs.maxMarks || 0, // maxMarks from form
+            duration: manualInputs.duration || "string", // duration from form
+            languageId: manualInputs.language || 0, // language field for languageId
+            customizedField1: "string", // You can modify this field if you have a custom input
+            customizedField2: "string", // Same as above
+            customizedField3: "string", // Same as above
+            courseId: manualInputs.course || 0, // course field for courseId
+            examTypeId: manualInputs.examType || 0, // examType field for examTypeId
+        }];
+    
+        try {
+            const response = await API.post("/QPMasters", dataToSend);
+    
+            if (response.status === 200) {
+                console.log("Paper added successfully!", response.data);
+                handleClear(); // Clear the form on success
+            } else {
+                console.error("Failed to add paper:", response.data);
+            }
+        } catch (error) {
+            console.error("Error adding paper:", error);
+        }
+    };
+    
+    
+
+    return (
+        <Container
+            fluid
+            className=" d-flex flex-column justify-content-center align-items-center bg-light rounded p-3"
+        >
+            <Row className="w-75">
+                <Col>
+                    <Row className="mb-3">
+                        <Col>
+                            <h1 className={`mb-4 ${customDarkText}`}>Add Paper</h1>
+                        </Col>
+                        <Col className="d-flex justify-content-end align-items-center">
+                            <div>
+                                <FaHome
+                                    className="me-2 c-pointer"
+                                    color="blue"
+                                    size={30}
+                                    onClick={handleHomeClick}
+                                />
+                                <Button
+                                    type="primary"
+                                    className={` border-0 ${customBtn}`}
+                                    onClick={handleImportClick}
+                                >
+                                    Import
+                                </Button>
+                            </div>
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col md={6}>
+                            {renderField("Group", "groupId", true, true, {
+                                label: `${groupName} (ID: ${groupId})`,
+                                value: groupId,
+                            })}
+                            {renderField("Paper Title", "paperTitle", false)}
+                            {renderField("Paper Number", "paperNumber", false)}
+                            {renderField("Exam Type", "examType", true, false, null, examtype, "typeName", "examTypeId")}
+                            {renderField("Max Marks", "maxMarks", false)}
+                            {renderField("Duration", "duration", false)}
+                        </Col>
+                        <Col md={6}>
+                            {renderField("Course", "course", true, false, null, courses, "courseName", "courseId")}
+                            {renderField("Subject", "subject", true, false, null, subject, "subjectName", "subjectId")}
+                            {renderField("NEP Code / Paper Code", "nepCode", false)}
+                            {renderField("Course Code / Private Code", "courseCode", false)}
+                            {renderField("Language", "language", true, false, null, language, "languages", "languageId")}
+                            {renderField("Type", "type", true, false, null, type, "types", "typeId")}
+                            <Row>
+                                <Col md={6}>
+                                    <Button
+                                        type="primary"
+                                        className={`mt-3 w-100 border-0 ${customBtn}`}
+                                        onClick={handleAdd}
+                                    >
+                                        Add
+                                    </Button>
+                                </Col>
+                                <Col md={6}>
+                                    <Button
+                                        type="primary"
+                                        className={`mt-3 w-100 border-0 ${customBtn}`}
+                                        onClick={handleClear}
+                                    >
+                                        Clear
+                                    </Button>
+                                </Col>
+                            </Row>
+                        </Col>
+
+                    </Row>
                 </Col>
-                <Col md={6}>
-                  <Button
-                    type="primary"
-                    className={`mt-3 w-100 border-0 ${customBtn}`}
-                    onClick={handleClear}
-                  >
-                    Clear
-                  </Button>{" "}
-                </Col>
-              </Row>
-            </Col>
-          </Row>
-        </Col>
-      </Row>
-    </Container>
-  );
+            </Row>
+        </Container>
+    );
 };
 
 export default ImportPage;
