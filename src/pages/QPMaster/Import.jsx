@@ -1,14 +1,15 @@
-
-import React, { useEffect, useState } from 'react'
-import API from '../../CustomHooks/MasterApiHooks/api'
-import { Select, Form, Upload, Button, Row, Col } from 'antd'
-import { UploadOutlined } from '@ant-design/icons'
-import { useTranslation } from 'react-i18next'
-import { useStore } from 'zustand'
-import themeStore from '../../store/themeStore'
+import React, { useEffect, useState } from 'react';
+import API from '../../CustomHooks/MasterApiHooks/api';
+import { Select, Form, Upload, Button, Row, Col } from 'antd';
+import { UploadOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
+import { useStore } from 'zustand';
+import themeStore from '../../store/themeStore';
 import * as XLSX from "xlsx";
+import { useParams } from 'react-router-dom';
 
 const Import = () => {
+    const { groupId, groupName } = useParams();
     const [form] = Form.useForm();
     const [columns, setColumns] = useState([]);
     const [fileList, setFileList] = useState([]);
@@ -17,27 +18,33 @@ const Import = () => {
     const [headers, setHeaders] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [showMappingFields, setShowMappingFields] = useState(false);
+    const [isProcessingFile, setIsProcessingFile] = useState(false);
+    const [showBtn, setShowBtn] = useState(false);
     const { t } = useTranslation();
     const { getCssClasses } = useStore(themeStore);
     const cssClasses = getCssClasses();
     const [customBtn] = cssClasses;
+
     useEffect(() => {
         const getColumns = async () => {
             try {
                 const response = await API.get('/QPMasters/Columns');
+                console.log("Columns response:", response.data); // Log the response data
                 setColumns(response.data);
             } catch (error) {
                 console.error(t('failedtofetchColumns'), error);
             }
         };
         getColumns();
-    }, []);
+    }, [t]);
+
     const getAvailableOptions = (property) => {
         const selectedValues = Object.values(fieldMappings).flat();
         return headers
             .filter((header) => !selectedValues.includes(header))
             .map((header) => ({ label: header, value: header }));
     };
+
     const handleFileUpload = (file) => {
         setFileList([file]);
         setSelectedFile(file);
@@ -46,11 +53,13 @@ const Import = () => {
         processFile(file);
         return false;
     };
+
     const processFile = async (file) => {
         const reader = new FileReader();
         reader.onload = async (e) => {
             try {
                 const data = new Uint8Array(e.target.result);
+                console.log("File data:", data); // Log the file data
                 const workbook = XLSX.read(data, { type: "array" });
                 const firstSheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[firstSheetName];
@@ -62,14 +71,18 @@ const Import = () => {
 
                 if (filteredData.length === 0) {
                     console.error(t("noValidDataFoundInFile"));
+                    alert(t("noValidDataFoundInFile")); // Inform the user
                     setIsProcessingFile(false);
                     return;
                 }
+
                 // Extract headers and set them for mapping
                 const excelHeaders = filteredData[0];
+                console.log("Extracted headers:", excelHeaders); // Log the headers
                 setHeaders(excelHeaders);
                 setShowMappingFields(true);
                 setShowBtn(true);
+
                 // Dynamically build the field mappings based on multiple headers per field
                 const autoMappings = {};
                 columns.forEach((col) => {
@@ -89,6 +102,7 @@ const Import = () => {
         };
         reader.readAsArrayBuffer(file);
     };
+
     const createMappedData = async () => {
         const reader = new FileReader();
         return new Promise((resolve) => {
@@ -201,6 +215,7 @@ const Import = () => {
             throw err; // Propagate the error
         }
     };
+
     const getSubjectIdByName = async (subject) => {
         try {
             // Attempt to get the courseId based on course name
@@ -221,6 +236,7 @@ const Import = () => {
             throw err; // Propagate the error
         }
     };
+
     const getTypeIdByName = async (type) => {
         try {
             // Attempt to get the courseId based on course name
@@ -240,6 +256,7 @@ const Import = () => {
             throw err; // Propagate the error
         }
     };
+
     const getLanguageIdByName = async (language) => {
         try {
             // Attempt to get the courseId based on course name
@@ -260,6 +277,7 @@ const Import = () => {
             throw err; // Propagate the error
         }
     };
+
     const getExamTypeIdByName = async (examtype) => {
         try {
             // Attempt to get the courseId based on course name
@@ -279,6 +297,7 @@ const Import = () => {
             throw err; // Propagate the error
         }
     };
+
     const handleUpload = async () => {
         setIsLoading(true);
         setShowMappingFields(false);
@@ -323,6 +342,7 @@ const Import = () => {
             setIsLoading(false);
         }
     };
+
     const handleMappingChange = (property, value) => {
         setFieldMappings((prevMappings) => {
             return {
@@ -331,6 +351,7 @@ const Import = () => {
             };
         });
     };
+
     return (
         <div>
             <h4>Import Excel</h4>
@@ -412,4 +433,5 @@ const Import = () => {
         </div>
     );
 };
+
 export default Import;
