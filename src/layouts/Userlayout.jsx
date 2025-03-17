@@ -65,8 +65,6 @@ const UserLayout = () => {
               <Route path="/project-details/:encryptedProjectId" element={<ProcessTable />} />
               <Route path="/labels" element={checkPermissionAndRender("3", Labels)} />
               <Route path="/reports" element={checkPermissionAndRender("4", Reports)} />
-              <Route path="/ImportPaper" element={checkPermissionAndRender("5", QPImport)} />
-              <Route path="/QP-Masters" element={checkPermissionAndRender("5", QPMaster)} />
               <Route path="/QP-Masters" element={checkPermissionAndRender("5", QCMaster)} />
               <Route path="/Add-Paper/:groupId/:groupName" element={checkPermissionAndRender("5", AddPaper)} />
               <Route path="/Import-Paper/:groupId/:groupName" element={checkPermissionAndRender("5", ImportPaper)} />
