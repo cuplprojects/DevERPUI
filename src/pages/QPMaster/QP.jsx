@@ -120,11 +120,11 @@ const QPMiddleArea = () => {
                 className="me-2"
                 style={{ borderRadius: "5px" }}
               >
-                Apply
+                Apply & View
               </Button>
-              <Button variant="outline-success" style={{ borderRadius: "5px" }}>
+              {/* <Button variant="outline-success" style={{ borderRadius: "5px" }}>
                 View All
-              </Button>
+              </Button> */}
             </Col>
           </Row>
           <Row className="w-100 justify-content-center mt-3">
