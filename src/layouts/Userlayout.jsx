@@ -66,7 +66,7 @@ const UserLayout = () => {
               <Route path="/project-details/:encryptedProjectId" element={<ProcessTable />} />
               <Route path="/labels" element={checkPermissionAndRender("3", Labels)} />
               <Route path="/reports" element={checkPermissionAndRender("4", Reports)} />
-              <Route path="/AddPage" element={checkPermissionAndRender("5", QCMaster)} />
+              <Route path="/QP-Masters" element={checkPermissionAndRender("5", QCMaster)} />
 
               <Route path="/*" element={<Navigate to="/404" replace />} />
               <Route path="/404" element={<PageNotFound />} />

@@ -48,7 +48,7 @@ const NavigationBar = ({ onLinkClick, onClose }) => {
     { id: "2", to: "/master", icon: IoIosSwitch, text: t('masterManagement'), permission: "2" },
     { id: "3", to: "/labels", icon: TbMessage2Cog , text: t('messageManagement'), permission: "3" },
     { id: "4", to: "/reports", icon: TbReportSearch, text: t('viewReports'), permission: "4" },
-    { id: "5", to: "/AddPage", icon: TbReportSearch, text: t('qpmaster'), permission: "5" },
+    { id: "5", to: "/QP-Masters", icon: TbReportSearch, text: t('qpmaster'), permission: "5" },
   ], [t]);
 
   useEffect(() => {
