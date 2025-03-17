@@ -3,10 +3,23 @@ import React, { useEffect, useState } from 'react'
 import API from '../../CustomHooks/MasterApiHooks/api'
 import { Select, Button } from 'antd'
 import { useTranslation } from 'react-i18next'
+import { useStore } from 'zustand'
+import themeStore from '../../store/themeStore'
 import AddNew from './AddNew';
 import Import from './Import'
 
 const AddPage = () => {
+    const { getCssClasses } = useStore(themeStore)
+    const cssClasses = getCssClasses()
+    const customDark = cssClasses[0]
+    const customMid = cssClasses[1]
+    const customLight = cssClasses[2]
+    const customBtn = cssClasses[3]
+    const customDarkText = cssClasses[4]
+    const customLightText = cssClasses[5]
+    const customLightBorder = cssClasses[6]
+    const customDarkBorder = cssClasses[7]
+
     const [group, setGroup] = useState([]);
     const [groupId, setGroupId] = useState(null); // Store selected group ID
     const [showform, setshowform] = useState(false);
