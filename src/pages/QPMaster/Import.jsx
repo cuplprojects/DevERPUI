@@ -350,7 +350,7 @@ const Import = () => {
     <Container className="">
       <Card>
         <Card.Body>
-          <h2 className={`text-center ${customDarkText} fw-bold`}>Import Excel</h2>
+          <h1 className={`text-center ${customDarkText} fw-bold`}>Import Excel</h1>
           <Form layout="vertical" form={form}>
             <Form.Item
               name="file"
@@ -366,14 +366,14 @@ const Import = () => {
                   }}
                   beforeUpload={handleFileUpload}
                   fileList={fileList}
-                  className="flex-grow- me-2 fw-bold text-danger"
+                  className="flex-grow- me-2 fw-bold text-danger "
                 >
                   <Button className={`w-100 d-flex align-items-center p-2 ${customBtn} text-white`}> 
                     <UploadOutlined />
-                    <span className="d-none d-sm-inline">
+                    <span className="d-none d-sm-inline fs-5 p-2 text-white">
                       {t("selectFile")}
                     </span>
-                    <span className={`d-inline d-sm-none`}>{t("upload")}</span>
+                    <span className={`d-inline d-sm-none fs-4 p-2 text-white`}>{t("upload")}</span>
                   </Button>
                 </Upload>
                 {fileList.length > 0 && (
@@ -383,7 +383,7 @@ const Import = () => {
                     onClick={handleUpload}
                     loading={isLoading}
                   >
-                    {t("uploadLots")}
+                    {t("uploadQp")}
                   </Button>
                 )}
               </div>

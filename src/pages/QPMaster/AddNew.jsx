@@ -96,8 +96,23 @@ const ImportPage = () => {
   };
 
   const handleClear = () => {
-    setManualInputs((prev) => ({}));
+    setManualInputs((prev) => ({
+      group: prev.group, // Preserve group id
+    }));
   };
+
+  useEffect(() => {
+    setManualInputs({
+      group: groupId,
+    });
+  }, [groupId]);
+
+  const isClearDisabled = useMemo(() => {
+    const keys = Object.keys(manualInputs).filter((key) => key !== "group");
+    return !keys.some(
+      (key) => manualInputs[key] && manualInputs[key].trim() !== ""
+    );
+  }, [manualInputs]);
 
   const handleAdd = () => {
     if (isFileUploaded) {
@@ -183,6 +198,7 @@ const ImportPage = () => {
                     type="primary"
                     className={`mt-3 w-100 border-0 ${customBtn}`}
                     onClick={handleClear}
+                    disabled={isClearDisabled}
                   >
                     Clear
                   </Button>{" "}
