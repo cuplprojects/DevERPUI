@@ -1,17 +1,23 @@
-import React, { useMemo } from "react";
-import { useNavigate } from 'react-router-dom';
+import React, { useMemo, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Row, Col, Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { Select } from "antd";
+import { Select, Tooltip } from "antd";
 import "antd/dist/reset.css";
 import themeStore from "./../../store/themeStore";
 import { useStore } from "zustand";
-
+import API from "../../CustomHooks/MasterApiHooks/api";
+import { useParams } from "react-router-dom";
 
 const { Option } = Select;
 
 const QPMiddleArea = () => {
+  const { groupId, groupName } = useParams();
   const navigate = useNavigate();
+  const [groups, setGroups] = useState([]);
+  const [selectedGroupId, setSelectedGroupId] = useState(null);
+  const [isGroupSelected, setIsGroupSelected] = useState(false);
+  const [selectedGroupName, setSelectedGroupName] = useState("");
   const themeState = useStore(themeStore);
   const cssClasses = useMemo(() => themeState.getCssClasses(), [themeState]);
   const [
@@ -25,10 +31,30 @@ const QPMiddleArea = () => {
     customDarkBorder,
   ] = cssClasses;
 
-  const handleImportClick = () => {
-    navigate("/ImportPaper");
-  }
-  
+  const handleAddClick = () => {
+    navigate(`/Add-Paper/${selectedGroupId}/${selectedGroupName}`);
+  };
+
+  // Fetching groups from API
+  useEffect(() => {
+    const getGroups = async () => {
+      try {
+        const response = await API.get("/Groups");
+        setGroups(response.data);
+      } catch (error) {
+        console.error("Failed to fetch groups", error);
+      }
+    };
+    getGroups();
+  }, []);
+
+  const handleGroupChange = (value) => {
+    const selectedGroup = groups.find((group) => group.id === value);
+    setSelectedGroupId(value);
+    setSelectedGroupName(selectedGroup ? selectedGroup.name : "");
+    setIsGroupSelected(true);
+  };
+
   return (
     <div
       className="d-flex justify-content-center align-items-center"
@@ -47,15 +73,31 @@ const QPMiddleArea = () => {
         <div>
           <h1
             className={`${customDarkText} mb-4`}
-            style={{ fontSize: "5rem", fontWeight: "bold" ,textAlign:"center"}}
+            style={{
+              fontSize: "5rem",
+              fontWeight: "bold",
+              textAlign: "center",
+            }}
           >
             QP-Masters
           </h1>
           <Row className="mb-3 w-100 justify-content-center">
             <Col className="d-flex justify-content-between w-100">
-              <Select placeholder="Select Group" className="m-2 w-100">
-                <Option value="group1">Group 1</Option>
-                <Option value="group2">Group 2</Option>
+              <Select
+                showSearch
+                placeholder="Select Group"
+                className="m-2 w-100"
+                onChange={handleGroupChange}
+                value={selectedGroupId}
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().includes(input.toLowerCase())
+                }
+              >
+                {groups.map((group) => (
+                  <Option key={group.id} value={group.id}>
+                    {group.name}
+                  </Option>
+                ))}
               </Select>
               <Select placeholder="Select Type" className="m-2 w-100">
                 <Option value="type1">Type 1</Option>
@@ -80,24 +122,33 @@ const QPMiddleArea = () => {
               >
                 Apply
               </Button>
-            </Col>
-          </Row>
-          <Row className="w-100 justify-content-center mt-3">
-            <span className={`${customDarkText} text-center fs-2 fw-bold`}>OR</span>
-          </Row>
-          <Row className="w-100 justify-content-center mt-3">
-            <Col className="d-flex justify-content-center">
-              <Button
-                variant="outline-secondary"
-                style={{ borderRadius: "5px" }}
-                className="me-2"
-                onClick={handleImportClick}
-              >
-                Add
-              </Button>
               <Button variant="outline-success" style={{ borderRadius: "5px" }}>
                 View All
               </Button>
+            </Col>
+          </Row>
+          <Row className="w-100 justify-content-center mt-3">
+            <span className={`${customDarkText} text-center fs-2 fw-bold`}>
+              OR
+            </span>
+          </Row>
+          <Row className="w-100 justify-content-center mt-3">
+            <Col className="d-flex justify-content-center">
+              <Tooltip
+                title={!isGroupSelected ? "Please select a group first" : ""}
+              >
+                <span>
+                  <Button
+                    variant="outline-secondary"
+                    style={{ borderRadius: "5px" }}
+                    className="me-2"
+                    onClick={handleAddClick}
+                    disabled={!isGroupSelected}
+                  >
+                    Add
+                  </Button>
+                </span>
+              </Tooltip>
             </Col>
           </Row>
         </div>
