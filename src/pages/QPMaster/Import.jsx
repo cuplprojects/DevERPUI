@@ -1,23 +1,17 @@
 import React, { useState, useMemo } from "react";
 import { Container, Row, Col, Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { Select, Input, Upload, Space } from "antd";
-import { UploadOutlined, CloseOutlined } from "@ant-design/icons";
+import { Select, Input} from "antd";
 import "antd/dist/reset.css";
 import * as XLSX from "xlsx";
-import { RiFileExcel2Fill } from "react-icons/ri";
-import { MdDeleteForever } from "react-icons/md";
 import themeStore from "./../../store/themeStore";
 import { useStore } from "zustand";
 import { useNavigate } from "react-router-dom";
 import { FaHome } from "react-icons/fa";
-import { FaFileUpload } from "react-icons/fa";
 const { Option } = Select;
 
 const ImportPage = () => {
-    const navigate = useNavigate();
-  const [file, setFile] = useState(null);
-  const [columns, setColumns] = useState([]);
+  const navigate = useNavigate();
   const [selectedColumns, setSelectedColumns] = useState({});
   const [manualInputs, setManualInputs] = useState({});
   const [excelData, setExcelData] = useState([]);
@@ -35,44 +29,9 @@ const ImportPage = () => {
     customDarkBorder,
   ] = cssClasses;
 
-  const handleUpload = (file) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const data = new Uint8Array(e.target.result);
-      const workbook = XLSX.read(data, { type: "array" });
-      const firstSheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[firstSheetName];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
-
-      const headers = Object.keys(jsonData[0] || {});
-      const cleanedHeaders = headers.map((h) => (h ? h.toString().trim() : ""));
-      setColumns(cleanedHeaders);
-      setExcelData(jsonData);
-      setFile(file);
-      setIsFileUploaded(true);
-    };
-    reader.readAsArrayBuffer(file);
-    return false;
-  };
-
+ 
   const handleHomeClick = () => {
     navigate("/QP-Masters");
-  };
-
-  const handleRemoveFile = () => {
-    setFile(null);
-    setColumns([]);
-    setSelectedColumns({});
-    setManualInputs({});
-    setExcelData([]);
-    setIsFileUploaded(false);
-  };
-
-  const handleSelect = (value, field) => {
-    setSelectedColumns((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
   };
 
   const handleManualInput = (e, field) => {
@@ -83,36 +42,7 @@ const ImportPage = () => {
     }));
   };
 
-  const getAvailableColumns = (currentField) => {
-    const selectedValues = Object.entries(selectedColumns)
-      .filter(([key]) => key !== currentField)
-      .map(([, value]) => value);
-    return columns.filter((col) => !selectedValues.includes(col));
-  };
-
   const renderField = (label, field, isDropdown) => {
-    if (isFileUploaded) {
-      return (
-        <>
-          <h5>{label}</h5>
-          <Select
-            placeholder="Select Field"
-            className="mb-3"
-            style={{ width: "100%" }}
-            onChange={(value) => handleSelect(value, field)}
-            value={selectedColumns[field]}
-            allowClear
-          >
-            {getAvailableColumns(field).map((col) => (
-              <Option key={col} value={col}>
-                {col}
-              </Option>
-            ))}
-          </Select>
-        </>
-      );
-    }
-
     return (
       <>
         <h5>{label}</h5>
@@ -181,31 +111,6 @@ const ImportPage = () => {
                 size={30}
                 onClick={handleHomeClick}
               />
-              {!isFileUploaded && (
-                <Upload showUploadList={false} beforeUpload={handleUpload}>
-                  <div className="d-flex align-items-center">
-                    <Button className={`d-flex align-items-center border-0 ${customBtn}`}>
-                      <FaFileUpload />
-                      <span>Import Excel</span>
-                    </Button>
-                  </div>
-                </Upload>
-              )}
-              {isFileUploaded && (
-                <Space>
-                  <span className="fs-5 ms-2 d-flex align-items-center ">
-                    <RiFileExcel2Fill color="green" size={24} />
-                    {file.name}
-                  </span>
-                  <MdDeleteForever
-                    size={30}
-                    color="red"
-                    onClick={handleRemoveFile}
-                    className="c-pointer"
-                    title="Remove file"
-                  />
-                </Space>
-              )}
             </Col>
           </Row>
           {isFileUploaded && (
