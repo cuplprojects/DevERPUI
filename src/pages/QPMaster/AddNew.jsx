@@ -1,141 +1,16 @@
-// import React, { useState } from 'react';
-// import { Form, Input, Button, message } from 'antd';
-// import axios from 'axios';
-
-// const AddNew = (groupId) => {
-//     // Initialize form
-//     const [form] = Form.useForm();
-
-//     // Handle submit function
-//     const handleSubmit = async (values) => {
-//         try {
-//             // Send data to API (example API endpoint)
-//             const response = await axios.post('YOUR_API_URL_HERE', values);
-//             if (response.status === 200) {
-//                 message.success('Data added successfully!');
-//                 form.resetFields(); // Optionally reset the form
-//             }
-//         } catch (error) {
-//             // Handle error
-//             message.error('Error adding data. Please try again.');
-//         }
-//     };
-
-//     return (
-//         <div>
-//             <Form
-//                 form={form}
-//                 onFinish={handleSubmit}  // onFinish triggers the submit function
-//             >
-//                 <Form.Item
-//                     label="Course"
-//                     name="course"
-//                     rules={[{ required: true, message: 'Course is required!' }]}
-//                 >
-//                     <Input />
-//                 </Form.Item>
-
-//                 <Form.Item
-//                     label="Subject"
-//                     name="subject"
-//                     rules={[{ required: true, message: 'Subject is required!' }]}
-//                 >
-//                     <Input />
-//                 </Form.Item>
-//                 <Form.Item
-//                     label="Paper Number"
-//                     name="papernumber"
-//                     rules={[{ required: true, message: 'Paper Number is required!' }]}
-//                 >
-//                     <Input />
-//                 </Form.Item>
-//                 <Form.Item
-//                     label="Paper Title"
-//                     name="papertitle"
-//                     rules={[{ required: true, message: 'Paper Title is required!' }]}
-//                 >
-//                     <Input />
-//                 </Form.Item>
-//                 <Form.Item
-//                     label="NEP Code"
-//                     name="nepcode"
-//                     rules={[{ required: true, message: 'Paper Title is required!' }]}
-//                 >
-//                     <Input />
-//                 </Form.Item>
-
-//                 <Form.Item
-//                     label="Private Code"
-//                     name="privatecode"
-//                     rules={[{ required: true, message: 'Paper Title is required!' }]}
-//                 >
-//                     <Input />
-//                 </Form.Item>
-
-//                 <Form.Item
-//                     label="Language"
-//                     name="language"
-//                     rules={[{ required: true, message: 'Language is required!' }]}
-//                 >
-//                     <Input />
-//                 </Form.Item>
-
-//                 <Form.Item
-//                     label="Type"
-//                     name="type"
-//                     rules={[{ required: true, message: 'Type is required!' }]}
-//                 >
-//                     <Input />
-//                 </Form.Item>
-
-//                 <Form.Item
-//                     label="ExamType"
-//                     name="examtype"
-//                     rules={[{ required: true, message: 'ExamType is required!' }]}
-//                 >
-//                     <Input />
-//                 </Form.Item>
-
-//                 <Form.Item
-//                     label="Max Marks"
-//                     name="maxmarks"
-//                     rules={[{ required: true, message: 'Max Marks is required!' }]}
-//                 >
-//                     <Input />
-//                 </Form.Item>
-
-//                 <Form.Item
-//                     label="Duration"
-//                     name="duration"
-//                     rules={[{ required: true, message: 'Duration is required!' }]}
-//                 >
-//                     <Input />
-//                 </Form.Item>
-//                 <Form.Item>
-//                     <Button type="primary" htmlType="submit">
-//                         Submit
-//                     </Button>
-//                 </Form.Item>
-//             </Form>
-//         </div>
-//     );
-// };
-
-// export default AddNew;
-
-
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Container, Row, Col, Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { Select, Input} from "antd";
+import { Select, Input } from "antd";
 import "antd/dist/reset.css";
 import themeStore from "./../../store/themeStore";
 import { useStore } from "zustand";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { FaHome } from "react-icons/fa";
 const { Option } = Select;
 
 const ImportPage = () => {
+  const { groupId, groupName } = useParams();
   const navigate = useNavigate();
   const [selectedColumns, setSelectedColumns] = useState({});
   const [manualInputs, setManualInputs] = useState({});
@@ -154,9 +29,12 @@ const ImportPage = () => {
     customDarkBorder,
   ] = cssClasses;
 
- 
   const handleHomeClick = () => {
     navigate("/QP-Masters");
+  };
+
+  const handleImportClick = () => {
+    navigate(`/Import-Paper/${groupId}/${groupName}`);
   };
 
   const handleManualInput = (e, field) => {
@@ -167,7 +45,20 @@ const ImportPage = () => {
     }));
   };
 
-  const renderField = (label, field, isDropdown) => {
+  useEffect(() => {
+    setManualInputs((prev) => ({
+      ...prev,
+      group: groupId, // or you can use groupName if needed
+    }));
+  }, [groupId, groupName]);
+
+  const renderField = (
+    label,
+    field,
+    isDropdown,
+    isDisabled = false,
+    fixedValue = null
+  ) => {
     return (
       <>
         <h5>{label}</h5>
@@ -180,9 +71,16 @@ const ImportPage = () => {
               handleManualInput({ target: { value } }, field)
             }
             value={manualInputs[field]}
+            disabled={isDisabled}
           >
-            <Option value="option1">Option 1</Option>
-            <Option value="option2">Option 2</Option>
+            {fixedValue ? (
+              <Option value={fixedValue.value}>{fixedValue.label}</Option>
+            ) : (
+              <>
+                <Option value="option1">Option 1</Option>
+                <Option value="option2">Option 2</Option>
+              </>
+            )}
           </Select>
         ) : (
           <Input
@@ -190,6 +88,7 @@ const ImportPage = () => {
             className="mb-3"
             onChange={(e) => handleManualInput(e, field)}
             value={manualInputs[field] || ""}
+            disabled={isDisabled}
           />
         )}
       </>
@@ -230,12 +129,21 @@ const ImportPage = () => {
               <h1 className={`mb-4 ${customDarkText}`}>Add Paper</h1>
             </Col>
             <Col className="d-flex justify-content-end align-items-center">
-              <FaHome
-                className="me-2 c-pointer"
-                color="blue"
-                size={30}
-                onClick={handleHomeClick}
-              />
+              <div>
+                <FaHome
+                  className="me-2 c-pointer"
+                  color="blue"
+                  size={30}
+                  onClick={handleHomeClick}
+                />
+                <Button
+                  type="primary"
+                  className={` border-0 ${customBtn}`}
+                  onClick={handleImportClick}
+                >
+                  Import
+                </Button>
+              </div>
             </Col>
           </Row>
           {isFileUploaded && (
@@ -243,7 +151,10 @@ const ImportPage = () => {
           )}
           <Row>
             <Col md={6}>
-              {renderField("Group", "group", true)}
+              {renderField("Group", "group", true, true, {
+                label: `${groupName} (ID: ${groupId})`,
+                value: groupId,
+              })}
               {renderField("Paper Title", "paperTitle", false)}
               {renderField("Paper Number", "paperNumber", false)}
               {renderField("Exam Type", "examType", true)}

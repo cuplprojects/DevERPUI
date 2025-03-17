@@ -6,11 +6,13 @@ import { UploadOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import { useStore } from 'zustand'
 import themeStore from '../../store/themeStore'
+import { useNavigate, useParams } from 'react-router-dom'
 import * as XLSX from "xlsx";
 
 
-const Import = ({groupId}) => {
-    console.log(groupId)
+const Import = () => {
+    const navigate = useNavigate();
+    const { groupId, groupName } = useParams();
     const [form] = Form.useForm();
     const [columns, setColumns] = useState([]);
     const [fileList, setFileList] = useState([]);
