@@ -309,7 +309,7 @@ const Import = () => {
         nepCode: String(item.NEPCode || "string"),
         privateCode: item.PrivateCode || "string",
         subjectId: item.SubjectId || 0,
-        paperNumber: item.PaperNumber || "string",
+        paperNumber: String(item.PaperNumber || "string"),
         paperTitle: item.PaperTitle || "string",
         maxMarks: item.MaxMarks || 0,
         duration: item.Duration || "string",
