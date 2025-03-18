@@ -14,10 +14,15 @@ const { Option } = Select;
 const QPMiddleArea = () => {
   const { groupId, groupName } = useParams();
   const navigate = useNavigate();
+
   const [groups, setGroups] = useState([]);
   const [selectedGroupId, setSelectedGroupId] = useState(null);
   const [isGroupSelected, setIsGroupSelected] = useState(false);
   const [selectedGroupName, setSelectedGroupName] = useState("");
+
+  const [types, setTypes] = useState([]);
+  const [selectedTypeId, setSelectedTypeId] = useState(null);
+
   const themeState = useStore(themeStore);
   const cssClasses = useMemo(() => themeState.getCssClasses(), [themeState]);
   const [
@@ -48,11 +53,28 @@ const QPMiddleArea = () => {
     getGroups();
   }, []);
 
+  // Fetching paper types from API
+  useEffect(() => {
+    const getTypes = async () => {
+      try {
+        const response = await API.get("/PaperTypes");
+        setTypes(response.data);
+      } catch (error) {
+        console.error("Failed to fetch types", error);
+      }
+    };
+    getTypes();
+  }, []);
+
   const handleGroupChange = (value) => {
     const selectedGroup = groups.find((group) => group.id === value);
     setSelectedGroupId(value);
     setSelectedGroupName(selectedGroup ? selectedGroup.name : "");
     setIsGroupSelected(true);
+  };
+
+  const handleTypeChange = (value) => {
+    setSelectedTypeId(value);
   };
 
   return (
@@ -99,9 +121,21 @@ const QPMiddleArea = () => {
                   </Option>
                 ))}
               </Select>
-              <Select placeholder="Select Type" className="m-2 w-100">
-                <Option value="type1">Type 1</Option>
-                <Option value="type2">Type 2</Option>
+              <Select
+                showSearch
+                placeholder="Select Type"
+                className="m-2 w-100"
+                onChange={handleTypeChange}
+                value={selectedTypeId}
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().includes(input.toLowerCase())
+                }
+              >
+                {types.map((type) => (
+                  <Option key={type.typeId} value={type.typeId}>
+                    {type.types}
+                  </Option>
+                ))}
               </Select>
               <Select placeholder="Select Course" className="m-2 w-100">
                 <Option value="course1">Course 1</Option>
@@ -120,10 +154,7 @@ const QPMiddleArea = () => {
                 className="me-2"
                 style={{ borderRadius: "5px" }}
               >
-                Apply
-              </Button>
-              <Button variant="outline-success" style={{ borderRadius: "5px" }}>
-                View All
+                Apply & View
               </Button>
             </Col>
           </Row>

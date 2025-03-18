@@ -3,7 +3,7 @@ import { Row, Col } from 'react-bootstrap';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './../components/Navbar';
 import MainDashboard from './../pages/MainDashboard';
-import Footer from '../components/Footer';
+// import Footer from '../components/Footer';
 import Masters from './../pages/Masters';
 import PageNotFound from '../pages/PageNotFound';
 import Profile from './../user/Profile'
@@ -23,7 +23,6 @@ import CuDashboard from '../pages/CuDashboard';
 import AddProjectProcess from '../pages/ProjectMaster/Tabs/AddProjectProcess';
 import { hasPermission } from '../CustomHooks/Services/permissionUtils';
 import { ToastContainer } from 'react-toastify';
-
 
 const UserLayout = () => {
   const { getCssClasses } = useStore(themeStore);
