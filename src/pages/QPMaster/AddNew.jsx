@@ -201,7 +201,7 @@ const ImportPage = () => {
                 data = { languages: newOptionValue }; // Assuming language for Language
                 break;
             case "type":
-                data = { type: newOptionValue }; // Assuming type for Type
+                data = { types: newOptionValue }; // Assuming type for Type
                 break;
             default:
                 console.error("Unknown field type:", selectedField);
