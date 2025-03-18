@@ -1,11 +1,11 @@
 .sidebar {
   background-color: #f8f9fa;
-  height: 90vh;
+  /* height: 90vh; */
   padding: 20px;
 }
 
 .sidebar-item ,.sidebar-item-dark {
-  padding: 10px;
+  /* padding: 10px; */
   transition: background-color 0.3s;
 }
 
@@ -22,8 +22,9 @@
 }
 
 .content-area {
-  padding: 20px;
+  padding: 10px;
   background-color: #f0f2f5;
+  /* border-radius: 10px; */
 }
 
 /* Adjusting icon spacing */
@@ -41,6 +42,6 @@
 }
 
 /* Optionally, you might want to adjust the padding or margins of the sidebar items */
-.sidebar-item {
-  padding: 12px 15px; /* Adjust as needed for visual balance */
-}
+/* .sidebar-item {
+  padding: 10px 15px; /* Adjust as needed for visual balance */
+/* } */

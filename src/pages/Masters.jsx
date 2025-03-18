@@ -6,7 +6,7 @@ import {
   FaCaretRight,
   FaCalendarAlt
 } from 'react-icons/fa';
-import { RiMenuFold4Fill, RiTeamFill, RiUserSettingsFill } from "react-icons/ri";
+import { RiMenuFold4Fill, RiMenuFold4Fill, RiTeamFill, RiUserSettingsFill, RiUserSettingsFill } from "react-icons/ri";
 import { GiGears } from "react-icons/gi";
 import { AiFillCloseSquare } from "react-icons/ai";
 import { FaBookOpenReader, FaScrewdriverWrench } from "react-icons/fa6";
@@ -40,6 +40,7 @@ import { TbLanguage } from "react-icons/tb";
 import { PiExamFill } from 'react-icons/pi';
 import { MdSubject } from "react-icons/md";
 import { SiCoursera } from "react-icons/si";
+import { FaBook } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 const Sidebar = () => {
@@ -130,7 +131,7 @@ const Sidebar = () => {
       ],
     },
     { key: 'systemSettings', icon: <FaCog />, label: t('processSettings'), permission: '2.10' },
-    { key: 'qpMasters', icon: <FaCog />, label: t('qpMasters'), permission: '2.12' },
+    { key: 'qpMasters', icon: <FaBook />, label: t('qpMasters'), permission: '2.12' },
     { key: 'group', icon: <FaUsers />, label: t('group'), permission: '2.2' },
     { key: 'type', icon: <FaBookOpenReader />, label: t('projectType'), permission: '2.3' },
     { key: 'project', icon: <FaProjectDiagram />, label: t('project'), permission: '2.4' },
@@ -262,7 +263,7 @@ const Sidebar = () => {
       <Row>
         <Col
           lg={3}
-          className={`sidebar rounded-start-4 d-none d-lg-block ${
+          className={`vh-100 overflow-auto sidebar rounded-start-4 d-none d-lg-block ${
             customDark === "dark-dark" ? customDark : ""
           }`}
         >
