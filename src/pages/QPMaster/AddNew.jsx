@@ -8,10 +8,21 @@ import { useStore } from "zustand";
 import { useNavigate, useParams } from "react-router-dom";
 import { FaHome } from "react-icons/fa";
 import API from "../../CustomHooks/MasterApiHooks/api";
+import { decrypt, encrypt } from "./../../Security/Security";
 const { Option } = Select;
 
 const ImportPage = () => {
-  const { groupId, groupName } = useParams();
+  const { encryptedGroupId, encryptedGroupName } = useParams();
+  const [groupId, setGroupId] = useState(null);
+  const [groupName, setGroupName] = useState(null);
+
+  useEffect(() => {
+    const decryptGroupId = decrypt(encryptedGroupId);
+    const decryptGroupName = decrypt(encryptedGroupName);
+    setGroupId(decryptGroupId);
+    setGroupName(decryptGroupName);
+  }, []);
+
   const navigate = useNavigate();
   const [manualInputs, setManualInputs] = useState({});
   const [courses, setCourses] = useState([]);

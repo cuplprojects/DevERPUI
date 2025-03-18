@@ -9,11 +9,11 @@ import { useStore } from "zustand";
 import API from "../../CustomHooks/MasterApiHooks/api";
 import QPTable from "./Components/QPTable";
 import { FaHome } from "react-icons/fa";
+import { decrypt, encrypt } from "./../../Security/Security";
 
 const { Option } = Select;
 
 const QPMiddleArea = () => {
-  const { groupId, groupName } = useParams();
   const navigate = useNavigate();
 
   const [groups, setGroups] = useState([]);
@@ -49,10 +49,11 @@ const QPMiddleArea = () => {
   ] = cssClasses;
 
   const handleAddClick = () => {
-    navigate(`/Add-Paper/${selectedGroupId}/${selectedGroupName}`);
+    const encryptedGroupId = encrypt(selectedGroupId);
+    const encryptedGroupName = encrypt(selectedGroupName);
+    navigate(`/Add-Paper/${encryptedGroupId}/${encryptedGroupName}`);
   };
 
-  // API Calls here...
   useEffect(() => {
     const getGroups = async () => {
       try {

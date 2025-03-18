@@ -10,9 +10,12 @@ import { useParams } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Container from "react-bootstrap/Container";
 import { Card } from "react-bootstrap";
+import { decrypt, encrypt } from "./../../Security/Security";
 
 const Import = () => {
-  const { groupId, groupName } = useParams();
+  const { encryptedGroupId, encryptedGroupName } = useParams();
+  const [groupId, setGroupId] = useState(null);
+  const [groupName, setGroupName] = useState(null);
   const [form] = Form.useForm();
   const [columns, setColumns] = useState([]);
   const [fileList, setFileList] = useState([]);
@@ -24,16 +27,23 @@ const Import = () => {
   const [isProcessingFile, setIsProcessingFile] = useState(false);
   const [showBtn, setShowBtn] = useState(false);
   const { t } = useTranslation();
-  const { getCssClasses } = useStore(themeStore)
-  const cssClasses = getCssClasses()
-  const customDark = cssClasses[0]
-  const customMid = cssClasses[1]
-  const customLight = cssClasses[2]
-  const customBtn = cssClasses[3]
-  const customDarkText = cssClasses[4]
-  const customLightText = cssClasses[5]
-  const customLightBorder = cssClasses[6]
-  const customDarkBorder = cssClasses[7]
+  const { getCssClasses } = useStore(themeStore);
+  const cssClasses = getCssClasses();
+  const customDark = cssClasses[0];
+  const customMid = cssClasses[1];
+  const customLight = cssClasses[2];
+  const customBtn = cssClasses[3];
+  const customDarkText = cssClasses[4];
+  const customLightText = cssClasses[5];
+  const customLightBorder = cssClasses[6];
+  const customDarkBorder = cssClasses[7];
+
+  useEffect(() => {
+    const decryptGroupId = decrypt(encryptedGroupId);
+    const decryptGroupName = decrypt(encryptedGroupName);
+    setGroupId(decryptGroupId);
+    setGroupName(decryptGroupName);
+  }, []);
 
   useEffect(() => {
     const getColumns = async () => {
@@ -203,7 +213,9 @@ const Import = () => {
 
   const getCourseIdByName = async (courseName) => {
     try {
-      const courseResponse = await API.get(`Course/GetCourse?courseName=${courseName}`);
+      const courseResponse = await API.get(
+        `Course/GetCourse?courseName=${courseName}`
+      );
       let courseId = courseResponse.data;
       if (!courseId) {
         const newCourseResponse = await API.post("/Course", {
@@ -220,7 +232,9 @@ const Import = () => {
 
   const getSubjectIdByName = async (subject) => {
     try {
-      const subjectResponse = await API.get(`Subject/Subject?subject=${subject}`);
+      const subjectResponse = await API.get(
+        `Subject/Subject?subject=${subject}`
+      );
       let subjectId = subjectResponse.data;
 
       if (!subjectId) {
@@ -350,7 +364,9 @@ const Import = () => {
     <Container className="">
       <Card>
         <Card.Body>
-          <h1 className={`text-center ${customDarkText} fw-bold`}>Import Excel</h1>
+          <h1 className={`text-center ${customDarkText} fw-bold`}>
+            Import Excel
+          </h1>
           <Form layout="vertical" form={form}>
             <Form.Item
               name="file"
@@ -368,12 +384,16 @@ const Import = () => {
                   fileList={fileList}
                   className="flex-grow- me-2 fw-bold text-danger "
                 >
-                  <Button className={`w-100 d-flex align-items-center p-2 ${customBtn} text-white`}> 
+                  <Button
+                    className={`w-100 d-flex align-items-center p-2 ${customBtn} text-white`}
+                  >
                     <UploadOutlined />
                     <span className="d-none d-sm-inline fs-5 p-2 text-white">
                       {t("selectFile")}
                     </span>
-                    <span className={`d-inline d-sm-none fs-4 p-2 text-white`}>{t("upload")}</span>
+                    <span className={`d-inline d-sm-none fs-4 p-2 text-white`}>
+                      {t("upload")}
+                    </span>
                   </Button>
                 </Upload>
                 {fileList.length > 0 && (
@@ -389,39 +409,37 @@ const Import = () => {
               </div>
             </Form.Item>
             {/* {showMappingFields && headers.length > 0 && ( */}
-              <Row className="mt-4 justify-content-center">
-                
-                  <div className="table-responsive w-100">
-                    <table className="table table-bordered table-striped w-100">
-                      <thead>
-                        <tr>
-                          <th style={{ width: "50%" }}> {t("fields")} </th>
-                          <th style={{ width: "50%" }}> {t("excelHeader")} </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {Object.keys(fieldMappings).map((property) => (
-                          <tr key={property}>
-                            <td>{property} </td>
-                            <td>
-                              <Select
-                                allowClear
-                                value={fieldMappings[property]}
-                                onChange={(value) =>
-                                  handleMappingChange(property, value)
-                                }
-                                options={getAvailableOptions(property)}
-                                style={{ width: "100%" }}
-                                dropdownMatchSelectWidth={false}
-                              />
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                
-              </Row>
+            <Row className="mt-4 justify-content-center">
+              <div className="table-responsive w-100">
+                <table className="table table-bordered table-striped w-100">
+                  <thead>
+                    <tr>
+                      <th style={{ width: "50%" }}> {t("fields")} </th>
+                      <th style={{ width: "50%" }}> {t("excelHeader")} </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.keys(fieldMappings).map((property) => (
+                      <tr key={property}>
+                        <td>{property} </td>
+                        <td>
+                          <Select
+                            allowClear
+                            value={fieldMappings[property]}
+                            onChange={(value) =>
+                              handleMappingChange(property, value)
+                            }
+                            options={getAvailableOptions(property)}
+                            style={{ width: "100%" }}
+                            dropdownMatchSelectWidth={false}
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Row>
             {/* )} */}
           </Form>
         </Card.Body>
