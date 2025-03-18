@@ -10,6 +10,8 @@ const AddProjectModal = ({
   onFinish,
   groups,
   types,
+  sessions,
+  examTypes,
   showSeriesFields,
   customDarkText,
   customLightText,
@@ -18,6 +20,8 @@ const AddProjectModal = ({
   t,
   handleGroupChange,
   handleTypeChange,
+  handleSessionChange,
+  handleExamTypeChange,
   numberOfSeries,
   setNumberOfSeries,
   seriesNames,
@@ -26,6 +30,8 @@ const AddProjectModal = ({
   setProjectName,
   selectedGroup,
   selectedType,
+  selectedSession,
+  selectedExamType,
   selectedProject
 }) => {
   const [status, setStatus] = useState(true);
@@ -46,13 +52,18 @@ const AddProjectModal = ({
   }, [selectedProject, setNumberOfSeries, setSeriesNames]);
 
   useEffect(() => {
-    if (selectedGroup && selectedType) {
+
+    if (selectedGroup && selectedType && selectedSession && selectedExamType) {
+
       const selectedGroupName = groups.find(g => g.id === selectedGroup.id)?.name || '';
       const selectedTypeName = types.find(t => t.typeId === selectedType.typeId)?.types || '';
-      const baseName = `${selectedGroupName}-${selectedTypeName}`;
+      const selectedSessionName = sessions.find(s => s.sessionId === selectedSession.sessionId)?.session || '';
+      const selectedExamTypeName = examTypes.find(e => e.examTypeId === selectedExamType.examTypeId)?.typeName;
+      console.log(selectedSessionName);
+      const baseName = `${selectedGroupName}-${selectedTypeName} - ${selectedSessionName} - ${selectedExamTypeName}`;
       setProjectName(baseName + (projectNameSuffix ? `-${projectNameSuffix}` : ''));
     }
-  }, [selectedGroup, selectedType, groups, types, projectNameSuffix]);
+  }, [selectedGroup, selectedType,selectedSession,selectedExamType, groups, types,sessions,examTypes, projectNameSuffix]);
 
   const handleAddRow = () => {
     setPageQuantities([...pageQuantities, { pages: '', quantity: '' }]);
@@ -69,16 +80,28 @@ const AddProjectModal = ({
     setPageQuantities(newEntries);
   };
 
+  // const handleProjectNameChange = (e) => {
+  //   const value = e.target.value;
+  //   const baseProjectName = `${selectedGroup?.name || ''}-${selectedType?.types || ''} - ${selectedSession?.session || ''}`;
+  //   if (value.startsWith(baseProjectName)) {
+  //     const suffix = value.slice(baseProjectName.length).replace(/^-/, '');
+  //     setProjectNameSuffix(suffix);
+  //     setProjectName(value);
+  //   }
+  // };
   const handleProjectNameChange = (e) => {
     const value = e.target.value;
-    const baseProjectName = `${selectedGroup?.name || ''}-${selectedType?.types || ''}`;
+    console.log(selectedExamType)
+    const baseProjectName = `${selectedGroup?.name || ''}-${selectedType?.types || ''} - ${selectedSession?.session || ''} - ${selectedExamType?.typeName || ''}`;
+    
+    // Check if the value starts with the base project name and allows only additions
     if (value.startsWith(baseProjectName)) {
-      const suffix = value.slice(baseProjectName.length).replace(/^-/, '');
-      setProjectNameSuffix(suffix);
+     // setProjectName(value); // Allow the addition of text
+      const suffix = value.slice(baseProjectName.length).replace(/^-/, ''); // Extract any text added after the prefix
+      setProjectNameSuffix(suffix); // Save the suffix
       setProjectName(value);
-    }
+    } 
   };
-
   const handleSubmit = async (event) => {
     event.preventDefault();
     
@@ -88,6 +111,8 @@ const AddProjectModal = ({
       description: descriptionValue,
       groupId: selectedGroup?.id,
       typeId: selectedType?.typeId,
+      sessionId: selectedSession?.sessionId,
+      examTypeId: selectedExamType?.examTypeId,
       noOfSeries: parseInt(numberOfSeries) || 0,
       seriesName: seriesNames || null,
       quantityThreshold: JSON.stringify(pageQuantities.filter(entry => entry.pages && entry.quantity))
@@ -160,6 +185,46 @@ const AddProjectModal = ({
               </Form.Group>
             </Col>
           </Row>
+          <Row className="mb-3">
+            <Col xs={12}>
+              <Form.Group controlId="session">
+                <Form.Label className={customDarkText}>{t('session')}
+                  <span className='text-danger ms-2 fs-6'>*</span>
+                </Form.Label>
+                <Form.Select onChange={handleSessionChange} disabled={!selectedType || !selectedGroup} required>
+                  <option value="">{t('selectSession')}</option>
+                  {sessions.map((session) => (
+                    <option key={session.sessionId} value={session.sessionId}>
+                      {session.session}
+                    </option>
+                  ))}
+                </Form.Select>
+                <Form.Text className="text-danger">
+                  {form.getFieldError('session')?.[0]}
+                </Form.Text>
+              </Form.Group>
+            </Col>
+          </Row>
+          <Row className="mb-3">
+            <Col xs={12}>
+              <Form.Group controlId="examType">
+                <Form.Label className={customDarkText}>{t('examType')}
+                  <span className='text-danger ms-2 fs-6'>*</span>
+                </Form.Label>
+                <Form.Select onChange={handleExamTypeChange} disabled={ !selectedType || !selectedGroup } required>
+                  <option value="">{t('selectExamType')}</option>
+                  {examTypes.map((examType) => (
+                    <option key={examType.examTypeId} value={examType.examTypeId}>
+                      {examType.typeName}
+                    </option>
+                  ))}
+                </Form.Select>
+                <Form.Text className="text-danger">
+                  {form.getFieldError('examType')?.[0]}
+                </Form.Text>
+              </Form.Group>
+            </Col>
+          </Row>
           {showSeriesFields && (
             <Row className="mb-3">
               <Col xs={6}>
@@ -213,11 +278,11 @@ const AddProjectModal = ({
                   type="text"
                   value={projectName}
                   onChange={handleProjectNameChange}
-                  disabled={!selectedGroup || !selectedType}
+                  disabled={!selectedGroup || !selectedType ||!selectedSession || !selectedExamType}
                   placeholder="Enter Project Name"
                 />
                 <Form.Text className="text-muted">
-                  {t('You can only add text after the Group-Type prefix')}
+                  {t('You can only add text after the Group-Type-Session-ExamType prefix')}
                 </Form.Text>
                 <Form.Text className="text-danger">
                   {form.getFieldError('name')?.[0]}
