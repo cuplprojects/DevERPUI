@@ -136,11 +136,8 @@ const QPMiddleArea = () => {
       selectedSem: selectedSemester,
     };
     setFilters(filtersObj);
+    console.log(filtersObj);
     setShowTable(true);
-  };
-
-  const handleBack = () => {
-    setShowTable(false);
   };
 
   return (
@@ -272,10 +269,7 @@ const QPMiddleArea = () => {
             boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
           }}
         >
-          <Button variant="outline-dark" className="mb-3" onClick={handleBack}>
-            <FaHome style={{ marginRight: "8px" }} /> Back to Home
-          </Button>
-          <QPTable filters={filters} />
+          <QPTable filters={filters} setShowTable={setShowTable} />
         </div>
       )}
     </div>
