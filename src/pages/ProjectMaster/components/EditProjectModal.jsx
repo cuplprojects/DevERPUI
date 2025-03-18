@@ -12,6 +12,8 @@ const EditProjectModal = ({
   onFinish,
   groups,
   types,
+  sessions,
+  examTypes,
   showSeriesFields,
   validateSeriesInput,
   customDarkText,
@@ -28,6 +30,8 @@ const EditProjectModal = ({
   projectName,
   setProjectName,
   selectedGroup,
+  selectedSession,
+  selectedExamType,
   selectedType
 }) => {
   const [pageQuantities, setPageQuantities] = useState([{ pages: '', quantity: '' }]);
@@ -83,11 +87,13 @@ const EditProjectModal = ({
 
   // Format and submit data
   const handleFormSubmit = async (values) => {
+
     const formattedValues = {
       ...values,
       quantityThreshold: JSON.stringify(pageQuantities.filter(entry => entry.pages && entry.quantity))
         .replace(/"/g, "'"), // Use single quotes for backend consistency
     };
+    
     await onFinish(formattedValues);
   };
   
@@ -131,6 +137,36 @@ const EditProjectModal = ({
                   ))}
                 </Select>
               </Form.Item>
+            </Col>
+          </Row>
+          <Row>
+            <Col  xs={24} sm={24}>
+                  <Form.Item
+                  name = "session"
+                  label={t('session')}
+                rules={[{ required: true, message: t('pleaseSelectsession') }]}
+                  >
+                    <Select placeholder={t('selectSession')}>
+                  {sessions.map((session) => (
+                    <Option key={session.sessionId} value={session.sessionId}>{session.session}</Option>
+                  ))}
+                </Select>
+                  </Form.Item>
+            </Col>
+            <Col  xs={24} sm={24}>
+            <Form.Item
+                  name = "examType"
+                  label={t('examType')}
+                rules={[{ required: true, message: t('pleaseSelectExamType') }]}
+                  >
+                    <Select placeholder={t('selectExamType')}>
+                    {examTypes.map((examType) => (
+                    <Option key={examType.examTypeId} value={examType.examTypeId}>
+                      {examType.typeName}
+                    </Option>
+                  ))}
+                </Select>
+                  </Form.Item>
             </Col>
           </Row>
           {showSeriesFields && (
@@ -186,7 +222,7 @@ const EditProjectModal = ({
                   placeholder={t('enterProjectName')}
                   value={projectName}
                   onChange={(e) => setProjectName(e.target.value)}
-                  disabled={!selectedGroup || !selectedType}
+                  disabled={!selectedGroup || !selectedType || !selectedSession || !selectedExamType}
                 />
               </Form.Item>
             </Col>

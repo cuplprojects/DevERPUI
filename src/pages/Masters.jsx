@@ -3,7 +3,8 @@ import { Container, Row, Col, Nav, Offcanvas } from 'react-bootstrap';
 import {
   FaUsers, FaProjectDiagram, FaBell, FaUserPlus, FaUserCog, FaListUl,
   FaCamera, FaCog, FaCaretDown, FaCaretLeft,
-  FaCaretRight
+  FaCaretRight,
+  FaCalendarAlt
 } from 'react-icons/fa';
 import { RiTeamFill } from "react-icons/ri";
 import { GiGears } from "react-icons/gi";
@@ -13,6 +14,11 @@ import { FaBookOpenReader, FaScrewdriverWrench } from "react-icons/fa6";
 import { BiSolidCctv } from "react-icons/bi";
 import { BsQuestionSquareFill } from "react-icons/bs";
 import GroupManager from './Group';
+import SessionManager from './Session';
+import ExamTypeManager from './ExamType';
+import LanguageManager from './Language';
+import SubjectManager from './Subject';
+import CourseManager from './Course';
 import Project from './ProjectMaster/Project';
 import Zone from './Zone';
 import Type from './Type';
@@ -30,6 +36,10 @@ import { hasPermission } from '../CustomHooks/Services/permissionUtils';
 import { useTranslation } from 'react-i18next';
 import SecurityQuestions from './SecurityQuestions';
 import Teams from './team';
+import { TbLanguage } from "react-icons/tb";
+import { PiExamFill } from 'react-icons/pi';
+import { MdSubject } from "react-icons/md";
+import { SiCoursera } from "react-icons/si";
 
 const Sidebar = () => {
   const { t } = useTranslation();
@@ -89,6 +99,11 @@ const Sidebar = () => {
     { key: 'zone', icon: <BiSolidCctv />, label: t('zone'), permission: '2.5' },
     { key: 'teams', icon: <RiTeamFill />, label: t('teams'), permission: '2.9' },
     { key: 'alarm', icon: <FaBell />, label: t('alarm'), permission: '2.8' },
+    { key: 'session', icon: <FaCalendarAlt  />, label: t('session'), permission: '2.8' },
+    { key: 'examType', icon: <PiExamFill  />, label: t('examType'), permission: '2.8' },
+    { key: 'language', icon: <TbLanguage />, label: t('language'), permission: '2.8' },
+    { key: 'subject', icon: <MdSubject />, label: t('subject'), permission: '2.8' },
+    { key: 'course', icon: <SiCoursera />, label: t('course'), permission: '2.8' },
     {
       key: 'developerTools',
       icon: <FaScrewdriverWrench />,
@@ -181,6 +196,11 @@ const Sidebar = () => {
           {hasPermission('2.10') && selectedMenu === 'systemSettings' && <SystemSettings />}
           {hasPermission('2.7') && selectedMenu === 'machine' && <Machine />}
           {hasPermission('2.8') && selectedMenu === 'alarm' && <AlarmMaster />}
+          {hasPermission('2.8') && selectedMenu === 'session' && <SessionManager />}
+          {hasPermission('2.8') && selectedMenu === 'examType' && <ExamTypeManager />}
+          {hasPermission('2.8') && selectedMenu === 'language' && <LanguageManager />}
+          {hasPermission('2.8') && selectedMenu === 'subject' && <SubjectManager />}
+          {hasPermission('2.8') && selectedMenu === 'course' && <CourseManager />}
         </Col>
       </Row>
     </Container>
