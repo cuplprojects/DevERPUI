@@ -6,11 +6,12 @@ import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import themeStore from "../../store/themeStore";
 import * as XLSX from "xlsx";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Container from "react-bootstrap/Container";
 import { Card } from "react-bootstrap";
 import { decrypt, encrypt } from "./../../Security/Security";
+import { FaHome } from "react-icons/fa";
 
 const Import = () => {
   const { encryptedGroupId, encryptedGroupName } = useParams();
@@ -37,7 +38,7 @@ const Import = () => {
   const customLightText = cssClasses[5];
   const customLightBorder = cssClasses[6];
   const customDarkBorder = cssClasses[7];
-
+  const navigate = useNavigate();
   useEffect(() => {
     const decryptGroupId = decrypt(encryptedGroupId);
     const decryptGroupName = decrypt(encryptedGroupName);
@@ -350,7 +351,9 @@ const Import = () => {
       setIsLoading(false);
     }
   };
-
+  const handleHomeClick = () => {
+    navigate("/QP-Masters");
+  };
   const handleMappingChange = (property, value) => {
     setFieldMappings((prevMappings) => {
       return {
@@ -364,9 +367,18 @@ const Import = () => {
     <Container className="">
       <Card>
         <Card.Body>
-          <h1 className={`text-center ${customDarkText} fw-bold`}>
-            Import Excel
-          </h1>
+          <div className="d-flex justify-content-between align-items-center">
+            <div className="flex-grow-1 text-center">
+              <h1 className={`fw-bold ${customDarkText} m-0`}>Import Excel</h1>
+            </div>
+            <FaHome
+              className="ms-2 c-pointer"
+              color="blue"
+              size={30}
+              onClick={handleHomeClick}
+            />
+          </div>
+
           <Form layout="vertical" form={form}>
             <Form.Item
               name="file"
