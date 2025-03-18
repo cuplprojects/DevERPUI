@@ -127,8 +127,8 @@ const QPMiddleArea = () => {
 
   const handleApplyClick = () => {
     const filtersObj = {
-      groupName: selectedGroupName,
-      groupID: selectedGroupId,
+      groupName: encrypt(selectedGroupName),
+      groupID: encrypt(selectedGroupId),
       selectedType: selectedTypeId,
       selectedTypeName: selectedTypeName,
       selectedCourse: selectedCourseId,
