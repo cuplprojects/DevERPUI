@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { Container, Row, Col, Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { Select, Input } from "antd";
+import { Select, Input, Modal } from "antd";
 import "antd/dist/reset.css";
 import themeStore from "./../../store/themeStore";
 import { useStore } from "zustand";
@@ -19,6 +19,9 @@ const ImportPage = () => {
     const [examtype, setExamType] = useState([]);
     const [type, setType] = useState([]);
     const [language, setLanguage] = useState([]);
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [newOptionValue, setNewOptionValue] = useState("");
+    const [selectedField, setSelectedField] = useState("");
     const themeState = useStore(themeStore);
     const cssClasses = useMemo(() => themeState.getCssClasses(), [themeState]);
     const [
@@ -137,6 +140,20 @@ const ImportPage = () => {
                         value={manualInputs[field]}
                         disabled={isDisabled}
                         showSearch
+                        notFoundContent={
+                            <>
+                                <div
+                                    className="d-flex justify-content-center align-items-center"
+                                    style={{ cursor: "pointer" }}
+                                    onClick={() => {
+                                        setSelectedField(field); // Set the field name dynamically
+                                        setIsModalVisible(true); // Open the modal
+                                    }}
+                                >
+                                    <span>+</span> Add New
+                                </div>
+                            </>
+                        }
                         filterOption={(input, option) =>
                             option.children?.toString().toLowerCase().includes(input.toLowerCase())
                         }
@@ -165,6 +182,53 @@ const ImportPage = () => {
     };
 
 
+    const handleAddNewOption = async () => {
+        // Prepare new data to send to the backend
+        let data = {};
+
+        // Dynamically create the data object based on selectedField
+        switch (selectedField) {
+            case "course":
+                data = { courseName: newOptionValue }; // Assuming courseName for Course
+                break;
+            case "subject":
+                data = { subjectName: newOptionValue }; // Assuming subjectName for Subject
+                break;
+            case "examType":
+                data = { typeName: newOptionValue }; // Assuming typeName for ExamType
+                break;
+            case "language":
+                data = { languages: newOptionValue }; // Assuming language for Language
+                break;
+            case "type":
+                data = { type: newOptionValue }; // Assuming type for Type
+                break;
+            default:
+                console.error("Unknown field type:", selectedField);
+                return; // Exit early if selectedField is not recognized
+        }
+
+        try {
+            const response = await API.post(`/${selectedField}`, data);
+            console.log("Upload Success:", response.data);
+            setIsModalVisible(false);
+            setNewOptionValue(""); // Clear input value
+            fetchOptions(selectedField);
+        } catch (error) {
+            console.error(`Error adding ${selectedField}:`, error);
+        }
+    };
+
+    const fetchOptions = (field) => {
+        // Fetch options for different fields (course, subject, examType, etc.)
+        if (field === 'course') getCourse();
+        if (field === 'subject') getSubject();
+        if (field === 'examType') getExamType();
+        if (field === 'language') getLanguage();
+        if (field === 'paperType') getType();
+    };
+
+
     const handleClear = () => {
         setManualInputs((prev) => ({}));
     };
@@ -182,16 +246,13 @@ const ImportPage = () => {
             maxMarks: manualInputs.maxMarks || 0, // maxMarks from form
             duration: manualInputs.duration || "string", // duration from form
             languageId: manualInputs.language || 0, // language field for languageId
-            customizedField1: "string", // You can modify this field if you have a custom input
-            customizedField2: "string", // Same as above
-            customizedField3: "string", // Same as above
             courseId: manualInputs.course || 0, // course field for courseId
             examTypeId: manualInputs.examType || 0, // examType field for examTypeId
         }];
-    
+
         try {
             const response = await API.post("/QPMasters", dataToSend);
-    
+
             if (response.status === 200) {
                 console.log("Paper added successfully!", response.data);
                 handleClear(); // Clear the form on success
@@ -202,8 +263,8 @@ const ImportPage = () => {
             console.error("Error adding paper:", error);
         }
     };
-    
-    
+
+
 
     return (
         <Container
@@ -278,6 +339,18 @@ const ImportPage = () => {
                     </Row>
                 </Col>
             </Row>
+            <Modal
+                title={`Add New ${selectedField}`}
+                visible={isModalVisible}
+                onCancel={() => setIsModalVisible(false)}
+                onOk={handleAddNewOption}
+            >
+                <Input
+                    placeholder={`Enter new ${selectedField}`}
+                    value={newOptionValue}
+                    onChange={(e) => setNewOptionValue(e.target.value)}
+                />
+            </Modal>
         </Container>
     );
 };
