@@ -7,6 +7,8 @@ import "antd/dist/reset.css";
 import themeStore from "./../../store/themeStore";
 import { useStore } from "zustand";
 import API from "../../CustomHooks/MasterApiHooks/api";
+import QPTable from "./Components/QPTable";
+import { FaHome } from "react-icons/fa";
 
 const { Option } = Select;
 
@@ -21,12 +23,17 @@ const QPMiddleArea = () => {
 
   const [types, setTypes] = useState([]);
   const [selectedTypeId, setSelectedTypeId] = useState(null);
+  const [selectedTypeName, setSelectedTypeName] = useState("");
 
   const [courses, setCourses] = useState([]);
   const [selectedCourseId, setSelectedCourseId] = useState(null);
+  const [selectedCourseName, setSelectedCourseName] = useState("");
 
   const [semesters, setSemesters] = useState([]);
   const [selectedSemester, setSelectedSemester] = useState(null);
+
+  const [showTable, setShowTable] = useState(false);
+  const [filters, setFilters] = useState({});
 
   const themeState = useStore(themeStore);
   const cssClasses = useMemo(() => themeState.getCssClasses(), [themeState]);
@@ -45,7 +52,7 @@ const QPMiddleArea = () => {
     navigate(`/Add-Paper/${selectedGroupId}/${selectedGroupName}`);
   };
 
-  // Fetch Groups
+  // API Calls here...
   useEffect(() => {
     const getGroups = async () => {
       try {
@@ -58,7 +65,6 @@ const QPMiddleArea = () => {
     getGroups();
   }, []);
 
-  // Fetch Paper Types
   useEffect(() => {
     const getTypes = async () => {
       try {
@@ -71,7 +77,6 @@ const QPMiddleArea = () => {
     getTypes();
   }, []);
 
-  // Fetch Courses
   useEffect(() => {
     const getCourses = async () => {
       try {
@@ -84,7 +89,6 @@ const QPMiddleArea = () => {
     getCourses();
   }, []);
 
-  // Fetch ExamTypes (Semesters)
   useEffect(() => {
     const getSemesters = async () => {
       try {
@@ -111,7 +115,9 @@ const QPMiddleArea = () => {
   };
 
   const handleCourseChange = (value) => {
+    const selectedCourse = courses.find((course) => course.courseId === value);
     setSelectedCourseId(value);
+    setSelectedCourseName(selectedCourse ? selectedCourse.courseName : "");
   };
 
   const handleSemesterChange = (value) => {
@@ -119,11 +125,21 @@ const QPMiddleArea = () => {
   };
 
   const handleApplyClick = () => {
-    console.log("Group ID:", selectedGroupId);
-    console.log("Group Name:", selectedGroupName);
-    console.log("Type ID:", selectedTypeId);
-    console.log("Course ID:", selectedCourseId);
-    console.log("Semester:", selectedSemester);
+    const filtersObj = {
+      groupName: selectedGroupName,
+      groupID: selectedGroupId,
+      selectedType: selectedTypeId,
+      selectedTypeName: selectedTypeName,
+      selectedCourse: selectedCourseId,
+      selectedCourseName: selectedCourseName,
+      selectedSem: selectedSemester,
+    };
+    setFilters(filtersObj);
+    setShowTable(true);
+  };
+
+  const handleBack = () => {
+    setShowTable(false);
   };
 
   return (
@@ -131,17 +147,17 @@ const QPMiddleArea = () => {
       className="d-flex justify-content-center align-items-center"
       style={{ height: "80vh" }}
     >
-      <div
-        className="d-flex flex-column align-items-center justify-content-center p-4"
-        style={{
-          height: "80vh",
-          backgroundColor: "#e9ecef",
-          borderRadius: "10px",
-          width: "100%",
-          boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-        }}
-      >
-        <div>
+      {!showTable ? (
+        <div
+          className="d-flex flex-column align-items-center justify-content-center p-4"
+          style={{
+            height: "80vh",
+            backgroundColor: "#e9ecef",
+            borderRadius: "10px",
+            width: "100%",
+            boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+          }}
+        >
           <h1
             className={`${customDarkText} mb-4`}
             style={{
@@ -152,7 +168,7 @@ const QPMiddleArea = () => {
           >
             QP-Masters
           </h1>
-          <Row className="mb-3 w-100 justify-content-center">
+          <Row className="mb-3 w-50 justify-content-center">
             <Col className="d-flex justify-content-between w-100">
               <Select
                 showSearch
@@ -160,9 +176,6 @@ const QPMiddleArea = () => {
                 className="m-2 w-100"
                 onChange={handleGroupChange}
                 value={selectedGroupId}
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().includes(input.toLowerCase())
-                }
               >
                 {groups.map((group) => (
                   <Option key={group.id} value={group.id}>
@@ -176,9 +189,6 @@ const QPMiddleArea = () => {
                 className="m-2 w-100"
                 onChange={handleTypeChange}
                 value={selectedTypeId}
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().includes(input.toLowerCase())
-                }
               >
                 {types.map((type) => (
                   <Option key={type.typeId} value={type.typeId}>
@@ -192,9 +202,6 @@ const QPMiddleArea = () => {
                 className="m-2 w-100"
                 onChange={handleCourseChange}
                 value={selectedCourseId}
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().includes(input.toLowerCase())
-                }
               >
                 {courses.map((course) => (
                   <Option key={course.courseId} value={course.courseId}>
@@ -208,9 +215,6 @@ const QPMiddleArea = () => {
                 className="m-2 w-100"
                 onChange={handleSemesterChange}
                 value={selectedSemester}
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().includes(input.toLowerCase())
-                }
               >
                 {semesters.map((semester, index) => (
                   <Option key={index} value={semester}>
@@ -257,7 +261,22 @@ const QPMiddleArea = () => {
             </Col>
           </Row>
         </div>
-      </div>
+      ) : (
+        <div
+          className="d-flex flex-column align-items-center justify-content-center p-4 w-100"
+          style={{
+            backgroundColor: "#e9ecef",
+            borderRadius: "10px",
+            height: "80vh",
+            boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+          }}
+        >
+          <Button variant="outline-dark" className="mb-3" onClick={handleBack}>
+            <FaHome style={{ marginRight: "8px" }} /> Back to Home
+          </Button>
+          <QPTable filters={filters} />
+        </div>
+      )}
     </div>
   );
 };
