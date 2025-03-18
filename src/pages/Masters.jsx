@@ -1,24 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Nav, Offcanvas } from "react-bootstrap";
 import {
-  FaUsers,
-  FaProjectDiagram,
-  FaBell,
-  FaUserPlus,
-  FaUserCog,
-  FaListUl,
-  FaCamera,
-  FaCog,
-  FaCaretDown,
-  FaCaretRight,
-} from "react-icons/fa";
-import {
   FaUsers, FaProjectDiagram, FaBell, FaUserPlus, FaUserCog, FaListUl,
   FaCamera, FaCog, FaCaretDown, FaCaretLeft,
   FaCaretRight,
   FaCalendarAlt
 } from 'react-icons/fa';
-import { RiTeamFill } from "react-icons/ri";
+import { RiMenuFold4Fill, RiTeamFill, RiUserSettingsFill } from "react-icons/ri";
 import { GiGears } from "react-icons/gi";
 import { AiFillCloseSquare } from "react-icons/ai";
 import { FaBookOpenReader, FaScrewdriverWrench } from "react-icons/fa6";
@@ -142,6 +130,7 @@ const Sidebar = () => {
       ],
     },
     { key: 'systemSettings', icon: <FaCog />, label: t('processSettings'), permission: '2.10' },
+    { key: 'qpMasters', icon: <FaCog />, label: t('qpMasters'), permission: '2.12' },
     { key: 'group', icon: <FaUsers />, label: t('group'), permission: '2.2' },
     { key: 'type', icon: <FaBookOpenReader />, label: t('projectType'), permission: '2.3' },
     { key: 'project', icon: <FaProjectDiagram />, label: t('project'), permission: '2.4' },
@@ -339,15 +328,12 @@ const Sidebar = () => {
           {hasPermission('2.10') && selectedMenu === 'systemSettings' && <SystemSettings />}
           {hasPermission('2.7') && selectedMenu === 'machine' && <Machine />}
           {hasPermission('2.8') && selectedMenu === 'alarm' && <AlarmMaster />}
-          {hasPermission('2.8') && selectedMenu === 'alarm' && <AlarmMaster />}
           {hasPermission('2.8') && selectedMenu === 'session' && <SessionManager />}
           {hasPermission('2.8') && selectedMenu === 'examType' && <ExamTypeManager />}
           {hasPermission('2.8') && selectedMenu === 'language' && <LanguageManager />}
           {hasPermission('2.8') && selectedMenu === 'subject' && <SubjectManager />}
           {hasPermission('2.8') && selectedMenu === 'course' && <CourseManager />}
-          {hasPermission("2.11") && selectedMenu === "display-panel" && (<DisplayPanel />
-
-)}
+          {hasPermission("2.11") && selectedMenu === "display-panel" && (<DisplayPanel />)}
         </Col>
       </Row>
     </Container>

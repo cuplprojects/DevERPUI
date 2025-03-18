@@ -203,7 +203,7 @@ const Import = () => {
 
   const getCourseIdByName = async (courseName) => {
     try {
-      const courseResponse = await API.get(`Course?courseName=${courseName}`);
+      const courseResponse = await API.get(`Course/GetCourse?courseName=${courseName}`);
       let courseId = courseResponse.data;
       if (!courseId) {
         const newCourseResponse = await API.post("/Course", {
@@ -220,7 +220,7 @@ const Import = () => {
 
   const getSubjectIdByName = async (subject) => {
     try {
-      const subjectResponse = await API.get(`Subject?subject=${subject}`);
+      const subjectResponse = await API.get(`Subject/Subject?subject=${subject}`);
       let subjectId = subjectResponse.data;
 
       if (!subjectId) {
