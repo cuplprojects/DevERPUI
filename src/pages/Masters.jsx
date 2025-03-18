@@ -6,7 +6,7 @@ import {
   FaCaretRight,
   FaCalendarAlt
 } from 'react-icons/fa';
-import { RiMenuFold4Fill, RiTeamFill, RiUserSettingsFill} from "react-icons/ri";
+import { RiMenuFold4Fill, RiTeamFill, RiUserSettingsFill } from "react-icons/ri";
 import { GiGears } from "react-icons/gi";
 import { AiFillCloseSquare } from "react-icons/ai";
 import { FaBookOpenReader, FaScrewdriverWrench } from "react-icons/fa6";
