@@ -16,7 +16,9 @@ import { useStore } from 'zustand';
 import QtySheetUpload from '../pages/QtySheetUpload';
 import Labels from '../pages/Message/Message';
 import Reports from './../pages/Report/Reports'
-import QCMaster from './../pages/QPMaster/Import'
+import QCMaster from './../pages/QPMaster/QP'
+import AddPaper from './../pages/QPMaster/AddNew'
+import ImportPaper from './../pages/QPMaster/Import'
 import CuDashboard from '../pages/CuDashboard';
 import AddProjectProcess from '../pages/ProjectMaster/Tabs/AddProjectProcess';
 import { hasPermission } from '../CustomHooks/Services/permissionUtils';
@@ -64,7 +66,9 @@ const UserLayout = () => {
               <Route path="/project-details/:encryptedProjectId" element={<ProcessTable />} />
               <Route path="/labels" element={checkPermissionAndRender("3", Labels)} />
               <Route path="/reports" element={checkPermissionAndRender("4", Reports)} />
-              <Route path="/Import" element={checkPermissionAndRender("5", QCMaster)} />
+              <Route path="/QP-Masters" element={checkPermissionAndRender("5", QCMaster)} />
+              <Route path="/Add-Paper/:groupId/:groupName" element={checkPermissionAndRender("5", AddPaper)} />
+              <Route path="/Import-Paper/:groupId/:groupName" element={checkPermissionAndRender("5", ImportPaper)} />
 
               <Route path="/*" element={<Navigate to="/404" replace />} />
               <Route path="/404" element={<PageNotFound />} />
