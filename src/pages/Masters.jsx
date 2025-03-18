@@ -339,15 +339,12 @@ const Sidebar = () => {
           {hasPermission('2.10') && selectedMenu === 'systemSettings' && <SystemSettings />}
           {hasPermission('2.7') && selectedMenu === 'machine' && <Machine />}
           {hasPermission('2.8') && selectedMenu === 'alarm' && <AlarmMaster />}
-          {hasPermission('2.8') && selectedMenu === 'alarm' && <AlarmMaster />}
           {hasPermission('2.8') && selectedMenu === 'session' && <SessionManager />}
           {hasPermission('2.8') && selectedMenu === 'examType' && <ExamTypeManager />}
           {hasPermission('2.8') && selectedMenu === 'language' && <LanguageManager />}
           {hasPermission('2.8') && selectedMenu === 'subject' && <SubjectManager />}
           {hasPermission('2.8') && selectedMenu === 'course' && <CourseManager />}
-          {hasPermission("2.11") && selectedMenu === "display-panel" && (<DisplayPanel />
-
-)}
+          {hasPermission("2.11") && selectedMenu === "display-panel" && (<DisplayPanel />)}
         </Col>
       </Row>
     </Container>
