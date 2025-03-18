@@ -23,6 +23,9 @@ const QPMiddleArea = () => {
   const [types, setTypes] = useState([]);
   const [selectedTypeId, setSelectedTypeId] = useState(null);
 
+  const [courses, setCourses] = useState([]);
+  const [selectedCourseId, setSelectedCourseId] = useState(null);
+
   const themeState = useStore(themeStore);
   const cssClasses = useMemo(() => themeState.getCssClasses(), [themeState]);
   const [
@@ -66,6 +69,19 @@ const QPMiddleArea = () => {
     getTypes();
   }, []);
 
+  // Fetching courses from API
+  useEffect(() => {
+    const getCourses = async () => {
+      try {
+        const response = await API.get("/Course"); // Your endpoint is /api/Course but you might already have baseURL set.
+        setCourses(response.data);
+      } catch (error) {
+        console.error("Failed to fetch courses", error);
+      }
+    };
+    getCourses();
+  }, []);
+
   const handleGroupChange = (value) => {
     const selectedGroup = groups.find((group) => group.id === value);
     setSelectedGroupId(value);
@@ -75,6 +91,10 @@ const QPMiddleArea = () => {
 
   const handleTypeChange = (value) => {
     setSelectedTypeId(value);
+  };
+
+  const handleCourseChange = (value) => {
+    setSelectedCourseId(value);
   };
 
   return (
@@ -137,9 +157,21 @@ const QPMiddleArea = () => {
                   </Option>
                 ))}
               </Select>
-              <Select placeholder="Select Course" className="m-2 w-100">
-                <Option value="course1">Course 1</Option>
-                <Option value="course2">Course 2</Option>
+              <Select
+                showSearch
+                placeholder="Select Course"
+                className="m-2 w-100"
+                onChange={handleCourseChange}
+                value={selectedCourseId}
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().includes(input.toLowerCase())
+                }
+              >
+                {courses.map((course) => (
+                  <Option key={course.courseId} value={course.courseId}>
+                    {course.courseName}
+                  </Option>
+                ))}
               </Select>
               <Select placeholder="Select Semester" className="m-2 w-100">
                 <Option value="semester1">Semester 1</Option>
