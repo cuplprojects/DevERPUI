@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Row, Col, Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Select, Tooltip } from "antd";
@@ -7,7 +7,6 @@ import "antd/dist/reset.css";
 import themeStore from "./../../store/themeStore";
 import { useStore } from "zustand";
 import API from "../../CustomHooks/MasterApiHooks/api";
-import { useParams } from "react-router-dom";
 
 const { Option } = Select;
 
@@ -26,6 +25,9 @@ const QPMiddleArea = () => {
   const [courses, setCourses] = useState([]);
   const [selectedCourseId, setSelectedCourseId] = useState(null);
 
+  const [semesters, setSemesters] = useState([]);
+  const [selectedSemester, setSelectedSemester] = useState(null);
+
   const themeState = useStore(themeStore);
   const cssClasses = useMemo(() => themeState.getCssClasses(), [themeState]);
   const [
@@ -43,7 +45,7 @@ const QPMiddleArea = () => {
     navigate(`/Add-Paper/${selectedGroupId}/${selectedGroupName}`);
   };
 
-  // Fetching groups from API
+  // Fetch Groups
   useEffect(() => {
     const getGroups = async () => {
       try {
@@ -56,7 +58,7 @@ const QPMiddleArea = () => {
     getGroups();
   }, []);
 
-  // Fetching paper types from API
+  // Fetch Paper Types
   useEffect(() => {
     const getTypes = async () => {
       try {
@@ -69,17 +71,32 @@ const QPMiddleArea = () => {
     getTypes();
   }, []);
 
-  // Fetching courses from API
+  // Fetch Courses
   useEffect(() => {
     const getCourses = async () => {
       try {
-        const response = await API.get("/Course"); // Your endpoint is /api/Course but you might already have baseURL set.
+        const response = await API.get("/Course");
         setCourses(response.data);
       } catch (error) {
         console.error("Failed to fetch courses", error);
       }
     };
     getCourses();
+  }, []);
+
+  // Fetch ExamTypes (Semesters)
+  useEffect(() => {
+    const getSemesters = async () => {
+      try {
+        const response = await API.get("/ExamType");
+        const allTypes = response.data.map((item) => item.type);
+        const uniqueTypes = [...new Set(allTypes)];
+        setSemesters(uniqueTypes);
+      } catch (error) {
+        console.error("Failed to fetch semesters", error);
+      }
+    };
+    getSemesters();
   }, []);
 
   const handleGroupChange = (value) => {
@@ -95,6 +112,18 @@ const QPMiddleArea = () => {
 
   const handleCourseChange = (value) => {
     setSelectedCourseId(value);
+  };
+
+  const handleSemesterChange = (value) => {
+    setSelectedSemester(value);
+  };
+
+  const handleApplyClick = () => {
+    console.log("Group ID:", selectedGroupId);
+    console.log("Group Name:", selectedGroupName);
+    console.log("Type ID:", selectedTypeId);
+    console.log("Course ID:", selectedCourseId);
+    console.log("Semester:", selectedSemester);
   };
 
   return (
@@ -173,9 +202,21 @@ const QPMiddleArea = () => {
                   </Option>
                 ))}
               </Select>
-              <Select placeholder="Select Semester" className="m-2 w-100">
-                <Option value="semester1">Semester 1</Option>
-                <Option value="semester2">Semester 2</Option>
+              <Select
+                showSearch
+                placeholder="Select Semester"
+                className="m-2 w-100"
+                onChange={handleSemesterChange}
+                value={selectedSemester}
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().includes(input.toLowerCase())
+                }
+              >
+                {semesters.map((semester, index) => (
+                  <Option key={index} value={semester}>
+                    {semester}
+                  </Option>
+                ))}
               </Select>
             </Col>
           </Row>
@@ -185,6 +226,7 @@ const QPMiddleArea = () => {
                 variant="outline-primary"
                 className="me-2"
                 style={{ borderRadius: "5px" }}
+                onClick={handleApplyClick}
               >
                 Apply & View
               </Button>
