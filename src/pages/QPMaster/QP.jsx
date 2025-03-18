@@ -29,8 +29,10 @@ const QPMiddleArea = () => {
   const [selectedCourseId, setSelectedCourseId] = useState(null);
   const [selectedCourseName, setSelectedCourseName] = useState("");
 
-  const [semesters, setSemesters] = useState([]);
-  const [selectedSemester, setSelectedSemester] = useState(null);
+  const [examType, setExamType] = useState([]);
+  const [uniqueTypes, setUniqueTypes] = useState([]);
+  const [selectedExamTypeIds, setSelectedExamTypeIds] = useState([]);
+  const [selectedExamTypeName, setSelectedExamTypeName] = useState("");
 
   const [showTable, setShowTable] = useState(false);
   const [filters, setFilters] = useState({});
@@ -91,17 +93,21 @@ const QPMiddleArea = () => {
   }, []);
 
   useEffect(() => {
-    const getSemesters = async () => {
+    const getExamType = async () => {
       try {
         const response = await API.get("/ExamType");
-        const allTypes = response.data.map((item) => item.type);
-        const uniqueTypes = [...new Set(allTypes)];
-        setSemesters(uniqueTypes);
+        const apiData = response.data;
+
+        setExamType(apiData);
+
+        // Extract unique types
+        const typesSet = new Set(apiData.map((item) => item.type));
+        setUniqueTypes([...typesSet]);
       } catch (error) {
-        console.error("Failed to fetch semesters", error);
+        console.error("Failed to fetch exam types", error);
       }
     };
-    getSemesters();
+    getExamType();
   }, []);
 
   const handleGroupChange = (value) => {
@@ -121,9 +127,13 @@ const QPMiddleArea = () => {
     setSelectedCourseName(selectedCourse ? selectedCourse.courseName : "");
   };
 
-  const handleSemesterChange = (value) => {
-    setSelectedSemester(value);
+  const handleSemesterChange = (type) => {
+    const matching = examType.filter((item) => item.type === type);
+    const ids = matching.map((item) => item.examTypeId);
+    setSelectedExamTypeIds(ids); // Array of ids
+    setSelectedExamTypeName(type);
   };
+  
 
   const handleApplyClick = () => {
     const filtersObj = {
@@ -133,12 +143,13 @@ const QPMiddleArea = () => {
       selectedTypeName: selectedTypeName,
       selectedCourse: selectedCourseId,
       selectedCourseName: selectedCourseName,
-      selectedSem: selectedSemester,
+      selectedExamTypeId: selectedExamTypeIds, // Array of IDs
+      selectedExamTypeName: selectedExamTypeName, // Type Name
     };
     setFilters(filtersObj);
-    console.log(filtersObj);
     setShowTable(true);
   };
+  
 
   return (
     <div
@@ -209,14 +220,14 @@ const QPMiddleArea = () => {
               </Select>
               <Select
                 showSearch
-                placeholder="Select Semester"
+                placeholder="Select Semester Type"
                 className="m-2 w-100"
                 onChange={handleSemesterChange}
-                value={selectedSemester}
+                value={selectedExamTypeName}
               >
-                {semesters.map((semester, index) => (
-                  <Option key={index} value={semester}>
-                    {semester}
+                {uniqueTypes.map((type) => (
+                  <Option key={type} value={type}>
+                    {type}
                   </Option>
                 ))}
               </Select>
