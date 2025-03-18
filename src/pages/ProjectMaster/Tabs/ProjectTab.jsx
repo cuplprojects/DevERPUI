@@ -20,6 +20,8 @@ const ProjectTab = ({ setActiveTabKey, setSelectedProject }) => {
   const [projects, setProjects] = useState([]);
   const [groups, setGroups] = useState([]);
   const [types, setTypes] = useState([]);
+  const [sessions, setSessions] = useState([]);
+  const [examTypes, setExamTypes] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [form] = Form.useForm();
@@ -27,6 +29,8 @@ const ProjectTab = ({ setActiveTabKey, setSelectedProject }) => {
   const [editingProject, setEditingProject] = useState(null);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [selectedType, setSelectedType] = useState(null);
+  const [selectedExamType, setSelectedExamType] = useState(null);
+  const [selectedSession, setSelectedSession] = useState(null);
   const [showSeriesFields, setShowSeriesFields] = useState(false);
   const [numberOfSeries, setNumberOfSeries] = useState(0);
   const [seriesNames, setSeriesNames] = useState('');
@@ -42,6 +46,8 @@ const ProjectTab = ({ setActiveTabKey, setSelectedProject }) => {
     getProjects();
     getGroups();
     getTypes();
+    getSession();
+    getExamType();
   }, []);
 
   const getProjects = async () => {
@@ -77,8 +83,30 @@ const ProjectTab = ({ setActiveTabKey, setSelectedProject }) => {
     }
   };
 
+  const getSession = async () => {
+    try {
+      const response = await API.get('/Session');
+      setSessions(response.data);
+      console.log(response);
+      } catch (err) {
+        console.error('Failed to fetch session', err);
+        error(t('unableToFetchSession'));
+        }
+        };
+
+  const getExamType = async () => {
+    try {
+      const response = await API.get('/ExamType');
+      setExamTypes(response.data);
+      } catch (err) {
+        console.error('Failed to fetch exam type', err);
+        error(t('unableToFetchExamType'));
+      }
+    };
+
+
   const handleAddProject = async (values) => {
-    if (!selectedGroup || !selectedType) {
+    if (!selectedGroup || !selectedType || !selectedSession || !selectedExamType) {
       error(t('pleaseSelectGroupAndType'));
       return;
     }
@@ -89,6 +117,8 @@ const ProjectTab = ({ setActiveTabKey, setSelectedProject }) => {
       description: values.description || '',
       groupId: selectedGroup.id,
       typeId: selectedType.typeId,
+      examTypeId: selectedExamType.examTypeId,
+      sessionId: selectedSession.sessionId,
       noOfSeries: numberOfSeries || 0,
       seriesName: seriesNames,
       quantityThreshold: values.quantityThreshold
@@ -103,6 +133,8 @@ const ProjectTab = ({ setActiveTabKey, setSelectedProject }) => {
       setProjectName('');
       setSelectedGroup(null);
       setSelectedType(null);
+      setSelectedExamType(null);
+      setSelectedSession(null);
       setNumberOfSeries(0); // Reset numberOfSeries
       setSeriesNames('');
       success(t('projectAddedSuccessfully'));
@@ -117,7 +149,8 @@ const ProjectTab = ({ setActiveTabKey, setSelectedProject }) => {
 
   const handleEditSave = async (values) => {
     try {
-      const selectedTypeObj = types.find(type => type.typeId === values.type);
+      //const selectedTypeObj = types.find(type => type.typeId === values.type);
+      //const selectedSessionObj = sessions.find(session => session.sessionId === values.session);
 
       const updatedProject = {
         ...editingProject,
@@ -127,9 +160,12 @@ const ProjectTab = ({ setActiveTabKey, setSelectedProject }) => {
         quantityThreshold: values.quantityThreshold,
         groupId: values.group,
         typeId: values.type,
+        sessionId: values.session,
+        examTypeId: values.examType,
         noOfSeries: numberOfSeries, // Use the state value directly
         seriesName: values.seriesNames
       };
+      console.log(updatedProject)
 
 
       await API.put(`/Project/${editingProject.projectId}`, updatedProject);
@@ -206,9 +242,12 @@ const ProjectTab = ({ setActiveTabKey, setSelectedProject }) => {
                 status: record.status,
                 group: record.groupId,
                 type: record.typeId,
+                session: record.sessionId,
+                typeName: record.examTypeId,
                 numberOfSeries: record.noOfSeries,
                 seriesNames: record.seriesName,
-                quantityThreshold: record.quantityThreshold
+                quantityThreshold: record.quantityThreshold,
+                examType:record.examTypeId
               });
               setIsEditModalVisible(true);
             }}
@@ -245,13 +284,80 @@ const ProjectTab = ({ setActiveTabKey, setSelectedProject }) => {
     currentPage * pageSize
   );
 
+  // const handleGroupChange = (event) => {
+  //   const selectedGroupId = parseInt(event.target.value, 10);
+  //   const selectedGroupObj = groups.find((group) => group.id === selectedGroupId);
+  //   setSelectedGroup(selectedGroupObj);
+
+  //   if (selectedGroupObj && selectedType && selectedSession) {
+  //     setProjectName(`${selectedGroupObj.name}-${selectedType.types} - ${selectedSession.session}`);
+  //   } else {
+  //     setProjectName('');
+  //   }
+  // };
+
+  // const handleSessionChange = (event) => {
+  //   const selectedSessionId = parseInt(event.target.value, 10);
+  //   const selectedSessionObj = sessions.find((session) => session.sessionId === selectedSessionId);
+  //   setSelectedSession(selectedSessionObj);
+
+  //   if (selectedGroup && selectedType && selectedSessionObj) {
+  //     setProjectName(`${selectedGroup.name}-${selectedType.types} - ${selectedSessionObj.session}`);
+  //   } else {
+  //     setProjectName('');
+  //   }
+  // };
+
+  // const handleTypeChange = (event) => {
+  //   const selectedTypeId = parseInt(event.target.value, 10);
+  //   const selectedTypeObj = types.find((type) => type.typeId === selectedTypeId);
+  //   setSelectedType(selectedTypeObj);
+
+  //   if (selectedGroup && selectedTypeObj && selectedSession) {
+  //     const typeName = selectedTypeObj.types.toLowerCase();
+  //     if (typeName === 'booklet') {
+  //       setProjectName(`${selectedGroup.name}-${selectedTypeObj.types} - ${selectedSession.session}`);
+  //       setShowSeriesFields(true);
+  //     } else {
+  //       setShowSeriesFields(false);
+  //       setProjectName(`${selectedGroup.name}-${selectedTypeObj.types} - ${selectedSession.session}`);
+  //     }
+  //   } else {
+  //     setProjectName('');
+  //     setShowSeriesFields(false);
+  //   }
+  // };
   const handleGroupChange = (event) => {
     const selectedGroupId = parseInt(event.target.value, 10);
     const selectedGroupObj = groups.find((group) => group.id === selectedGroupId);
     setSelectedGroup(selectedGroupObj);
-
-    if (selectedGroupObj && selectedType) {
-      setProjectName(`${selectedGroupObj.name}-${selectedType.types}`);
+  
+    if (selectedGroupObj && selectedType && selectedSession && selectedExamType) {
+      setProjectName(`${selectedGroupObj.name}-${selectedType.types} - ${selectedSession.session} - ${selectedExamType.typeName}`);
+    } else {
+      setProjectName('');
+    }
+  };
+  
+  const handleSessionChange = (event) => {
+    const selectedSessionId = parseInt(event.target.value, 10);
+    const selectedSessionObj = sessions.find((session) => session.sessionId === selectedSessionId);
+    setSelectedSession(selectedSessionObj);
+  
+    if (selectedGroup && selectedType && selectedSessionObj && selectedExamType) {
+      setProjectName(`${selectedGroup.name}-${selectedType.types} - ${selectedSessionObj.session} - ${selectedExamType.typeName}`);
+    } else {
+      setProjectName('');
+    }
+  };
+  
+  const handleExamTypeChange = (event) => {
+    const selectedExamTypeId = parseInt(event.target.value, 10);
+    const selectedExamTypeObj = examTypes.find((typeName) => typeName.examTypeId === selectedExamTypeId);
+    setSelectedExamType(selectedExamTypeObj);
+  
+    if (selectedGroup && selectedType && selectedSession && selectedExamTypeObj) {
+      setProjectName(`${selectedGroup.name}-${selectedType.types} - ${selectedSession.session} - ${selectedExamTypeObj.typeName}`);
     } else {
       setProjectName('');
     }
@@ -261,22 +367,22 @@ const ProjectTab = ({ setActiveTabKey, setSelectedProject }) => {
     const selectedTypeId = parseInt(event.target.value, 10);
     const selectedTypeObj = types.find((type) => type.typeId === selectedTypeId);
     setSelectedType(selectedTypeObj);
-
-    if (selectedGroup && selectedTypeObj) {
+  
+    if (selectedGroup && selectedTypeObj && selectedSession ) {
       const typeName = selectedTypeObj.types.toLowerCase();
       if (typeName === 'booklet') {
-        setProjectName(`${selectedGroup.name}-${selectedTypeObj.types}`);
+        setProjectName(`${selectedGroup.name}-${selectedTypeObj.types} - ${selectedSession.session} - ${selectedExamType.typeName}`);
         setShowSeriesFields(true);
       } else {
         setShowSeriesFields(false);
-        setProjectName(`${selectedGroup.name}-${selectedTypeObj.types}`);
+        setProjectName(`${selectedGroup.name}-${selectedTypeObj.types} - ${selectedSession.session} - ${selectedExamType.typeName}`);
       }
     } else {
       setProjectName('');
       setShowSeriesFields(false);
     }
   };
-
+  
   return (
     <>
       <Row justify="space-between" align="middle" style={{ marginBottom: '20px' }}>
@@ -343,6 +449,8 @@ const ProjectTab = ({ setActiveTabKey, setSelectedProject }) => {
           setProjectName('');
           setSelectedGroup(null);
           setSelectedType(null);
+          setSelectedSession(null);
+          setSelectedExamType(null);
           setNumberOfSeries(0); // Reset numberOfSeries
           setSeriesNames('');
         }}
@@ -350,6 +458,8 @@ const ProjectTab = ({ setActiveTabKey, setSelectedProject }) => {
         onFinish={handleAddProject}
         groups={groups}
         types={types}
+        sessions={sessions}
+        examTypes = {examTypes}
         showSeriesFields={showSeriesFields}
         customDarkText={customDarkText}
         customDark={customDark}
@@ -362,6 +472,8 @@ const ProjectTab = ({ setActiveTabKey, setSelectedProject }) => {
         t={t}
         handleGroupChange={handleGroupChange}
         handleTypeChange={handleTypeChange}
+        handleSessionChange={handleSessionChange}
+        handleExamTypeChange = {handleExamTypeChange}
         numberOfSeries={numberOfSeries}
         setNumberOfSeries={setNumberOfSeries}
         seriesNames={seriesNames}
@@ -370,6 +482,9 @@ const ProjectTab = ({ setActiveTabKey, setSelectedProject }) => {
         setProjectName={setProjectName}
         selectedGroup={selectedGroup}
         selectedType={selectedType}
+        selectedExamType={selectedExamType}
+        selectedSession={selectedSession}
+
       />
 
       <EditProjectModal
@@ -384,6 +499,8 @@ const ProjectTab = ({ setActiveTabKey, setSelectedProject }) => {
         onFinish={handleEditSave}
         groups={groups}
         types={types}
+        sessions={sessions}
+        examTypes = {examTypes}
         showSeriesFields={showSeriesFields}
         customDarkText={customDarkText}
         customDark={customDark}

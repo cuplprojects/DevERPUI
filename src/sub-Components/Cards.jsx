@@ -149,7 +149,7 @@ const Cards = ({ item, onclick, disableProject, activeCardStyle }) => {
             </div>
           )}
           <div className="header">
-            <h4 className="project-name">{item.name}</h4>
+            <h4 className="project-name">{item.projectName}</h4>
             <Tooltip
               title={
                 isUploadDisabled

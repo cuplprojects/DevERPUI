@@ -23,6 +23,7 @@ import { TbReportSearch } from "react-icons/tb";
 import { TbMessage2Cog } from "react-icons/tb";
 import { IoIosSwitch } from "react-icons/io";
 import { useTranslation } from 'react-i18next';
+import { FaTv } from "react-icons/fa";
 
 const NavigationBar = ({ onLinkClick, onClose }) => {
   const { t } = useTranslation();
@@ -30,12 +31,6 @@ const NavigationBar = ({ onLinkClick, onClose }) => {
   const { getCssClasses } = useStore(themeStore);
   const [customDark] = getCssClasses();
   
-  // Check if the application is running in development mode
-  const isDevelopmentMode = import.meta.env.VITE_APP_MODE === 'development';
-  
-  // Retrieve the user data from a custom hook
-  const userData = useUserData();
-
   // Ref for the navigation bar container
   const navRef = useRef(null);
 
@@ -48,6 +43,8 @@ const NavigationBar = ({ onLinkClick, onClose }) => {
     { id: "2", to: "/master", icon: IoIosSwitch, text: t('masterManagement'), permission: "2" },
     { id: "3", to: "/labels", icon: TbMessage2Cog , text: t('messageManagement'), permission: "3" },
     { id: "4", to: "/reports", icon: TbReportSearch, text: t('viewReports'), permission: "4" },
+    { id: "5", to: "/Import", icon: TbReportSearch, text: t('qpmaster'), permission: "5" },
+    { id: "5", to: "/zonal-display", icon: FaTv , text: t('zonalDisplays'), permission: "5" },
   ], [t]);
 
   useEffect(() => {

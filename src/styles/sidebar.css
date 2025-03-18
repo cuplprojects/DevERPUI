@@ -3,14 +3,13 @@
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   background-color: #f8f9fa;
-  width: 282px;
+  /* height: 90vh; */
+  padding: 20px;
 }
 
-.sidebar-item, .sidebar-item-dark {
-  margin: 6px 10px;
-  padding: 10px 16px;
-  border-radius: 8px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+.sidebar-item ,.sidebar-item-dark {
+  /* padding: 10px; */
+  transition: background-color 0.3s;
 }
 
 .sidebar-item:hover, .sidebar-item-dark:hover {
@@ -41,9 +40,9 @@
 }
 
 .content-area {
-  padding: 24px;
-  background-color: #f8f9fa;
-  border-radius: 12px;
+  padding: 10px;
+  background-color: #f0f2f5;
+  /* border-radius: 10px; */
 }
 
 /* Adjusting icon spacing */
@@ -61,6 +60,6 @@
 }
 
 /* Optionally, you might want to adjust the padding or margins of the sidebar items */
-.sidebar-item {
-  padding: 12px 16px; /* Adjust as needed for visual balance */
-}
+/* .sidebar-item {
+  padding: 10px 15px; /* Adjust as needed for visual balance */
+/* } */

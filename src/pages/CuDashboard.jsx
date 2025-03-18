@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import LineChart from "./../sub-Components/LineChart";
 import BarChart from "./../sub-Components/BarChart";
-import { Card, Col,Row,Carousel,Container,OverlayTrigger,Tooltip,Dropdown,Spinner} from "react-bootstrap";
+import { Card, Col,Row,Carousel,Container,OverlayTrigger,Tooltip,Dropdown,Spinner, Button} from "react-bootstrap";
 import CuDetailedAgGrid from "../sub-Components/CuDetailedAgGrid";
 import PieChart from "../sub-Components/PieChart";
 import Cards from "../sub-Components/Cards";
@@ -11,6 +11,7 @@ import {
   IoMdArrowDropleftCircle,
 } from "react-icons/io";
 import { PiDotsNineBold } from "react-icons/pi";
+import { MdExpandMore } from "react-icons/md";
 import { useStore } from "zustand";
 import themeStore from "./../store/themeStore";
 import statisticsImage from "./../assets/images/statistics.png";
@@ -96,6 +97,9 @@ const CuDashboard = () => {
     projects: true,
     quantitySheet: true
   });
+  const [page, setPage] = useState(1);
+  const pageSize = 5; // Number of projects per page
+  const [hasMore, setHasMore] = useState(true);
 
   const hasDisable = (projectid) => {
     const hasQuantitySheet = hasquantitySheet.find(
@@ -108,94 +112,186 @@ const CuDashboard = () => {
     return projectIds.map(id => `projectIds=${id}`).join('&');
   };
 
+  // useEffect(() => {
+  //   const fetchPercentages = async () => {
+  //     setIsLoading(prev => ({ ...prev, projects: true }));
+  //     try {
+  //       // get percentage
+  //       //const projectCompletionPercentages = await getAllProjectCompletionPercentages();
+  //       // get project
+  //       const projectData = await API.get(
+  //         `/Project/GetDistinctProjectsForUser/${userData.userId}`
+  //       );
+  //       const projectIds = projectData.data.map(project => project.projectId); // Extract project IDs
+  //       // Convert the projectIds array into a query string like ?projectIds=7&projectIds=9&projectIds=11
+  //       const queryString = generateQueryString(projectIds);
+
+  //       // Fetch the completion percentages for the specific projects with the correct query string
+  //       const projectCompletionPercentages = await API.get(`/Transactions/all-project-completion-percentages?${queryString}`);
+  //       console.log(projectCompletionPercentages)
+  //       // Check if the response is an array before using .find()
+
+  //       const mergedData = projectData.data.map((project) => {
+  //         const percentage = projectCompletionPercentages.data.find(
+  //           (p) => p.projectId === project.projectId
+  //         );
+  //         return {
+  //           ...project,
+  //           completionPercentage: percentage
+  //             ? percentage.completionPercentage
+  //             : 0,
+  //           remainingPercentage: percentage
+  //             ? 100 - percentage.completionPercentage
+  //             : 100,
+  //           isrecent: false, // Add the is recent field and set it to false by default
+  //         };
+  //       }); // Filter out projects with 100% completion
+
+  //       // Check if the selected project exists in the data
+  //       const selectedProject = JSON.parse(localStorage.getItem("selectedProject"));
+  //       if (selectedProject) {
+  //         const selectedProjectIndex = mergedData.findIndex(
+  //           (project) => project.projectId === selectedProject.value
+  //         );
+  //         if (selectedProjectIndex !== -1) {
+  //           const [selectedProjectData] = mergedData.splice(selectedProjectIndex, 1);
+  //           selectedProjectData.isrecent = true; // Set isrecent to true for the selected project
+  //           mergedData.unshift(selectedProjectData);
+  //         }
+  //       }
+
+  //       // Separate projects with and without quantity sheets
+  //       const projectsWithQtySheet = mergedData.filter(project => hasDisable(project.projectId));
+  //       const projectsWithoutQtySheet = mergedData.filter(project => !hasDisable(project.projectId));
+
+  //       // Combine the two arrays, keeping projects without quantity sheets at the end
+  //       const finalData = [...projectsWithQtySheet, ...projectsWithoutQtySheet];
+
+  //       setData(finalData);
+  //     } catch (error) {
+  //       console.error("Error fetching data:", error);
+  //     }
+  //     finally {
+
+  //       setIsLoading(prev => ({ ...prev, projects: false }))
+  //     }
+  //   };
+  //   fetchPercentages();
+  // }, [userData.userId, hasquantitySheet]);
+
+  
+  // useEffect(() => {
+  //   const fetchHasQuantitySheet = async () => {
+  //     setIsLoading(prev => ({ ...prev, quantitySheet: true }));
+  //     try {
+  //       const projectData = await API.get(
+  //         `/Project/GetDistinctProjectsForUser/${userData.userId}`
+  //       );
+  //       const projectIds = projectData.data.map(project => project.projectId); // Extract project IDs
+  //       const queryString = generateQueryString(projectIds); // Use the function to generate the query string
+
+
+  //       const quantitySheetResponse = await API.get(`/QuantitySheet/check-all-quantity-sheets?${queryString}`);
+  //       setHasquantitySheet(quantitySheetResponse.data); // Store the result from quantity sheet API
+  //     } catch (error) {
+  //       console.error("Error fetching quantity sheet data:", error);
+  //     } finally {
+  //       setIsLoading(prev => ({ ...prev, quantitySheet: false }));
+  //     }
+  //   };
+  //   fetchHasQuantitySheet();
+  // }, []);
+
+
   useEffect(() => {
-    const fetchPercentages = async () => {
-      setIsLoading(prev => ({ ...prev, projects: true }));
-      try {
-        // get percentage
-        //const projectCompletionPercentages = await getAllProjectCompletionPercentages();
-        // get project
-        const projectData = await API.get(
-          `/Project/GetDistinctProjectsForUser/${userData.userId}`
-        );
-        const projectIds = projectData.data.map(project => project.projectId); // Extract project IDs
-        // Convert the projectIds array into a query string like ?projectIds=7&projectIds=9&projectIds=11
-        const queryString = generateQueryString(projectIds);
-
-        // Fetch the completion percentages for the specific projects with the correct query string
-        const projectCompletionPercentages = await API.get(`/Transactions/all-project-completion-percentages?${queryString}`);
-        console.log(projectCompletionPercentages)
-        // Check if the response is an array before using .find()
-
-        const mergedData = projectData.data.map((project) => {
-          const percentage = projectCompletionPercentages.data.find(
-            (p) => p.projectId === project.projectId
-          );
-          return {
-            ...project,
-            completionPercentage: percentage
-              ? percentage.completionPercentage
-              : 0,
-            remainingPercentage: percentage
-              ? 100 - percentage.completionPercentage
-              : 100,
-            isrecent: false, // Add the is recent field and set it to false by default
-          };
-        }); // Filter out projects with 100% completion
-
-        // Check if the selected project exists in the data
-        const selectedProject = JSON.parse(localStorage.getItem("selectedProject"));
-        if (selectedProject) {
-          const selectedProjectIndex = mergedData.findIndex(
-            (project) => project.projectId === selectedProject.value
-          );
-          if (selectedProjectIndex !== -1) {
-            const [selectedProjectData] = mergedData.splice(selectedProjectIndex, 1);
-            selectedProjectData.isrecent = true; // Set isrecent to true for the selected project
-            mergedData.unshift(selectedProjectData);
-          }
-        }
-
-        // Separate projects with and without quantity sheets
-        const projectsWithQtySheet = mergedData.filter(project => hasDisable(project.projectId));
-        const projectsWithoutQtySheet = mergedData.filter(project => !hasDisable(project.projectId));
-
-        // Combine the two arrays, keeping projects without quantity sheets at the end
-        const finalData = [...projectsWithQtySheet, ...projectsWithoutQtySheet];
-
-        setData(finalData);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-      finally {
-
-        setIsLoading(prev => ({ ...prev, projects: false }))
-      }
-    };
-    fetchPercentages();
-  }, [userData.userId, hasquantitySheet]);
-
-  useEffect(() => {
-    const fetchHasQuantitySheet = async () => {
-      setIsLoading(prev => ({ ...prev, quantitySheet: true }));
-      try {
-        const projectData = await API.get(
-          `/Project/GetDistinctProjectsForUser/${userData.userId}`
-        );
-        const projectIds = projectData.data.map(project => project.projectId); // Extract project IDs
-        const queryString = generateQueryString(projectIds); // Use the function to generate the query string
-
-
-        const quantitySheetResponse = await API.get(`/QuantitySheet/check-all-quantity-sheets?${queryString}`);
-        setHasquantitySheet(quantitySheetResponse.data); // Store the result from quantity sheet API
-      } catch (error) {
-        console.error("Error fetching quantity sheet data:", error);
-      } finally {
-        setIsLoading(prev => ({ ...prev, quantitySheet: false }));
-      }
-    };
+    fetchProjects(1); // Load initial set of projects
     fetchHasQuantitySheet();
-  }, []);
+  }, [userData.userId]);
+
+  const fetchProjects = async (pageNumber) => {
+    setIsLoading(true);
+    try {
+      // Fetch project completion percentages and quantity sheets in parallel
+      const response = await API.get(
+        `/Transactions/all-project-completion-percentages?userId=${userData.userId}&page=${pageNumber}&pageSize=${pageSize}`
+      );
+  
+      const quantitySheetResponse = await API.get(
+        `/QuantitySheet/check-all-quantity-sheets?userId=${userData.userId}`
+      );
+  
+      const quantitySheetMap = new Map(
+        quantitySheetResponse.data.map((item) => [item.projectId, item.quantitySheet])
+      );
+  
+      // Merge project data with completion percentages
+      const mergedData = response.data.map((project) => {
+        const percentage = response.data.find(
+          (p) => p.projectId === project.projectId
+        );
+        return {
+          ...project,
+          completionPercentage: percentage ? percentage.completionPercentage : 0,
+          remainingPercentage: percentage ? 100 - percentage.completionPercentage : 100,
+          isrecent: false, // Add the is recent field and set it to false by default
+        };
+      });
+  
+      // Check if the selected project exists in the data
+      const selectedProject = JSON.parse(localStorage.getItem("selectedProject"));
+      let finalData = [...mergedData];
+  
+      if (selectedProject) {
+        // Check if the selected project exists in the current set of data
+        const selectedProjectIndex = mergedData.findIndex(
+          (project) => project.projectId === selectedProject.value
+        );
+        if (selectedProjectIndex !== -1) {
+          const [selectedProjectData] = finalData.splice(selectedProjectIndex, 1);
+          selectedProjectData.isrecent = true; // Set isrecent to true for the selected project
+          finalData.unshift(selectedProjectData); // Place the selected project at the start
+        }
+      }
+  
+      // Separate projects with and without quantity sheets
+      const projectsWithQtySheet = finalData.filter((project) => hasDisable(project.projectId));
+      const projectsWithoutQtySheet = finalData.filter((project) => !hasDisable(project.projectId));
+  
+      // Combine the two arrays, keeping projects without quantity sheets at the end
+      finalData = [...projectsWithQtySheet, ...projectsWithoutQtySheet];
+  
+      setData((prevData) => {
+        // Add new data to the existing data, ensuring the selected project stays at the top
+        return [...prevData, ...finalData];
+      });
+      setPage(pageNumber);
+  
+      // Set hasMore based on whether we received a full page of results
+      setHasMore(finalData.length === pageSize);
+  
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+
+  const fetchHasQuantitySheet = async () => {
+    setIsLoading(true);
+    try {
+      const response = await API.get(
+        `/QuantitySheet/check-all-quantity-sheets?userId=${userData.userId}`
+      );
+      setHasquantitySheet(response.data);
+    } catch (error) {
+      console.error("Error fetching quantity sheet data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -284,6 +380,7 @@ const CuDashboard = () => {
     const activeCards = Object.values(visibleCards).filter(Boolean).length;
     if (activeCards === 0) {
       return (
+        <>
         <Row className="g-4">
           {data.map((item) => (
             <Col key={item.projectId} xs={12} sm={12} md={6} lg={3}>
@@ -296,6 +393,19 @@ const CuDashboard = () => {
             </Col>
           ))}
         </Row>
+        {hasMore && (
+          <div className="text-center mt-3">
+            <MdExpandMore
+              onClick={() => fetchProjects(page + 1)}
+              style={{ 
+                cursor: isLoading ? 'not-allowed' : 'pointer',
+                fontSize: '3rem',
+              }}
+              className={`${isLoading ? 'opacity-50' : ''} ${customDark} ${customLightText} rounded-5`}
+            />
+          </div>
+        )}
+        </>
       );
     }
 
@@ -331,6 +441,7 @@ const CuDashboard = () => {
       }
 
       return (
+        <>
         <div className="position-relative mb-4">
           <div className="d-none d-lg-block">
             <div
@@ -365,11 +476,28 @@ const CuDashboard = () => {
             {carouselItems}
           </Carousel>
         </div>
+        {hasMore && (
+          <div className="text-center mt-3">
+            <Button 
+              onClick={() => fetchProjects(page + 1)}
+              disabled={isLoading}
+              className={`${isLoading ? 'opacity-50' : ''} ${customDark} ${customLightText} rounded-5 border-0 d-flex `}
+            >
+              {isLoading ? (
+                <Spinner size="sm" />
+              ) : (
+                <MdExpandMore size={20} />
+              )}
+            </Button>
+          </div>
+        )}
+      </>
       );
     }
 
     // For medium and small screens, use scrollable container
     return (
+      <>
       <ScrollableContainer className="scrollable-container mb-4" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
         <div className="d-flex flex-nowrap px-2" style={{ gap: '8px' }}>
           {data.map((item) => (
@@ -388,6 +516,18 @@ const CuDashboard = () => {
           ))}
         </div>
       </ScrollableContainer>
+      {hasMore && (
+        <div className="text-center mt-3">
+          <Button 
+            onClick={() => fetchProjects(page + 1)}
+            disabled={isLoading}
+            variant="primary"
+          >
+            {isLoading ? t("loading") : t("showMore")}
+          </Button>
+        </div>
+      )}
+    </>
     );
   };
 
