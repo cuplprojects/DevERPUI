@@ -1,18 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Nav, Offcanvas } from "react-bootstrap";
 import {
-  FaUsers,
-  FaProjectDiagram,
-  FaBell,
-  FaUserPlus,
-  FaUserCog,
-  FaListUl,
-  FaCamera,
-  FaCog,
-  FaCaretDown,
-  FaCaretRight,
-} from "react-icons/fa";
-import {
   FaUsers, FaProjectDiagram, FaBell, FaUserPlus, FaUserCog, FaListUl,
   FaCamera, FaCog, FaCaretDown, FaCaretLeft,
   FaCaretRight,
