@@ -1,15 +1,38 @@
-import { decrypt, encrypt } from "./../../../Security/Security";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Row, Col, Button, Table } from "react-bootstrap";
+import { Row, Col, Button } from "react-bootstrap";
 import { FaHome } from "react-icons/fa";
-import { useEffect, useState } from "react";
+import { AgGridReact } from "ag-grid-react";
+import "ag-grid-community/styles/ag-grid.css";
+import "ag-grid-community/styles/ag-theme-alpine.css";
+import { decrypt } from "./../../../Security/Security";
 import API from "../../../CustomHooks/MasterApiHooks/api";
+import themeStore from "./../../../store/themeStore";
+import { useStore } from "zustand";
+import { useMemo } from "react";
 
 const QPTable = ({ filters, setShowTable }) => {
   const navigate = useNavigate();
   const [qpData, setQpData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // States to control ag-Grid features
+  const [enableSorting, setEnableSorting] = useState(true);
+  const [enableFilter, setEnableFilter] = useState(true);
+
+  const themeState = useStore(themeStore);
+  const cssClasses = useMemo(() => themeState.getCssClasses(), [themeState]);
+  const [
+    customDark,
+    customMid,
+    customLight,
+    customBtn,
+    customDarkText,
+    customLightText,
+    customLightBorder,
+    customDarkBorder,
+  ] = cssClasses;
 
   const handleHomeClick = () => {
     setShowTable(false);
@@ -70,8 +93,99 @@ const QPTable = ({ filters, setShowTable }) => {
     }
   }, [filters]);
 
+  const columnDefs = [
+    {
+      headerName: "QP Master ID",
+      field: "qpMasterId",
+      sortable: enableSorting,
+      filter: enableFilter,
+    },
+    {
+      headerName: "Group Name",
+      field: "groupName",
+      sortable: enableSorting,
+      filter: enableFilter,
+    },
+    {
+      headerName: "Type",
+      field: "type",
+      sortable: enableSorting,
+      filter: enableFilter,
+    },
+    {
+      headerName: "NEP Code",
+      field: "nepCode",
+      sortable: enableSorting,
+      filter: enableFilter,
+    },
+    {
+      headerName: "Private Code",
+      field: "privateCode",
+      sortable: enableSorting,
+      filter: enableFilter,
+    },
+    {
+      headerName: "Subject Name",
+      field: "subjectName",
+      sortable: enableSorting,
+      filter: enableFilter,
+    },
+    {
+      headerName: "Paper Number",
+      field: "paperNumber",
+      sortable: enableSorting,
+      filter: enableFilter,
+    },
+    {
+      headerName: "Paper Title",
+      field: "paperTitle",
+      sortable: enableSorting,
+      filter: enableFilter,
+    },
+    {
+      headerName: "Max Marks",
+      field: "maxMarks",
+      sortable: enableSorting,
+      filter: enableFilter,
+    },
+    {
+      headerName: "Duration",
+      field: "duration",
+      sortable: enableSorting,
+      filter: enableFilter,
+    },
+    {
+      headerName: "Course Name",
+      field: "courseName",
+      sortable: enableSorting,
+      filter: enableFilter,
+    },
+    {
+      headerName: "Exam Type Name",
+      field: "examTypeName",
+      sortable: enableSorting,
+      filter: enableFilter,
+    },
+  ];
+
   return (
     <div>
+      <h1
+        className={`${customDarkText} mb-4`}
+        style={{
+          fontSize: "3rem",
+          fontWeight: "bold",
+          textAlign: "center",
+        }}
+      >
+        QP-Masters
+      </h1>
+      <FaHome
+        className="me-2 c-pointer"
+        color="blue"
+        size={30}
+        onClick={handleHomeClick}
+      />
       {loading && <p>Loading data...</p>}
       {error && <p className="text-danger">{error}</p>}
 
@@ -80,42 +194,17 @@ const QPTable = ({ filters, setShowTable }) => {
       )}
 
       {!loading && !error && qpData.length > 0 && (
-        <Table striped bordered hover responsive>
-          <thead>
-            <tr>
-              <th>QP Master ID</th>
-              <th>Group Name</th>
-              <th>Type</th>
-              <th>NEP Code</th>
-              <th>Private Code</th>
-              <th>Subject Name</th>
-              <th>Paper Number</th>
-              <th>Paper Title</th>
-              <th>Max Marks</th>
-              <th>Duration</th>
-              <th>Course Name</th>
-              <th>Exam Type Name</th>
-            </tr>
-          </thead>
-          <tbody>
-            {qpData.map((item, index) => (
-              <tr key={index}>
-                <td>{item.qpMasterId}</td>
-                <td>{item.groupName}</td>
-                <td>{item.type}</td>
-                <td>{item.nepCode}</td>
-                <td>{item.privateCode}</td>
-                <td>{item.subjectName}</td>
-                <td>{item.paperNumber}</td>
-                <td>{item.paperTitle}</td>
-                <td>{item.maxMarks}</td>
-                <td>{item.duration}</td>
-                <td>{item.courseName}</td>
-                <td>{item.examTypeName}</td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
+        <div
+          className="ag-theme-alpine"
+          style={{ height: "50vh", width: "100%" }}
+        >
+          <AgGridReact
+            rowData={qpData}
+            columnDefs={columnDefs}
+            pagination={true}
+            paginationPageSize={10}
+          />
+        </div>
       )}
     </div>
   );

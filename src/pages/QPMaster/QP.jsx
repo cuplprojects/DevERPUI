@@ -272,7 +272,7 @@ const QPMiddleArea = () => {
         </div>
       ) : (
         <div
-          className="d-flex flex-column align-items-center justify-content-center p-4 w-100"
+          className="d-flex flex-column  justify-content-center p-4 w-100"
           style={{
             backgroundColor: "#e9ecef",
             borderRadius: "10px",
