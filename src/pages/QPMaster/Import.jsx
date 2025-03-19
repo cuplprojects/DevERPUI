@@ -26,14 +26,9 @@ const Import = () => {
   const { t } = useTranslation();
   const { getCssClasses } = useStore(themeStore)
   const cssClasses = getCssClasses()
-  const customDark = cssClasses[0]
-  const customMid = cssClasses[1]
-  const customLight = cssClasses[2]
   const customBtn = cssClasses[3]
   const customDarkText = cssClasses[4]
-  const customLightText = cssClasses[5]
-  const customLightBorder = cssClasses[6]
-  const customDarkBorder = cssClasses[7]
+
 
   useEffect(() => {
     const getColumns = async () => {
@@ -241,10 +236,7 @@ const Import = () => {
       const typeResponse = await API.get(`PaperTypes/Type?type=${type}`);
       let typeId = typeResponse.data;
       if (!typeId) {
-        const newTypeResponse = await API.post("Course", {
-          types: type,
-        });
-        typeId = newTypeResponse.data.typeId;
+       console.error("Type does not exist",type)
       }
       return typeId;
     } catch (err) {
@@ -255,14 +247,15 @@ const Import = () => {
 
   const getLanguageIdByName = async (language) => {
     try {
+      const encodedLanguage = encodeURIComponent(language);
       const languageResponse = await API.get(
-        `Language/Language?language=${language}`
+        `Language/Language?language=${encodedLanguage}`
       );
       let languageId = languageResponse.data;
 
       if (!languageId) {
         const newLanguageResponse = await API.post("/Language", {
-          languages: language,
+          language: language,
         });
         languageId = newLanguageResponse.data.languageId;
       }
@@ -280,10 +273,7 @@ const Import = () => {
       );
       let examtypeId = examtypeResponse.data;
       if (!examtypeId) {
-        const newexamtypeResponse = await API.post("/ExamType", {
-          typeName: examtype,
-        });
-        examtypeId = newexamtypeResponse.data.examtypeId;
+       console.error("ExamType does not exist",examtype)
       }
       return examtypeId;
     } catch (err) {
@@ -313,7 +303,7 @@ const Import = () => {
         paperTitle: item.PaperTitle || "string",
         maxMarks: item.MaxMarks || 0,
         duration: item.Duration || "string",
-        languageId: item.LanguageId || 0,
+        languageId: item.LanguageId|| [],
         customizedField1: item.customizedField1 || "string",
         customizedField2: item.customizedField2 || "string",
         customizedField3: item.customizedField3 || "string",
@@ -329,6 +319,8 @@ const Import = () => {
       console.log(t("quantitySheetUploadedSuccessfully"));
       setFileList([]);
       setSelectedFile(null);
+      setFieldMappings([]);
+      setHeaders([]);
       setShowBtn(false);
     } catch (error) {
       console.error(t("failedToUploadQuantitySheet"));
@@ -413,6 +405,7 @@ const Import = () => {
                                 options={getAvailableOptions(property)}
                                 style={{ width: "100%" }}
                                 dropdownMatchSelectWidth={false}
+                                showSearch
                               />
                             </td>
                           </tr>
