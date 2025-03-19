@@ -227,11 +227,11 @@ const QPMiddleArea = () => {
           >
             QP-Masters
           </h1>
-          <Row className="mb-3 w-100 justify-content-center">
+          <Row className="mb-3 w-50 justify-content-center">
             <Col className="d-flex flex-column flex-md-row justify-content-between ">
               <Select
                 showSearch
-                placeholder="Select Group"
+                placeholder="Select Group *"
                 className="m-2 w-100"
                 onChange={handleGroupChange}
                 value={selectedGroupId}
@@ -248,6 +248,7 @@ const QPMiddleArea = () => {
                 className="m-2 w-100"
                 onChange={handleTypeChange}
                 value={selectedTypeId}
+                disabled={!isGroupSelected}
               >
                 {types.map((type) => (
                   <Option key={type.typeId} value={type.typeId}>
@@ -261,6 +262,7 @@ const QPMiddleArea = () => {
                 className="m-2 w-100"
                 onChange={handleCourseChange}
                 value={selectedCourseId}
+                disabled={!isGroupSelected}
               >
                 {courses.map((course) => (
                   <Option key={course.courseId} value={course.courseId}>
@@ -274,6 +276,7 @@ const QPMiddleArea = () => {
                 className="m-2 w-100"
                 onChange={handleSemesterChange}
                 value={selectedExamTypeName || undefined}
+                disabled={!isGroupSelected}
               >
                 {uniqueTypes.map((type) => (
                   <Option key={type} value={type}>
@@ -285,14 +288,14 @@ const QPMiddleArea = () => {
           </Row>
           <Row className="w-100 justify-content-center">
             <Col className="d-flex justify-content-center">
-              <Button
-                variant="outline-primary"
-                className="me-2"
-                style={{ borderRadius: "5px" }}
-                onClick={handleApplyClick}
-              >
-                Apply & View
-              </Button>
+                  <Button
+                    variant="outline-primary"
+                    className="me-2"
+                    style={{ borderRadius: "5px" }}
+                    onClick={handleApplyClick}
+                  >
+                    Apply & View
+                  </Button>
             </Col>
           </Row>
           <Row className="w-100 justify-content-center mt-3">
