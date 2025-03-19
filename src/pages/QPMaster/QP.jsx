@@ -172,7 +172,10 @@ const QPMiddleArea = () => {
       }
 
       // Add examTypeIds if available
-      if (Array.isArray(filtersObj.selectedExamTypeId) && filtersObj.selectedExamTypeId.length > 0) {
+      if (
+        Array.isArray(filtersObj.selectedExamTypeId) &&
+        filtersObj.selectedExamTypeId.length > 0
+      ) {
         filtersObj.selectedExamTypeId.forEach((id) => {
           url += `&examTypeId=${id}`;
         });
@@ -201,7 +204,7 @@ const QPMiddleArea = () => {
 
   return (
     <div
-      className="d-flex justify-content-center align-items-center"
+      className="container d-flex justify-content-center align-items-center"
       style={{ height: "80vh" }}
     >
       {!showTable ? (
@@ -216,17 +219,16 @@ const QPMiddleArea = () => {
           }}
         >
           <h1
-            className={`${customDarkText} mb-4`}
+            className={`${customDarkText} mb-4 text-center`}
             style={{
-              fontSize: "5rem",
+              fontSize: "5rem", // Adjusted for responsiveness
               fontWeight: "bold",
-              textAlign: "center",
             }}
           >
             QP-Masters
           </h1>
-          <Row className="mb-3 w-50 justify-content-center">
-            <Col className="d-flex justify-content-between w-100">
+          <Row className="mb-3 w-100 justify-content-center">
+            <Col className="d-flex flex-column flex-md-row justify-content-between ">
               <Select
                 showSearch
                 placeholder="Select Group"
@@ -294,7 +296,7 @@ const QPMiddleArea = () => {
             </Col>
           </Row>
           <Row className="w-100 justify-content-center mt-3">
-            <span className={`${customDarkText} text-center fs-2 fw-bold`}>
+            <span className={`${customDarkText} text-center fs-4 fw-bold`}>
               OR
             </span>
           </Row>
@@ -322,7 +324,7 @@ const QPMiddleArea = () => {
         </div>
       ) : (
         <div
-          className="d-flex flex-column  justify-content-center p-4 w-100"
+          className="d-flex flex-column justify-content-center p-4 w-100"
           style={{
             backgroundColor: "#e9ecef",
             borderRadius: "10px",
@@ -330,7 +332,11 @@ const QPMiddleArea = () => {
             boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
           }}
         >
-          <QPTable filters={filters} qpData={qpData} setShowTable={setShowTable} />
+          <QPTable
+            filters={filters}
+            qpData={qpData}
+            setShowTable={setShowTable}
+          />
         </div>
       )}
     </div>
