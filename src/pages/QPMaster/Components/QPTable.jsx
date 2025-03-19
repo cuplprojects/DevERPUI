@@ -19,35 +19,38 @@ const QPTable = ({ filters, setShowTable }) => {
     const fetchQPData = async () => {
       try {
         setLoading(true);
-        
+
         // Prepare the URL with query parameters
         let url = "/QPMasters/Filter?";
-        
+
         // Add groupId (required)
         if (filters?.groupID) {
           url += `groupId=${decrypt(filters.groupID)}`;
         }
-        
+
         // Add courseId if available
         if (filters?.selectedCourse) {
           url += `&courseId=${filters.selectedCourse}`;
         }
-        
+
         // Add typeId if available
         if (filters?.selectedType) {
           url += `&typeId=${filters.selectedType}`;
         }
-        
+
         // Add examTypeIds if available
-        if (Array.isArray(filters?.selectedExamTypeId) && filters.selectedExamTypeId.length > 0) {
-          filters.selectedExamTypeId.forEach(id => {
+        if (
+          Array.isArray(filters?.selectedExamTypeId) &&
+          filters.selectedExamTypeId.length > 0
+        ) {
+          filters.selectedExamTypeId.forEach((id) => {
             url += `&examTypeId=${id}`;
           });
         }
-        
+
         // Make the API call
         const response = await API.get(url);
-        
+
         if (response.status === 200) {
           setQpData(response.data);
         } else {
@@ -69,42 +72,13 @@ const QPTable = ({ filters, setShowTable }) => {
 
   return (
     <div>
-      <Button variant="outline-dark" className="mb-3" onClick={handleHomeClick}>
-        <FaHome style={{ marginRight: "8px" }} /> Back to Home
-      </Button>
-
-      <div className="mb-4">
-        <h4>
-          Group Name - {decrypt(filters?.groupName)} <br />
-          Group Id - {decrypt(filters?.groupID)}
-        </h4>
-
-        <h4>
-          Course Name - {filters?.selectedCourseName} <br />
-          Course Id - {filters?.selectedCourse}
-        </h4>
-
-        <h4>
-          Project Type Name - {filters?.selectedTypeName || "N/A"} <br />
-          Project Type ID - {filters?.selectedType}
-        </h4>
-
-        <h4>
-          Exam Type Name - {filters?.selectedExamTypeName || "N/A"} <br />
-          Exam Type IDs -{" "}
-          {Array.isArray(filters?.selectedExamTypeId)
-            ? filters.selectedExamTypeId.join(", ")
-            : "N/A"}
-        </h4>
-      </div>
-
       {loading && <p>Loading data...</p>}
       {error && <p className="text-danger">{error}</p>}
-      
+
       {!loading && !error && qpData.length === 0 && (
         <p>No data found for the selected filters.</p>
       )}
-      
+
       {!loading && !error && qpData.length > 0 && (
         <Table striped bordered hover responsive>
           <thead>
