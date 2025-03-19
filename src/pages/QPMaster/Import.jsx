@@ -39,16 +39,15 @@ const Import = () => {
   const customLightBorder = cssClasses[6];
   const customDarkBorder = cssClasses[7];
   const navigate = useNavigate();
+
   useEffect(() => {
     const decryptGroupId = decrypt(encryptedGroupId);
     // console.log(decryptGroupId);
     const decryptGroupName = decrypt(encryptedGroupName);
     setGroupId(decryptGroupId);
     setGroupName(decryptGroupName);
-  }, []);
+  }, [])
 
-
-  // console.log(encryptedGroupId);
   useEffect(() => {
     const getColumns = async () => {
       try {
@@ -376,7 +375,8 @@ const Import = () => {
         <Card.Body>
           <div className="d-flex justify-content-between align-items-center">
             <div className="flex-grow-1 text-center">
-              <h1 className={`fw-bold ${customDarkText} m-0`}>Import Excel</h1>
+              <h1 className={`fw-bold ${customDarkText} m-0`}>Import Excel</h1> 
+              <p className="text-muted m-0">For <span className="fw-bold">{groupName}</span> group</p>
             </div>
             <FaHome
               className="ms-2 c-pointer"
