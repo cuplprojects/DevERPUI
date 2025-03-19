@@ -41,11 +41,14 @@ const Import = () => {
   const navigate = useNavigate();
   useEffect(() => {
     const decryptGroupId = decrypt(encryptedGroupId);
+    // console.log(decryptGroupId);
     const decryptGroupName = decrypt(encryptedGroupName);
     setGroupId(decryptGroupId);
     setGroupName(decryptGroupName);
   }, []);
 
+
+  // console.log(encryptedGroupId);
   useEffect(() => {
     const getColumns = async () => {
       try {
@@ -328,13 +331,17 @@ const Import = () => {
         paperTitle: item.PaperTitle || "string",
         maxMarks: item.MaxMarks || 0,
         duration: item.Duration || "string",
-        languageId: item.LanguageId || 0,
+        // languageId: item.LanguageId || 0,
+        // languageId: Array.isArray(item.LanguageId) ? item.LanguageId : [item.LanguageId || 0],        
         customizedField1: item.customizedField1 || "string",
         customizedField2: item.customizedField2 || "string",
         customizedField3: item.customizedField3 || "string",
         courseId: item.CourseId || 0,
         examTypeId: item.ExamTypeId || 0,
       }));
+
+      console.log("final payload ->",finalPayload)
+
       const response = await API.post("/QPMasters", finalPayload, {
         headers: {
           "Content-Type": "application/json",

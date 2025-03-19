@@ -8,7 +8,7 @@ import { useStore } from "zustand";
 import { useNavigate, useParams } from "react-router-dom";
 import { FaHome } from "react-icons/fa";
 import API from "../../CustomHooks/MasterApiHooks/api";
-import { decrypt, encrypt } from "./../../Security/Security";
+import { decrypt} from "./../../Security/Security";
 const { Option } = Select;
 
 const ImportPage = () => {
@@ -18,6 +18,7 @@ const ImportPage = () => {
 
   useEffect(() => {
     const decryptGroupId = decrypt(encryptedGroupId);
+    // console.log(decryptGroupId);
     const decryptGroupName = decrypt(encryptedGroupName);
     setGroupId(decryptGroupId);
     setGroupName(decryptGroupName);
@@ -46,12 +47,13 @@ const ImportPage = () => {
     customDarkBorder,
   ] = cssClasses;
 
+ 
   const handleHomeClick = () => {
     navigate("/QP-Masters");
   };
 
   const handleImportClick = () => {
-    navigate(`/Import-Paper/${groupId}/${groupName}`);
+    navigate(`/Import-Paper/${encryptedGroupId}/${encryptedGroupName}`);
   };
 
   const handleManualInput = (e, field) => {
