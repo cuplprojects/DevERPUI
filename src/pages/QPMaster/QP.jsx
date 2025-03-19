@@ -204,7 +204,7 @@ const QPMiddleArea = () => {
 
   return (
     <div
-      className="container d-flex justify-content-center align-items-center"
+      className="container-fluid d-flex justify-content-center align-items-center"
       style={{ height: "80vh" }}
     >
       {!showTable ? (

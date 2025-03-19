@@ -102,8 +102,8 @@ const QPTable = ({ filters, qpData, setShowTable }) => {
   ];
 
   return (
-    <div>
-      <Row className="align-items-center">
+    <div className="w-100">
+      <Row className="align-items-center ">
         <Col xs={12} className="text-center position-relative">
           <h1
             className={`${customDarkText} mb-4`}
