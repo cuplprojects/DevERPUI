@@ -360,7 +360,7 @@ const Import = () => {
         examTypeId: item.ExamTypeId || 0,
       }));
 
-      console.log("final payload ->",finalPayload)
+      // console.log("final payload ->",finalPayload)
 
       const response = await API.post("/QPMasters", finalPayload, {
         headers: {
