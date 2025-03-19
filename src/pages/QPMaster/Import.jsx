@@ -270,16 +270,37 @@ const Import = () => {
     }
   };
 
+  // const getLanguageIdByName = async (language) => {
+  //   try {
+  //     const languageResponse = await API.get(
+  //       `Language/Language?language=${language}`
+  //     );
+  //     let languageId = languageResponse.data;
+
+  //     if (!languageId) {
+  //       const newLanguageResponse = await API.post("/Language", {
+  //         languages: language,
+  //       });
+  //       languageId = newLanguageResponse.data.languageId;
+  //     }
+  //     return languageId;
+  //   } catch (err) {
+  //     console.error("Error in fetching or inserting type:", err);
+  //     throw err;
+  //   }
+  // };
+
   const getLanguageIdByName = async (language) => {
     try {
+      const encodedLanguage = encodeURIComponent(language);
       const languageResponse = await API.get(
-        `Language/Language?language=${language}`
+        `Language/Language?language=${encodedLanguage}`
       );
       let languageId = languageResponse.data;
 
       if (!languageId) {
         const newLanguageResponse = await API.post("/Language", {
-          languages: language,
+          language: language,
         });
         languageId = newLanguageResponse.data.languageId;
       }
@@ -330,7 +351,7 @@ const Import = () => {
         paperTitle: item.PaperTitle || "string",
         maxMarks: item.MaxMarks || 0,
         duration: item.Duration || "string",
-        // languageId: item.LanguageId || 0,
+        languageId: item.LanguageId|| [],
         // languageId: Array.isArray(item.LanguageId) ? item.LanguageId : [item.LanguageId || 0],        
         customizedField1: item.customizedField1 || "string",
         customizedField2: item.customizedField2 || "string",
