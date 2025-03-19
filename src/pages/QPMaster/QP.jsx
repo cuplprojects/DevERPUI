@@ -223,7 +223,7 @@ const QPMiddleArea = () => {
                 placeholder="Select Semester Type"
                 className="m-2 w-100"
                 onChange={handleSemesterChange}
-                value={selectedExamTypeName}
+                value={selectedExamTypeName || undefined}
               >
                 {uniqueTypes.map((type) => (
                   <Option key={type} value={type}>

@@ -170,22 +170,26 @@ const QPTable = ({ filters, setShowTable }) => {
 
   return (
     <div>
-      <h1
-        className={`${customDarkText} mb-4`}
-        style={{
-          fontSize: "3rem",
-          fontWeight: "bold",
-          textAlign: "center",
-        }}
-      >
-        QP-Masters
-      </h1>
-      <FaHome
-        className="me-2 c-pointer"
-        color="blue"
-        size={30}
-        onClick={handleHomeClick}
-      />
+      <Row className="align-items-center">
+        <Col xs={12} className="text-center position-relative">
+          <h1
+            className={`${customDarkText} mb-4`}
+            style={{
+              fontSize: "3rem",
+              fontWeight: "bold",
+            }}
+          >
+            QP-Masters
+          </h1>
+          <FaHome
+            className="position-absolute end-0 me-2 c-pointer"
+            color="blue"
+            size={30}
+            onClick={handleHomeClick}
+            style={{ top: "50%", transform: "translateY(-50%)" }}
+          />
+        </Col>
+      </Row>
       {loading && <p>Loading data...</p>}
       {error && <p className="text-danger">{error}</p>}
 
