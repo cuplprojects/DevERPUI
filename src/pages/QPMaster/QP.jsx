@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Row, Col, Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Select, Tooltip } from "antd";
@@ -36,6 +36,9 @@ const QPMiddleArea = () => {
 
   const [showTable, setShowTable] = useState(false);
   const [filters, setFilters] = useState({});
+  const [qpData, setQpData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const themeState = useStore(themeStore);
   const cssClasses = useMemo(() => themeState.getCssClasses(), [themeState]);
@@ -133,9 +136,11 @@ const QPMiddleArea = () => {
     setSelectedExamTypeIds(ids); // Array of ids
     setSelectedExamTypeName(type);
   };
-  
 
-  const handleApplyClick = () => {
+  const handleApplyClick = async () => {
+    setLoading(true);
+    setError(null);
+
     const filtersObj = {
       groupName: encrypt(selectedGroupName),
       groupID: encrypt(selectedGroupId),
@@ -147,9 +152,52 @@ const QPMiddleArea = () => {
       selectedExamTypeName: selectedExamTypeName, // Type Name
     };
     setFilters(filtersObj);
-    setShowTable(true);
+
+    try {
+      let url = "/QPMasters/Filter?";
+
+      // Add groupId (required)
+      if (filtersObj.groupID) {
+        url += `groupId=${decrypt(filtersObj.groupID)}`;
+      }
+
+      // Add courseId if available
+      if (filtersObj.selectedCourse) {
+        url += `&courseId=${filtersObj.selectedCourse}`;
+      }
+
+      // Add typeId if available
+      if (filtersObj.selectedType) {
+        url += `&typeId=${filtersObj.selectedType}`;
+      }
+
+      // Add examTypeIds if available
+      if (Array.isArray(filtersObj.selectedExamTypeId) && filtersObj.selectedExamTypeId.length > 0) {
+        filtersObj.selectedExamTypeId.forEach((id) => {
+          url += `&examTypeId=${id}`;
+        });
+      }
+
+      // Make the API call
+      const response = await API.get(url);
+
+      if (response.status === 200) {
+        setQpData(response.data);
+        if (response.data.length > 0) {
+          setShowTable(true);
+        } else {
+          setError("No data found for the selected filters.");
+        }
+      } else {
+        throw new Error("Failed to fetch data");
+      }
+    } catch (err) {
+      console.error("Error fetching QP data:", err);
+      setError("Failed to load data. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
   };
-  
 
   return (
     <div
@@ -269,6 +317,8 @@ const QPMiddleArea = () => {
               </Tooltip>
             </Col>
           </Row>
+          {loading && <p>Loading data...</p>}
+          {error && <p className="text-danger">{error}</p>}
         </div>
       ) : (
         <div
@@ -280,7 +330,7 @@ const QPMiddleArea = () => {
             boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
           }}
         >
-          <QPTable filters={filters} setShowTable={setShowTable} />
+          <QPTable filters={filters} qpData={qpData} setShowTable={setShowTable} />
         </div>
       )}
     </div>
