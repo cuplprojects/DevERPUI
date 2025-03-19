@@ -9,6 +9,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { FaHome } from "react-icons/fa";
 import API from "../../CustomHooks/MasterApiHooks/api";
 import { decrypt} from "./../../Security/Security";
+import { FaFileImport } from "react-icons/fa6";
+
 const { Option } = Select;
 
 const ImportPage = () => {
@@ -116,6 +118,7 @@ const ImportPage = () => {
     getLanguage();
     getExamType();
   }, []);
+  
   useEffect(() => {
     setManualInputs((prev) => ({
       ...prev,
@@ -135,7 +138,7 @@ const ImportPage = () => {
   ) => {
     return (
       <>
-        <h5>{label}</h5>
+        <h5 className={`mb-3 ${customDarkText}`}>{label}</h5>
         {isDropdown ? (
           <Select
             placeholder={`Select ${label}`}
@@ -286,27 +289,28 @@ const ImportPage = () => {
   return (
     <Container
       fluid
-      className=" d-flex flex-column justify-content-center align-items-center bg-light rounded p-3"
+      className={`shadow-lg d-flex flex-column justify-content-center align-items-center ${customDark === "dark-dark" ? `${customDark}` : `${customLight}`} rounded p-3`}
     >
       <Row className="w-75">
         <Col>
           <Row className="mb-3">
             <Col>
-              <h1 className={`mb-4 ${customDarkText}`}>Add Paper</h1>
+              <h1 className={`mb-4 ${customDarkText} fw-bold`}>Add Paper</h1>
             </Col>
             <Col className="d-flex justify-content-end align-items-center">
-              <div>
+              <div className="">
                 <FaHome
-                  className="me-2 c-pointer"
-                  color="blue"
+                  className={`me-2  c-pointer ${customDarkText} fw-bold ${customDark === "dark-dark" ? `${customLight} $` : `${customLight}`}`}
                   size={30}
                   onClick={handleHomeClick}
                 />
                 <Button
                   type="primary"
-                  className={` border-0 ${customBtn}`}
+                  className={` ${customDark === "dark-dark" ? `${customLight} ${customLightBorder}` : `${customLight} ${customDarkBorder} ${customDarkText}`}`}
                   onClick={handleImportClick}
                 >
+                  <FaFileImport  className={`me-2  ${customDark === "dark-dark" ? `${customLightText}` : `${customDarkText}`}`}
+                  size={30}/>
                   Import
                 </Button>
               </div>
@@ -380,7 +384,7 @@ const ImportPage = () => {
                 <Col md={6}>
                   <Button
                     type="primary"
-                    className={`mt-3 w-100 border-0 ${customBtn}`}
+                    className={`mt-3 w-100 ${customDark === "dark-dark" ? `${customLight} ${customLightBorder}` : `${customLight} ${customDarkBorder} ${customDarkText}`}`}
                     onClick={handleAdd}
                   >
                     Add
@@ -389,7 +393,7 @@ const ImportPage = () => {
                 <Col md={6}>
                   <Button
                     type="primary"
-                    className={`mt-3 w-100 border-0 ${customBtn}`}
+                    className={`mt-3 w-100 ${customDark === "dark-dark" ? `${customLight} ${customLightBorder}` : `${customLight} ${customDarkBorder} ${customDarkText}`}`}
                     onClick={handleClear}
                     disabled={isClearDisabled}
                   >
