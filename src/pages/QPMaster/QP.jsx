@@ -318,13 +318,18 @@ const QPMiddleArea = () => {
           </Row>
           <Row className="mb-4">
             <Col xs={12} className="text-center">
-              <Button
-                variant="success"
-                className="ms-2"
-                onClick={handleAddClick}
-              >
-                Add Paper
-              </Button>
+              <Tooltip title={!selectedGroupId ? "Select a group first" : ""}>
+                <span>
+                  <Button
+                    variant="success"
+                    className="ms-2"
+                    onClick={handleAddClick}
+                    disabled={!selectedGroupId}
+                  >
+                    Add Paper
+                  </Button>
+                </span>
+              </Tooltip>
             </Col>
           </Row>
 
