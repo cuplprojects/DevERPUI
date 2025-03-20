@@ -13,7 +13,7 @@ import { decrypt, encrypt } from "./../../../Security/Security";
 const QPTable = ({ filters, qpData, setShowTable }) => {
   const themeState = useStore(themeStore);
   const cssClasses = useMemo(() => themeState.getCssClasses(), [themeState]);
-  console.log("Filters passed ->", filters);
+  // console.log("Filters passed ->", filters);
   const [
     customDark,
     customMid,
