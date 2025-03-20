@@ -137,13 +137,77 @@ const QPMiddleArea = () => {
     setSelectedExamTypeName(type);
   };
 
+  // const handleApplyClick = async () => {
+  //   setLoading(true);
+  //   setError(null);
+
+  //   const filtersObj = {
+  //     groupName: encrypt(selectedGroupName),
+  //     groupID: encrypt(selectedGroupId),
+  //     selectedType: selectedTypeId,
+  //     selectedTypeName: selectedTypeName,
+  //     selectedCourse: selectedCourseId,
+  //     selectedCourseName: selectedCourseName,
+  //     selectedExamTypeId: selectedExamTypeIds, // Array of IDs
+  //     selectedExamTypeName: selectedExamTypeName, // Type Name
+  //   };
+  //   setFilters(filtersObj);
+
+  //   try {
+  //     let url = "/QPMasters/Filter?";
+
+  //     // Add groupId (required)
+  //     if (filtersObj.groupID) {
+  //       url += `groupId=${decrypt(filtersObj.groupID)}`;
+  //     }
+
+  //     // Add courseId if available
+  //     if (filtersObj.selectedCourse) {
+  //       url += `&courseId=${filtersObj.selectedCourse}`;
+  //     }
+
+  //     // Add typeId if available
+  //     if (filtersObj.selectedType) {
+  //       url += `&typeId=${filtersObj.selectedType}`;
+  //     }
+
+  //     // Add examTypeIds if available
+  //     if (
+  //       Array.isArray(filtersObj.selectedExamTypeId) &&
+  //       filtersObj.selectedExamTypeId.length > 0
+  //     ) {
+  //       filtersObj.selectedExamTypeId.forEach((id) => {
+  //         url += `&examTypeId=${id}`;
+  //       });
+  //     }
+
+  //     // Make the API call
+  //     const response = await API.get(url);
+
+  //     if (response.status === 200) {
+  //       setQpData(response.data);
+  //       if (response.data.length > 0) {
+  //         setShowTable(true);
+  //       } else {
+  //         setError("No data found for the selected filters.");
+  //       }
+  //     } else {
+  //       throw new Error("Failed to fetch data");
+  //     }
+  //   } catch (err) {
+  //     console.error("Error fetching QP data:", err);
+  //     setError("Failed to load data. Please try again later.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
   const handleApplyClick = async () => {
     setLoading(true);
     setError(null);
-
+  
     const filtersObj = {
-      groupName: encrypt(selectedGroupName),
-      groupID: encrypt(selectedGroupId),
+      groupName: selectedGroupName ? encrypt(selectedGroupName) : null,
+      groupID: selectedGroupId ? encrypt(selectedGroupId) : null,
       selectedType: selectedTypeId,
       selectedTypeName: selectedTypeName,
       selectedCourse: selectedCourseId,
@@ -152,38 +216,43 @@ const QPMiddleArea = () => {
       selectedExamTypeName: selectedExamTypeName, // Type Name
     };
     setFilters(filtersObj);
-
+  
     try {
       let url = "/QPMasters/Filter?";
-
-      // Add groupId (required)
+      let hasFilters = false;
+  
+      // Add groupId if available
       if (filtersObj.groupID) {
         url += `groupId=${decrypt(filtersObj.groupID)}`;
+        hasFilters = true;
       }
-
+  
       // Add courseId if available
       if (filtersObj.selectedCourse) {
-        url += `&courseId=${filtersObj.selectedCourse}`;
+        url += `${hasFilters ? '&' : ''}courseId=${filtersObj.selectedCourse}`;
+        hasFilters = true;
       }
-
+  
       // Add typeId if available
       if (filtersObj.selectedType) {
-        url += `&typeId=${filtersObj.selectedType}`;
+        url += `${hasFilters ? '&' : ''}typeId=${filtersObj.selectedType}`;
+        hasFilters = true;
       }
-
+  
       // Add examTypeIds if available
       if (
         Array.isArray(filtersObj.selectedExamTypeId) &&
         filtersObj.selectedExamTypeId.length > 0
       ) {
         filtersObj.selectedExamTypeId.forEach((id) => {
-          url += `&examTypeId=${id}`;
+          url += `${hasFilters ? '&' : ''}examTypeId=${id}`;
+          hasFilters = true;
         });
       }
-
+  
       // Make the API call
       const response = await API.get(url);
-
+  
       if (response.status === 200) {
         setQpData(response.data);
         if (response.data.length > 0) {
@@ -201,6 +270,7 @@ const QPMiddleArea = () => {
       setLoading(false);
     }
   };
+  
 
   return (
     <div
@@ -248,7 +318,7 @@ const QPMiddleArea = () => {
                 className="m-2 w-100"
                 onChange={handleTypeChange}
                 value={selectedTypeId}
-                disabled={!isGroupSelected}
+                // disabled={!isGroupSelected}
               >
                 {types.map((type) => (
                   <Option key={type.typeId} value={type.typeId}>
@@ -262,7 +332,7 @@ const QPMiddleArea = () => {
                 className="m-2 w-100"
                 onChange={handleCourseChange}
                 value={selectedCourseId}
-                disabled={!isGroupSelected}
+                // disabled={!isGroupSelected}
               >
                 {courses.map((course) => (
                   <Option key={course.courseId} value={course.courseId}>
@@ -276,7 +346,7 @@ const QPMiddleArea = () => {
                 className="m-2 w-100"
                 onChange={handleSemesterChange}
                 value={selectedExamTypeName || undefined}
-                disabled={!isGroupSelected}
+                // disabled={!isGroupSelected}
               >
                 {uniqueTypes.map((type) => (
                   <Option key={type} value={type}>
@@ -288,14 +358,14 @@ const QPMiddleArea = () => {
           </Row>
           <Row className="w-100 justify-content-center">
             <Col className="d-flex justify-content-center">
-                  <Button
-                    variant="outline-primary"
-                    className="me-2"
-                    style={{ borderRadius: "5px" }}
-                    onClick={handleApplyClick}
-                  >
-                    Apply & View
-                  </Button>
+              <Button
+                variant="outline-primary"
+                className="me-2"
+                style={{ borderRadius: "5px" }}
+                onClick={handleApplyClick}
+              >
+                Apply & View
+              </Button>
             </Col>
           </Row>
           <Row className="w-100 justify-content-center mt-3">
