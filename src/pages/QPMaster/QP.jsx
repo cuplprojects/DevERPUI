@@ -310,13 +310,14 @@ const QPMiddleArea = () => {
             QP-Masters
           </h1>
           <Row className="mb-3 w-50 justify-content-center">
-            <Col className="d-flex flex-column flex-md-row justify-content-between ">
+            <Col className="d-fle justify-content-between ">
               <Select
                 showSearch
                 placeholder="Select Group *"
                 className="m-2 w-100"
                 onChange={handleGroupChange}
                 value={selectedGroupId}
+                allowClear
               >
                 {groups.map((group) => (
                   <Option key={group.id} value={group.id}>
@@ -330,6 +331,7 @@ const QPMiddleArea = () => {
                 className="m-2 w-100"
                 onChange={handleTypeChange}
                 value={selectedTypeId}
+                allowClear
                 // disabled={!isGroupSelected}
               >
                 {types.map((type) => (
@@ -344,6 +346,7 @@ const QPMiddleArea = () => {
                 className="m-2 w-100"
                 onChange={handleCourseChange}
                 value={selectedCourseId}
+                allowClear
                 // disabled={!isGroupSelected}
               >
                 {courses.map((course) => (
@@ -358,6 +361,7 @@ const QPMiddleArea = () => {
                 className="m-2 w-100"
                 onChange={handleSemesterChange}
                 value={selectedExamTypeName || undefined}
+                allowClear
                 // disabled={!isGroupSelected}
               >
                 {uniqueTypes.map((type) => (
@@ -417,11 +421,11 @@ const QPMiddleArea = () => {
         </div>
       ) : (
         <div
-          className="d-flex flex-column justify-content-center p-4 w-100"
+          className="d-flex flex-colum justify-content-center p-4 w-100 h-100"
           style={{
             backgroundColor: "#e9ecef",
             borderRadius: "10px",
-            height: "80vh",
+            // height: "80vh",
             boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
           }}
         >
