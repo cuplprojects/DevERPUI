@@ -31,6 +31,15 @@ const QPTable = ({ filters, qpData, setShowTable }) => {
 
   // Define all possible columns
   const allColumnDefs = [
+    {
+      headerName: "S.No.",
+      field: "serialNumber",
+      sortable: false,
+      filter: false,
+      pinned: 'left',
+      valueGetter: (params) => params.node.rowIndex + 1,
+      width: 80,
+    },
     // { headerName: "QP Master ID", field: "qpMasterId", sortable: true, filter: true },
     {
       headerName: "Group Name",
