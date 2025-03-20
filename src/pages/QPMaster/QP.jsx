@@ -235,7 +235,7 @@ const QPMiddleArea = () => {
             QP-Masters
           </h1>
           <Row className="mb-3 w-50 justify-content-center">
-            <Col className="d-fle justify-content-between ">
+            <Col>
               <Select
                 showSearch
                 placeholder="Select Group *"
@@ -297,6 +297,7 @@ const QPMiddleArea = () => {
               </Select>
             </Col>
           </Row>
+
           <Row className="w-100 justify-content-center">
             <Col className="d-flex justify-content-center">
               <Button
@@ -317,6 +318,7 @@ const QPMiddleArea = () => {
               </Button>
             </Col>
           </Row>
+          
           <Row className="w-100 justify-content-center mt-3">
             <span className={`${customDarkText} text-center fs-4 fw-bold`}>
               OR

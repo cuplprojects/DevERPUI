@@ -9,6 +9,7 @@ import { useStore } from "zustand";
 import { useMemo } from "react";
 import "./QPTable.css";
 import { decrypt, encrypt } from "./../../../Security/Security";
+import { Row, Col, Button } from "react-bootstrap";
 
 const QPTable = ({ filters, qpData, setShowTable }) => {
   const themeState = useStore(themeStore);
@@ -24,7 +25,8 @@ const QPTable = ({ filters, qpData, setShowTable }) => {
     customLightBorder,
     customDarkBorder,
   ] = cssClasses;
-
+  
+//Button Click Actions
   const handleHomeClick = () => {
     setShowTable(false);
   };
@@ -36,7 +38,7 @@ const QPTable = ({ filters, qpData, setShowTable }) => {
       field: "serialNumber",
       sortable: false,
       filter: false,
-      pinned: 'left',
+      pinned: "left",
       valueGetter: (params) => params.node.rowIndex + 1,
       width: 80,
     },
@@ -135,6 +137,14 @@ const QPTable = ({ filters, qpData, setShowTable }) => {
         </Col>
       </Row>
       {qpData.length === 0 && <p>No data found for the selected filters.</p>}
+
+      {/* Filters Section */}
+      <Row className="">
+        <Col xs={12}>
+
+        </Col>
+      </Row>
+
       {qpData.length > 0 && (
         <div
           className="ag-theme-alpine "
