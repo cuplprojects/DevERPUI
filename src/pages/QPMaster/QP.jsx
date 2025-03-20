@@ -52,33 +52,13 @@ const QPMiddleArea = () => {
     customDarkBorder,
   ] = cssClasses;
 
-  //Get Data Calls
+  //Get Data Funtion Calls
   useEffect(() => {
     getGroups();
     getTypes();
     getExamType();
     getCourses();
   }, []);
-
-  const handleAddClick = () => {
-    const encryptedGroupId = encrypt(selectedGroupId);
-    const encryptedGroupName = encrypt(selectedGroupName);
-    navigate(`/Add-Paper/${encryptedGroupId}/${encryptedGroupName}`);
-  };
-
-  const handleClearClick = () => {
-    setSelectedGroupId(null);
-    setSelectedGroupName("");
-    setIsGroupSelected(false);
-    setSelectedTypeId(null);
-    setSelectedTypeName("");
-    setSelectedCourseId(null);
-    setSelectedCourseName("");
-    setSelectedExamTypeIds([]);
-    setSelectedExamTypeName("");
-    setFilters({});
-    setShowTable(false);
-  };
 
   //Get Filters
   const getGroups = async () => {
@@ -89,7 +69,6 @@ const QPMiddleArea = () => {
       console.error("Failed to fetch groups", error);
     }
   };
-
   const getTypes = async () => {
     try {
       const response = await API.get("/PaperTypes");
@@ -98,7 +77,6 @@ const QPMiddleArea = () => {
       console.error("Failed to fetch types", error);
     }
   };
-
   const getCourses = async () => {
     try {
       const response = await API.get("/Course");
@@ -107,7 +85,6 @@ const QPMiddleArea = () => {
       console.error("Failed to fetch courses", error);
     }
   };
-
   const getExamType = async () => {
     try {
       const response = await API.get("/ExamType");
@@ -128,17 +105,14 @@ const QPMiddleArea = () => {
     setSelectedGroupName(selectedGroup ? selectedGroup.name : "");
     setIsGroupSelected(true);
   };
-
   const handleTypeChange = (value) => {
     setSelectedTypeId(value);
   };
-
   const handleCourseChange = (value) => {
     const selectedCourse = courses.find((course) => course.courseId === value);
     setSelectedCourseId(value);
     setSelectedCourseName(selectedCourse ? selectedCourse.courseName : "");
   };
-
   const handleSemesterChange = (type) => {
     const matching = examType.filter((item) => item.type === type);
     const ids = matching.map((item) => item.examTypeId);
@@ -146,6 +120,7 @@ const QPMiddleArea = () => {
     setSelectedExamTypeName(type);
   };
 
+  //Button Click Actions
   const handleApplyClick = async () => {
     setLoading(true);
     setError(null);
@@ -214,6 +189,24 @@ const QPMiddleArea = () => {
     } finally {
       setLoading(false);
     }
+  };
+  const handleAddClick = () => {
+    const encryptedGroupId = encrypt(selectedGroupId);
+    const encryptedGroupName = encrypt(selectedGroupName);
+    navigate(`/Add-Paper/${encryptedGroupId}/${encryptedGroupName}`);
+  };
+  const handleClearClick = () => {
+    setSelectedGroupId(null);
+    setSelectedGroupName("");
+    setIsGroupSelected(false);
+    setSelectedTypeId(null);
+    setSelectedTypeName("");
+    setSelectedCourseId(null);
+    setSelectedCourseName("");
+    setSelectedExamTypeIds([]);
+    setSelectedExamTypeName("");
+    setFilters({});
+    setShowTable(false);
   };
 
   return (
