@@ -52,6 +52,14 @@ const QPMiddleArea = () => {
     customDarkBorder,
   ] = cssClasses;
 
+  //Get Data Calls
+  useEffect(() => {
+    getGroups();
+    getTypes();
+    getExamType();
+    getCourses();
+  }, []);
+
   const handleAddClick = () => {
     const encryptedGroupId = encrypt(selectedGroupId);
     const encryptedGroupName = encrypt(selectedGroupName);
@@ -72,60 +80,48 @@ const QPMiddleArea = () => {
     setShowTable(false);
   };
 
-  useEffect(() => {
-    const getGroups = async () => {
-      try {
-        const response = await API.get("/Groups");
-        setGroups(response.data);
-      } catch (error) {
-        console.error("Failed to fetch groups", error);
-      }
-    };
-    getGroups();
-  }, []);
+  //Get Filters
+  const getGroups = async () => {
+    try {
+      const response = await API.get("/Groups");
+      setGroups(response.data);
+    } catch (error) {
+      console.error("Failed to fetch groups", error);
+    }
+  };
 
-  useEffect(() => {
-    const getTypes = async () => {
-      try {
-        const response = await API.get("/PaperTypes");
-        setTypes(response.data);
-      } catch (error) {
-        console.error("Failed to fetch types", error);
-      }
-    };
-    getTypes();
-  }, []);
+  const getTypes = async () => {
+    try {
+      const response = await API.get("/PaperTypes");
+      setTypes(response.data);
+    } catch (error) {
+      console.error("Failed to fetch types", error);
+    }
+  };
 
-  useEffect(() => {
-    const getCourses = async () => {
-      try {
-        const response = await API.get("/Course");
-        setCourses(response.data);
-      } catch (error) {
-        console.error("Failed to fetch courses", error);
-      }
-    };
-    getCourses();
-  }, []);
+  const getCourses = async () => {
+    try {
+      const response = await API.get("/Course");
+      setCourses(response.data);
+    } catch (error) {
+      console.error("Failed to fetch courses", error);
+    }
+  };
 
-  useEffect(() => {
-    const getExamType = async () => {
-      try {
-        const response = await API.get("/ExamType");
-        const apiData = response.data;
+  const getExamType = async () => {
+    try {
+      const response = await API.get("/ExamType");
+      const apiData = response.data;
+      setExamType(apiData);
+      // Extract unique types
+      const typesSet = new Set(apiData.map((item) => item.type));
+      setUniqueTypes([...typesSet]);
+    } catch (error) {
+      console.error("Failed to fetch exam types", error);
+    }
+  };
 
-        setExamType(apiData);
-
-        // Extract unique types
-        const typesSet = new Set(apiData.map((item) => item.type));
-        setUniqueTypes([...typesSet]);
-      } catch (error) {
-        console.error("Failed to fetch exam types", error);
-      }
-    };
-    getExamType();
-  }, []);
-
+  //Change in Filters
   const handleGroupChange = (value) => {
     const selectedGroup = groups.find((group) => group.id === value);
     setSelectedGroupId(value);
@@ -150,70 +146,6 @@ const QPMiddleArea = () => {
     setSelectedExamTypeName(type);
   };
 
-  // const handleApplyClick = async () => {
-  //   setLoading(true);
-  //   setError(null);
-
-  //   const filtersObj = {
-  //     groupName: encrypt(selectedGroupName),
-  //     groupID: encrypt(selectedGroupId),
-  //     selectedType: selectedTypeId,
-  //     selectedTypeName: selectedTypeName,
-  //     selectedCourse: selectedCourseId,
-  //     selectedCourseName: selectedCourseName,
-  //     selectedExamTypeId: selectedExamTypeIds, // Array of IDs
-  //     selectedExamTypeName: selectedExamTypeName, // Type Name
-  //   };
-  //   setFilters(filtersObj);
-
-  //   try {
-  //     let url = "/QPMasters/Filter?";
-
-  //     // Add groupId (required)
-  //     if (filtersObj.groupID) {
-  //       url += `groupId=${decrypt(filtersObj.groupID)}`;
-  //     }
-
-  //     // Add courseId if available
-  //     if (filtersObj.selectedCourse) {
-  //       url += `&courseId=${filtersObj.selectedCourse}`;
-  //     }
-
-  //     // Add typeId if available
-  //     if (filtersObj.selectedType) {
-  //       url += `&typeId=${filtersObj.selectedType}`;
-  //     }
-
-  //     // Add examTypeIds if available
-  //     if (
-  //       Array.isArray(filtersObj.selectedExamTypeId) &&
-  //       filtersObj.selectedExamTypeId.length > 0
-  //     ) {
-  //       filtersObj.selectedExamTypeId.forEach((id) => {
-  //         url += `&examTypeId=${id}`;
-  //       });
-  //     }
-
-  //     // Make the API call
-  //     const response = await API.get(url);
-
-  //     if (response.status === 200) {
-  //       setQpData(response.data);
-  //       if (response.data.length > 0) {
-  //         setShowTable(true);
-  //       } else {
-  //         setError("No data found for the selected filters.");
-  //       }
-  //     } else {
-  //       throw new Error("Failed to fetch data");
-  //     }
-  //   } catch (err) {
-  //     console.error("Error fetching QP data:", err);
-  //     setError("Failed to load data. Please try again later.");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
   const handleApplyClick = async () => {
     setLoading(true);
     setError(null);
