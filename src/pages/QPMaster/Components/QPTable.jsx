@@ -13,9 +13,9 @@ import { Select } from "antd";
 
 const { Option } = Select;
 
-const QPTable = ({ 
-  filters, 
-  qpData, 
+const QPTable = ({
+  filters,
+  qpData,
   setShowTable,
   groups,
   types,
@@ -31,7 +31,7 @@ const QPTable = ({
   onCourseChange,
   onSemesterChange,
   onApplyClick,
-  onClearClick
+  onClearClick,
 }) => {
   const themeState = useStore(themeStore);
   const cssClasses = useMemo(() => themeState.getCssClasses(), [themeState]);
@@ -46,8 +46,8 @@ const QPTable = ({
     customLightBorder,
     customDarkBorder,
   ] = cssClasses;
-  
-//Button Click Actions
+
+  //Button Click Actions
   const handleHomeClick = () => {
     setShowTable(false);
   };
@@ -185,8 +185,8 @@ const QPTable = ({
             allowClear
           >
             {types.map((type) => (
-              <Option key={type.id} value={type.id}>
-                {type.name}
+              <Option key={type.typeId} value={type.typeId}>
+                {type.types}
               </Option>
             ))}
           </Select>
@@ -210,7 +210,11 @@ const QPTable = ({
           <Select
             className="w-100"
             placeholder="Select Semester"
-            value={selectedExamTypeIds.length > 0 ? selectedExamTypeIds[0] : undefined}
+            value={
+              selectedExamTypeIds.length > 0
+                ? selectedExamTypeIds[0]
+                : undefined
+            }
             onChange={onSemesterChange}
             allowClear
           >

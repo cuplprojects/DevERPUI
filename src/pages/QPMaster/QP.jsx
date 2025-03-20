@@ -227,8 +227,8 @@ const QPMiddleArea = () => {
             </Col>
           </Row>
 
-          <Row className="mb-4">
-            <Col xs={12} md={3} className="mb-2">
+          <Row className="mb-4 w-100">
+            <Col xs={12} md={3} lg={3} className="mb-2">
               <Select
                 className="w-100"
                 placeholder="Select Group"
@@ -242,7 +242,7 @@ const QPMiddleArea = () => {
                 ))}
               </Select>
             </Col>
-            <Col xs={12} md={3} className="mb-2">
+            <Col xs={12} md={3} lg={3} className="mb-2">
               <Select
                 className="w-100"
                 placeholder="Select Type"
@@ -256,7 +256,7 @@ const QPMiddleArea = () => {
                 ))}
               </Select>
             </Col>
-            <Col xs={12} md={3} className="mb-2">
+            <Col xs={12} md={3} lg={3} className="mb-2">
               <Select
                 className="w-100"
                 placeholder="Select Course"
@@ -270,7 +270,7 @@ const QPMiddleArea = () => {
                 ))}
               </Select>
             </Col>
-            <Col xs={12} md={3} className="mb-2">
+            <Col xs={12} md={3} lg={3} className="mb-2">
               <Select
                 className="w-100"
                 placeholder="Select Semester Type"
@@ -294,12 +294,30 @@ const QPMiddleArea = () => {
                 onClick={handleApplyClick}
                 disabled={loading}
               >
-                {(filters || selectedGroupId) ? "Apply & View" : "View All"}
+                {selectedGroupId ||
+                selectedGroupName ||
+                selectedTypeId ||
+                selectedCourseId ||
+                selectedExamTypeIds.length > 0
+                  ? "Apply & View"
+                  : "View All"}
               </Button>
+
               <Button variant="secondary" onClick={handleClearClick}>
                 Clear Filters
               </Button>
-
+            </Col>
+          </Row>
+          <Row>
+            <Col
+              xs={12}
+              className={`text-center fw-bold fs-4 ${customDarkText}`}
+            >
+              OR
+            </Col>
+          </Row>
+          <Row className="mb-4">
+            <Col xs={12} className="text-center">
               <Button
                 variant="success"
                 className="ms-2"
