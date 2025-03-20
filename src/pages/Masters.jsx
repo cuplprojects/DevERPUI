@@ -42,6 +42,10 @@ import { MdSubject } from "react-icons/md";
 import { SiCoursera } from "react-icons/si";
 import { FaBook } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import QcProcess from "./MssProcess/Qcscreen";
+import Mss from "./MssProcess/mss";
+
+
 
 const Sidebar = () => {
   const { t } = useTranslation();
@@ -146,6 +150,9 @@ const Sidebar = () => {
     { key: 'subject', icon: <MdSubject />, label: t('subject'), permission: '2.8' },
     { key: 'course', icon: <SiCoursera />, label: t('course'), permission: '2.8' },
     {key: "display-panel",icon: <FaBell />,label: t("displayPanel"),permission: "2.11", },
+    { key: 'qcProcess', icon: <FaBook />, label: t('qcProcess'), permission: '2.12' },
+    { key: 'mss', icon: <FaBook />, label: t('mss'), permission: '2.13' },
+
     {
       key: "developerTools",
       icon: <FaScrewdriverWrench />,
@@ -335,6 +342,8 @@ const Sidebar = () => {
           {hasPermission('2.8') && selectedMenu === 'subject' && <SubjectManager />}
           {hasPermission('2.8') && selectedMenu === 'course' && <CourseManager />}
           {hasPermission("2.11") && selectedMenu === "display-panel" && (<DisplayPanel />)}
+          {hasPermission("2.12") && selectedMenu === "qcProcess" && (<QcProcess />)}
+          {hasPermission("2.13") && selectedMenu === "mss" && (<Mss />)}
         </Col>
       </Row>
     </Container>
