@@ -210,39 +210,30 @@ const QPMiddleArea = () => {
   };
 
   return (
-    <div
-      className="container-fluid d-flex justify-content-center align-items-center"
-      style={{ height: "80vh" }}
-    >
+    <div className={`${customLight} p-4 w-100`}>
       {!showTable ? (
-        <div
-          className="d-flex flex-column align-items-center justify-content-center p-4"
-          style={{
-            height: "80vh",
-            backgroundColor: "#e9ecef",
-            borderRadius: "10px",
-            width: "100%",
-            boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-          }}
-        >
-          <h1
-            className={`${customDarkText} mb-4 text-center`}
-            style={{
-              fontSize: "5rem", // Adjusted for responsiveness
-              fontWeight: "bold",
-            }}
-          >
-            QP-Masters
-          </h1>
-          <Row className="mb-3 w-50 justify-content-center">
-            <Col>
+        <div>
+          <Row className="mb-4">
+            <Col xs={12} className="text-center">
+              <h1
+                className={`${customDarkText}`}
+                style={{
+                  fontSize: "3rem",
+                  fontWeight: "bold",
+                }}
+              >
+                QP-Masters
+              </h1>
+            </Col>
+          </Row>
+
+          <Row className="mb-4">
+            <Col xs={12} md={3} className="mb-2">
               <Select
-                showSearch
-                placeholder="Select Group *"
-                className="m-2 w-100"
-                onChange={handleGroupChange}
+                className="w-100"
+                placeholder="Select Group"
                 value={selectedGroupId}
-                allowClear
+                onChange={handleGroupChange}
               >
                 {groups.map((group) => (
                   <Option key={group.id} value={group.id}>
@@ -250,14 +241,13 @@ const QPMiddleArea = () => {
                   </Option>
                 ))}
               </Select>
+            </Col>
+            <Col xs={12} md={3} className="mb-2">
               <Select
-                showSearch
+                className="w-100"
                 placeholder="Select Type"
-                className="m-2 w-100"
-                onChange={handleTypeChange}
                 value={selectedTypeId}
-                allowClear
-                // disabled={!isGroupSelected}
+                onChange={handleTypeChange}
               >
                 {types.map((type) => (
                   <Option key={type.typeId} value={type.typeId}>
@@ -265,14 +255,13 @@ const QPMiddleArea = () => {
                   </Option>
                 ))}
               </Select>
+            </Col>
+            <Col xs={12} md={3} className="mb-2">
               <Select
-                showSearch
+                className="w-100"
                 placeholder="Select Course"
-                className="m-2 w-100"
-                onChange={handleCourseChange}
                 value={selectedCourseId}
-                allowClear
-                // disabled={!isGroupSelected}
+                onChange={handleCourseChange}
               >
                 {courses.map((course) => (
                   <Option key={course.courseId} value={course.courseId}>
@@ -280,14 +269,13 @@ const QPMiddleArea = () => {
                   </Option>
                 ))}
               </Select>
+            </Col>
+            <Col xs={12} md={3} className="mb-2">
               <Select
-                showSearch
+                className="w-100"
                 placeholder="Select Semester Type"
-                className="m-2 w-100"
-                onChange={handleSemesterChange}
                 value={selectedExamTypeName || undefined}
-                allowClear
-                // disabled={!isGroupSelected}
+                onChange={handleSemesterChange}
               >
                 {uniqueTypes.map((type) => (
                   <Option key={type} value={type}>
@@ -298,70 +286,59 @@ const QPMiddleArea = () => {
             </Col>
           </Row>
 
-          <Row className="w-100 justify-content-center">
-            <Col className="d-flex justify-content-center">
+          <Row className="mb-4">
+            <Col xs={12} className="text-center">
               <Button
-                variant="outline-primary"
+                variant="primary"
                 className="me-2"
-                style={{ borderRadius: "5px" }}
                 onClick={handleApplyClick}
+                disabled={loading}
               >
-                Apply & View
+                {(filters || selectedGroupId) ? "Apply & View" : "View All"}
               </Button>
+              <Button variant="secondary" onClick={handleClearClick}>
+                Clear Filters
+              </Button>
+
               <Button
-                variant="outline-secondary"
-                className="me-2"
-                style={{ borderRadius: "5px" }}
-                onClick={handleClearClick}
+                variant="success"
+                className="ms-2"
+                onClick={handleAddClick}
               >
-                Clear
+                Add Paper
               </Button>
             </Col>
           </Row>
-          
-          <Row className="w-100 justify-content-center mt-3">
-            <span className={`${customDarkText} text-center fs-4 fw-bold`}>
-              OR
-            </span>
-          </Row>
-          <Row className="w-100 justify-content-center mt-3">
-            <Col className="d-flex justify-content-center">
-              <Tooltip
-                title={!isGroupSelected ? "Please select a group first" : ""}
-              >
-                <span>
-                  <Button
-                    variant="outline-secondary"
-                    style={{ borderRadius: "5px" }}
-                    className="me-2"
-                    onClick={handleAddClick}
-                    disabled={!isGroupSelected}
-                  >
-                    Add
-                  </Button>
-                </span>
-              </Tooltip>
-            </Col>
-          </Row>
-          {loading && <p>Loading data...</p>}
-          {error && <p className="text-danger">{error}</p>}
+
+          {error && (
+            <Row>
+              <Col xs={12} className="text-center text-danger">
+                {error}
+              </Col>
+            </Row>
+          )}
         </div>
       ) : (
-        <div
-          className="d-flex flex-colum justify-content-center p-4 w-100 h-100"
-          style={{
-            backgroundColor: "#e9ecef",
-            borderRadius: "10px",
-            // height: "80vh",
-            boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-          }}
-        >
-          <QPTable
-            filters={filters}
-            qpData={qpData}
-            setShowTable={setShowTable}
-          />
-        </div>
+        <QPTable
+          filters={filters}
+          qpData={qpData}
+          setShowTable={setShowTable}
+          groups={groups}
+          types={types}
+          courses={courses}
+          examType={examType}
+          uniqueTypes={uniqueTypes}
+          selectedGroupId={selectedGroupId}
+          selectedTypeId={selectedTypeId}
+          selectedCourseId={selectedCourseId}
+          selectedExamTypeIds={selectedExamTypeIds}
+          onGroupChange={handleGroupChange}
+          onTypeChange={handleTypeChange}
+          onCourseChange={handleCourseChange}
+          onSemesterChange={handleSemesterChange}
+          onApplyClick={handleApplyClick}
+          onClearClick={handleClearClick}
+        />
       )}
     </div>
   );

@@ -9,8 +9,30 @@ import { useMemo } from "react";
 import "./QPTable.css";
 import { decrypt, encrypt } from "./../../../Security/Security";
 import { Row, Col, Button } from "react-bootstrap";
+import { Select } from "antd";
 
-const QPTable = ({ filters, qpData, setShowTable }) => {
+const { Option } = Select;
+
+const QPTable = ({ 
+  filters, 
+  qpData, 
+  setShowTable,
+  groups,
+  types,
+  courses,
+  examType,
+  uniqueTypes,
+  selectedGroupId,
+  selectedTypeId,
+  selectedCourseId,
+  selectedExamTypeIds,
+  onGroupChange,
+  onTypeChange,
+  onCourseChange,
+  onSemesterChange,
+  onApplyClick,
+  onClearClick
+}) => {
   const themeState = useStore(themeStore);
   const cssClasses = useMemo(() => themeState.getCssClasses(), [themeState]);
   // console.log("Filters passed ->", filters);
@@ -138,9 +160,74 @@ const QPTable = ({ filters, qpData, setShowTable }) => {
       {qpData.length === 0 && <p>No data found for the selected filters.</p>}
 
       {/* Filters Section */}
-      <Row className="">
-        <Col xs={12}>
-
+      <Row className="mb-4">
+        <Col xs={12} md={3} className="mb-2">
+          <Select
+            className="w-100"
+            placeholder="Select Group"
+            value={selectedGroupId}
+            onChange={onGroupChange}
+            allowClear
+          >
+            {groups.map((group) => (
+              <Option key={group.id} value={group.id}>
+                {group.name}
+              </Option>
+            ))}
+          </Select>
+        </Col>
+        <Col xs={12} md={3} className="mb-2">
+          <Select
+            className="w-100"
+            placeholder="Select Type"
+            value={selectedTypeId}
+            onChange={onTypeChange}
+            allowClear
+          >
+            {types.map((type) => (
+              <Option key={type.id} value={type.id}>
+                {type.name}
+              </Option>
+            ))}
+          </Select>
+        </Col>
+        <Col xs={12} md={3} className="mb-2">
+          <Select
+            className="w-100"
+            placeholder="Select Course"
+            value={selectedCourseId}
+            onChange={onCourseChange}
+            allowClear
+          >
+            {courses.map((course) => (
+              <Option key={course.courseId} value={course.courseId}>
+                {course.courseName}
+              </Option>
+            ))}
+          </Select>
+        </Col>
+        <Col xs={12} md={3} className="mb-2">
+          <Select
+            className="w-100"
+            placeholder="Select Semester"
+            value={selectedExamTypeIds.length > 0 ? selectedExamTypeIds[0] : undefined}
+            onChange={onSemesterChange}
+            allowClear
+          >
+            {uniqueTypes.map((type) => (
+              <Option key={type} value={type}>
+                {type}
+              </Option>
+            ))}
+          </Select>
+        </Col>
+        <Col xs={12} className="text-center mt-3">
+          <Button variant="primary" className="me-2" onClick={onApplyClick}>
+            Apply Filters
+          </Button>
+          <Button variant="secondary" onClick={onClearClick}>
+            Clear Filters
+          </Button>
         </Col>
       </Row>
 
