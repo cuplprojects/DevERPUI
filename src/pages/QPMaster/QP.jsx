@@ -8,7 +8,6 @@ import themeStore from "./../../store/themeStore";
 import { useStore } from "zustand";
 import API from "../../CustomHooks/MasterApiHooks/api";
 import QPTable from "./Components/QPTable";
-import { FaHome } from "react-icons/fa";
 import { decrypt, encrypt } from "./../../Security/Security";
 
 const { Option } = Select;
@@ -57,6 +56,20 @@ const QPMiddleArea = () => {
     const encryptedGroupId = encrypt(selectedGroupId);
     const encryptedGroupName = encrypt(selectedGroupName);
     navigate(`/Add-Paper/${encryptedGroupId}/${encryptedGroupName}`);
+  };
+
+  const handleClearClick = () => {
+    setSelectedGroupId(null);
+    setSelectedGroupName("");
+    setIsGroupSelected(false);
+    setSelectedTypeId(null);
+    setSelectedTypeName("");
+    setSelectedCourseId(null);
+    setSelectedCourseName("");
+    setSelectedExamTypeIds([]);
+    setSelectedExamTypeName("");
+    setFilters({});
+    setShowTable(false);
   };
 
   useEffect(() => {
@@ -204,7 +217,7 @@ const QPMiddleArea = () => {
   const handleApplyClick = async () => {
     setLoading(true);
     setError(null);
-  
+
     const filtersObj = {
       groupName: selectedGroupName ? encrypt(selectedGroupName) : null,
       groupID: selectedGroupId ? encrypt(selectedGroupId) : null,
@@ -216,43 +229,43 @@ const QPMiddleArea = () => {
       selectedExamTypeName: selectedExamTypeName, // Type Name
     };
     setFilters(filtersObj);
-  
+
     try {
       let url = "/QPMasters/Filter?";
       let hasFilters = false;
-  
+
       // Add groupId if available
       if (filtersObj.groupID) {
         url += `groupId=${decrypt(filtersObj.groupID)}`;
         hasFilters = true;
       }
-  
+
       // Add courseId if available
       if (filtersObj.selectedCourse) {
-        url += `${hasFilters ? '&' : ''}courseId=${filtersObj.selectedCourse}`;
+        url += `${hasFilters ? "&" : ""}courseId=${filtersObj.selectedCourse}`;
         hasFilters = true;
       }
-  
+
       // Add typeId if available
       if (filtersObj.selectedType) {
-        url += `${hasFilters ? '&' : ''}typeId=${filtersObj.selectedType}`;
+        url += `${hasFilters ? "&" : ""}typeId=${filtersObj.selectedType}`;
         hasFilters = true;
       }
-  
+
       // Add examTypeIds if available
       if (
         Array.isArray(filtersObj.selectedExamTypeId) &&
         filtersObj.selectedExamTypeId.length > 0
       ) {
         filtersObj.selectedExamTypeId.forEach((id) => {
-          url += `${hasFilters ? '&' : ''}examTypeId=${id}`;
+          url += `${hasFilters ? "&" : ""}examTypeId=${id}`;
           hasFilters = true;
         });
       }
-  
+
       // Make the API call
       const response = await API.get(url);
-  
+
       if (response.status === 200) {
         setQpData(response.data);
         if (response.data.length > 0) {
@@ -270,7 +283,6 @@ const QPMiddleArea = () => {
       setLoading(false);
     }
   };
-  
 
   return (
     <div
@@ -365,6 +377,14 @@ const QPMiddleArea = () => {
                 onClick={handleApplyClick}
               >
                 Apply & View
+              </Button>
+              <Button
+                variant="outline-secondary"
+                className="me-2"
+                style={{ borderRadius: "5px" }}
+                onClick={handleClearClick}
+              >
+                Clear
               </Button>
             </Col>
           </Row>
