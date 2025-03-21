@@ -210,7 +210,7 @@ const QPMiddleArea = () => {
   };
 
   return (
-    <div className={`${customLight} p-4 w-100`}>
+    <div className={`${customLight} p-4 w-100 rounded shadow h-100`}>
       {!showTable ? (
         <div>
           <Row className="mb-4">
@@ -242,6 +242,8 @@ const QPMiddleArea = () => {
                 ))}
               </Select>
             </Col>
+            </Row>
+            <Row className="mb-4 w-100">
             <Col xs={12} md={3} lg={3} className="mb-2">
               <Select
                 className="w-100"
