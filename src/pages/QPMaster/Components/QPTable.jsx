@@ -1,14 +1,14 @@
 import React from "react";
-import { FaHome } from "react-icons/fa";
+import { FaHome, FaSearch } from "react-icons/fa";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import themeStore from "./../../../store/themeStore";
 import { useStore } from "zustand";
-import { useMemo } from "react";
+import { useMemo, useState, useCallback, useRef } from "react";
 import "./QPTable.css";
 import { decrypt, encrypt } from "./../../../Security/Security";
-import { Row, Col, Button } from "react-bootstrap";
+import { Row, Col, Button, InputGroup, Form } from "react-bootstrap";
 import { Select } from "antd";
 
 const { Option } = Select;
@@ -35,7 +35,9 @@ const QPTable = ({
 }) => {
   const themeState = useStore(themeStore);
   const cssClasses = useMemo(() => themeState.getCssClasses(), [themeState]);
-  // console.log("Filters passed ->", filters);
+  const [globalFilter, setGlobalFilter] = useState("");
+  const gridRef = useRef(null);
+  
   const [
     customDark,
     customMid,
@@ -51,6 +53,24 @@ const QPTable = ({
   const handleHomeClick = () => {
     setShowTable(false);
   };
+
+  // Global search handler
+  const onFilterTextChange = useCallback((e) => {
+    const value = e.target.value;
+    setGlobalFilter(value);
+    
+    if (gridRef.current && gridRef.current.api) {
+      gridRef.current.api.setQuickFilter(value);
+    }
+  }, []);
+
+  // Clear search field
+  const clearSearch = useCallback(() => {
+    setGlobalFilter("");
+    if (gridRef.current && gridRef.current.api) {
+      gridRef.current.api.setQuickFilter("");
+    }
+  }, []);
 
   // Define all possible columns
   const allColumnDefs = [
@@ -236,17 +256,46 @@ const QPTable = ({
       </Row>
 
       {qpData.length > 0 && (
-        <div
-          className="ag-theme-alpine "
-          style={{ height: "60vh", width: "100%" }}
-        >
-          <AgGridReact
-            rowData={qpData}
-            columnDefs={columnDefs}
-            pagination={true}
-            paginationPageSize={10}
-          />
-        </div>
+        <>
+          {/* Global Search Bar */}
+          <Row className="mb-3">
+            <Col xs={12} md={6} lg={4} className="mx-auto">
+              <InputGroup>
+                <InputGroup.Text>
+                  <FaSearch />
+                </InputGroup.Text>
+                <Form.Control
+                  type="text"
+                  placeholder="Search across all columns..."
+                  value={globalFilter}
+                  onChange={onFilterTextChange}
+                  aria-label="Global search"
+                />
+                {globalFilter && (
+                  <Button variant="outline-secondary" onClick={clearSearch}>
+                    Clear
+                  </Button>
+                )}
+              </InputGroup>
+            </Col>
+          </Row>
+
+          <div
+            className="ag-theme-alpine"
+            style={{ height: "60vh", width: "100%" }}
+          >
+            <AgGridReact
+              ref={gridRef}
+              rowData={qpData}
+              columnDefs={columnDefs}
+              pagination={true}
+              paginationPageSize={10}
+              quickFilterText={globalFilter}
+              suppressMenu={false}
+              cacheQuickFilter={true}
+            />
+          </div>
+        </>
       )}
     </div>
   );
