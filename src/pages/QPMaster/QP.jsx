@@ -226,68 +226,72 @@ const QPMiddleArea = () => {
               </h1>
             </Col>
           </Row>
-
-          <Row className="mb-4 w-100">
-            <Col xs={12} md={3} lg={3} className="mb-2">
-              <Select
-                className="w-100"
-                placeholder="Select Group"
-                value={selectedGroupId}
-                onChange={handleGroupChange}
-              >
-                {groups.map((group) => (
-                  <Option key={group.id} value={group.id}>
-                    {group.name}
-                  </Option>
-                ))}
-              </Select>
-            </Col>
+          <div className="w-50 d-flex flex-column mx-auto">
+            <Row className="mb-4 w-100">
+              <Col xs={12} md={12} lg={12} className="mb-2">
+                <Select
+                  className="w-100"
+                  placeholder="Select Group"
+                  value={selectedGroupId}
+                  onChange={handleGroupChange}
+                >
+                  {groups.map((group) => (
+                    <Option key={group.id} value={group.id}>
+                      {group.name}
+                    </Option>
+                  ))}
+                </Select>
+              </Col>
             </Row>
             <Row className="mb-4 w-100">
-            <Col xs={12} md={3} lg={3} className="mb-2">
-              <Select
-                className="w-100"
-                placeholder="Select Type"
-                value={selectedTypeId}
-                onChange={handleTypeChange}
-              >
-                {types.map((type) => (
-                  <Option key={type.typeId} value={type.typeId}>
-                    {type.types}
-                  </Option>
-                ))}
-              </Select>
-            </Col>
-            <Col xs={12} md={3} lg={3} className="mb-2">
-              <Select
-                className="w-100"
-                placeholder="Select Course"
-                value={selectedCourseId}
-                onChange={handleCourseChange}
-              >
-                {courses.map((course) => (
-                  <Option key={course.courseId} value={course.courseId}>
-                    {course.courseName}
-                  </Option>
-                ))}
-              </Select>
-            </Col>
-            <Col xs={12} md={3} lg={3} className="mb-2">
-              <Select
-                className="w-100"
-                placeholder="Select Semester Type"
-                value={selectedExamTypeName || undefined}
-                onChange={handleSemesterChange}
-              >
-                {uniqueTypes.map((type) => (
-                  <Option key={type} value={type}>
-                    {type}
-                  </Option>
-                ))}
-              </Select>
-            </Col>
-          </Row>
-
+              <Col xs={12} md={12} lg={12} className="mb-2">
+                <Select
+                  className="w-100"
+                  placeholder="Select Type"
+                  value={selectedTypeId}
+                  onChange={handleTypeChange}
+                >
+                  {types.map((type) => (
+                    <Option key={type.typeId} value={type.typeId}>
+                      {type.types}
+                    </Option>
+                  ))}
+                </Select>
+              </Col>
+            </Row>
+            <Row className="mb-4 w-100">
+              <Col xs={12} md={12} lg={12} className="mb-2">
+                <Select
+                  className="w-100"
+                  placeholder="Select Course"
+                  value={selectedCourseId}
+                  onChange={handleCourseChange}
+                >
+                  {courses.map((course) => (
+                    <Option key={course.courseId} value={course.courseId}>
+                      {course.courseName}
+                    </Option>
+                  ))}
+                </Select>
+              </Col>
+            </Row>
+            <Row className="mb-4 w-100">
+              <Col xs={12} md={12} lg={12} className="mb-2">
+                <Select
+                  className="w-100"
+                  placeholder="Select Semester Type"
+                  value={selectedExamTypeName || undefined}
+                  onChange={handleSemesterChange}
+                >
+                  {uniqueTypes.map((type) => (
+                    <Option key={type} value={type}>
+                      {type}
+                    </Option>
+                  ))}
+                </Select>
+              </Col>
+            </Row>
+          </div>
           <Row className="mb-4">
             <Col xs={12} className="text-center">
               <Button
