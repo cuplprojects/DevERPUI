@@ -1,42 +1,55 @@
 import React, { useState } from 'react';
 import { Card, Button, Space, Progress, Tabs, Checkbox, Row, Col, Table } from 'antd';
-import { 
-  SearchOutlined, 
-  PlusOutlined, 
-  EditOutlined, 
-  DeleteOutlined, 
-  EyeOutlined, 
-  NumberOutlined, 
-  FileTextOutlined, 
-  TranslationOutlined, 
+
+import {
+  SearchOutlined,
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  EyeOutlined,
+  NumberOutlined,
+  FileTextOutlined,
+  TranslationOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
   CaretUpOutlined,
   CaretDownOutlined,
-  SwapOutlined
+  SwapOutlined,
+  ClockCircleOutlined,
+  CalculatorOutlined,
 } from '@ant-design/icons';
 
 const QcProcess = () => {
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [tempVerification, setTempVerification] = useState({});
+
   const [data, setData] = useState([
     {
       srNo: 1,
       catchNo: 'NP-710',
-      language: ['Hindi', 'English'],
+      language: [''],
       status: 100,
+      duration: '',
+      structure: '',
+      series: '',
+      totalMarks: '',
       verified: {
         catchNo: false,
         language: false,
         maxMarks: false,
-        questions: false
+        questions: false,
+        duration: false,
+        structure: false,
+        series: false,
+        totalMarks: false
       }
     },
     {
       srNo: 2,
       catchNo: 'NP-711',
-      language: ['Hindi', 'English'],
-      status: 75,
+      language: [''],
+      status: '',
       verified: {
         catchNo: false,
         language: false,
@@ -47,8 +60,8 @@ const QcProcess = () => {
     {
       srNo: 3,
       catchNo: 'NP-712',
-      language: ['Hindi', 'English'],
-      status: 50,
+      language: [''],
+      status: '',
       verified: {
         catchNo: false,
         language: false,
@@ -59,8 +72,8 @@ const QcProcess = () => {
     {
       srNo: 4,
       catchNo: 'NP-713',
-      language: ['Hindi', 'English'],
-      status: 25,
+      language: [''],
+      status: '',
       verified: {
         catchNo: false,
         language: false,
@@ -70,8 +83,6 @@ const QcProcess = () => {
     },
   ]);
 
-  // Remove the duplicate PreviewPanel and fix the column structure
-  // Remove the second columns declaration and update the existing one at the top
   const columns = [
     {
       title: () => (
@@ -93,7 +104,7 @@ const QcProcess = () => {
       title: () => (
         <div style={{ textAlign: 'center', padding: '12px 0', color: '#1f2937', fontWeight: 600 }}>
           <Space direction="vertical" align="center" size={4}>
-            
+
             <span style={{ fontSize: '14px' }}>Catch No</span>
           </Space>
         </div>
@@ -103,7 +114,7 @@ const QcProcess = () => {
       width: 120,
       align: 'center',
       render: (text, record) => (
-        <div style={{ 
+        <div style={{
           padding: '2px',
           backgroundColor: record.verified?.catchNo ? '#f6ffed' : '#fff1f0',
           border: `1px solid ${record.verified?.catchNo ? '#b7eb8f' : '#ffa39e'}`,
@@ -111,8 +122,8 @@ const QcProcess = () => {
           textAlign: 'center'
         }}>
           {text}
-          {record.verified?.catchNo ? 
-            <CheckCircleOutlined style={{ color: '#52c41a', marginLeft: '8px' }} /> : 
+          {record.verified?.catchNo ?
+            <CheckCircleOutlined style={{ color: '#52c41a', marginLeft: '8px' }} /> :
             <CloseCircleOutlined style={{ color: '#ff4d4f', marginLeft: '8px' }} />
           }
         </div>
@@ -128,9 +139,9 @@ const QcProcess = () => {
       ),
       dataIndex: 'language',
       key: 'language',
-      width: 120,
+      width: 115,
       render: (text, record) => (
-        <div style={{ 
+        <div style={{
           padding: '2px',
           backgroundColor: record.verified?.language ? '#f6ffed' : '#fff1f0',
           border: `1px solid ${record.verified?.language ? '#b7eb8f' : '#ffa39e'}`,
@@ -138,8 +149,8 @@ const QcProcess = () => {
           textAlign: 'center'
         }}>
           {record.language.join(' / ')}
-          {record.verified?.language ? 
-            <CheckCircleOutlined style={{ color: '#52c41a', marginLeft: '8px' }} /> : 
+          {record.verified?.language ?
+            <CheckCircleOutlined style={{ color: '#52c41a', marginLeft: '8px' }} /> :
             <CloseCircleOutlined style={{ color: '#ff4d4f', marginLeft: '8px' }} />
           }
         </div>
@@ -156,12 +167,13 @@ const QcProcess = () => {
       key: 'maxMarks',
       width: 120,
       render: (_, record) => (
-        <div style={{ 
+        <div style={{
           padding: '2px',
           backgroundColor: record.verified?.maxMarks ? '#f6ffed' : '#fff1f0',
           border: `1px solid ${record.verified?.maxMarks ? '#b7eb8f' : '#ffa39e'}`,
           borderRadius: '4px',
           textAlign: 'center'
+
         }}>
           {record.verified?.maxMarks ? <CheckCircleOutlined style={{ color: '#52c41a' }} /> : <CloseCircleOutlined style={{ color: '#ff4d4f' }} />}
         </div>
@@ -170,7 +182,7 @@ const QcProcess = () => {
     {
       title: () => (
         <Space>
-         
+
           <span>No. of Questions</span>
         </Space>
       ),
@@ -178,7 +190,7 @@ const QcProcess = () => {
       key: 'questions',
       width: 120,
       render: (_, record) => (
-        <div style={{ 
+        <div style={{
           padding: '2px',
           backgroundColor: record.verified?.questions ? '#f6ffed' : '#fff1f0',
           border: `1px solid ${record.verified?.questions ? '#b7eb8f' : '#ffa39e'}`,
@@ -186,6 +198,110 @@ const QcProcess = () => {
           textAlign: 'center'
         }}>
           {record.verified?.questions ? <CheckCircleOutlined style={{ color: '#52c41a' }} /> : <CloseCircleOutlined style={{ color: '#ff4d4f' }} />}
+        </div>
+      ),
+    },
+    {
+      title: () => (
+        <Space>
+          <ClockCircleOutlined />
+          <span>Duration</span>
+        </Space>
+      ),
+      dataIndex: 'duration',
+      key: 'duration',
+      width: 120,
+      render: (_, record) => (
+        <div style={{
+          padding: '2px',
+          backgroundColor: record.verified?.duration ? '#f6ffed' : '#fff1f0',
+          border: `1px solid ${record.verified?.duration ? '#b7eb8f' : '#ffa39e'}`,
+          borderRadius: '4px',
+          textAlign: 'center'
+        }}>
+          {record.duration}
+          {record.verified?.duration ?
+            <CheckCircleOutlined style={{ color: '#52c41a', marginLeft: '8px' }} /> :
+            <CloseCircleOutlined style={{ color: '#ff4d4f', marginLeft: '8px' }} />
+          }
+        </div>
+      ),
+    },
+    {
+      title: () => (
+        <Space>
+          <FileTextOutlined />
+          <span>Structure of paper</span>
+        </Space>
+      ),
+      dataIndex: 'structure',
+      key: 'structure',
+      width: 120,
+      render: (_, record) => (
+        <div style={{
+          padding: '2px',
+          backgroundColor: record.verified?.structure ? '#f6ffed' : '#fff1f0',
+          border: `1px solid ${record.verified?.structure ? '#b7eb8f' : '#ffa39e'}`,
+          borderRadius: '4px',
+          textAlign: 'center'
+        }}>
+          {record.structure}
+          {record.verified?.structure ?
+            <CheckCircleOutlined style={{ color: '#52c41a', marginLeft: '8px' }} /> :
+            <CloseCircleOutlined style={{ color: '#ff4d4f', marginLeft: '8px' }} />
+          }
+        </div>
+      ),
+    },
+    {
+      title: () => (
+        <Space>
+          <NumberOutlined />
+          <span>Series</span>
+        </Space>
+      ),
+      dataIndex: 'series',
+      key: 'series',
+      width: 100,
+      render: (_, record) => (
+        <div style={{
+          padding: '2px',
+          backgroundColor: record.verified?.series ? '#f6ffed' : '#fff1f0',
+          border: `1px solid ${record.verified?.series ? '#b7eb8f' : '#ffa39e'}`,
+          borderRadius: '4px',
+          textAlign: 'center'
+        }}>
+          {record.series}
+          {record.verified?.series ?
+            <CheckCircleOutlined style={{ color: '#52c41a', marginLeft: '8px' }} /> :
+            <CloseCircleOutlined style={{ color: '#ff4d4f', marginLeft: '8px' }} />
+          }
+        </div>
+      ),
+    },
+    {
+      title: () => (
+        <Space>
+          <CalculatorOutlined />
+          <span>Total Marks</span>
+        </Space>
+      ),
+      dataIndex: 'totalMarks',
+      key: 'totalMarks',
+      width: 120,
+      render: (_, record) => (
+        <div style={{
+          padding: '2px',
+          backgroundColor: record.verified?.totalMarks ? '#f6ffed' : '#fff1f0',
+          border: `1px solid ${record.verified?.totalMarks ? '#b7eb8f' : '#ffa39e'}`,
+          borderRadius: '4px',
+          textAlign: 'center'
+        }}>
+          {record.totalMarks}
+          {record.verified?.totalMarks ?
+            <CheckCircleOutlined style={{ color: '#52c41a', marginLeft: '8px' }} /> :
+            <CloseCircleOutlined style={{ color: '#ff4d4f', marginLeft: '8px' }} />
+          }
         </div>
       ),
     },
@@ -202,7 +318,7 @@ const QcProcess = () => {
       render: (_, record) => {
         const allVerified = Object.values(record.verified).every(value => value === true);
         return (
-          <div style={{ 
+          <div style={{
             padding: '2px',
             backgroundColor: allVerified ? '#f6ffed' : '#fff1f0',
             border: `1px solid ${allVerified ? '#b7eb8f' : '#ffa39e'}`,
@@ -245,24 +361,7 @@ const QcProcess = () => {
   const PreviewPanel = ({ record }) => {
     if (!record) return null;
 
-    const handleVerificationChange = (field) => {
-      const newData = data.map(item => {
-        if (item.srNo === record.srNo) {
-          const updatedVerified = {
-            ...item.verified,
-            [field]: !item.verified[field]
-          };
-          return {
-            ...item,
-            verified: updatedVerified
-          };
-        }
-        return item;
-      });
-      setData(newData);
-      setSelectedRecord({ ...record, verified: newData.find(item => item.srNo === record.srNo).verified });
-    };
-
+    // Add shouldShowItem function definition
     const shouldShowItem = (field) => {
       if (record.action === 'verify') return true;
       if (record.action === 'verified') return record.verified[field];
@@ -270,6 +369,59 @@ const QcProcess = () => {
       return true;
     };
 
+    const handleVerificationChange = (field) => {
+      setTempVerification(prev => ({
+        ...prev,
+        [field]: !prev[field]
+      }));
+    };
+
+    // Add function to handle final verification
+    // Update handleFinalVerification function
+    const handleFinalVerification = (e) => {
+      e.stopPropagation();
+      const newData = data.map(item => {
+        if (item.srNo === selectedRecord.srNo) {
+          const updatedVerified = { ...item.verified };
+          Object.keys(tempVerification).forEach(key => {
+            updatedVerified[key] = tempVerification[key];
+          });
+
+          // Calculate status based on verified fields
+          const totalFields = Object.keys(updatedVerified).length;
+          const verifiedFields = Object.values(updatedVerified).filter(v => v).length;
+          const status = (verifiedFields / totalFields) * 100;
+
+          return {
+            ...item,
+            verified: updatedVerified,
+            status: status
+          };
+        }
+        return item;
+      });
+
+      setData(newData);
+      handlePreview(selectedRecord, 'verified');
+      setTempVerification({});
+    };
+
+    // Update handlePreview function
+    const handlePreview = (record, action = 'verify') => {
+      if (selectedRecord?.srNo === record.srNo && action === selectedRecord?.action) {
+        setSelectedRecord(null);
+        setTempVerification({});
+      } else {
+        const initialTemp = {};
+        Object.keys(record.verified).forEach(key => {
+          initialTemp[key] = record.verified[key];
+        });
+        setTempVerification(initialTemp);
+        setSelectedRecord({ ...record, action });
+      }
+    };
+
+    // Update verificationItem function
     const verificationItem = (label, value, field) => {
       if (!shouldShowItem(field)) return null;
 
@@ -280,36 +432,28 @@ const QcProcess = () => {
           alignItems: 'center',
           padding: '12px',
           borderBottom: '1px solid #f0f0f0',
-          backgroundColor: record.verified[field] ? '#f6ffed' : '#fff',
+          backgroundColor: tempVerification[field] ? '#f6ffed' : '#fff',
           transition: 'all 0.3s ease'
         }}>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{ 
-              fontSize: '14px', 
-              color: '#8c8c8c',
-              marginBottom: '4px'
-            }}>{label}</span>
-            <span style={{ 
-              fontSize: '16px', 
-              fontWeight: '500',
-              color: '#262626'
-            }}>{value}</span>
+            <span style={{ fontSize: '14px', color: '#8c8c8c', marginBottom: '4px' }}>{label}</span>
+            <span style={{ fontSize: '16px', fontWeight: '500', color: '#262626' }}>{value}</span>
           </div>
           {record.action === 'verify' ? (
             <Checkbox
-              checked={record.verified[field]}
+              checked={tempVerification[field] || false}
               onChange={() => handleVerificationChange(field)}
               style={{ marginLeft: '20px' }}
             >
-              <span style={{ 
-                color: record.verified[field] ? '#52c41a' : '#ff4d4f',
+              <span style={{
+                color: tempVerification[field] ? '#52c41a' : '#ff4d4f',
                 fontWeight: '500'
               }}>
                 Verify
               </span>
             </Checkbox>
           ) : (
-            <span style={{ 
+            <span style={{
               color: record.verified[field] ? '#52c41a' : '#ff4d4f',
               fontWeight: '500'
             }}>
@@ -320,63 +464,84 @@ const QcProcess = () => {
       );
     };
 
+    // Update the action buttons section
+    // Inside PreviewPanel component, update the Card title section
     return (
-      <Card 
-        title={<div style={{ 
-          fontSize: '16px', 
-          fontWeight: '600',
-          color: record.action === 'verify' ? '#1890ff' : 
-                record.action === 'verified' ? '#52c41a' : '#ff4d4f'
-        }}>
-          {record.action === 'verify' ? 'MSS Verify' : 
-           record.action === 'verified' ? 'MSS Verified Items' : 'MSS Rejected Items'}
-        </div>}
-        style={{ 
+      <Card
+        title={
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            fontSize: '16px',
+            fontWeight: '600',
+            color: record.action === 'verify' ? '#1890ff' :
+              record.action === 'verified' ? '#52c41a' : '#ff4d4f'
+          }}>
+            <span>
+              {record.action === 'verify' ? 'MSS Verify' :
+                record.action === 'verified' ? 'MSS Verified Items' : 'MSS Rejected Items'}
+            </span>
+
+          </div>
+        }
+        style={{
           marginTop: 16,
           boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
           borderRadius: '8px',
-          border: `2px solid ${
-            record.action === 'verify' ? '#1890ff' : 
-            record.action === 'verified' ? '#52c41a' : '#ff4d4f'
-          }`
+          border: `2px solid ${record.action === 'verify' ? '#1890ff' :
+              record.action === 'verified' ? '#52c41a' : '#ff4d4f'
+            }`
         }}
         bodyStyle={{ padding: 0 }}
       >
         <div style={{ padding: '8px' }}>
           {verificationItem('Catch No', record.catchNo, 'catchNo')}
           {verificationItem('Language', 'Hindi / English', 'language')}
+          {verificationItem('Duration', record.duration, 'duration')}
+          {verificationItem('Structure', record.structure, 'structure')}
+          {verificationItem('Series', record.series, 'series')}
           {verificationItem('Max Marks', '100', 'maxMarks')}
+          {verificationItem('Total Marks', record.totalMarks, 'totalMarks')}
           {verificationItem('No. of Questions', '100', 'questions')}
-          
+
           {/* Add action buttons at the bottom */}
           {record.action === 'verify' && (
             <div style={{
               display: 'flex',
               justifyContent: 'flex-end',
-              gap: '8px',
-              padding: '16px',
+              gap: '10px',
+              padding: '10px',
               borderTop: '1px solid #f0f0f0',
               marginTop: '8px'
             }}>
               <Button
-                style={{ backgroundColor: '#52c41a', color: 'white' }}
-                icon={<CheckCircleOutlined />}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handlePreview(record, 'verified');
+                style={{
+                  backgroundColor: '#52c41a',
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
                 }}
+                onClick={handleFinalVerification}
               >
-                Verified
+                Mark Verified<CheckCircleOutlined style={{ marginLeft: 8 }} />
               </Button>
               <Button
-                danger
-                icon={<CloseCircleOutlined />}
+                style={{
+                  backgroundColor: '#ff4d4f',
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
                 onClick={(e) => {
                   e.stopPropagation();
                   handlePreview(record, 'reject');
+                  setTempVerification({});
                 }}
               >
-                Reject
+                Rejected<CloseCircleOutlined style={{ marginLeft: 8 }} />
               </Button>
             </div>
           )}
@@ -385,37 +550,20 @@ const QcProcess = () => {
     );
   };
 
-  // Add tabs for different lots
-  const items = [
-    { key: 'lot-1', label: 'Lot-1' },
-    { key: 'lot-2', label: 'Lot-2' },
-    { key: 'lot-3', label: 'Lot-3' },
-    { key: 'lot-4', label: 'Lot-4' },
-    { key: 'lot-5', label: 'Lot-5' },
-    { key: 'lot-6', label: 'Lot-6' },
-    { key: 'lot-7', label: 'Lot-7' },
-    { key: 'lot-8', label: 'Lot-8' },
-  ];
 
-  // Modify the handlePreview function to update the row status when verified
+
+  // Modify the handlePreview function
   const handlePreview = (record, action = 'verify') => {
-    if (action === 'verified') {
-      // Update the data to mark the row as verified
-      const newData = data.map(item => {
-        if (item.srNo === record.srNo) {
-          return {
-            ...item,
-            isVerified: true // Add this new property
-          };
-        }
-        return item;
-      });
-      setData(newData);
-    }
-    
     if (selectedRecord?.srNo === record.srNo) {
       setSelectedRecord(null);
+      setTempVerification({}); // Clear temp state when closing
     } else {
+      // Initialize tempVerification with current verified state
+      const initialTemp = {};
+      Object.keys(record.verified).forEach(key => {
+        initialTemp[key] = record.verified[key];
+      });
+      setTempVerification(initialTemp);
       setSelectedRecord({ ...record, action });
     }
   };
@@ -453,26 +601,68 @@ const QcProcess = () => {
           .custom-table .ant-table-thead > tr > th::before {
             display: none !important;
           }
-          .verified-row {
-            background-color: #f6ffed !important;
-          }
-          .verified-row:hover > td {
-            background-color: #d9f7be !important;
-          }
         `}
       </style>
       <Card>
-        <Progress 
-          percent={90} 
-          status="active" 
-          strokeColor={{ from: '#108ee9', to: '#87d068' }}
-          style={tableStyles.progressBar}
-        />
-        <Tabs
-          items={items}
-          type="card"
-          style={tableStyles.tabs}
-        />
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'flex-end', // Changed from space-between to flex-end
+          alignItems: 'center', 
+          marginBottom: '16px' 
+        }}>
+          <Space size="large">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <Button
+                type="text"
+                icon={<CheckCircleOutlined style={{
+                  color: selectedRecord?.action === 'verified' ? '#52c41a' : '#8c8c8c',
+                  fontSize: '33px'
+                }} />}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (selectedRecord) handlePreview(selectedRecord, 'verified');
+                }}
+              />
+              <span style={{
+                backgroundColor: '#e6f7ff',
+                color: '#52c41a',
+                padding: '1px 8px',
+                borderRadius: '10px',
+                fontSize: '12px',
+                fontWeight: '800'
+              }}>
+                {data.filter(item => 
+                  Object.values(item.verified).every(v => v)
+                ).length}
+              </span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <Button
+                type="text"
+                icon={<CloseCircleOutlined style={{
+                  color: selectedRecord?.action === 'reject' ? '#ff4d4f' : '#8c8c8c',
+                  fontSize: '33px'
+                }} />}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (selectedRecord) handlePreview(selectedRecord, 'reject');
+                }}
+              />
+              <span style={{
+                backgroundColor: '#fff1f0',
+                color: '#ff4d4f',
+                padding: '1px 6px',
+                borderRadius: '10px',
+                fontSize: '15px',
+                fontWeight: '600'
+              }}>
+                {data.filter(item => 
+                  Object.values(item.verified).some(v => !v)
+                ).length}
+              </span>
+            </div>
+          </Space>
+        </div>
         <Row gutter={16}>
           <Col span={selectedRecord ? 16 : 24}>
             <Table
@@ -485,9 +675,9 @@ const QcProcess = () => {
                 pageSizeOptions: [5, 10, 20, 30, 40, 50],
                 showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`,
               }}
-              scroll={{ 
+              scroll={{
                 x: 'max-content',
-                y: 400
+                y: 800  // Changed from 400 to 600 pixels
               }}
               onRow={(record) => ({
                 onClick: () => handlePreview(record),
@@ -501,11 +691,12 @@ const QcProcess = () => {
           </Col>
           {selectedRecord && (
             <Col span={8}>
-              <PreviewPanel 
-                record={selectedRecord} 
+              <PreviewPanel
+                record={selectedRecord}
                 style={{
                   ...tableStyles.previewCard,
-                  height: '100%',
+                  height: '800px', // Match table height
+                  overflowY: 'auto', // Add scroll if content is too long
                   border: '2px solid #1890ff',
                   boxShadow: '0 0 10px rgba(24, 144, 255, 0.2)',
                   borderRadius: '8px',
