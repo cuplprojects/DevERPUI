@@ -21,6 +21,7 @@ import CourseManager from './Course';
 import Project from './ProjectMaster/Project';
 import Zone from './Zone';
 import Type from './Type';
+import MSS from './MssProcess/Mss';
 import AlarmMaster from './Alarm';
 import Machine from './ProductionMachine';
 import './../styles/Sidebar.css';
@@ -36,7 +37,7 @@ import { useTranslation } from 'react-i18next';
 import SecurityQuestions from './SecurityQuestions';
 import Teams from './team';
 import DisplayPanel from './Panel/Panel';
-import { TbLanguage } from "react-icons/tb";
+import { TbCircleLetterMFilled, TbLanguage } from "react-icons/tb";
 import { PiExamFill } from 'react-icons/pi';
 import { MdSubject } from "react-icons/md";
 import { SiCoursera } from "react-icons/si";
@@ -145,6 +146,7 @@ const Sidebar = () => {
     { key: 'language', icon: <TbLanguage />, label: t('language'), permission: '2.8' },
     { key: 'subject', icon: <MdSubject />, label: t('subject'), permission: '2.8' },
     { key: 'course', icon: <SiCoursera />, label: t('course'), permission: '2.8' },
+    { key: 'mss', icon: <TbCircleLetterMFilled />, label: t('mss'), permission: '2.8' },
     {key: "display-panel",icon: <FaBell />,label: t("displayPanel"),permission: "2.11", },
     {
       key: "developerTools",
@@ -334,6 +336,7 @@ const Sidebar = () => {
           {hasPermission('2.8') && selectedMenu === 'language' && <LanguageManager />}
           {hasPermission('2.8') && selectedMenu === 'subject' && <SubjectManager />}
           {hasPermission('2.8') && selectedMenu === 'course' && <CourseManager />}
+          {hasPermission('2.8') && selectedMenu === 'mss' && <MSS />}
           {hasPermission("2.11") && selectedMenu === "display-panel" && (<DisplayPanel />)}
         </Col>
       </Row>
