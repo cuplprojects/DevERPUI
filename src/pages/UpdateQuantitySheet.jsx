@@ -333,7 +333,7 @@ const UpdateQuantitySheet = ({ projectId, onClose }) => {
         if (filterOutLots.includes(rowLotNo)) {
           return null;
         }
-        console.log(matchingRecords);
+        // console.log(matchingRecords);
         const rowData = {
           quantitySheetId: matchingRecords[0]?.quantitySheetId || 0,
           catchNo: currentCatchNo || "",
@@ -387,7 +387,7 @@ const UpdateQuantitySheet = ({ projectId, onClose }) => {
       });
 
       const response = await API.put("/QuantitySheet", formattedData);
-      console.log("Update successful:", response);
+      // console.log("Update successful:", response);
       success("Quantity sheet updated successfully");
       onClose();
     } catch (err) {
@@ -427,11 +427,11 @@ const UpdateQuantitySheet = ({ projectId, onClose }) => {
   };
 
   // Add a debug display for API data (optional, remove in production)
-  useEffect(() => {
-    if (apiData.length > 0) {
-      console.log("API Data loaded:", apiData);
-    }
-  }, [apiData]);
+  // useEffect(() => {
+  //   if (apiData.length > 0) {
+  //     console.log("API Data loaded:", apiData);
+  //   }
+  // }, [apiData]);
 
   // Add clearFile handler
   const clearFile = () => {
@@ -464,7 +464,7 @@ const UpdateQuantitySheet = ({ projectId, onClose }) => {
       return !filterOutLots.includes(rowLotNo);
     });
 
-    console.log("Filtered Paginated Data:", filteredData);
+    // console.log("Filtered Paginated Data:", filteredData);
 
     const startIndex = (currentPage - 1) * pageSize;
     const endIndex = startIndex + pageSize;

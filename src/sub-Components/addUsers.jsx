@@ -39,7 +39,7 @@ const AddUsers = () => {
   const [message, setMessage] = useState(false);
   const [roles, setRoles] = useState([]);
   const userData = useUserData();
-  console.log(userData)
+  // console.log(userData)
 
   const handleCloseModal = () => {
     setShowModal(false);

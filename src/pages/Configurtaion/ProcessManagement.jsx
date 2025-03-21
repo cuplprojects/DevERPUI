@@ -188,7 +188,7 @@ const ProcessManagement = ({ onUpdateProcesses, onAddProcess = () => { } }) => {
                 fetchProcesses();
             }
 
-            console.log('API Response:', response);
+            // console.log('API Response:', response);
 
             if (response.status === 204) {
                 notification.success({ 

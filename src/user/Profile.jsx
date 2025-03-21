@@ -118,7 +118,7 @@ const UserProfile = () => {
       });
       await refreshUserData();
       window.location.reload();
-      console.log('Upload successful');
+      // console.log('Upload successful');
     } catch (error) {
       console.error('Upload failed', error);
     }
