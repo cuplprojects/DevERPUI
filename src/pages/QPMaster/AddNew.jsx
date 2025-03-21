@@ -9,8 +9,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { FaHome } from "react-icons/fa";
 import API from "../../CustomHooks/MasterApiHooks/api";
 import { decrypt} from "./../../Security/Security";
-import { FaFileImport } from "react-icons/fa6";
-
+import { FaFileUpload } from "react-icons/fa";
 const { Option } = Select;
 
 const ImportPage = () => {
@@ -309,7 +308,7 @@ const ImportPage = () => {
                   className={` ${customDark === "dark-dark" ? `${customLight} ${customLightBorder}` : `${customLight} ${customDarkBorder} ${customDarkText}`}`}
                   onClick={handleImportClick}
                 >
-                  <FaFileImport  className={`me-2  ${customDark === "dark-dark" ? `${customLightText}` : `${customDarkText}`}`}
+                  <FaFileUpload className={`me-2  ${customDark === "dark-dark" ? `${customLightText}` : `${customDarkText}`}`}
                   size={30}/>
                   Import
                 </Button>
