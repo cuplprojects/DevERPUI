@@ -1,377 +1,159 @@
-import React, { useState, useEffect } from 'react';
-import {
-  Input,
-  Select,
-  Button,
-  Table,
-  Modal,
-  Checkbox,
-  message,
-  Space,
-  Card,
-  Row,
-  Col,
-  Typography,
-  InputNumber
-} from 'antd';
-import {
-  PlusOutlined,
-  TeamOutlined,
-  AppstoreOutlined,
-  CalendarOutlined,
-  SearchOutlined,
-  ImportOutlined,
-  FileAddOutlined,
-  DownloadOutlined,
-  CheckCircleOutlined,
-  BookOutlined,
-  EditOutlined,
-  SaveOutlined
-} from '@ant-design/icons';
+import React, { useState } from "react";
+import { Select, Spin, message, Card, Table } from "antd";
+import axios from "axios";
+import { Button, Col, Row, Container } from "react-bootstrap";
 
-const { Search } = Input;
 const { Option } = Select;
 
 const Mss = () => {
-  // State management
-  const [searchText, setSearchText] = useState('');
-  const [selectedCourse, setSelectedCourse] = useState(null);
-  const [selectedSemesters, setSelectedSemesters] = useState([]);
-  const [searchResults, setSearchResults] = useState([]);
-  const [isTableVisible, setIsTableVisible] = useState(false); // State to control table visibility
-  const [editingKey, setEditingKey] = useState('');
-  const [receivedRows, setReceivedRows] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [importing, setImporting] = useState(null);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [importedData, setImportedData] = useState([]); // State for imported data
 
-  // Add dummy data
-  useEffect(() => {
-    const dummyData = [
-      {
-        id: 1,
-        courseName: 'Bachelor of Computer Science',
-        nepCode: 'CS101',
-        semester: 'Odd',
-        paperTitle: 'Introduction to Programming',
-        catchNumber: 'Catch-001' // Placeholder catch number
-      },
-      {
-        id: 2,
-        courseName: 'Bachelor of Arts',
-        nepCode: 'BA201',
-        semester: 'Even',
-        paperTitle: 'Modern Literature',
-        catchNumber: 'Catch-002' // Placeholder catch number
-      },
-      {
-        id: 3,
-        courseName: 'Bachelor of Commerce',
-        nepCode: 'BC301',
-        semester: 'Annual',
-        paperTitle: 'Business Economics',
-        catchNumber: 'Catch-003' // Placeholder catch number
-      },
-      {
-        id: 4,
-        courseName: 'Bachelor of Science',
-        nepCode: 'BS401',
-        semester: 'Odd',
-        paperTitle: 'Physics Fundamentals',
-        catchNumber: 'Catch-004' // Placeholder catch number
-      },
-      {
-        id: 5,
-        courseName: 'Bachelor of Technology',
-        nepCode: 'BT501',
-        semester: 'Even',
-        paperTitle: 'Digital Electronics',
-        catchNumber: 'Catch-005' // Placeholder catch number
-      }
-    ];
+  const fetchResults = async (value, newPage = 1, append = false) => {
+    if (!value) {
+      setData([]);
+      setHasMore(false);
+      return;
+    }
 
-    setSearchResults(dummyData);
-  }, []);
+    setLoading(true);
+    try {
+      const response = await axios.get(
+        `https://localhost:7212/api/QPMasters/SearchInQpMaster?search=${value}&page=${newPage}&pageSize=5`
+      );
 
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedCatches, setSelectedCatches] = useState([]);
-  const [currentRecord, setCurrentRecord] = useState(null);
-
-  // Table columns configuration
-  const columns = [
-    {
-      title: 'Catch Number',
-      dataIndex: 'catchNumber',
-      key: 'catchNumber',
-      render: (text, record) => {
-        if (editingKey === record.id) {
-          return (
-            <InputNumber
-              defaultValue={text}
-              onPressEnter={() => saveEdits(record.id)}
-              onBlur={() => saveEdits(record.id)}
-            />
-          );
-        }
-        return text;
-      },
-    },
-    {
-      title: 'Course Name',
-      dataIndex: 'courseName',
-      key: 'courseName',
-    },
-    {
-      title: 'NEP Code',
-      dataIndex: 'nepCode',
-      key: 'nepCode',
-    },
-    {
-      title: 'Semester',
-      dataIndex: 'semester',
-      key: 'semester',
-    },
-    {
-      title: 'Paper Title',
-      dataIndex: 'paperTitle',
-      key: 'paperTitle',
-    },
-    {
-      title: 'Actions',
-      key: 'actions',
-      render: (_, record) => (
-        <Space>
-          <Button
-            type="default"
-            size="small"
-            onClick={() => handleMssReceived(record)}
-            icon={<CheckCircleOutlined />}
-            style={{
-              backgroundColor: receivedRows.includes(record.id) ? '#52c41a' : '',
-              borderColor: receivedRows.includes(record.id) ? '#52c41a' : '',
-              color: receivedRows.includes(record.id) ? '#fff' : '',
-            }}
-          >
-            Received
-          </Button>
-          {editingKey === record.id ? (
-            <Button
-              type="primary"
-              size="small"
-              onClick={() => saveEdits(record.id)}
-              icon={<SaveOutlined />}
-            >
-              Save
-            </Button>
-          ) : (
-            <Button
-              type="default"
-              size="small"
-              onClick={() => editCatchNumber(record.id)}
-              icon={<EditOutlined />}
-            >
-              Edit
-            </Button>
-          )}
-        </Space>
-      ),
-    },
-  ];
-
-  // Add new handler for MSS Received
-  const handleMssReceived = (record) => {
-    message.success(`MSS Received for: ${record.paperTitle}`);
-    setReceivedRows((prev) => [...prev, record.id]);
-    // Implement MSS received logic here
-  };
-
-  // Handlers
-  const handleSearch = (value) => {
-    setSearchText(value);
-    // Implement API call to fetch search results
-  };
-
-  const handleImportRecord = (record) => {
-    // Implement single record import logic
-    message.success(`Imported record: ${record.paperTitle}`);
-  };
-
-  const handleImportAllFromCourse = () => {
-    // Implement bulk import logic for selected course
-    message.success('Imported all records from the selected course');
-    setIsTableVisible(true); // Show the table when "Import All" is clicked
-  };
-
-  const handleShowCatches = (record) => {
-    setCurrentRecord(record);
-    setIsModalVisible(true);
-    // Fetch catches for the selected record
-  };
-
-  const handleCatchSelection = (selectedCatchIds) => {
-    setSelectedCatches(selectedCatchIds);
-  };
-
-  const handleImportCatches = () => {
-    // Implement catch import logic
-    message.success('Selected catches imported successfully');
-    setIsModalVisible(false);
-  };
-
-  const editCatchNumber = (key) => {
-    setEditingKey(key);
-  };
-
-  const saveEdits = (key) => {
-    const newData = [...searchResults];
-    const index = newData.findIndex((item) => key === item.id);
-    if (index > -1) {
-      const item = newData[index];
-      newData.splice(index, 1, {
-        ...item,
-        catchNumber: document.querySelector(`input[value="${item.catchNumber}"]`).value,
-      });
-      setSearchResults(newData);
-      setEditingKey('');
+      setHasMore(response.data.length > 0);
+      setData((prevData) => (append ? [...prevData, ...response.data] : response.data));
+      setPage(newPage);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Random course names
-  const courseOptions = [
-    'Mathematics',
-    'Physics',
-    'Chemistry',
-    'Biology',
-    'History'
-  ];
+  const handleSearch = (value) => {
+    setSearchTerm(value);
+    setHasMore(true);
+    fetchResults(value, 1);
+  };
 
-  const semesterOptions = [
-    'Semester 1',
-    'Semester 2',
-    'Semester 3',
-    'Semester 4',
+  const handleShowMore = () => {
+    fetchResults(searchTerm, page + 1, true);
+  };
+
+  const handleImport = async (item) => {
+    setImporting(item.qpMasterId);
+    try {
+      await axios.post("https://localhost:7212/api/QPMasters/InsertIntoQuantitySheet", item.qpMasterId, {
+        headers: { "Content-Type": "application/json" },
+      });
+
+      message.success(`Imported "${item.paperTitle}" successfully!`);
+
+      // Update the imported data state
+      setImportedData((prevData) => [...prevData, item]);
+
+    } catch (error) {
+      console.error("Import failed:", error);
+      message.error("Failed to import data.");
+    } finally {
+      setImporting(null);
+    }
+  };
+
+  // Table columns for imported data
+  const columns = [
+    {
+      title: "Paper Title",
+      dataIndex: "paperTitle",
+      key: "paperTitle",
+    },
+    {
+      title: "Course Name",
+      dataIndex: "courseName",
+      key: "courseName",
+    },
+    {
+      title: "NEP Code",
+      dataIndex: "nepCode",
+      key: "nepCode",
+    },
   ];
 
   return (
-    <div style={{ padding: '24px' }}>
-      <Card
-        title={
-          <Space>
-            <FileAddOutlined />
-            <Typography.Title level={4} style={{ margin: 0 }}>MSS Process</Typography.Title>
-          </Space>
-        }
-      >
-        <Row gutter={[16, 16]}>
-          <Col span={6}>
-            <div style={{ marginBottom: '8px' }}>
-              <Typography.Text type="secondary">
-                <BookOutlined /> Course
-              </Typography.Text>
-            </div>
+    <Container fluid className="mt-4">
+      <Row className="justify-content-center">
+        <Col xs={12} md={10} lg={8}>
+          <Card title="Search & Import QP Masters" className="shadow-sm">
             <Select
-              placeholder="Select Course"
-              style={{ width: '55%' }}
-              onChange={(value) => setSelectedCourse(value)}
-              size="small"
-            >
-              {courseOptions.map((course, index) => (
-                <Option key={index} value={course}>
-                  {course}
-                </Option>
-              ))}
-            </Select>
-          </Col>
-          <Col span={6}>
-            <div style={{ marginBottom: '8px' }}>
-              <Typography.Text type="secondary">
-                <CalendarOutlined /> Semester
-              </Typography.Text>
-            </div>
-            <Select
-              mode="multiple"
-              placeholder="Select Semesters"
-              style={{ width: '55%' }}
-              onChange={(value) => setSelectedSemesters(value)}
-              size="small"
-              disabled={!selectedCourse}
-            >
-              {semesterOptions.map((semester, index) => (
-                <Option key={index} value={semester}>
-                  {semester}
-                </Option>
-              ))}
-            </Select>
-          </Col>
-          <Col span={4}>
-            <div style={{ marginBottom: '8px' }}>
-              <Typography.Text type="secondary">
-                <SearchOutlined /> Search
-              </Typography.Text>
-            </div>
-            <Search
-              placeholder="Search papers..."
+              showSearch
+              value={searchTerm}
+              placeholder="Search QP Master..."
               onSearch={handleSearch}
-              enterButton={<SearchOutlined />}
-              size="small"
-            />
-          </Col>
-        </Row>
-
-        <div style={{ marginTop: '16px' }}>
-          {selectedCourse && (
-            <Button
-              type="primary"
-              icon={<DownloadOutlined style={{ fontSize: '16px' }} />}
-              onClick={handleImportAllFromCourse}
-              style={{
-                marginBottom: '16px',
-                background: '#1890ff',
-                borderColor: '#1890ff',
-                boxShadow: '0 2px 0 rgba(24,144,255,0.2)',
-                transition: 'all 0.3s ease',
-                padding: '6px 15px',
-                height: 'auto',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                '&:hover': {
-                  background: '#40a9ff',
-                  borderColor: '#40a9ff',
-                  transform: 'translateY(-1px)'
-                }
-              }}
-              size="middle"
-              className="import-button"
+              onChange={setSearchTerm}
+              notFoundContent={loading ? <Spin size="small" /> : "No results found"}
+              style={{ width: "100%", marginBottom: "16px" }}
+              dropdownRender={(menu) => (
+                <div>
+                  {menu}
+                  {hasMore && data.length > 0 && (
+                    <div className="text-center p-2">
+                      <Button variant="outline-primary" size="sm" onClick={handleShowMore}>
+                        Show More
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
             >
-              Import All
-            </Button>
-          )}
+              {data.map((item) => (
+                <Option key={item.qpMasterId} value={item.paperTitle}>
+                  <Row className="align-items-center p-2">
+                    <Col xs={12} md={8}>
+                      <strong>{item.paperTitle}</strong>
+                      <br />
+                      <small>
+                        <strong>Course Name:</strong> {item.courseName} &nbsp; | &nbsp;
+                        <strong>NEP Code:</strong> {item.nepCode}
+                      </small>
+                    </Col>
+                    <Col xs={12} md={4} className="d-flex flex-column gap-2 mt-2 mt-md-0">
+                      <Button
+                        variant="outline-warning"
+                        size="sm"
+                        onClick={() => handleImport(item)}
+                        disabled={importing === item.qpMasterId}
+                      >
+                        {importing === item.qpMasterId ? <Spin size="small" /> : "Import"}
+                      </Button>
+                      <Button variant="outline-info" size="sm">Import All by Course Name</Button>
+                    </Col>
+                  </Row>
+                </Option>
+              ))}
+            </Select>
+          </Card>
 
-          {isTableVisible && (
-            <Table
-              columns={columns}
-              dataSource={searchResults}
-              rowKey="id"
-              size="small"
-            />
+          {/* Imported Data Table */}
+          {importedData.length > 0 && (
+            <Card title="Imported Data" className="shadow-sm mt-4">
+              <Table
+                dataSource={importedData}
+                columns={columns}
+                rowKey="qpMasterId"
+                pagination={false}
+              />
+            </Card>
           )}
-        </div>
-
-        <Modal
-          title={
-            <Space>
-              <PlusOutlined />
-              <span>Select Catches</span>
-            </Space>
-          }
-          visible={isModalVisible}
-          onOk={handleImportCatches}
-          onCancel={() => setIsModalVisible(false)}
-        >
-          <Checkbox.Group onChange={handleCatchSelection}>
-            {/* Add catch options */}
-          </Checkbox.Group>
-        </Modal>
-      </Card>
-    </div>
+        </Col>
+      </Row>
+    </Container>
   );
 };
 
