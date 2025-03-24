@@ -1,0 +1,424 @@
+import React, { useEffect, useState } from 'react';
+import { Card, Button, Space, Checkbox, Row, Col, Table, Badge } from 'antd';
+import {
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  FileTextOutlined,
+  ArrowLeftOutlined,
+} from '@ant-design/icons';
+import API from '../../CustomHooks/MasterApiHooks/api';
+import { success, error } from '../../CustomHooks/Services/AlertMessageService';
+import { useTranslation } from 'react-i18next';
+
+const QcProcess = () => {
+  const [selectedRecord, setSelectedRecord] = useState(null);
+  const [tempVerification, setTempVerification] = useState({});
+  const [data, setData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [showback, setShowback] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await API.get('/QC/ByProject?projectId=74');
+        const transformedData = response.data.map(item => ({
+          ...item,
+          verified: item.verified || {},
+        }));
+        setData(transformedData);
+        setFilteredData((transformedData))
+      } catch (error) {
+        console.error('Failed to fetch data', error);
+      }
+    };
+    fetchData();
+  }, []);
+
+
+  const verificationkeys = [
+    {
+      name: 'Catch No',
+      keyname: 'catchNo'
+    },
+    {
+      name: 'Language',
+      keyname: 'language'
+    },
+    {
+      name: 'Duration',
+      keyname: 'duration'
+    },
+    {
+      name: 'Structure',
+      keyname: 'structure'
+    },
+    {
+      name: 'Series',
+      keyname: 'series'
+    },
+    {
+      name: 'Max Marks',
+      keyname: 'maxMarks'
+    },
+
+  ]
+
+  const columns = [
+    {
+      title: 'Sr.No',
+      dataIndex: 'srNo',
+      key: 'srNo',
+      align: 'center',
+      render: (_, record, index) => index + 1,
+      sorter: (a, b) => a.srNo - b.srNo,
+    },
+    {
+      title: 'Catch No',
+      dataIndex: 'catchNo',
+      key: 'catchNo',
+      align: 'center',
+      render: (text, record) => renderVerificationField(record, 'catchNo', text),
+    },
+    {
+      title: 'Language',
+      dataIndex: 'language',
+      key: 'language',
+      align: 'center',
+      render: (text, record) => renderVerificationField(record, 'language', text),
+    },
+    {
+      title: 'Max Marks',
+      dataIndex: 'maxMarks',
+      key: 'maxMarks',
+      align: 'center',
+      render: (text, record) => renderVerificationField(record, 'maxMarks', text),
+    },
+    {
+      title: 'Duration',
+      dataIndex: 'duration',
+      key: 'duration',
+      align: 'center',
+      render: (text, record) => renderVerificationField(record, 'duration', text),
+    },
+    {
+      title: 'Structure of Paper',
+      dataIndex: 'structure',
+      key: 'structure',
+      align: 'center',
+      render: (text, record) => renderVerificationField(record, 'structure', text),
+    },
+    {
+      title: 'Series',
+      dataIndex: 'series',
+      key: 'series',
+      align: 'center',
+      render: (text, record) => renderVerificationField(record, 'series', text),
+    },
+    {
+      title: 'Action',
+      key: 'action',
+      align: 'center',
+      render: (_, record) => (
+        <Button
+          type="primary"
+          icon={<CheckCircleOutlined />}
+          size="small"
+          onClick={(e) => handlePreview(record, 'verify')}
+        >
+          {record.verified?.status === true ? 'Verified' : record.verified?.status === false ? 'Rejected' : 'Verify'}
+        </Button>
+      ),
+    },
+  ];
+
+  const renderVerificationField = (record, field, text) => {
+    const verified = record.verified?.[field];
+    return (
+      <div
+        style={{
+          padding: '2px',
+          backgroundColor: verified ? '#f6ffed' : '#fff1f0',
+          border: `1px solid ${verified ? '#b7eb8f' : '#ffa39e'}`,
+          borderRadius: '4px',
+          textAlign: 'center',
+        }}
+      >
+        {text}
+        {verified ? (
+          <CheckCircleOutlined style={{ color: '#52c41a', marginLeft: '8px' }} />
+        ) : (
+          <CloseCircleOutlined style={{ color: '#ff4d4f', marginLeft: '8px' }} />
+        )}
+      </div>
+    );
+  };
+
+  const handlePreview = (record, action = 'verify') => {
+    if (selectedRecord?.quantitysheetId === record.quantitysheetId) {
+      setSelectedRecord(null);
+      setTempVerification({});
+    } else {
+      setTempVerification(record.verified || {});
+      setSelectedRecord({ ...record, action });
+    }
+  };
+
+  const handleFinalVerification = async () => {
+    if (!selectedRecord) return;
+    const qcData = prepareQcData(true);
+    await postQcData(qcData);
+  };
+
+  const handleRejectVerification = async () => {
+    if (!selectedRecord) return;
+    const qcData = prepareQcData(false);
+    await postQcData(qcData);
+  };
+
+  const prepareQcData = (status) => {
+    return {
+      QuantitySheetId: selectedRecord.quantitysheetId,
+      Language: tempVerification.language,
+      MaxMarks: tempVerification.maxMarks,
+      Duration: tempVerification.duration,
+      Status: status,
+      StructureOfPaper: tempVerification.structure,
+      Series: tempVerification.series,
+      ProjectId: 74
+    };
+  };
+
+  const postQcData = async (qcData) => {
+    try {
+      const response = await API.post('/QC', qcData);
+      if (response.status === 200 || response.status === 201) {
+        console.log('QC data processed successfully', response.data);
+        setData((prevData) =>
+          prevData.map((item) =>
+            item.quantitysheetId === selectedRecord.quantitysheetId ? { ...item, ...qcData } : item
+          )
+        );
+        setSelectedRecord(null);
+        setTempVerification({});
+        success(t('recordSent'));
+        fetchData();
+      }
+    } catch (error) {
+      error(t('failedToSendResponse'));
+      console.error('Error processing QC data', error);
+    }
+  };
+
+  const filterDataByStatus = (status) => {
+    setStatusFilter(status);
+    if (status === 'verified') {
+      setFilteredData(data.filter((item) => item.verified?.status === true));
+      setShowback(true)
+    } else if (status === 'rejected') {
+      setFilteredData(data.filter((item) => item.verified?.status === false));
+      setShowback(true)
+    } else if (status == 'pending') {
+      setFilteredData(data.filter((item) => Object.keys(item.verified).length === 0));
+      setShowback(true)
+    }
+    else {
+      setFilteredData(data)
+      setShowback(false)
+    }
+  };
+
+  const resetFilter = () => {
+    setStatusFilter('all');
+    setShowback(false)
+    setFilteredData(data); // Reset to show all data
+  };
+
+  const allFieldsVerified = () => {
+    var verified = (verificationkeys.length === Object.values(tempVerification).filter(Boolean).length) && Object.values(tempVerification).filter(Boolean).length != 0
+    console.log(verificationkeys, Object.values(tempVerification).filter(Boolean))
+    console.log(verified)
+    return verified;
+  };
+
+  const PreviewPanel = ({ record }) => {
+    if (!record) return null;
+
+    const shouldShowItem = (field) => {
+      if (record.action === 'verify') return true;
+      return record.verified[field];
+    };
+
+    const verificationItem = (label, value, field) => {
+      if (!shouldShowItem(field)) return null;
+
+      return (
+        <div style={{
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', borderBottom: '1px solid #f0f0f0',
+          backgroundColor: tempVerification[field] ? '#f6ffed' : '#fff',
+          transition: 'all 0.3s ease'
+        }}>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <span style={{ fontSize: '14px', color: '#8c8c8c', marginBottom: '4px' }}>{label}</span>
+            <span style={{ fontSize: '16px', fontWeight: '500', color: '#262626' }}>{value}</span>
+          </div>
+          {record.action === 'verify' && (
+            <Checkbox checked={tempVerification[field] || false} onChange={() => handleVerificationChange(field)} style={{ marginLeft: '20px' }}>
+              <span style={{
+                color: tempVerification[field] ? '#52c41a' : '#ff4d4f',
+                fontWeight: '500'
+              }}>
+                Verify
+              </span>
+            </Checkbox>
+          )}
+          {!record.action && <span>{record.verified[field] ? 'Verified' : 'Not Verified'}</span>}
+        </div>
+      );
+    };
+
+    const handleVerificationChange = (field) => {
+      setTempVerification((prev) => {
+        const updatedFieldStatus = !prev[field];
+        return { ...prev, [field]: updatedFieldStatus };
+      });
+    };
+
+    return (
+      <Card
+        title={<div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          fontSize: '16px',
+          fontWeight: '600',
+          color: record.action === 'verify' ? '#1890ff' :
+            record.action === 'verified' ? '#52c41a' : '#ff4d4f'
+        }}>
+          <span>
+            {record.action === 'verify' ? 'MSS Verify' :
+              record.action === 'verified' ? 'MSS Verified Items' : 'MSS Rejected Items'}
+          </span>
+
+        </div>}
+        style={{
+          marginTop: 16,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          borderRadius: '8px',
+          border: `2px solid ${record.action === 'verify' ? '#1890ff' :
+            record.action === 'verified' ? '#52c41a' : '#ff4d4f'
+            }`
+        }}
+        bodyStyle={{ padding: 0 }}
+      >
+        <div style={{ padding: '8px' }}>
+          {verificationItem('Catch No', record.catchNo, 'catchNo')}
+          {verificationItem('Language', record.language, 'language')}
+          {verificationItem('Duration', record.duration, 'duration')}
+          {verificationItem('Structure', record.structure, 'structure')}
+          {verificationItem('Series', record.series, 'series')}
+          {verificationItem('Max Marks', record.maxMarks, 'maxMarks')}
+
+          {record.action === 'verify' && (
+            <div style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              gap: '10px',
+              padding: '10px',
+              borderTop: '1px solid #f0f0f0',
+              marginTop: '8px'
+            }}>
+              {(record.verified?.status === false || Object.keys(record.verified).length === 0) && (
+                <>
+                  <Button
+                    style={{
+                      backgroundColor: '#52c41a',
+                      color: 'white',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                    disabled={!allFieldsVerified()}
+                    onClick={handleFinalVerification}
+                  >
+                    Mark Verified<CheckCircleOutlined style={{ marginLeft: 8 }} />
+                  </Button>
+                  <Button
+                    style={{
+                      backgroundColor: '#ff4d4f',
+                      color: 'white',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                    onClick={handleRejectVerification}>
+                    Mark Rejected<CloseCircleOutlined style={{ marginLeft: 8 }} />
+                  </Button>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+      </Card>
+    );
+  };
+
+  return (
+    <div style={{ padding: '24px' }}>
+      <style>
+        {`
+          .custom-table .ant-table-thead > tr > th {
+            background-color: #f0f7ff !important;
+            border-bottom: 2px solid #e6f4ff !important;
+          }
+          .custom-table .ant-table-thead > tr > th::before {
+            display: none !important;
+          }
+        `}
+      </style>
+      <Card>
+        <div className='d-flex align-items-center justify-content-between'>
+          <div>  {showback &&
+            <Button
+              type="text"
+              icon={<ArrowLeftOutlined className='fs-5' />}
+              onClick={resetFilter}
+            />}</div>
+          <div> <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
+            <Space size="large">
+                <Badge color= '#52c41a' count= {data.filter((item) => item.verified?.status === true).length} >
+                  <CheckCircleOutlined onClick={() => filterDataByStatus('verified')} className='fs-3' style={{ color: '#52c41a' }} />
+                </Badge>
+              <Badge color= '#ff4d4f' count= {data.filter((item) => item.verified?.status === false).length} >
+                <CloseCircleOutlined onClick={() => filterDataByStatus('rejected')} className='fs-3 ' style={{ color: '#ff4d4f' }} />
+               </Badge>
+              <Badge color= '#ffc107' count= {data.filter((item) => Object.keys(item.verified).length === 0).length} >
+                <FileTextOutlined onClick={() => filterDataByStatus('pending')} className='fs-3' style={{ color: '#8c8c8c' }} />
+                  </Badge>
+            </Space>
+          </div></div>
+        </div>
+        <Row gutter={16}>
+          <Col span={selectedRecord ? 16 : 24}>
+            <Table
+              columns={columns}
+              dataSource={filteredData}
+              pagination={{ pageSize: 5 }}
+              onRow={(record) => ({
+                onClick: () => handlePreview(record),
+              })}
+              rowKey="srNo"
+            />
+          </Col>
+          {selectedRecord && (
+            <Col span={8}>
+              <PreviewPanel record={selectedRecord} />
+            </Col>
+          )}
+        </Row>
+      </Card>
+    </div>
+  );
+};
+
+export default QcProcess;
