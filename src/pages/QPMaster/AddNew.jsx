@@ -45,11 +45,21 @@ const ImportPage = () => {
 
     const handleManualInput = (e, field) => {
         const { value } = e.target;
-        setManualInputs((prev) => ({
-            ...prev,
-            [field]: value,
-        }));
+    
+        // If the field is 'language', handle it as an array (for multiple selections)
+        if (field === "language") {
+            setManualInputs((prev) => ({
+                ...prev,
+                [field]: Array.isArray(value) ? value : [value],  // Ensure it's an array
+            }));
+        } else {
+            setManualInputs((prev) => ({
+                ...prev,
+                [field]: value,
+            }));
+        }
     };
+    
 
     const getCourse = async () => {
         try {
@@ -157,6 +167,7 @@ const ImportPage = () => {
                         filterOption={(input, option) =>
                             option.children?.toString().toLowerCase().includes(input.toLowerCase())
                         }
+                        mode={field === 'language' ? 'multiple' : 'default'}
                     >
                         {fixedValue ? (
                             <Option value={fixedValue.value}>{fixedValue.label}</Option>
@@ -198,7 +209,7 @@ const ImportPage = () => {
                 data = { typeName: newOptionValue }; // Assuming typeName for ExamType
                 break;
             case "language":
-                data = { languages: newOptionValue }; // Assuming language for Language
+                data = { languages: manualInputs.language }; // Assuming language for Language
                 break;
             case "type":
                 data = { types: newOptionValue }; // Assuming type for Type
@@ -225,7 +236,7 @@ const ImportPage = () => {
         if (field === 'subject') getSubject();
         if (field === 'examType') getExamType();
         if (field === 'language') getLanguage();
-        if (field === 'paperType') getType();
+        if (field === 'type') getType();
     };
 
 
