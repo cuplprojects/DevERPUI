@@ -73,7 +73,7 @@ const QPTable = ({
   }, []);
 
   // Define all possible columns
-  const allColumnDefs = [
+  const columnDefs = [
     {
       headerName: "S.No.",
       field: "serialNumber",
@@ -138,22 +138,22 @@ const QPTable = ({
   ];
 
   // Conditionally include columns based on applied filters
-  const columnDefs = useMemo(() => {
-    return allColumnDefs.filter((col) => {
-      switch (col.field) {
-        case "groupName":
-          return !filters.groupName;
-        case "type":
-          return !filters.selectedTypeName;
-        case "courseName":
-          return !filters.selectedCourseName;
-        case "examTypeName":
-          return !filters.selectedExamTypeName;
-        default:
-          return true;
-      }
-    });
-  }, [filters]);
+  // const columnDefs = useMemo(() => {
+  //   return allColumnDefs.filter((col) => {
+  //     switch (col.field) {
+  //       case "groupName":
+  //         return !filters.groupName;
+  //       case "type":
+  //         return !filters.selectedTypeName;
+  //       case "courseName":
+  //         return !filters.selectedCourseName;
+  //       case "examTypeName":
+  //         return !filters.selectedExamTypeName;
+  //       default:
+  //         return true;
+  //     }
+  //   });
+  // }, [filters]);
 
   return (
     <div className="w-100">
