@@ -1,7 +1,8 @@
-import React, { useState } from "react";
-import { Select, Spin, message, Card, Table } from "antd";
+import React, { useEffect, useState } from "react";
+import { Select, Spin, message, Card, Table, Tooltip } from "antd";
 import axios from "axios";
 import { Button, Col, Row, Container } from "react-bootstrap";
+import { DownloadOutlined, BookOutlined, CalendarOutlined } from "@ant-design/icons";
 
 const { Option } = Select;
 
@@ -123,16 +124,24 @@ const Mss = () => {
                         <strong>NEP Code:</strong> {item.nepCode}
                       </small>
                     </Col>
-                    <Col xs={12} md={4} className="d-flex flex-column gap-2 mt-2 mt-md-0">
-                      <Button
-                        variant="outline-warning"
-                        size="sm"
-                        onClick={() => handleImport(item)}
-                        disabled={importing === item.qpMasterId}
-                      >
-                        {importing === item.qpMasterId ? <Spin size="small" /> : "Import"}
-                      </Button>
-                      <Button variant="outline-info" size="sm">Import All by Course Name</Button>
+                    <Col xs={12} md={4} className="d-flex flex-row justify-content-end gap-3">
+                      <Tooltip title="Import Individual">
+                        <DownloadOutlined
+                          style={{ fontSize: "18px", cursor: "pointer", color: importing === item.qpMasterId ? "gray" : "#1890ff" }}
+                          onClick={() => handleImport(item)}
+                          disabled={importing === item.qpMasterId}
+                        />
+                      </Tooltip>
+                      <Tooltip title="Import All by Course Name">
+                        <BookOutlined
+                          style={{ fontSize: "18px", cursor: "pointer", color: "#52c41a" }}
+                        />
+                      </Tooltip>
+                      <Tooltip title="Import All by Semester">
+                        <CalendarOutlined
+                          style={{ fontSize: "18px", cursor: "pointer", color: "#faad14" }}
+                        />
+                      </Tooltip>
                     </Col>
                   </Row>
                 </Option>
