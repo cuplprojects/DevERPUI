@@ -44,7 +44,8 @@ import { SiCoursera } from "react-icons/si";
 import { FaBook } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import QcProcess from "./MssProcess/Qcscreen";
-import Mss from "./MssProcess/mss";
+import Mss from "./MssProcess/Mss";
+
 
 
 
