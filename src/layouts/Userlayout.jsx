@@ -66,8 +66,8 @@ const UserLayout = () => {
               <Route path="/labels" element={checkPermissionAndRender("3", Labels)} />
               <Route path="/reports" element={checkPermissionAndRender("4", Reports)} />
               <Route path="/QP-Masters" element={checkPermissionAndRender("5", QCMaster)} />
-              <Route path="/Add-Paper/:groupId/:groupName" element={checkPermissionAndRender("5", AddPaper)} />
-              <Route path="/Import-Paper/:groupId/:groupName" element={checkPermissionAndRender("5", ImportPaper)} />
+              <Route path="/Add-Paper/:encryptedGroupId/:encryptedGroupName" element={checkPermissionAndRender("5", AddPaper)} />
+              <Route path="/Import-Paper/:encryptedGroupId/:encryptedGroupName" element={checkPermissionAndRender("5", ImportPaper)} />
 
               <Route path="/*" element={<Navigate to="/404" replace />} />
               <Route path="/404" element={<PageNotFound />} />
