@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { Card, Button, Space, Progress, Tabs, Checkbox, Row, Col, Table } from 'antd';
+import { useStore } from 'zustand';
+import themeStore from '../../store/themeStore';
+import { useTranslation } from 'react-i18next';
 
 import {
   SearchOutlined,
@@ -20,6 +23,11 @@ import {
 } from '@ant-design/icons';
 
 const QcProcess = () => {
+  const { getCssClasses } = useStore(themeStore);
+  const cssClasses = getCssClasses();
+  const [customDark, customMid, customLight, customBtn, customDarkText, customLightText, customLightBorder, customDarkBorder] = cssClasses;
+  const { t } = useTranslation();
+
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [loading, setLoading] = useState(false);
   const [tempVerification, setTempVerification] = useState({});
@@ -86,9 +94,9 @@ const QcProcess = () => {
   const columns = [
     {
       title: () => (
-        <div style={{ textAlign: 'center', padding: '12px 0', color: '#1f2937', fontWeight: 600 }}>
+        <div>
           <Space direction="vertical" align="center" size={4}>
-            <NumberOutlined style={{ fontSize: '18px', color: '#1890ff' }} />
+            
             <span style={{ fontSize: '14px' }}>Sr.No</span>
           </Space>
         </div>
@@ -102,7 +110,7 @@ const QcProcess = () => {
     // Update other column headers with the same style
     {
       title: () => (
-        <div style={{ textAlign: 'center', padding: '12px 0', color: '#1f2937', fontWeight: 600 }}>
+        <div >
           <Space direction="vertical" align="center" size={4}>
 
             <span style={{ fontSize: '14px' }}>Catch No</span>
@@ -332,7 +340,7 @@ const QcProcess = () => {
     },
     {
       title: () => (
-        <div style={{ textAlign: 'center', padding: '12px 0', color: '#1f2937', fontWeight: 600 }}>
+        <div >
           <Space direction="vertical" align="center" size={4}>
             <span style={{ fontSize: '14px' }}>Action</span>
           </Space>
@@ -343,9 +351,17 @@ const QcProcess = () => {
       align: 'center',
       render: (_, record) => (
         <Button
-          type="primary"
-          icon={<CheckCircleOutlined />}
-          size="small"
+          className={`${customBtn} ${customLightBorder} hover-effect`}
+          icon={<CheckCircleOutlined style={{ color: '#52c41a', fontSize: '18px' }} />}
+          size="middle"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            padding: '4px 12px',
+            borderRadius: '6px',
+            transition: 'all 0.3s ease'
+          }}
           onClick={(e) => {
             e.stopPropagation();
             handlePreview(record, 'verify');
@@ -567,105 +583,159 @@ const QcProcess = () => {
       setSelectedRecord({ ...record, action });
     }
   };
-
-  // Update the tableStyles object
-  // Remove these standalone components and keep them in the return statement
-  const tableStyles = {
-    table: {
-      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-      borderRadius: '8px',
-      overflow: 'hidden',
-      backgroundColor: 'white',
-    },
-    previewCard: {
-      marginTop: '16px',
-      borderRadius: '8px',
-      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)'
-    },
-    progressBar: {
-      marginBottom: '16px'
-    },
-    tabs: {
-      marginBottom: '16px'
-    }
-  };
+ 
 
   return (
-    <div style={{ padding: '24px' }}>
+    <div className={`container ${customLight} rounded py-2 shadow-lg ${customDark === "dark-dark" ? 'border' : ''}`}>
       <style>
         {`
-          .custom-table .ant-table-thead > tr > th {
-            background-color: #f0f7ff !important;
-            border-bottom: 2px solid #e6f4ff !important;
+          .custom-table .ant-table {
+            background: ${customDark === "dark-dark" ? '#141414' : '#fff'};
           }
-          .custom-table .ant-table-thead > tr > th::before {
-            display: none !important;
+          .custom-table .ant-table-thead > tr > th {
+            background-color: ${customDark === "dark-dark" ? '#1f1f1f' : '#f0f7ff'} !important;
+            color: ${customDark === "dark-dark" ? '#fff' : '#1f2937'} !important;
+            border-bottom: 2px solid ${customDark === "dark-dark" ? '#2d2d2d' : '#e6f4ff'} !important;
+          }
+          .custom-table .ant-table-tbody > tr > td {
+            background-color: ${customDark === "dark-dark" ? '#141414' : '#fff'} !important;
+            color: ${customDark === "dark-dark" ? '#fff' : '#1f2937'} !important;
+            border-bottom: 1px solid ${customDark === "dark-dark" ? '#2d2d2d' : '#f0f0f0'} !important;
+          }
+          .custom-table .ant-table-tbody > tr:hover > td {
+            background-color: ${customDark === "dark-dark" ? '#1f1f1f' : '#fafafa'} !important;
+          }
+          .custom-table .ant-table-cell-row-hover {
+            background-color: ${customDark === "dark-dark" ? '#1f1f1f' : '#fafafa'} !important;
+          }
+          .custom-table .ant-pagination-item {
+            background-color: ${customDark === "dark-dark" ? '#141414' : '#fff'};
+            border-color: ${customDark === "dark-dark" ? '#434343' : '#d9d9d9'};
+          }
+          .custom-table .ant-pagination-item-active {
+            border-color: #1890ff;
+          }
+          .custom-table .ant-pagination-item a {
+            color: ${customDark === "dark-dark" ? '#fff' : '#1f2937'};
+          }
+          .custom-table .ant-table-bordered .ant-table-cell {
+            border-right: 1px solid ${customDark === "dark-dark" ? '#2d2d2d' : '#f0f0f0'} !important;
+          }
+          .custom-table .ant-table-bordered .ant-table-container {
+            border: 1px solid ${customDark === "dark-dark" ? '#2d2d2d' : '#f0f0f0'} !important;
+            border-right: none !important;
+            border-bottom: none !important;
           }
         `}
       </style>
-      <Card>
+      <Card className={customLight}>
         <div style={{ 
           display: 'flex', 
-          justifyContent: 'flex-end', // Changed from space-between to flex-end
+          justifyContent: 'flex-end',
           alignItems: 'center', 
           marginBottom: '16px' 
         }}>
           <Space size="large">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <Button
-                type="text"
-                icon={<CheckCircleOutlined style={{
-                  color: selectedRecord?.action === 'verified' ? '#52c41a' : '#8c8c8c',
-                  fontSize: '33px'
-                }} />}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (selectedRecord) handlePreview(selectedRecord, 'verified');
-                }}
-              />
-              <span style={{
-                backgroundColor: '#e6f7ff',
+            <div style={{ position: 'relative' }}>
+              <div className={`d-flex align-items-center`} 
+                   style={{ 
+                     padding: '8px 16px',
+                     borderRadius: '8px',
+                     backgroundColor: customDark === "dark-dark" ? '#1f1f1f' : '#f6ffed',
+                     border: `1px solid ${customDark === "dark-dark" ? '#434343' : '#b7eb8f'}`,
+                     transition: 'all 0.3s ease',
+                     cursor: 'pointer',
+                     boxShadow: selectedRecord?.action === 'verified' ? '0 2px 8px rgba(82, 196, 26, 0.15)' : 'none'
+                   }}
+                   onClick={(e) => {
+                     e.stopPropagation();
+                     if (selectedRecord) handlePreview(selectedRecord, 'verified');
+                   }}
+              >
+                <CheckCircleOutlined style={{
+                  color: selectedRecord?.action === 'verified' ? '#52c41a' : 
+                         customDark === "dark-dark" ? '#8c8c8c' : '#52c41a',
+                  fontSize: '24px',
+                  marginRight: '12px'
+                }} />
+                <span style={{
+                  color: customDark === "dark-dark" ? '#fff' : '#52c41a',
+                  fontWeight: '500'
+                }}>
+                  
+                </span>
+              </div>
+              <span style={{ 
+                position: 'absolute',
+                top: '-10px',
+                right: '-10px',
+                backgroundColor: customDark === "dark-dark" ? '#141414' : '#fff',
                 color: '#52c41a',
-                padding: '1px 8px',
-                borderRadius: '10px',
-                fontSize: '12px',
-                fontWeight: '800'
+                padding: '0px 8px',
+                borderRadius: '12px',
+                fontSize: '14px',
+                fontWeight: '600',
+                border: `1px solid ${customDark === "dark-dark" ? '#434343' : '#b7eb8f'}`,
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
               }}>
-                {data.filter(item => 
-                  Object.values(item.verified).every(v => v)
-                ).length}
+                {data.filter(item => Object.values(item.verified).every(v => v)).length}
               </span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <Button
-                type="text"
-                icon={<CloseCircleOutlined style={{
-                  color: selectedRecord?.action === 'reject' ? '#ff4d4f' : '#8c8c8c',
-                  fontSize: '33px'
-                }} />}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (selectedRecord) handlePreview(selectedRecord, 'reject');
-                }}
-              />
-              <span style={{
-                backgroundColor: '#fff1f0',
-                color: '#ff4d4f',
-                padding: '1px 6px',
-                borderRadius: '10px',
-                fontSize: '15px',
-                fontWeight: '600'
-              }}>
-                {data.filter(item => 
-                  Object.values(item.verified).some(v => !v)
-                ).length}
-              </span>
+
+            <div style={{ position: 'relative' }}>
+              <div className={`d-flex align-items-center`}
+                   style={{ 
+                     padding: '8px 16px',
+                     borderRadius: '8px',
+                     backgroundColor: customDark === "dark-dark" ? '#1f1f1f' : '#fff1f0',
+                     border: `1px solid ${customDark === "dark-dark" ? '#434343' : '#ffa39e'}`,
+                     transition: 'all 0.3s ease',
+                     cursor: 'pointer',
+                     boxShadow: selectedRecord?.action === 'reject' ? '0 2px 8px rgba(255, 77, 79, 0.15)' : 'none'
+                   }}
+                   onClick={(e) => {
+                     e.stopPropagation();
+                     if (selectedRecord) handlePreview(selectedRecord, 'reject');
+                   }}
+              >
+                <CloseCircleOutlined style={{
+                  color: selectedRecord?.action === 'reject' ? '#ff4d4f' : 
+                         customDark === "dark-dark" ? '#8c8c8c' : '#ff4d4f',
+                  fontSize: '24px',
+                  marginRight: '12px'
+                }} />
+                <span style={{
+                  color: customDark === "dark-dark" ? '#fff' : '#ff4d4f',
+                  fontWeight: '500'
+                }}>
+                  
+                </span>
+              </div>
+              {selectedRecord && (
+                <span style={{ 
+                  position: 'absolute',
+                  top: '-10px',
+                  right: '-10px',
+                  backgroundColor: customDark === "dark-dark" ? '#141414' : '#fff',
+                  color: '#ff4d4f',
+                  padding: '0px 8px',
+                  borderRadius: '12px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  border: `1px solid ${customDark === "dark-dark" ? '#434343' : '#ffa39e'}`,
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                }}>
+                  {selectedRecord ? Object.values(selectedRecord.verified).filter(v => !v).length : 0}
+                </span>
+              )}
             </div>
           </Space>
         </div>
+
         <Row gutter={16}>
           <Col span={selectedRecord ? 16 : 24}>
             <Table
+            
               columns={columns}
               dataSource={data}
               pagination={{
@@ -675,18 +745,23 @@ const QcProcess = () => {
                 pageSizeOptions: [5, 10, 20, 30, 40, 50],
                 showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`,
               }}
-              scroll={{
-                x: 'max-content',
-                y: 800  // Changed from 400 to 600 pixels
-              }}
+              scroll={{ x: 'max-content', y: 800 }}
               onRow={(record) => ({
                 onClick: () => handlePreview(record),
               })}
               rowKey="srNo"
               size="middle"
               bordered
-              style={tableStyles.table}
-              className="custom-table"
+              className={`${customDark === "default-dark" ? "thead-default" : ""
+              }
+          ${customDark === "red-dark" ? "thead-red" : ""}
+          ${customDark === "green-dark" ? "thead-green" : ""}
+          ${customDark === "blue-dark" ? "thead-blue" : ""}
+          ${customDark === "dark-dark" ? "thead-dark" : ""}
+          ${customDark === "pink-dark" ? "thead-pink" : ""}
+          ${customDark === "purple-dark" ? "thead-purple" : ""}
+          ${customDark === "light-dark" ? "thead-light" : ""}
+          ${customDark === "brown-dark" ? "thead-brown" : ""} `}
             />
           </Col>
           {selectedRecord && (
@@ -694,13 +769,12 @@ const QcProcess = () => {
               <PreviewPanel
                 record={selectedRecord}
                 style={{
-                  ...tableStyles.previewCard,
-                  height: '800px', // Match table height
-                  overflowY: 'auto', // Add scroll if content is too long
-                  border: '2px solid #1890ff',
+                  height: '800px',
+                  overflowY: 'auto',
+                  border: `2px solid ${customDark === "dark-dark" ? '#2d2d2d' : '#1890ff'}`,
                   boxShadow: '0 0 10px rgba(24, 144, 255, 0.2)',
                   borderRadius: '8px',
-                  backgroundColor: '#fafafa'
+                  backgroundColor: customDark === "dark-dark" ? '#141414' : '#fafafa'
                 }}
               />
             </Col>
