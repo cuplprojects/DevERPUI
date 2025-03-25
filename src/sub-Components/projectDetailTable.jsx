@@ -123,7 +123,7 @@ const ProjectDetailsTable = ({
   const [inputPagesModalData, setInputPagesModalData] = useState(null);
   const [inputPagesModalShow, setInputPagesModalShow] = useState(false);
   const [envelopeData, setEnvelopeData] = useState({});
-// console.log(tableData)
+console.log(tableData)
   const showNotification = (type, messageKey, descriptionKey, details = "") => {
     notification[type]({
       message: t(messageKey),
@@ -156,7 +156,7 @@ const ProjectDetailsTable = ({
             `/QuantitySheet/Catch?ProjectId=${projectId}&lotNo=${lotNo}`
           );
           const data = response.data || [];
-          // console.log(data);
+          console.log(data);
 
           // Parse envelope data
           const envelopeMap = {};
@@ -735,9 +735,9 @@ const ProjectDetailsTable = ({
                 key: envKey,
                 render: (_, record) => {
                   // Log to debug
-                  // console.log('Record:', record);
-                  // console.log('Envelope Data:', envelopeData);
-                  // console.log('Specific Envelope:', envelopeData[record.catchNumber]);
+                  console.log('Record:', record);
+                  console.log('Envelope Data:', envelopeData);
+                  console.log('Specific Envelope:', envelopeData[record.catchNumber]);
                   
                   return envelopeData[record.catchNumber]?.[envKey] || 
                          envelopeData[record.catchNo]?.[envKey] || ''
@@ -1672,7 +1672,7 @@ const ProjectDetailsTable = ({
                       );
                     }
                   }
-                  // console.log(updateall)
+                  console.log(updateall)
                   if (!updateall) {
                     return null; // Return null if permission is not granted
                   }

@@ -55,10 +55,10 @@ const SelectMachineModal = ({ show, handleClose, data, processId, handleSave }) 
   };
 
   const getZoneData = async () => {
-    // console.log('Fetching zone data...');
+    console.log('Fetching zone data...');
     try {
       const response = await API.get('/Zones'); // Fetch zone data
-      // console.log('Fetched zone response:', response);
+      console.log('Fetched zone response:', response);
       // Sanitize zone data to ensure machineIds is always an array
       const sanitizedZoneData = response.data.map(zone => ({
         ...zone,

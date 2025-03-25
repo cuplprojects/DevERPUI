@@ -367,8 +367,8 @@ const Import = () => {
           "Content-Type": "application/json",
         },
       });
-      // console.log("Upload Success:", response.data);
-      // console.log(t("quantitySheetUploadedSuccessfully"));
+      console.log("Upload Success:", response.data);
+      console.log(t("quantitySheetUploadedSuccessfully"));
       setFileList([]);
       setSelectedFile(null);
       setShowBtn(false);

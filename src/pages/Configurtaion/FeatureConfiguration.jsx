@@ -18,7 +18,7 @@ const FeatureConfiguration = () => {
         try {
             const response = await API.get('/Processes');
             setProcesses(response.data);
-            // console.log('Fetched processes:', response.data);
+            console.log('Fetched processes:', response.data);
         } catch (error) {
             console.error("Failed to fetch processes", error);
         }
@@ -28,7 +28,7 @@ const FeatureConfiguration = () => {
         try {
             const response = await API.get('/Features');
             setFeatures(response.data);
-            // console.log('Fetched features:', response.data);
+            console.log('Fetched features:', response.data);
         } catch (error) {
             console.error("Failed to fetch features", error);
         }

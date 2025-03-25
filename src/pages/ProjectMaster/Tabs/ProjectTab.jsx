@@ -87,7 +87,7 @@ const ProjectTab = ({ setActiveTabKey, setSelectedProject }) => {
     try {
       const response = await API.get('/Session');
       setSessions(response.data);
-      // console.log(response);
+      console.log(response);
       } catch (err) {
         console.error('Failed to fetch session', err);
         error(t('unableToFetchSession'));
@@ -110,7 +110,7 @@ const ProjectTab = ({ setActiveTabKey, setSelectedProject }) => {
       error(t('pleaseSelectGroupAndType'));
       return;
     }
-    // console.log(values)
+    console.log(values)
     const newProject = {
       name: projectName,
       status: values.status || true,
@@ -165,7 +165,7 @@ const ProjectTab = ({ setActiveTabKey, setSelectedProject }) => {
         noOfSeries: numberOfSeries, // Use the state value directly
         seriesName: values.seriesNames
       };
-      // console.log(updatedProject)
+      console.log(updatedProject)
 
 
       await API.put(`/Project/${editingProject.projectId}`, updatedProject);

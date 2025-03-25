@@ -59,7 +59,7 @@ const AddProjectModal = ({
       const selectedTypeName = types.find(t => t.typeId === selectedType.typeId)?.types || '';
       const selectedSessionName = sessions.find(s => s.sessionId === selectedSession.sessionId)?.session || '';
       const selectedExamTypeName = examTypes.find(e => e.examTypeId === selectedExamType.examTypeId)?.typeName;
-      // console.log(selectedSessionName);
+      console.log(selectedSessionName);
       const baseName = `${selectedGroupName}-${selectedTypeName} - ${selectedSessionName} - ${selectedExamTypeName}`;
       setProjectName(baseName + (projectNameSuffix ? `-${projectNameSuffix}` : ''));
     }
@@ -91,7 +91,7 @@ const AddProjectModal = ({
   // };
   const handleProjectNameChange = (e) => {
     const value = e.target.value;
-    // console.log(selectedExamType)
+    console.log(selectedExamType)
     const baseProjectName = `${selectedGroup?.name || ''}-${selectedType?.types || ''} - ${selectedSession?.session || ''} - ${selectedExamType?.typeName || ''}`;
     
     // Check if the value starts with the base project name and allows only additions

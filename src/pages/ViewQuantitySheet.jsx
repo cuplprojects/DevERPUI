@@ -441,7 +441,7 @@ const ViewQuantitySheet = ({ selectedLotNo, showBtn, showTable, lots }) => {
       const response = await API.get(
         `/QuantitySheet/Catches?ProjectId=${projectId}&lotNo=${lotNo}`
       );
-      // console.log("lot data in qty sheet", response.data);
+      console.log("lot data in qty sheet", response.data);
       const dataWithKeys = response.data.map((item) => ({
         ...item,
         key: item.quantitySheetId,
@@ -464,7 +464,7 @@ const ViewQuantitySheet = ({ selectedLotNo, showBtn, showTable, lots }) => {
       const response = await API.get(
         `/QuantitySheet/exam-dates?projectId=${projectId}&lotNo=${lotNo}`
       );
-      // console.log("Exam data in quantity sheet", response.data);
+      console.log("Exam data in quantity sheet", response.data);
 
       // Convert dates to proper Date objects and sort them
       const availableDates = response.data.map(formatDate);
@@ -598,11 +598,11 @@ const ViewQuantitySheet = ({ selectedLotNo, showBtn, showTable, lots }) => {
 
   const handleConfirmStop = async () => {
 
-    // console.log("handleconfirmclose is called")
+    console.log("handleconfirmclose is called")
 
     if (itemToStop) {
 
-      // console.log("handleconfirmclose is called", itemToStop)
+      console.log("handleconfirmclose is called", itemToStop)
 
       try {
 

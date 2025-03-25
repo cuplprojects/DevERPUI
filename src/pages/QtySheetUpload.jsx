@@ -353,12 +353,12 @@ const QtySheetUpload = () => {
                   property === "InnerEnvelope"
                 ) {
                   value = String(value).trim(); // Ensure 'LotNo' and 'CatchNo' are treated as strings
-                  // console.log(
-                  //   `${property} value before sending:`,
-                  //   value,
-                  //   `Type:`,
-                  //   typeof value
-                  // );
+                  console.log(
+                    `${property} value before sending:`,
+                    value,
+                    `Type:`,
+                    typeof value
+                  );
                 }
 
                 // Add the value directly to the rowData

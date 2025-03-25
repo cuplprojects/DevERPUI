@@ -221,7 +221,7 @@ const ImportPage = () => {
 
     try {
       const response = await API.post(`/${selectedField}`, data);
-      // console.log("Upload Success:", response.data);
+      console.log("Upload Success:", response.data);
       setIsModalVisible(false);
       setNewOptionValue(""); // Clear input value
       fetchOptions(selectedField);
@@ -275,7 +275,7 @@ const ImportPage = () => {
       const response = await API.post("/QPMasters", dataToSend);
 
       if (response.status === 200) {
-        // console.log("Paper added successfully!", response.data);
+        console.log("Paper added successfully!", response.data);
         handleClear(); // Clear the form on success
       } else {
         console.error("Failed to add paper:", response.data);

@@ -7,7 +7,7 @@ import themeStore from '../store/themeStore';
 import { CloseOutlined, SearchOutlined } from '@ant-design/icons';
 
 const ProcessTrainModals = ({ ProjectID, lotNumber, ProcessID, status, setModalVisible }) => {
-  // console.log(ProjectID, lotNumber, ProcessID, status );
+  console.log(ProjectID, lotNumber, ProcessID, status );
   const { getCssClasses } = useStore(themeStore);
   const [
     customDark,
@@ -118,11 +118,11 @@ const ProcessTrainModals = ({ ProjectID, lotNumber, ProcessID, status, setModalV
 
   useEffect(() => {
     setData([]);
-    // console.log(ProjectID, lotNumber, ProcessID, status);
+    console.log(ProjectID, lotNumber, ProcessID, status);
     const getData = async () => {
       const response = await API.get(`Transactions/StatusDetails?projectId=${ProjectID}&LotNo=${lotNumber}&ProcessIDFilter=${ProcessID}&StatustoFind=${getStatusforAPi()}`);
       const dataFromApi = response.data;
-      // console.log(dataFromApi);
+      console.log(dataFromApi);
       setData(dataFromApi);
       setFilteredData(dataFromApi);
     };
