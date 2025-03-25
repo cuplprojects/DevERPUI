@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { Container, Row, Col, Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { Select, Input, Modal } from "antd";
+import { Select, Input, Modal, notification } from "antd";
 import "antd/dist/reset.css";
 import themeStore from "./../../store/themeStore";
 import { useStore } from "zustand";
@@ -149,6 +149,7 @@ const ImportPage = () => {
             value={manualInputs[field]}
             disabled={isDisabled}
             showSearch
+            mode={field === "language" ? "multiple" : undefined}
             notFoundContent={
               <>
                 <div
@@ -250,24 +251,42 @@ const ImportPage = () => {
     setManualInputs((prev) => ({
       groupId: prev.groupId, // Keep groupId intact
     }));
+    notification.info({
+      message: 'Form Cleared',
+      description: 'All fields have been reset.',
+      duration: 2,
+    });
   };
 
   const handleAdd = async () => {
+    // Basic validation
+    const requiredFields = ['paperTitle', 'paperNumber', 'examType', 'maxMarks', 'duration', 'course', 'subject'];
+    const missingFields = requiredFields.filter(field => !manualInputs[field]);
+    
+    if (missingFields.length > 0) {
+      notification.error({
+        message: 'Validation Error',
+        description: `Please fill in the following required fields: ${missingFields.join(', ')}`,
+        duration: 4,
+      });
+      return;
+    }
+
     const dataToSend = [
       {
-        qpMasterId: 0, // Assuming you want to set this as 0 or get it from somewhere
-        groupId: manualInputs.groupId || 0, // Use the group ID from form or default to 0
-        typeId: manualInputs.type || 0, // Assuming type field is for typeId
-        nepCode: manualInputs.nepCode || "string", // Use the nepCode field or default to "string"
-        privateCode: manualInputs.courseCode || "string", // Assuming courseCode is for privateCode
-        subjectId: manualInputs.subject || 0, // Use subject field or default to 0
-        paperNumber: manualInputs.paperNumber || "string", // paperNumber from form
-        paperTitle: manualInputs.paperTitle || "string", // paperTitle from form
-        maxMarks: manualInputs.maxMarks || 0, // maxMarks from form
-        duration: manualInputs.duration || "string", // duration from form
-        languageId: manualInputs.language || 0, // language field for languageId
-        courseId: manualInputs.course || 0, // course field for courseId
-        examTypeId: manualInputs.examType || 0, // examType field for examTypeId
+        qpMasterId: 0,
+        groupId: manualInputs.groupId || 0,
+        typeId: manualInputs.type || 0,
+        nepCode: manualInputs.nepCode || "string",
+        privateCode: manualInputs.courseCode || "string",
+        subjectId: manualInputs.subject || 0,
+        paperNumber: manualInputs.paperNumber || "string",
+        paperTitle: manualInputs.paperTitle || "string",
+        maxMarks: manualInputs.maxMarks || 0,
+        duration: manualInputs.duration || "string",
+        languageId: Array.isArray(manualInputs.language) ? manualInputs.language : [manualInputs.language], // Handle multiple languages
+        courseId: manualInputs.course || 0,
+        examTypeId: manualInputs.examType || 0,
       },
     ];
 
@@ -275,12 +294,19 @@ const ImportPage = () => {
       const response = await API.post("/QPMasters", dataToSend);
 
       if (response.status === 200) {
-        console.log("Paper added successfully!", response.data);
-        handleClear(); // Clear the form on success
-      } else {
-        console.error("Failed to add paper:", response.data);
+        notification.success({
+          message: 'Success',
+          description: 'Paper added successfully!',
+          duration: 4,
+        });
+        handleClear();
       }
     } catch (error) {
+      notification.error({
+        message: 'Error',
+        description: error.response?.data?.message || 'Failed to add paper. Please try again.',
+        duration: 4,
+      });
       console.error("Error adding paper:", error);
     }
   };
