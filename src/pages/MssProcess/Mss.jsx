@@ -4,6 +4,9 @@ import axios from "axios";
 import { Button, Col, Row, Container } from "react-bootstrap";
 import { DownloadOutlined, BookOutlined, CalendarOutlined } from "@ant-design/icons";
 import API from "../../CustomHooks/MasterApiHooks/api";
+import { AgGridReact } from 'ag-grid-react';
+import 'ag-grid-community/styles/ag-grid.css';
+import 'ag-grid-community/styles/ag-theme-alpine.css';
 
 const { Option } = Select;
 
@@ -16,6 +19,13 @@ const Mss = ({projectId , processId , lotNo , projectName}) => {
   const [hasMore, setHasMore] = useState(false);
   const [importedData, setImportedData] = useState([]); // State for imported data
   const [quantitySheetData,setQuantitySheetData] = useState([]);
+  const [gridApi, setGridApi] = useState(null);
+  const [gridColumnApi, setGridColumnApi] = useState(null);
+
+  useEffect(() => {
+    fetchQuantitySheetData();
+  }, [projectId]);
+
   const fetchResults = async (value, newPage = 1, append = false) => {
     if (!value) {
       setData([]);
@@ -87,21 +97,94 @@ const Mss = ({projectId , processId , lotNo , projectName}) => {
   // Table columns for imported data
   const columns = [
     {
-      title: "Paper Title",
-      dataIndex: "paperTitle",
-      key: "paperTitle",
+      title: "Catch No",
+      dataIndex: "catchNo",
+      key: "catchNo",
+      responsive: ['sm'],
     },
     {
-      title: "Course Name",
-      dataIndex: "courseName",
-      key: "courseName",
+      title: "Duration",
+      dataIndex: "duration",
+      key: "duration",
+      responsive: ['sm'],
     },
     {
-      title: "NEP Code",
-      dataIndex: "nepCode",
-      key: "nepCode",
+      title: "Language",
+      dataIndex: "languageId",
+      key: "languageId",
+      responsive: ['sm'],
+      render: (languageIds) => Array.isArray(languageIds) ? languageIds.join(', ') : languageIds
     },
+    {
+      title: "Max Marks",
+      dataIndex: "maxMarks",
+      key: "maxMarks",
+      responsive: ['sm'],
+    }
   ];
+
+  // Define AG Grid column definitions
+  const columnDefs = [
+    {
+      headerName: "Catch No",
+      field: "catchNo",
+      editable: true,
+      sortable: true,
+      filter: true,
+      width: 120
+    },
+    {
+      headerName: "Duration",
+      field: "duration",
+      editable: true,
+      sortable: true,
+      filter: true,
+      width: 120
+    },
+    {
+      headerName: "Language",
+      field: "languageId",
+      editable: true,
+      sortable: true,
+      filter: true,
+      width: 150,
+      valueFormatter: (params) => {
+        return Array.isArray(params.value) ? params.value.join(', ') : params.value;
+      }
+    },
+    {
+      headerName: "Max Marks",
+      field: "maxMarks",
+      editable: true,
+      sortable: true,
+      filter: true,
+      width: 120,
+      valueParser: (params) => {
+        return Number(params.newValue);
+      }
+    }
+  ];
+
+  // Default grid options
+  const defaultColDef = {
+    flex: 1,
+    minWidth: 100,
+    resizable: true,
+  };
+
+  // Grid ready event handler
+  const onGridReady = (params) => {
+    setGridApi(params.api);
+    setGridColumnApi(params.columnApi);
+    params.api.sizeColumnsToFit();
+  };
+
+  // Cell value changed handler
+  const onCellValueChanged = (params) => {
+    console.log("Cell value changed:", params);
+    // Here you would typically send the updated data to your API
+    // You can access the changed data through params.data
+  };
 
   return (
     <Container fluid className="mt-4">
@@ -165,17 +248,32 @@ const Mss = ({projectId , processId , lotNo , projectName}) => {
             </Select>
           </Card>
 
-          {/* Imported Data Table */}
-          {/* {importedData && ( */}
-            <Card title="Imported Data" className="shadow-sm mt-4">
-              <Table
-                dataSource={importedData}
-                columns={columns}
-                rowKey="qpMasterId"
-                pagination={false}
+          {/* AG Grid for Quantity Sheet Data */}
+          <Card title="Quantity Sheet Data" className="shadow-sm mt-4">
+            <div 
+              className="ag-theme-alpine" 
+              style={{ 
+                height: 400, 
+                width: '100%' 
+              }}
+            >
+              <AgGridReact
+                rowData={quantitySheetData}
+                columnDefs={columnDefs}
+                defaultColDef={defaultColDef}
+                onGridReady={onGridReady}
+                onCellValueChanged={onCellValueChanged}
+                pagination={true}
+                paginationPageSize={10}
+                rowSelection="multiple"
+                enableCellTextSelection={true}
+                stopEditingWhenCellsLoseFocus={true}
+                suppressRowClickSelection={true}
+                undoRedoCellEditing={true}
+                undoRedoCellEditingLimit={20}
               />
-            </Card>
-          {/* )} */}
+            </div>
+          </Card>
         </Col>
       </Row>
     </Container>
