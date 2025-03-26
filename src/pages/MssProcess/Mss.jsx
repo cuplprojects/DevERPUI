@@ -3,6 +3,7 @@ import { Select, Spin, message, Card, Table, Tooltip } from "antd";
 import axios from "axios";
 import { Button, Col, Row, Container } from "react-bootstrap";
 import { DownloadOutlined, BookOutlined, CalendarOutlined } from "@ant-design/icons";
+import API from "../../CustomHooks/MasterApiHooks/api";
 
 const { Option } = Select;
 
@@ -24,8 +25,8 @@ const Mss = (projectId , processId , lotNo , projectName) => {
 
     setLoading(true);
     try {
-      const response = await axios.get(
-        `https://localhost:7212/api/QPMasters/SearchInQpMaster?search=${value}&page=${newPage}&pageSize=5`
+      const response = await API.get(
+        `/QPMasters/SearchInQpMaster?search=${value}&page=${newPage}&pageSize=5`
       );
 
       setHasMore(response.data.length > 0);
@@ -51,7 +52,7 @@ const Mss = (projectId , processId , lotNo , projectName) => {
   const handleImport = async (item) => {
     setImporting(item.qpMasterId);
     try {
-      await axios.post("https://localhost:7212/api/QPMasters/InsertIntoQuantitySheet", item.qpMasterId, {
+      await API.post("/QPMasters/InsertIntoQuantitySheet", item.qpMasterId, {
         headers: { "Content-Type": "application/json" },
       });
 
