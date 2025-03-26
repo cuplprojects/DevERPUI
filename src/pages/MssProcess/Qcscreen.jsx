@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Button, Space, Checkbox, Row, Col, Table, Badge } from 'antd';
+import { Card, Button, Space, Checkbox, Row, Col, Table, Badge, Tooltip } from 'antd';
 import {
   CheckCircleOutlined,
   CloseCircleOutlined,
@@ -9,8 +9,15 @@ import {
 import API from '../../CustomHooks/MasterApiHooks/api';
 import { success, error } from '../../CustomHooks/Services/AlertMessageService';
 import { useTranslation } from 'react-i18next';
+import { useStore } from 'zustand';
+import themeStore from '../../store/themeStore';
 
 const QcProcess = () => {
+  const { t } = useTranslation();
+  const { getCssClasses } = useStore(themeStore);
+  const cssClasses = getCssClasses();
+  const [customDark, customMid, customLight, customBtn, customDarkText, customLightText, customLightBorder, customDarkBorder] = cssClasses;
+
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [tempVerification, setTempVerification] = useState({});
   const [data, setData] = useState([]);
@@ -79,6 +86,12 @@ const QcProcess = () => {
       key: 'catchNo',
       align: 'center',
       render: (text, record) => renderVerificationField(record, 'catchNo', text),
+      sorter: (a, b) => {
+        if (typeof a.catchNo === 'number' && typeof b.catchNo === 'number') {
+          return a.catchNo - b.catchNo;
+        }
+        return String(a.catchNo).localeCompare(String(b.catchNo));
+      },
     },
     {
       title: 'Language',
@@ -86,6 +99,7 @@ const QcProcess = () => {
       key: 'language',
       align: 'center',
       render: (text, record) => renderVerificationField(record, 'language', text),
+      sorter: (a, b) => String(a.language).localeCompare(String(b.language)),
     },
     {
       title: 'Max Marks',
@@ -93,6 +107,12 @@ const QcProcess = () => {
       key: 'maxMarks',
       align: 'center',
       render: (text, record) => renderVerificationField(record, 'maxMarks', text),
+      sorter: (a, b) => {
+        if (typeof a.maxMarks === 'number' && typeof b.maxMarks === 'number') {
+          return a.maxMarks - b.maxMarks;
+        }
+        return String(a.maxMarks).localeCompare(String(b.maxMarks));
+      },
     },
     {
       title: 'Duration',
@@ -100,6 +120,12 @@ const QcProcess = () => {
       key: 'duration',
       align: 'center',
       render: (text, record) => renderVerificationField(record, 'duration', text),
+      sorter: (a, b) => {
+        if (typeof a.duration === 'number' && typeof b.duration === 'number') {
+          return a.duration - b.duration;
+        }
+        return String(a.duration).localeCompare(String(b.duration));
+      },
     },
     {
       title: 'Structure of Paper',
@@ -107,6 +133,7 @@ const QcProcess = () => {
       key: 'structure',
       align: 'center',
       render: (text, record) => renderVerificationField(record, 'structure', text),
+      sorter: (a, b) => String(a.structure).localeCompare(String(b.structure)),
     },
     {
       title: 'Series',
@@ -114,6 +141,7 @@ const QcProcess = () => {
       key: 'series',
       align: 'center',
       render: (text, record) => renderVerificationField(record, 'series', text),
+      sorter: (a, b) => String(a.series).localeCompare(String(b.series)),
     },
     {
       title: 'Action',
@@ -121,9 +149,9 @@ const QcProcess = () => {
       align: 'center',
       render: (_, record) => (
         <Button
-          type="primary"
+          className={`${customBtn} ${customLightBorder}`}
           icon={<CheckCircleOutlined />}
-          size="small"
+          size="large"
           onClick={(e) => handlePreview(record, 'verify')}
         >
           {record.verified?.status === true ? 'Verified' : record.verified?.status === false ? 'Rejected' : 'Verify'}
@@ -331,28 +359,28 @@ const QcProcess = () => {
               {(record.verified?.status === false || Object.keys(record.verified).length === 0) && (
                 <>
                   <Button
+                    className={`${customBtn} ${customLightBorder}`}
                     style={{
-                      backgroundColor: '#52c41a',
-                      color: 'white',
                       display: 'flex',
                       alignItems: 'center',
-                      justifyContent: 'center'
+                      justifyContent: 'center',
+                      marginRight: '10px'
                     }}
                     disabled={!allFieldsVerified()}
                     onClick={handleFinalVerification}
                   >
-                    Mark Verified<CheckCircleOutlined style={{ marginLeft: 8 }} />
+                     <span className="d-none d-lg-inline">Mark Verified</span><CheckCircleOutlined style={{ marginLeft: 8 }} />
                   </Button>
                   <Button
+                    className={`${customBtn} ${customLightBorder}`}
                     style={{
-                      backgroundColor: '#ff4d4f',
-                      color: 'white',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center'
                     }}
-                    onClick={handleRejectVerification}>
-                    Mark Rejected<CloseCircleOutlined style={{ marginLeft: 8 }} />
+                    onClick={handleRejectVerification}
+                  >
+                    <span className="d-none d-lg-inline">Mark Rejected</span><CloseCircleOutlined style={{ marginLeft: 8 }} />
                   </Button>
                 </>
               )}
@@ -364,50 +392,71 @@ const QcProcess = () => {
   };
 
   return (
-    <div style={{ padding: '24px' }}>
-      <style>
-        {`
-          .custom-table .ant-table-thead > tr > th {
-            background-color: #f0f7ff !important;
-            border-bottom: 2px solid #e6f4ff !important;
-          }
-          .custom-table .ant-table-thead > tr > th::before {
-            display: none !important;
-          }
-        `}
-      </style>
+    <div className={`container ${customLight} rounded py-2 shadow-lg ${customDark === "dark-dark" ? 'border' : ''}`}>
       <Card>
         <div className='d-flex align-items-center justify-content-between'>
-          <div>  {showback &&
-            <Button
-              type="text"
-              icon={<ArrowLeftOutlined className='fs-5' />}
-              onClick={resetFilter}
-            />}</div>
-          <div> <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
-            <Space size="large">
-                <Badge color= '#52c41a' count= {data.filter((item) => item.verified?.status === true).length} >
-                  <CheckCircleOutlined onClick={() => filterDataByStatus('verified')} className='fs-3' style={{ color: '#52c41a' }} />
-                </Badge>
-              <Badge color= '#ff4d4f' count= {data.filter((item) => item.verified?.status === false).length} >
-                <CloseCircleOutlined onClick={() => filterDataByStatus('rejected')} className='fs-3 ' style={{ color: '#ff4d4f' }} />
-               </Badge>
-              <Badge color= '#ffc107' count= {data.filter((item) => Object.keys(item.verified).length === 0).length} >
-                <FileTextOutlined onClick={() => filterDataByStatus('pending')} className='fs-3' style={{ color: '#8c8c8c' }} />
+          <div>
+            {showback && (
+              <Button
+                type="text"
+                className={`${customBtn} ${customLightBorder}`}
+                icon={<ArrowLeftOutlined className='fs-5' />}
+                onClick={resetFilter}
+              />
+            )}
+          </div>
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
+              <Space size="large">
+                <Tooltip title="Verified Items">
+                  <Badge color='#52c41a' count={data.filter((item) => item.verified?.status === true).length}>
+                    <CheckCircleOutlined onClick={() => filterDataByStatus('verified')} className='fs-3' style={{ color: '#52c41a' }} />
                   </Badge>
-            </Space>
-          </div></div>
+                </Tooltip>
+                <Tooltip title="Rejected Items">
+                  <Badge color='#ff4d4f' count={data.filter((item) => item.verified?.status === false).length}>
+                    <CloseCircleOutlined onClick={() => filterDataByStatus('rejected')} className='fs-3' style={{ color: '#ff4d4f' }} />
+                  </Badge>
+                </Tooltip>
+                <Tooltip title="Pending Items">
+                  <Badge color='#ffc107' count={data.filter((item) => Object.keys(item.verified).length === 0).length}>
+                    <FileTextOutlined onClick={() => filterDataByStatus('pending')} className='fs-3' style={{ color: '#8c8c8c' }} />
+                  </Badge>
+                </Tooltip>
+              </Space>
+            </div>
+          </div>
         </div>
+
         <Row gutter={16}>
           <Col span={selectedRecord ? 16 : 24}>
             <Table
+              className={`${customDark === "default-dark" ? "thead-default" : ""}
+                ${customDark === "red-dark" ? "thead-red" : ""}
+                ${customDark === "green-dark" ? "thead-green" : ""}
+                ${customDark === "blue-dark" ? "thead-blue" : ""}
+                ${customDark === "dark-dark" ? "thead-dark" : ""}
+                ${customDark === "pink-dark" ? "thead-pink" : ""}
+                ${customDark === "purple-dark" ? "thead-purple" : ""}
+                ${customDark === "light-dark" ? "thead-light" : ""}
+                ${customDark === "brown-dark" ? "thead-brown" : ""}`}
               columns={columns}
               dataSource={filteredData}
-              pagination={{ pageSize: 5 }}
+              pagination={{ 
+                pageSize: 5,
+                total: filteredData.length,
+                showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`
+              }}
+              bordered
+              scroll={{ x: 1300, y: 400 }}
+              rowClassName={(record, index) => index % 2 === 0 ? 'table-row-light' : 'table-row-dark'}
               onRow={(record) => ({
                 onClick: () => handlePreview(record),
               })}
               rowKey="srNo"
+              onChange={(pagination, filters, sorter) => {
+                console.log('Table params changed:', { pagination, filters, sorter });
+              }}
             />
           </Col>
           {selectedRecord && (
@@ -417,6 +466,7 @@ const QcProcess = () => {
           )}
         </Row>
       </Card>
+      
     </div>
   );
 };

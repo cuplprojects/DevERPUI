@@ -6,7 +6,7 @@ import { DownloadOutlined, BookOutlined, CalendarOutlined } from "@ant-design/ic
 
 const { Option } = Select;
 
-const Mss = () => {
+const Mss = (projectId , processId , lotNo , projectName) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
