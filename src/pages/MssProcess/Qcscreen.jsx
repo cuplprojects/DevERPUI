@@ -369,7 +369,7 @@ const QcProcess = () => {
                     disabled={!allFieldsVerified()}
                     onClick={handleFinalVerification}
                   >
-                    Mark Verified<CheckCircleOutlined style={{ marginLeft: 8 }} />
+                     <span className="d-none d-lg-inline">Mark Verified</span><CheckCircleOutlined style={{ marginLeft: 8 }} />
                   </Button>
                   <Button
                     className={`${customBtn} ${customLightBorder}`}
@@ -380,7 +380,7 @@ const QcProcess = () => {
                     }}
                     onClick={handleRejectVerification}
                   >
-                    Mark Rejected<CloseCircleOutlined style={{ marginLeft: 8 }} />
+                    <span className="d-none d-lg-inline">Mark Rejected</span><CloseCircleOutlined style={{ marginLeft: 8 }} />
                   </Button>
                 </>
               )}

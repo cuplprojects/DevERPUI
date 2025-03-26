@@ -7,12 +7,12 @@ import "antd/dist/reset.css";
 import themeStore from "./../../store/themeStore";
 import { useStore } from "zustand";
 import API from "../../CustomHooks/MasterApiHooks/api";
-import { useParams } from "react-router-dom";
+import QPTable from "./Components/QPTable";
+import { decrypt, encrypt } from "./../../Security/Security";
 
 const { Option } = Select;
 
 const QPMiddleArea = () => {
-  const { groupId, groupName } = useParams();
   const navigate = useNavigate();
 
   const [groups, setGroups] = useState([]);
@@ -22,6 +22,22 @@ const QPMiddleArea = () => {
 
   const [types, setTypes] = useState([]);
   const [selectedTypeId, setSelectedTypeId] = useState(null);
+  const [selectedTypeName, setSelectedTypeName] = useState("");
+
+  const [courses, setCourses] = useState([]);
+  const [selectedCourseId, setSelectedCourseId] = useState(null);
+  const [selectedCourseName, setSelectedCourseName] = useState("");
+
+  const [examType, setExamType] = useState([]);
+  const [uniqueTypes, setUniqueTypes] = useState([]);
+  const [selectedExamTypeIds, setSelectedExamTypeIds] = useState([]);
+  const [selectedExamTypeName, setSelectedExamTypeName] = useState("");
+
+  const [showTable, setShowTable] = useState(false);
+  const [filters, setFilters] = useState({});
+  const [qpData, setQpData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const themeState = useStore(themeStore);
   const cssClasses = useMemo(() => themeState.getCssClasses(), [themeState]);
@@ -36,154 +52,323 @@ const QPMiddleArea = () => {
     customDarkBorder,
   ] = cssClasses;
 
-  const handleAddClick = () => {
-    navigate(`/Add-Paper/${selectedGroupId}/${selectedGroupName}`);
+  //Get Data Funtion Calls
+  useEffect(() => {
+    getGroups();
+    getTypes();
+    getExamType();
+    getCourses();
+  }, []);
+
+  //Get Filters
+  const getGroups = async () => {
+    try {
+      const response = await API.get("/Groups");
+      setGroups(response.data);
+    } catch (error) {
+      console.error("Failed to fetch groups", error);
+    }
+  };
+  const getTypes = async () => {
+    try {
+      const response = await API.get("/PaperTypes");
+      setTypes(response.data);
+    } catch (error) {
+      console.error("Failed to fetch types", error);
+    }
+  };
+  const getCourses = async () => {
+    try {
+      const response = await API.get("/Course");
+      setCourses(response.data);
+    } catch (error) {
+      console.error("Failed to fetch courses", error);
+    }
+  };
+  const getExamType = async () => {
+    try {
+      const response = await API.get("/ExamType");
+      const apiData = response.data;
+      setExamType(apiData);
+      // Extract unique types
+      const typesSet = new Set(apiData.map((item) => item.type));
+      setUniqueTypes([...typesSet]);
+    } catch (error) {
+      console.error("Failed to fetch exam types", error);
+    }
   };
 
-  // Fetching groups from API
-  useEffect(() => {
-    const getGroups = async () => {
-      try {
-        const response = await API.get("/Groups");
-        setGroups(response.data);
-      } catch (error) {
-        console.error("Failed to fetch groups", error);
-      }
-    };
-    getGroups();
-  }, []);
-
-  // Fetching paper types from API
-  useEffect(() => {
-    const getTypes = async () => {
-      try {
-        const response = await API.get("/PaperTypes");
-        setTypes(response.data);
-      } catch (error) {
-        console.error("Failed to fetch types", error);
-      }
-    };
-    getTypes();
-  }, []);
-
+  //Change in Filters
   const handleGroupChange = (value) => {
     const selectedGroup = groups.find((group) => group.id === value);
     setSelectedGroupId(value);
     setSelectedGroupName(selectedGroup ? selectedGroup.name : "");
     setIsGroupSelected(true);
   };
-
   const handleTypeChange = (value) => {
     setSelectedTypeId(value);
   };
+  const handleCourseChange = (value) => {
+    const selectedCourse = courses.find((course) => course.courseId === value);
+    setSelectedCourseId(value);
+    setSelectedCourseName(selectedCourse ? selectedCourse.courseName : "");
+  };
+  const handleSemesterChange = (type) => {
+    const matching = examType.filter((item) => item.type === type);
+    const ids = matching.map((item) => item.examTypeId);
+    setSelectedExamTypeIds(ids); // Array of ids
+    setSelectedExamTypeName(type);
+  };
+
+  //Button Click Actions
+  const handleApplyClick = async () => {
+    setLoading(true);
+    setError(null);
+
+    const filtersObj = {
+      groupName: selectedGroupName ? encrypt(selectedGroupName) : null,
+      groupID: selectedGroupId ? encrypt(selectedGroupId) : null,
+      selectedType: selectedTypeId,
+      selectedTypeName: selectedTypeName,
+      selectedCourse: selectedCourseId,
+      selectedCourseName: selectedCourseName,
+      selectedExamTypeId: selectedExamTypeIds, // Array of IDs
+      selectedExamTypeName: selectedExamTypeName, // Type Name
+    };
+    setFilters(filtersObj);
+
+    try {
+      let url = "/QPMasters/Filter?";
+      let hasFilters = false;
+
+      // Add groupId if available
+      if (filtersObj.groupID) {
+        url += `groupId=${decrypt(filtersObj.groupID)}`;
+        hasFilters = true;
+      }
+
+      // Add courseId if available
+      if (filtersObj.selectedCourse) {
+        url += `${hasFilters ? "&" : ""}courseId=${filtersObj.selectedCourse}`;
+        hasFilters = true;
+      }
+
+      // Add typeId if available
+      if (filtersObj.selectedType) {
+        url += `${hasFilters ? "&" : ""}typeId=${filtersObj.selectedType}`;
+        hasFilters = true;
+      }
+
+      // Add examTypeIds if available
+      if (
+        Array.isArray(filtersObj.selectedExamTypeId) &&
+        filtersObj.selectedExamTypeId.length > 0
+      ) {
+        filtersObj.selectedExamTypeId.forEach((id) => {
+          url += `${hasFilters ? "&" : ""}examTypeId=${id}`;
+          hasFilters = true;
+        });
+      }
+
+      // Make the API call
+      const response = await API.get(url);
+
+      if (response.status === 200) {
+        setQpData(response.data);
+        if (response.data.length > 0) {
+          setShowTable(true);
+        } else {
+          setError("No data found for the selected filters.");
+        }
+      } else {
+        throw new Error("Failed to fetch data");
+      }
+    } catch (err) {
+      console.error("Error fetching QP data:", err);
+      setError("Failed to load data. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
+  };
+  const handleAddClick = () => {
+    const encryptedGroupId = encrypt(selectedGroupId);
+    const encryptedGroupName = encrypt(selectedGroupName);
+    navigate(`/Add-Paper/${encryptedGroupId}/${encryptedGroupName}`);
+  };
+  const handleClearClick = () => {
+    setSelectedGroupId(null);
+    setSelectedGroupName("");
+    setIsGroupSelected(false);
+    setSelectedTypeId(null);
+    setSelectedTypeName("");
+    setSelectedCourseId(null);
+    setSelectedCourseName("");
+    setSelectedExamTypeIds([]);
+    setSelectedExamTypeName("");
+    setFilters({});
+    setShowTable(false);
+  };
 
   return (
-    <div
-      className="d-flex justify-content-center align-items-center"
-      style={{ height: "80vh" }}
-    >
-      <div
-        className="d-flex flex-column align-items-center justify-content-center p-4"
-        style={{
-          height: "80vh",
-          backgroundColor: "#e9ecef",
-          borderRadius: "10px",
-          width: "100%",
-          boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-        }}
-      >
+    <div className={`${customLight} p-4 w-100 rounded shadow h-100`}>
+      {!showTable ? (
         <div>
-          <h1
-            className={`${customDarkText} mb-4`}
-            style={{
-              fontSize: "5rem",
-              fontWeight: "bold",
-              textAlign: "center",
-            }}
-          >
-            QP-Masters
-          </h1>
-          <Row className="mb-3 w-100 justify-content-center">
-            <Col className="d-flex justify-content-between w-100">
-              <Select
-                showSearch
-                placeholder="Select Group"
-                className="m-2 w-100"
-                onChange={handleGroupChange}
-                value={selectedGroupId}
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().includes(input.toLowerCase())
-                }
+          <Row className="mb-4">
+            <Col xs={12} className="text-center">
+              <h1
+                className={`${customDarkText}`}
+                style={{
+                  fontSize: "3rem",
+                  fontWeight: "bold",
+                }}
               >
-                {groups.map((group) => (
-                  <Option key={group.id} value={group.id}>
-                    {group.name}
-                  </Option>
-                ))}
-              </Select>
-              <Select
-                showSearch
-                placeholder="Select Type"
-                className="m-2 w-100"
-                onChange={handleTypeChange}
-                value={selectedTypeId}
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().includes(input.toLowerCase())
-                }
-              >
-                {types.map((type) => (
-                  <Option key={type.typeId} value={type.typeId}>
-                    {type.types}
-                  </Option>
-                ))}
-              </Select>
-              <Select placeholder="Select Course" className="m-2 w-100">
-                <Option value="course1">Course 1</Option>
-                <Option value="course2">Course 2</Option>
-              </Select>
-              <Select placeholder="Select Semester" className="m-2 w-100">
-                <Option value="semester1">Semester 1</Option>
-                <Option value="semester2">Semester 2</Option>
-              </Select>
+                QP-Masters
+              </h1>
             </Col>
           </Row>
-          <Row className="w-100 justify-content-center">
-            <Col className="d-flex justify-content-center">
+          <div className="w-50 d-flex flex-column mx-auto">
+            <Row className="mb-4 w-100">
+              <Col xs={12} md={12} lg={12} className="mb-2">
+                <Select
+                  className="w-100"
+                  placeholder="Select Group"
+                  value={selectedGroupId}
+                  onChange={handleGroupChange}
+                >
+                  {groups.map((group) => (
+                    <Option key={group.id} value={group.id}>
+                      {group.name}
+                    </Option>
+                  ))}
+                </Select>
+              </Col>
+            </Row>
+            <Row className="mb-4 w-100">
+              <Col xs={12} md={12} lg={12} className="mb-2">
+                <Select
+                  className="w-100"
+                  placeholder="Select Type"
+                  value={selectedTypeId}
+                  onChange={handleTypeChange}
+                >
+                  {types.map((type) => (
+                    <Option key={type.typeId} value={type.typeId}>
+                      {type.types}
+                    </Option>
+                  ))}
+                </Select>
+              </Col>
+            </Row>
+            <Row className="mb-4 w-100">
+              <Col xs={12} md={12} lg={12} className="mb-2">
+                <Select
+                  className="w-100"
+                  placeholder="Select Course"
+                  value={selectedCourseId}
+                  onChange={handleCourseChange}
+                >
+                  {courses.map((course) => (
+                    <Option key={course.courseId} value={course.courseId}>
+                      {course.courseName}
+                    </Option>
+                  ))}
+                </Select>
+              </Col>
+            </Row>
+            <Row className="mb-4 w-100">
+              <Col xs={12} md={12} lg={12} className="mb-2">
+                <Select
+                  className="w-100"
+                  placeholder="Select Semester Type"
+                  value={selectedExamTypeName || undefined}
+                  onChange={handleSemesterChange}
+                >
+                  {uniqueTypes.map((type) => (
+                    <Option key={type} value={type}>
+                      {type}
+                    </Option>
+                  ))}
+                </Select>
+              </Col>
+            </Row>
+          </div>
+          <Row className="mb-4">
+            <Col xs={12} className="text-center">
               <Button
-                variant="outline-primary"
+                variant="primary"
                 className="me-2"
-                style={{ borderRadius: "5px" }}
+                onClick={handleApplyClick}
+                disabled={loading}
               >
-                Apply & View
+                {selectedGroupId ||
+                selectedGroupName ||
+                selectedTypeId ||
+                selectedCourseId ||
+                selectedExamTypeIds.length > 0
+                  ? "Apply & View"
+                  : "View All"}
+              </Button>
+
+              <Button variant="secondary" onClick={handleClearClick}>
+                Clear Filters
               </Button>
             </Col>
           </Row>
-          <Row className="w-100 justify-content-center mt-3">
-            <span className={`${customDarkText} text-center fs-2 fw-bold`}>
+          <Row>
+            <Col
+              xs={12}
+              className={`text-center fw-bold fs-4 ${customDarkText}`}
+            >
               OR
-            </span>
+            </Col>
           </Row>
-          <Row className="w-100 justify-content-center mt-3">
-            <Col className="d-flex justify-content-center">
-              <Tooltip
-                title={!isGroupSelected ? "Please select a group first" : ""}
-              >
+          <Row className="mb-4">
+            <Col xs={12} className="text-center">
+              <Tooltip title={!selectedGroupId ? "Select a group first" : ""}>
                 <span>
                   <Button
-                    variant="outline-secondary"
-                    style={{ borderRadius: "5px" }}
-                    className="me-2"
+                    variant="success"
+                    className="ms-2"
                     onClick={handleAddClick}
-                    disabled={!isGroupSelected}
+                    disabled={!selectedGroupId}
                   >
-                    Add
+                    Add Paper
                   </Button>
                 </span>
               </Tooltip>
             </Col>
           </Row>
+
+          {error && (
+            <Row>
+              <Col xs={12} className="text-center text-danger">
+                {error}
+              </Col>
+            </Row>
+          )}
         </div>
-      </div>
+      ) : (
+        <QPTable
+          filters={filters}
+          qpData={qpData}
+          setShowTable={setShowTable}
+          groups={groups}
+          types={types}
+          courses={courses}
+          examType={examType}
+          uniqueTypes={uniqueTypes}
+          selectedGroupId={selectedGroupId}
+          selectedTypeId={selectedTypeId}
+          selectedCourseId={selectedCourseId}
+          selectedExamTypeIds={selectedExamTypeIds}
+          onGroupChange={handleGroupChange}
+          onTypeChange={handleTypeChange}
+          onCourseChange={handleCourseChange}
+          onSemesterChange={handleSemesterChange}
+          onApplyClick={handleApplyClick}
+          onClearClick={handleClearClick}
+        />
+      )}
     </div>
   );
 };

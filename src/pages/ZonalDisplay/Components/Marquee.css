@@ -2,13 +2,13 @@
     /* position: fixed; */
     /* bottom: 0; */
     width: 100%;
-    background-color: rgb(6, 46, 121);
+    /* background-color: rgb(6, 46, 121); */
     color: white;
     padding: 3px 0px px 0px;
     overflow: hidden;
     z-index: 500;
     white-space: nowrap;
-    height: 10vh;
+    /* height: 10vh; */
   }
   
   .marquee-content {

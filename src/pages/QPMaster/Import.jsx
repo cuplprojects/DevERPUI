@@ -6,13 +6,17 @@ import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import themeStore from "../../store/themeStore";
 import * as XLSX from "xlsx";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Container from "react-bootstrap/Container";
 import { Card } from "react-bootstrap";
+import { decrypt, encrypt } from "./../../Security/Security";
+import { FaHome } from "react-icons/fa";
 
 const Import = () => {
-  const { groupId, groupName } = useParams();
+  const { encryptedGroupId, encryptedGroupName } = useParams();
+  const [groupId, setGroupId] = useState(null);
+  const [groupName, setGroupName] = useState(null);
   const [form] = Form.useForm();
   const [columns, setColumns] = useState([]);
   const [fileList, setFileList] = useState([]);
@@ -24,11 +28,25 @@ const Import = () => {
   const [isProcessingFile, setIsProcessingFile] = useState(false);
   const [showBtn, setShowBtn] = useState(false);
   const { t } = useTranslation();
-  const { getCssClasses } = useStore(themeStore)
-  const cssClasses = getCssClasses()
-  const customBtn = cssClasses[3]
-  const customDarkText = cssClasses[4]
+  const { getCssClasses } = useStore(themeStore);
+  const cssClasses = getCssClasses();
+  const customDark = cssClasses[0];
+  const customMid = cssClasses[1];
+  const customLight = cssClasses[2];
+  const customBtn = cssClasses[3];
+  const customDarkText = cssClasses[4];
+  const customLightText = cssClasses[5];
+  const customLightBorder = cssClasses[6];
+  const customDarkBorder = cssClasses[7];
+  const navigate = useNavigate();
 
+  useEffect(() => {
+    const decryptGroupId = decrypt(encryptedGroupId);
+    // console.log(decryptGroupId);
+    const decryptGroupName = decrypt(encryptedGroupName);
+    setGroupId(decryptGroupId);
+    setGroupName(decryptGroupName);
+  }, [])
 
   useEffect(() => {
     const getColumns = async () => {
@@ -198,7 +216,9 @@ const Import = () => {
 
   const getCourseIdByName = async (courseName) => {
     try {
-      const courseResponse = await API.get(`Course/GetCourse?courseName=${courseName}`);
+      const courseResponse = await API.get(
+        `Course/GetCourse?courseName=${courseName}`
+      );
       let courseId = courseResponse.data;
       if (!courseId) {
         const newCourseResponse = await API.post("/Course", {
@@ -215,7 +235,9 @@ const Import = () => {
 
   const getSubjectIdByName = async (subject) => {
     try {
-      const subjectResponse = await API.get(`Subject/Subject?subject=${subject}`);
+      const subjectResponse = await API.get(
+        `Subject/Subject?subject=${subject}`
+      );
       let subjectId = subjectResponse.data;
 
       if (!subjectId) {
@@ -244,6 +266,26 @@ const Import = () => {
       throw err;
     }
   };
+
+  // const getLanguageIdByName = async (language) => {
+  //   try {
+  //     const languageResponse = await API.get(
+  //       `Language/Language?language=${language}`
+  //     );
+  //     let languageId = languageResponse.data;
+
+  //     if (!languageId) {
+  //       const newLanguageResponse = await API.post("/Language", {
+  //         languages: language,
+  //       });
+  //       languageId = newLanguageResponse.data.languageId;
+  //     }
+  //     return languageId;
+  //   } catch (err) {
+  //     console.error("Error in fetching or inserting type:", err);
+  //     throw err;
+  //   }
+  // };
 
   const getLanguageIdByName = async (language) => {
     try {
@@ -296,20 +338,24 @@ const Import = () => {
       const finalPayload = mappedData.map((item) => ({
         groupId: groupId,
         typeId: item.TypeId || 0,
-        nepCode: String(item.NEPCode || "string"),
-        privateCode: item.PrivateCode || "string",
+        nepCode: String(item.NEPCode || ""),
+        privateCode: item.PrivateCode || "",
         subjectId: item.SubjectId || 0,
-        paperNumber: String(item.PaperNumber || "string"),
-        paperTitle: item.PaperTitle || "string",
+        paperNumber: String(item.PaperNumber || ""),
+        paperTitle: item.PaperTitle || "",
         maxMarks: item.MaxMarks || 0,
-        duration: item.Duration || "string",
+        duration: item.Duration || "",
         languageId: item.LanguageId|| [],
-        customizedField1: item.customizedField1 || "string",
-        customizedField2: item.customizedField2 || "string",
-        customizedField3: item.customizedField3 || "string",
+        // languageId: Array.isArray(item.LanguageId) ? item.LanguageId : [item.LanguageId || 0],        
+        customizedField1: item.customizedField1 || "",
+        customizedField2: item.customizedField2 || "",
+        customizedField3: item.customizedField3 || "",
         courseId: item.CourseId || 0,
         examTypeId: item.ExamTypeId || 0,
       }));
+
+      // console.log("final payload ->",finalPayload)
+
       const response = await API.post("/QPMasters", finalPayload, {
         headers: {
           "Content-Type": "application/json",
@@ -328,7 +374,9 @@ const Import = () => {
       setIsLoading(false);
     }
   };
-
+  const handleHomeClick = () => {
+    navigate("/QP-Masters");
+  };
   const handleMappingChange = (property, value) => {
     setFieldMappings((prevMappings) => {
       return {
@@ -342,7 +390,19 @@ const Import = () => {
     <Container className="">
       <Card>
         <Card.Body>
-          <h1 className={`text-center ${customDarkText} fw-bold`}>Import Excel</h1>
+          <div className="d-flex justify-content-between align-items-center">
+            <div className="flex-grow-1 text-center">
+              <h1 className={`fw-bold ${customDarkText} m-0`}>Import Excel</h1> 
+              <p className="text-muted m-0">For <span className="fw-bold">{groupName}</span> group</p>
+            </div>
+            <FaHome
+              className="ms-2 c-pointer"
+              color="blue"
+              size={30}
+              onClick={handleHomeClick}
+            />
+          </div>
+
           <Form layout="vertical" form={form}>
             <Form.Item
               name="file"
@@ -360,12 +420,16 @@ const Import = () => {
                   fileList={fileList}
                   className="flex-grow- me-2 fw-bold text-danger "
                 >
-                  <Button className={`w-100 d-flex align-items-center p-2 ${customBtn} text-white`}> 
+                  <Button
+                    className={`w-100 d-flex align-items-center p-2 ${customBtn} text-white`}
+                  >
                     <UploadOutlined />
                     <span className="d-none d-sm-inline fs-5 p-2 text-white">
                       {t("selectFile")}
                     </span>
-                    <span className={`d-inline d-sm-none fs-4 p-2 text-white`}>{t("upload")}</span>
+                    <span className={`d-inline d-sm-none fs-4 p-2 text-white`}>
+                      {t("upload")}
+                    </span>
                   </Button>
                 </Upload>
                 {fileList.length > 0 && (
@@ -381,40 +445,37 @@ const Import = () => {
               </div>
             </Form.Item>
             {/* {showMappingFields && headers.length > 0 && ( */}
-              <Row className="mt-4 justify-content-center">
-                
-                  <div className="table-responsive w-100">
-                    <table className="table table-bordered table-striped w-100">
-                      <thead>
-                        <tr>
-                          <th style={{ width: "50%" }}> {t("fields")} </th>
-                          <th style={{ width: "50%" }}> {t("excelHeader")} </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {Object.keys(fieldMappings).map((property) => (
-                          <tr key={property}>
-                            <td>{property} </td>
-                            <td>
-                              <Select
-                                allowClear
-                                value={fieldMappings[property]}
-                                onChange={(value) =>
-                                  handleMappingChange(property, value)
-                                }
-                                options={getAvailableOptions(property)}
-                                style={{ width: "100%" }}
-                                dropdownMatchSelectWidth={false}
-                                showSearch
-                              />
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                
-              </Row>
+            <Row className="mt-4 justify-content-center">
+              <div className="table-responsive w-100">
+                <table className="table table-bordered table-striped w-100">
+                  <thead>
+                    <tr>
+                      <th style={{ width: "50%" }}> {t("fields")} </th>
+                      <th style={{ width: "50%" }}> {t("excelHeader")} </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.keys(fieldMappings).map((property) => (
+                      <tr key={property}>
+                        <td>{property} </td>
+                        <td>
+                          <Select
+                            allowClear
+                            value={fieldMappings[property]}
+                            onChange={(value) =>
+                              handleMappingChange(property, value)
+                            }
+                            options={getAvailableOptions(property)}
+                            style={{ width: "100%" }}
+                            dropdownMatchSelectWidth={false}
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Row>
             {/* )} */}
           </Form>
         </Card.Body>
