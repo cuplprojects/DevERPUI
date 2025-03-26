@@ -5,6 +5,8 @@ import {
   CloseCircleOutlined,
   FileTextOutlined,
   ArrowLeftOutlined,
+  CheckOutlined,
+  SyncOutlined,
 } from '@ant-design/icons';
 import API from '../../CustomHooks/MasterApiHooks/api';
 import { success, error } from '../../CustomHooks/Services/AlertMessageService';
@@ -71,6 +73,49 @@ const QcProcess = () => {
 
   ]
 
+  const renderVerificationField = (record, field, text) => {
+    const verified = record.verified?.[field];
+    return (
+      <div
+        style={{
+          padding: '2px',
+          backgroundColor: verified ? '#f6ffed' : '#fff1f0',
+          border: `1px solid ${verified ? '#b7eb8f' : '#ffa39e'}`,
+          borderRadius: '4px',
+          textAlign: 'center',
+        }}
+      >
+        {text}
+        {verified ? (
+          <CheckCircleOutlined style={{ color: '#52c41a', marginLeft: '8px' }} />
+        ) : (
+          <CloseCircleOutlined style={{ color: '#ff4d4f', marginLeft: '8px' }} />
+        )}
+      </div>
+    );
+  };
+
+  const renderVerificationStatusOnly = (record, field) => {
+    const verified = record.verified?.[field];
+    return (
+      <div
+        style={{
+          padding: '2px',
+          backgroundColor: verified ? '#f6ffed' : '#fff1f0',
+          border: `1px solid ${verified ? '#b7eb8f' : '#ffa39e'}`,
+          borderRadius: '4px',
+          textAlign: 'center',
+        }}
+      >
+        {verified ? (
+          <CheckCircleOutlined style={{ color: '#52c41a' }} />
+        ) : (
+          <CloseCircleOutlined style={{ color: '#ff4d4f' }} />
+        )}
+      </div>
+    );
+  };
+
   const columns = [
     {
       title: 'Sr.No',
@@ -98,50 +143,40 @@ const QcProcess = () => {
       dataIndex: 'language',
       key: 'language',
       align: 'center',
-      render: (text, record) => renderVerificationField(record, 'language', text),
-      sorter: (a, b) => String(a.language).localeCompare(String(b.language)),
+      render: (text, record) => renderVerificationStatusOnly(record, 'language'),
+      sorter: (a, b) => String(a.language || '').localeCompare(String(b.language || '')),
     },
     {
       title: 'Max Marks',
       dataIndex: 'maxMarks',
       key: 'maxMarks',
       align: 'center',
-      render: (text, record) => renderVerificationField(record, 'maxMarks', text),
-      sorter: (a, b) => {
-        if (typeof a.maxMarks === 'number' && typeof b.maxMarks === 'number') {
-          return a.maxMarks - b.maxMarks;
-        }
-        return String(a.maxMarks).localeCompare(String(b.maxMarks));
-      },
+      render: (text, record) => renderVerificationStatusOnly(record, 'maxMarks'),
+      sorter: (a, b) => (a.maxMarks || 0) - (b.maxMarks || 0),
     },
     {
       title: 'Duration',
       dataIndex: 'duration',
       key: 'duration',
       align: 'center',
-      render: (text, record) => renderVerificationField(record, 'duration', text),
-      sorter: (a, b) => {
-        if (typeof a.duration === 'number' && typeof b.duration === 'number') {
-          return a.duration - b.duration;
-        }
-        return String(a.duration).localeCompare(String(b.duration));
-      },
+      render: (text, record) => renderVerificationStatusOnly(record, 'duration'),
+      sorter: (a, b) => (a.duration || 0) - (b.duration || 0),
     },
     {
       title: 'Structure of Paper',
       dataIndex: 'structure',
       key: 'structure',
       align: 'center',
-      render: (text, record) => renderVerificationField(record, 'structure', text),
-      sorter: (a, b) => String(a.structure).localeCompare(String(b.structure)),
+      render: (text, record) => renderVerificationStatusOnly(record, 'structure'),
+      sorter: (a, b) => String(a.structure || '').localeCompare(String(b.structure || '')),
     },
     {
       title: 'Series',
       dataIndex: 'series',
       key: 'series',
       align: 'center',
-      render: (text, record) => renderVerificationField(record, 'series', text),
-      sorter: (a, b) => String(a.series).localeCompare(String(b.series)),
+      render: (text, record) => renderVerificationStatusOnly(record, 'series'),
+      sorter: (a, b) => String(a.series || '').localeCompare(String(b.series || '')),
     },
     {
       title: 'Action',
@@ -159,28 +194,6 @@ const QcProcess = () => {
       ),
     },
   ];
-
-  const renderVerificationField = (record, field, text) => {
-    const verified = record.verified?.[field];
-    return (
-      <div
-        style={{
-          padding: '2px',
-          backgroundColor: verified ? '#f6ffed' : '#fff1f0',
-          border: `1px solid ${verified ? '#b7eb8f' : '#ffa39e'}`,
-          borderRadius: '4px',
-          textAlign: 'center',
-        }}
-      >
-        {text}
-        {verified ? (
-          <CheckCircleOutlined style={{ color: '#52c41a', marginLeft: '8px' }} />
-        ) : (
-          <CloseCircleOutlined style={{ color: '#ff4d4f', marginLeft: '8px' }} />
-        )}
-      </div>
-    );
-  };
 
   const handlePreview = (record, action = 'verify') => {
     if (selectedRecord?.quantitysheetId === record.quantitysheetId) {
@@ -222,15 +235,14 @@ const QcProcess = () => {
       const response = await API.post('/QC', qcData);
       if (response.status === 200 || response.status === 201) {
         console.log('QC data processed successfully', response.data);
-        setData((prevData) =>
-          prevData.map((item) =>
-            item.quantitysheetId === selectedRecord.quantitysheetId ? { ...item, ...qcData } : item
-          )
+        const updatedData = data.map((item) =>
+          item.quantitysheetId === selectedRecord.quantitysheetId ? { ...item, verified: { ...tempVerification, status: qcData.Status } } : item
         );
+        setData(updatedData);
+        setFilteredData(updatedData);
         setSelectedRecord(null);
         setTempVerification({});
         success(t('recordSent'));
-        fetchData();
       }
     } catch (error) {
       error(t('failedToSendResponse'));
@@ -246,8 +258,11 @@ const QcProcess = () => {
     } else if (status === 'rejected') {
       setFilteredData(data.filter((item) => item.verified?.status === false));
       setShowback(true)
-    } else if (status == 'pending') {
+    } else if (status === 'pending') {
       setFilteredData(data.filter((item) => Object.keys(item.verified).length === 0));
+      setShowback(true)
+    } else if (status === 'reverify') {
+      setFilteredData(data.filter((item) => item.verified?.status === false && Object.values(item.verified).some(value => value === true)));
       setShowback(true)
     }
     else {
@@ -392,7 +407,7 @@ const QcProcess = () => {
   };
 
   return (
-    <div className={`container ${customLight} rounded py-2 shadow-lg ${customDark === "dark-dark" ? 'border' : ''}`}>
+    <div className={` ${customLight} rounded py-2 shadow-lg ${customDark === "dark-dark" ? 'border' : ''}`}>
       <Card>
         <div className='d-flex align-items-center justify-content-between'>
           <div>
@@ -421,6 +436,14 @@ const QcProcess = () => {
                 <Tooltip title="Pending Items">
                   <Badge color='#ffc107' count={data.filter((item) => Object.keys(item.verified).length === 0).length}>
                     <FileTextOutlined onClick={() => filterDataByStatus('pending')} className='fs-3' style={{ color: '#8c8c8c' }} />
+                  </Badge>
+                </Tooltip>
+                <Tooltip title="Re-verify Items">
+                  <Badge color='#1890ff' count={data.filter((item) => item.verified?.status === false && Object.values(item.verified).some(value => value === true)).length}>
+                    <div style={{ position: 'relative', display: 'inline-block' }}>
+                      <SyncOutlined onClick={() => filterDataByStatus('reverify')} className='fs-2' style={{ color: '#1890ff' }} />
+                      <CheckOutlined style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: '12px', color: '#1890ff' }} />
+                    </div>
                   </Badge>
                 </Tooltip>
               </Space>
