@@ -14,7 +14,7 @@ import { useTranslation } from 'react-i18next';
 import { useStore } from 'zustand';
 import themeStore from '../../store/themeStore';
 
-const QcProcess = () => {
+const QcProcess = (projectId) => {
   const { t } = useTranslation();
   const { getCssClasses } = useStore(themeStore);
   const cssClasses = getCssClasses();
@@ -30,7 +30,7 @@ const QcProcess = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await API.get('/QC/ByProject?projectId=74');
+        const response = await API.get(`/QC/ByProject?projectId=${projectId}`);
         const transformedData = response.data.map(item => ({
           ...item,
           verified: item.verified || {},
