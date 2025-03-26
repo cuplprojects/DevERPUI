@@ -1026,12 +1026,7 @@ const ProcessTable = () => {
           projectName={projectName}
         />
       ) : processName === "QC" ? (
-        <QcScreen
-          projectId={selectedProject?.value || id}
-          processId={processId}
-          lotNo={selectedLot}
-          projectName={projectName}
-        />
+        <QcScreen/>
       ) : (
         <>
           {modalVisible ? (
