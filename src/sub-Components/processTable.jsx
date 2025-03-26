@@ -1071,28 +1071,37 @@ const ProcessTable = () => {
       )}
 
       <Row className="mb-4 d-flex justify-content-between">
-        <Col lg={8} md={12} className="mb-1">
-          <div className="d-flex align-items-center gap-4">
-            <div>
-              <Switch
-                checked={showBarChart}
-                onChange={() => setShowBarChart(!showBarChart)}
-              />
-              <span className={`ms-2 ${customDarkText}`}>
-                {t("showCatchData")}
-              </span>
-            </div>
-            <div>
-              <Switch
-                checked={showPieChart}
-                onChange={() => setShowPieChart(!showPieChart)}
-              />
-              <span className={`ms-2 ${customDarkText}`}>
-                {t("showCompletionPercentage")}
-              </span>
-            </div>
-          </div>
-        </Col>
+        {processName === "QC" ? (
+          <></>
+        ) : processName === "MSS" ? (
+          <></>
+        ) : (
+          <>
+            <Col lg={8} md={12} className="mb-1">
+              <div className="d-flex align-items-center gap-4">
+                <div>
+                  <Switch
+                    checked={showBarChart}
+                    onChange={() => setShowBarChart(!showBarChart)}
+                  />
+                  <span className={`ms-2 ${customDarkText}`}>
+                    {t("showCatchData")}
+                  </span>
+                </div>
+                <div>
+                  <Switch
+                    checked={showPieChart}
+                    onChange={() => setShowPieChart(!showPieChart)}
+                  />
+                  <span className={`ms-2 ${customDarkText}`}>
+                    {t("showCatchData")}
+                  </span>
+                </div>
+              </div>
+            </Col>
+          </>
+        )}
+
 
         {showBarChart && (
           <Col
