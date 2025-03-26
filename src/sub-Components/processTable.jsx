@@ -33,6 +33,7 @@ import { Collapse } from "react-bootstrap";
 import ProcessProgressTrain from "./ProcessProgressTrain";
 import ProcessTrainModals from "./ProcessTrainModals ";
 import QcScreen from "./../pages/MssProcess/Qcscreen";
+import MSS from "./../pages/MssProcess/Mss";
 
 const ProcessTable = () => {
   const { encryptedProjectId } = useParams();
@@ -1026,7 +1027,14 @@ const ProcessTable = () => {
           projectName={projectName}
         />
       ) : processName === "QC" ? (
-        <QcScreen/>
+        <QcScreen />
+      ) : processName === "MSS" ? (
+        <MSS
+          projectId={selectedProject?.value || id}
+          processId={processId}
+          lotNo={selectedLot}
+          projectName={projectName}
+        />
       ) : (
         <>
           {modalVisible ? (
