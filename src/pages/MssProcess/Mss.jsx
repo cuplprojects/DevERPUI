@@ -15,7 +15,7 @@ const Mss = ({projectId , processId , lotNo , projectName}) => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [importedData, setImportedData] = useState([]); // State for imported data
-
+  const [quantitySheetData,setQuantitySheetData] = useState([]);
   const fetchResults = async (value, newPage = 1, append = false) => {
     if (!value) {
       setData([]);
@@ -61,6 +61,9 @@ const Mss = ({projectId , processId , lotNo , projectName}) => {
       // Update the imported data state
       setImportedData((prevData) => [...prevData, item]);
 
+      // Fetch updated quantity sheet data after successful import
+      await fetchQuantitySheetData();
+
     } catch (error) {
       console.error("Import failed:", error);
       message.error("Failed to import data.");
@@ -68,6 +71,18 @@ const Mss = ({projectId , processId , lotNo , projectName}) => {
       setImporting(null);
     }
   };
+
+
+  const fetchQuantitySheetData = async () => {
+    try {
+      const response = await API.get(`/QuantitySheet/byProject/${projectId}`);
+      setQuantitySheetData(response.data);
+      console.log("Quantity Sheet Data:", response.data);
+    } catch (error) {
+      console.error("Error fetching quantity sheet data:", error);
+    }
+  };
+
 
   // Table columns for imported data
   const columns = [
@@ -151,7 +166,7 @@ const Mss = ({projectId , processId , lotNo , projectName}) => {
           </Card>
 
           {/* Imported Data Table */}
-          {importedData.length > 0 && (
+          {/* {importedData && ( */}
             <Card title="Imported Data" className="shadow-sm mt-4">
               <Table
                 dataSource={importedData}
@@ -160,7 +175,7 @@ const Mss = ({projectId , processId , lotNo , projectName}) => {
                 pagination={false}
               />
             </Card>
-          )}
+          {/* )} */}
         </Col>
       </Row>
     </Container>
