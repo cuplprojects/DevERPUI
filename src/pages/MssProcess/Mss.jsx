@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Select, Spin, message, Card, Table, Tooltip } from "antd";
 import axios from "axios";
 import { Button, Col, Row, Container } from "react-bootstrap";
-import { DownloadOutlined, BookOutlined, CalendarOutlined } from "@ant-design/icons";
+import { DownloadOutlined, BookOutlined, CalendarOutlined, CheckCircleOutlined, DeleteOutlined } from "@ant-design/icons";
 import API from "../../CustomHooks/MasterApiHooks/api";
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
@@ -21,9 +21,15 @@ const Mss = ({projectId , processId , lotNo , projectName}) => {
   const [quantitySheetData,setQuantitySheetData] = useState([]);
   const [gridApi, setGridApi] = useState(null);
   const [gridColumnApi, setGridColumnApi] = useState(null);
+  const [courseOptions, setCourseOptions] = useState([]);
+  const [subjectOptions, setSubjectOptions] = useState([]);
+  const [languageOptions, setLanguageOptions] = useState([]);
 
   useEffect(() => {
     fetchQuantitySheetData();
+    fetchCourseOptions();
+    fetchSubjectOptions();
+    fetchLanguageOptions();
   }, [projectId]);
 
   const fetchResults = async (value, newPage = 1, append = false) => {
@@ -93,6 +99,32 @@ const Mss = ({projectId , processId , lotNo , projectName}) => {
     }
   };
 
+  const fetchCourseOptions = async () => {
+    try {
+      const response = await API.get('/Courses');
+      setCourseOptions(response.data);
+    } catch (error) {
+      console.error("Error fetching course options:", error);
+    }
+  };
+
+  const fetchSubjectOptions = async () => {
+    try {
+      const response = await API.get('/Subjects');
+      setSubjectOptions(response.data);
+    } catch (error) {
+      console.error("Error fetching subject options:", error);
+    }
+  };
+
+  const fetchLanguageOptions = async () => {
+    try {
+      const response = await API.get('/Languages');
+      setLanguageOptions(response.data);
+    } catch (error) {
+      console.error("Error fetching language options:", error);
+    }
+  };
 
   // Table columns for imported data
   const columns = [
@@ -123,6 +155,65 @@ const Mss = ({projectId , processId , lotNo , projectName}) => {
     }
   ];
 
+  // Add these handlers for the action buttons
+  const handleMarkReceived = async (data) => {
+    try {
+      // Update the mssStatus to "Completed" (2)
+      const updatedData = { ...data, mssStatus: 2 };
+      
+      // Call API to update the record
+      await API.put(`/QuantitySheet/update/${data.quantitySheetId}`, updatedData);
+      
+      message.success("Item marked as received successfully");
+      
+      // Refresh the data
+      await fetchQuantitySheetData();
+    } catch (error) {
+      console.error("Failed to mark as received:", error);
+      message.error("Failed to mark as received");
+    }
+  };
+
+  const handleRemove = async (data) => {
+    try {
+      // Call API to delete the record
+      await API.delete(`/QuantitySheet/${data.quantitySheetId}`);
+      
+      message.success("Item removed successfully");
+      
+      // Refresh the data
+      await fetchQuantitySheetData();
+    } catch (error) {
+      console.error("Failed to remove item:", error);
+      message.error("Failed to remove item");
+    }
+  };
+
+  // Custom cell renderer for action buttons
+  const ActionCellRenderer = (params) => {
+    return (
+      <div className="d-flex gap-2 justify-content-center">
+        <Button 
+          variant="outline-success" 
+          size="sm"
+          onClick={() => handleMarkReceived(params.data)}
+          disabled={params.data.mssStatus === 2} // Disable if already marked as received
+          title="Mark as Received"
+        >
+          <CheckCircleOutlined />
+        </Button>
+        <Button 
+          variant="outline-danger" 
+          size="sm"
+          onClick={() => handleRemove(params.data)}
+          title="Remove"
+        >
+          <DeleteOutlined />
+        </Button>
+      </div>
+    );
+  };
+
   // Define AG Grid column definitions
   const columnDefs = [
     {
@@ -142,6 +233,46 @@ const Mss = ({projectId , processId , lotNo , projectName}) => {
       width: 120
     },
     {
+      headerName: "A",
+      field: "courseId",
+      editable: true,
+      sortable: true,
+      filter: true,
+      width: 150,
+      cellEditor: 'agSelectCellEditor',
+      cellEditorParams: {
+        values: courseOptions.map(course => course.courseId),
+        valueFormatter: (params) => {
+          const course = courseOptions.find(c => c.courseId === params.value);
+          return course ? course.courseName : '';
+        }
+      },
+      valueFormatter: (params) => {
+        const course = courseOptions.find(c => c.courseId === params.value);
+        return course ? course.courseName : '';
+      }
+    },
+    {
+      headerName: "B",
+      field: "subjectId",
+      editable: true,
+      sortable: true,
+      filter: true,
+      width: 150,
+      cellEditor: 'agSelectCellEditor',
+      cellEditorParams: {
+        values: subjectOptions.map(subject => subject.subjectId),
+        valueFormatter: (params) => {
+          const subject = subjectOptions.find(s => s.subjectId === params.value);
+          return subject ? subject.subjectName : '';
+        }
+      },
+      valueFormatter: (params) => {
+        const subject = subjectOptions.find(s => s.subjectId === params.value);
+        return subject ? subject.subjectName : '';
+      }
+    },
+    {
       headerName: "Language",
       field: "languageId",
       editable: true,
@@ -149,7 +280,14 @@ const Mss = ({projectId , processId , lotNo , projectName}) => {
       filter: true,
       width: 150,
       valueFormatter: (params) => {
-        return Array.isArray(params.value) ? params.value.join(', ') : params.value;
+        if (!params.value) return '';
+        if (Array.isArray(params.value)) {
+          return params.value.map(id => {
+            const language = languageOptions.find(l => l.languageId === id);
+            return language ? language.languageName : id;
+          }).join(', ');
+        }
+        return params.value;
       }
     },
     {
@@ -162,6 +300,60 @@ const Mss = ({projectId , processId , lotNo , projectName}) => {
       valueParser: (params) => {
         return Number(params.newValue);
       }
+    },
+    {
+      headerName: "NEP Code",
+      field: "nepCode",
+      editable: true,
+      sortable: true,
+      filter: true,
+      width: 130
+    },
+    {
+      headerName: "Private Code",
+      field: "privateCode",
+      editable: true,
+      sortable: true,
+      filter: true,
+      width: 130
+    },
+    {
+      headerName: "MSS Status",
+      field: "mssStatus",
+      editable: true,
+      sortable: true,
+      filter: true,
+      width: 120,
+      cellEditor: 'agSelectCellEditor',
+      cellEditorParams: {
+        values: [0, 1, 2],
+        valueFormatter: (params) => {
+          const statusMap = {
+            0: 'Pending',
+            1: 'Started',
+            2: 'Completed'
+          };
+          return statusMap[params.value] || '';
+        }
+      },
+      valueFormatter: (params) => {
+        const statusMap = {
+          0: 'Pending',
+          1: 'Started',
+          2: 'Completed'
+        };
+        return statusMap[params.value] || '';
+      }
+    },
+    {
+      headerName: "Actions",
+      field: "actions",
+      sortable: false,
+      filter: false,
+      editable: false,
+      pinned: 'right',
+      width: 120,
+      cellRenderer: ActionCellRenderer
     }
   ];
 
@@ -180,16 +372,30 @@ const Mss = ({projectId , processId , lotNo , projectName}) => {
   };
 
   // Cell value changed handler
-  const onCellValueChanged = (params) => {
+  const onCellValueChanged = async (params) => {
     console.log("Cell value changed:", params);
-    // Here you would typically send the updated data to your API
-    // You can access the changed data through params.data
+    
+    try {
+      // Prepare the updated data for API
+      const updatedData = params.data;
+      
+      // Call API to update the quantity sheet record
+      await API.put(`/QuantitySheet/update/${updatedData.quantitySheetId}`, updatedData);
+      
+      message.success("Data updated successfully");
+    } catch (error) {
+      console.error("Failed to update data:", error);
+      message.error("Failed to update data");
+      
+      // Refresh grid to revert to previous state if update failed
+      gridApi.refreshCells();
+    }
   };
 
   return (
-    <Container fluid className="mt-4">
+    <div className="mt-4">
       <Row className="justify-content-center">
-        <Col xs={12} md={10} lg={8}>
+        <Col xs={12} md={12} lg={12}>
           <Card title="Search & Import QP Masters" className="shadow-sm">
             <Select
               showSearch
@@ -271,12 +477,14 @@ const Mss = ({projectId , processId , lotNo , projectName}) => {
                 suppressRowClickSelection={true}
                 undoRedoCellEditing={true}
                 undoRedoCellEditingLimit={20}
+                suppressMovableColumns={false}
+                suppressColumnVirtualisation={false}
               />
             </div>
           </Card>
         </Col>
       </Row>
-    </Container>
+    </div>
   );
 };
 
