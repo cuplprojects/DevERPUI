@@ -7,7 +7,7 @@ import API from "../../CustomHooks/MasterApiHooks/api";
 
 const { Option } = Select;
 
-const Mss = (projectId , processId , lotNo , projectName) => {
+const Mss = ({projectId , processId , lotNo , projectName}) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -52,7 +52,7 @@ const Mss = (projectId , processId , lotNo , projectName) => {
   const handleImport = async (item) => {
     setImporting(item.qpMasterId);
     try {
-      await API.post("/QPMasters/InsertIntoQuantitySheet", item.qpMasterId, {
+      await API.post(`/QPMasters/InsertIntoQuantitySheet?projectId=${projectId}`, item.qpMasterId, {
         headers: { "Content-Type": "application/json" },
       });
 
