@@ -1,29 +1,41 @@
 import React, { useEffect, useState } from "react";
-import { Select, Spin, message, Card, Table, Tooltip } from "antd";
+import { Select, Spin, message, Card, Table, Tooltip, Collapse, Dropdown, Menu, Checkbox } from "antd";
 import axios from "axios";
 import { Button, Col, Row, Container } from "react-bootstrap";
-import { DownloadOutlined, BookOutlined, CalendarOutlined, CheckCircleOutlined, DeleteOutlined } from "@ant-design/icons";
+import { DownloadOutlined, BookOutlined, CalendarOutlined, CheckCircleOutlined, DeleteOutlined, UpOutlined, DownOutlined } from "@ant-design/icons";
 import API from "../../CustomHooks/MasterApiHooks/api";
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 
 const { Option } = Select;
+const { Panel } = Collapse;
 
-const Mss = ({projectId , processId , lotNo , projectName}) => {
+const Mss = ({ projectId, processId, lotNo, projectName }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [importing, setImporting] = useState(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
-  const [importedData, setImportedData] = useState([]); // State for imported data
-  const [quantitySheetData,setQuantitySheetData] = useState([]);
+  const [importedData, setImportedData] = useState([]);
+  const [quantitySheetData, setQuantitySheetData] = useState([]);
   const [gridApi, setGridApi] = useState(null);
   const [gridColumnApi, setGridColumnApi] = useState(null);
   const [courseOptions, setCourseOptions] = useState([]);
   const [subjectOptions, setSubjectOptions] = useState([]);
   const [languageOptions, setLanguageOptions] = useState([]);
+  const [collapseSearch, setCollapseSearch] = useState(false);
+  
+  // Add state for dropdown selections
+  const [selectedCourses, setSelectedCourses] = useState([]);
+  const [selectedSemesters, setSelectedSemesters] = useState([]);
+  const [courseDropdownVisible, setCourseDropdownVisible] = useState(false);
+  const [semesterDropdownVisible, setSemesterDropdownVisible] = useState(false);
+  
+  // Roman numeral options
+  const courseRomanOptions = ['I', 'II', 'III', 'IV', 'V'];
+  const semesterRomanOptions = ['I', 'II', 'III', 'IV', 'V', 'VI'];
 
   useEffect(() => {
     fetchQuantitySheetData();
@@ -87,7 +99,6 @@ const Mss = ({projectId , processId , lotNo , projectName}) => {
       setImporting(null);
     }
   };
-
 
   const fetchQuantitySheetData = async () => {
     try {
@@ -160,12 +171,12 @@ const Mss = ({projectId , processId , lotNo , projectName}) => {
     try {
       // Update the mssStatus to "Completed" (2)
       const updatedData = { ...data, mssStatus: 2 };
-      
+
       // Call API to update the record
       await API.put(`/QuantitySheet/update/${data.quantitySheetId}`, updatedData);
-      
+
       message.success("Item marked as received successfully");
-      
+
       // Refresh the data
       await fetchQuantitySheetData();
     } catch (error) {
@@ -178,9 +189,9 @@ const Mss = ({projectId , processId , lotNo , projectName}) => {
     try {
       // Call API to delete the record
       await API.delete(`/QuantitySheet/${data.quantitySheetId}`);
-      
+
       message.success("Item removed successfully");
-      
+
       // Refresh the data
       await fetchQuantitySheetData();
     } catch (error) {
@@ -193,8 +204,8 @@ const Mss = ({projectId , processId , lotNo , projectName}) => {
   const ActionCellRenderer = (params) => {
     return (
       <div className="d-flex gap-2 justify-content-center">
-        <Button 
-          variant="outline-success" 
+        <Button
+          variant="outline-success"
           size="sm"
           onClick={() => handleMarkReceived(params.data)}
           disabled={params.data.mssStatus === 2} // Disable if already marked as received
@@ -202,8 +213,8 @@ const Mss = ({projectId , processId , lotNo , projectName}) => {
         >
           <CheckCircleOutlined />
         </Button>
-        <Button 
-          variant="outline-danger" 
+        <Button
+          variant="outline-danger"
           size="sm"
           onClick={() => handleRemove(params.data)}
           title="Remove"
@@ -326,7 +337,7 @@ const Mss = ({projectId , processId , lotNo , projectName}) => {
       width: 120,
       cellEditor: 'agSelectCellEditor',
       cellEditorParams: {
-        values: [0, 1, 2],
+        values: [0, 1, 2, 3],
         valueFormatter: (params) => {
           const statusMap = {
             0: 'Pending',
@@ -374,93 +385,232 @@ const Mss = ({projectId , processId , lotNo , projectName}) => {
   // Cell value changed handler
   const onCellValueChanged = async (params) => {
     console.log("Cell value changed:", params);
-    
+
     try {
       // Prepare the updated data for API
       const updatedData = params.data;
-      
+
       // Call API to update the quantity sheet record
       await API.put(`/QuantitySheet/update/${updatedData.quantitySheetId}`, updatedData);
-      
+
       message.success("Data updated successfully");
     } catch (error) {
       console.error("Failed to update data:", error);
       message.error("Failed to update data");
-      
+
       // Refresh grid to revert to previous state if update failed
       gridApi.refreshCells();
     }
   };
 
+  // Course dropdown menu
+  const courseDropdownMenu = (
+    <Menu onClick={(e) => e.domEvent.stopPropagation()}>
+      <Menu.Item key="title" disabled style={{ cursor: 'default', fontWeight: 'bold' }}>
+        Select Courses
+      </Menu.Item>
+      <Menu.Divider />
+      {courseRomanOptions.map((option) => (
+        <Menu.Item key={option} onClick={(e) => e.domEvent.stopPropagation()}>
+          <Checkbox
+            checked={selectedCourses.includes(option)}
+            onChange={(e) => {
+              e.stopPropagation();
+              if (e.target.checked) {
+                setSelectedCourses([...selectedCourses, option]);
+              } else {
+                setSelectedCourses(selectedCourses.filter(item => item !== option));
+              }
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            Course {option}
+          </Checkbox>
+        </Menu.Item>
+      ))}
+      <Menu.Divider />
+      <Menu.Item key="apply">
+        <Button 
+          variant="primary" 
+          size="sm" 
+          block
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            // Handle apply logic for courses
+            message.success(`Importing courses: ${selectedCourses.join(', ')}`);
+            setSelectedCourses([]);
+            setCourseDropdownVisible(false); // Close dropdown after apply
+          }}
+          disabled={selectedCourses.length === 0}
+        >
+          Apply
+        </Button>
+      </Menu.Item>
+    </Menu>
+  );
+
+  // Semester dropdown menu
+  const semesterDropdownMenu = (
+    <Menu onClick={(e) => e.domEvent.stopPropagation()}>
+      <Menu.Item key="title" disabled style={{ cursor: 'default', fontWeight: 'bold' }}>
+        Select Semesters
+      </Menu.Item>
+      <Menu.Divider />
+      {semesterRomanOptions.map((option) => (
+        <Menu.Item key={option} onClick={(e) => e.domEvent.stopPropagation()}>
+          <Checkbox
+            checked={selectedSemesters.includes(option)}
+            onChange={(e) => {
+              e.stopPropagation();
+              if (e.target.checked) {
+                setSelectedSemesters([...selectedSemesters, option]);
+              } else {
+                setSelectedSemesters(selectedSemesters.filter(item => item !== option));
+              }
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            Semester {option}
+          </Checkbox>
+        </Menu.Item>
+      ))}
+      <Menu.Divider />
+      <Menu.Item key="apply">
+        <Button 
+          variant="primary" 
+          size="sm" 
+          block
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            // Handle apply logic for semesters
+            message.success(`Importing semesters: ${selectedSemesters.join(', ')}`);
+            setSelectedSemesters([]);
+            setSemesterDropdownVisible(false); // Close dropdown after apply
+          }}
+          disabled={selectedSemesters.length === 0}
+        >
+          Apply
+        </Button>
+      </Menu.Item>
+    </Menu>
+  );
+
   return (
     <div className="mt-4">
-      <Row className="justify-content-center">
+      <Row className="w-50">
         <Col xs={12} md={12} lg={12}>
-          <Card title="Search & Import QP Masters" className="shadow-sm">
-            <Select
-              showSearch
-              value={searchTerm}
-              placeholder="Search QP Master..."
-              onSearch={handleSearch}
-              onChange={setSearchTerm}
-              notFoundContent={loading ? <Spin size="small" /> : "No results found"}
-              style={{ width: "100%", marginBottom: "16px" }}
-              dropdownRender={(menu) => (
-                <div>
-                  {menu}
-                  {hasMore && data.length > 0 && (
-                    <div className="text-center p-2">
-                      <Button variant="outline-primary" size="sm" onClick={handleShowMore}>
-                        Show More
-                      </Button>
+          <Collapse
+            defaultActiveKey={['1']}
+            expandIconPosition="right"
+          >
+            <Panel
+              header="Search & Import QP Masters"
+              key="1"
+              className=""
+            >
+              <Card className="shadow-sm">
+                <Select
+                  showSearch
+                  value={searchTerm}
+                  placeholder="Search QP Master..."
+                  onSearch={handleSearch}
+                  onChange={setSearchTerm}
+                  notFoundContent={loading ? <Spin size="small" /> : "No results found"}
+                  style={{ width: "100%", marginBottom: "16px" }}
+                  dropdownRender={(menu) => (
+                    <div>
+                      {menu}
+                      {hasMore && data.length > 0 && (
+                        <div className="text-center p-2">
+                          <Button variant="outline-primary" size="sm" onClick={handleShowMore}>
+                            Show More
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   )}
-                </div>
-              )}
-            >
-              {data.map((item) => (
-                <Option key={item.qpMasterId} value={item.paperTitle}>
-                  <Row className="align-items-center p-2">
-                    <Col xs={12} md={8}>
-                      <strong>{item.paperTitle}</strong>
-                      <br />
-                      <small>
-                        <strong>Course Name:</strong> {item.courseName} &nbsp; | &nbsp;
-                        <strong>NEP Code:</strong> {item.nepCode}
-                      </small>
-                    </Col>
-                    <Col xs={12} md={4} className="d-flex flex-row justify-content-end gap-3">
-                      <Tooltip title="Import Individual">
-                        <DownloadOutlined
-                          style={{ fontSize: "18px", cursor: "pointer", color: importing === item.qpMasterId ? "gray" : "#1890ff" }}
-                          onClick={() => handleImport(item)}
-                          disabled={importing === item.qpMasterId}
-                        />
-                      </Tooltip>
-                      <Tooltip title="Import All by Course Name">
-                        <BookOutlined
-                          style={{ fontSize: "18px", cursor: "pointer", color: "#52c41a" }}
-                        />
-                      </Tooltip>
-                      <Tooltip title="Import All by Semester">
-                        <CalendarOutlined
-                          style={{ fontSize: "18px", cursor: "pointer", color: "#faad14" }}
-                        />
-                      </Tooltip>
-                    </Col>
-                  </Row>
-                </Option>
-              ))}
-            </Select>
-          </Card>
-
+                >
+                  {data.map((item) => (
+                    <Option key={item.qpMasterId} value={item.paperTitle}>
+                      <Row className="align-items-center p-2">
+                        <Col xs={12} md={8}>
+                          <strong>{item.paperTitle}</strong>
+                          <br />
+                          <small>
+                            <strong>Course Name:</strong> {item.courseName} &nbsp; | &nbsp;
+                            <strong>NEP Code:</strong> {item.nepCode}
+                          </small>
+                        </Col>
+                        <Col xs={12} md={4} className="d-flex flex-row justify-content-end gap-3">
+                          <Tooltip title="Import Individual">
+                            <DownloadOutlined
+                              style={{ fontSize: "18px", cursor: "pointer", color: importing === item.qpMasterId ? "gray" : "#1890ff" }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleImport(item);
+                              }}
+                              disabled={importing === item.qpMasterId}
+                            />
+                          </Tooltip>
+                          
+                          {/* Course Dropdown */}
+                          <Dropdown 
+                            overlay={courseDropdownMenu} 
+                            trigger={['click']}
+                            visible={courseDropdownVisible}
+                            onVisibleChange={(visible) => setCourseDropdownVisible(visible)}
+                          >
+                            <div onClick={(e) => {
+                              e.stopPropagation();
+                              setCourseDropdownVisible(!courseDropdownVisible);
+                            }}>
+                              <Tooltip title="Import All by Course Name">
+                                <BookOutlined
+                                  style={{ fontSize: "18px", cursor: "pointer", color: "#52c41a" }}
+                                />
+                              </Tooltip>
+                            </div>
+                          </Dropdown>
+                          
+                          {/* Semester Dropdown */}
+                          <Dropdown 
+                            overlay={semesterDropdownMenu} 
+                            trigger={['click']}
+                            visible={semesterDropdownVisible}
+                            onVisibleChange={(visible) => setSemesterDropdownVisible(visible)}
+                          >
+                            <div onClick={(e) => {
+                              e.stopPropagation();
+                              setSemesterDropdownVisible(!semesterDropdownVisible);
+                            }}>
+                              <Tooltip title="Import All by Semester">
+                                <CalendarOutlined
+                                  style={{ fontSize: "18px", cursor: "pointer", color: "#faad14" }}
+                                />
+                              </Tooltip>
+                            </div>
+                          </Dropdown>
+                        </Col>
+                      </Row>
+                    </Option>
+                  ))}
+                </Select>
+              </Card>
+            </Panel>
+          </Collapse>
+        </Col>
+      </Row>
+      <Row className="justify-content-cente">
+        <Col xs={12} md={12} lg={12}>
           {/* AG Grid for Quantity Sheet Data */}
           <Card title="Quantity Sheet Data" className="shadow-sm mt-4">
-            <div 
-              className="ag-theme-alpine" 
-              style={{ 
-                height: 400, 
-                width: '100%' 
+            <div
+              className="ag-theme-alpine"
+              style={{
+                height: 400,
+                width: '100%'
               }}
             >
               <AgGridReact
