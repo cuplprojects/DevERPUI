@@ -22,20 +22,28 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
   const [quantitySheetData, setQuantitySheetData] = useState([]);
   const [gridApi, setGridApi] = useState(null);
   const [gridColumnApi, setGridColumnApi] = useState(null);
-  const [courseOptions, setCourseOptions] = useState([]);
   const [subjectOptions, setSubjectOptions] = useState([]);
   const [languageOptions, setLanguageOptions] = useState([]);
   const [collapseSearch, setCollapseSearch] = useState(false);
   
-  // Add state for dropdown selections
-  const [selectedCourses, setSelectedCourses] = useState([]);
-  const [selectedSemesters, setSelectedSemesters] = useState([]);
-  const [courseDropdownVisible, setCourseDropdownVisible] = useState(false);
-  const [semesterDropdownVisible, setSemesterDropdownVisible] = useState(false);
+  // Simplified state for selections
+  const [selectedCourses, setSelectedCourses] = useState(['Course I']);  // Default first option selected
+  const [selectedSemesters, setSelectedSemesters] = useState(['Semester I']);  // Default first option selected
   
-  // Roman numeral options
-  const courseRomanOptions = ['I', 'II', 'III', 'IV', 'V'];
-  const semesterRomanOptions = ['I', 'II', 'III', 'IV', 'V', 'VI'];
+  // Fixed options - simplified
+  const courseOptions = [
+    { label: 'Course I', value: 'Course I' },
+    { label: 'Course II', value: 'Course II' },
+    { label: 'Course III', value: 'Course III' },
+    { label: 'Course IV', value: 'Course IV' }
+  ];
+  
+  const semesterOptions = [
+    { label: 'Semester I', value: 'Semester I' },
+    { label: 'Semester II', value: 'Semester II' },
+    { label: 'Semester III', value: 'Semester III' },
+    { label: 'Semester IV', value: 'Semester IV' }
+  ];
 
   useEffect(() => {
     fetchQuantitySheetData();
@@ -252,15 +260,15 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
       width: 150,
       cellEditor: 'agSelectCellEditor',
       cellEditorParams: {
-        values: courseOptions.map(course => course.courseId),
+        values: courseOptions.map(course => course.value),
         valueFormatter: (params) => {
-          const course = courseOptions.find(c => c.courseId === params.value);
-          return course ? course.courseName : '';
+          const course = courseOptions.find(c => c.value === params.value);
+          return course ? course.label : '';
         }
       },
       valueFormatter: (params) => {
-        const course = courseOptions.find(c => c.courseId === params.value);
-        return course ? course.courseName : '';
+        const course = courseOptions.find(c => c.value === params.value);
+        return course ? course.label : '';
       }
     },
     {
@@ -272,15 +280,15 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
       width: 150,
       cellEditor: 'agSelectCellEditor',
       cellEditorParams: {
-        values: subjectOptions.map(subject => subject.subjectId),
+        values: subjectOptions.map(subject => subject.value),
         valueFormatter: (params) => {
-          const subject = subjectOptions.find(s => s.subjectId === params.value);
-          return subject ? subject.subjectName : '';
+          const subject = subjectOptions.find(s => s.value === params.value);
+          return subject ? subject.label : '';
         }
       },
       valueFormatter: (params) => {
-        const subject = subjectOptions.find(s => s.subjectId === params.value);
-        return subject ? subject.subjectName : '';
+        const subject = subjectOptions.find(s => s.value === params.value);
+        return subject ? subject.label : '';
       }
     },
     {
@@ -403,98 +411,70 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
     }
   };
 
-  // Course dropdown menu
-  const courseDropdownMenu = (
-    <Menu onClick={(e) => e.domEvent.stopPropagation()}>
-      <Menu.Item key="title" disabled style={{ cursor: 'default', fontWeight: 'bold' }}>
-        Select Courses
-      </Menu.Item>
-      <Menu.Divider />
-      {courseRomanOptions.map((option) => (
-        <Menu.Item key={option} onClick={(e) => e.domEvent.stopPropagation()}>
+  // Simplified dropdown content for courses
+  const courseDropdownContent = (
+    <div style={{ background: 'white', padding: '15px', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)', width: '250px' }}>
+      <h6 style={{ marginBottom: '15px' }}>Select Courses</h6>
+      {courseOptions.map(course => (
+        <div key={course.value} style={{ marginBottom: '10px' }}>
           <Checkbox
-            checked={selectedCourses.includes(option)}
-            onChange={(e) => {
-              e.stopPropagation();
+            checked={selectedCourses.includes(course.value)}
+            onChange={e => {
               if (e.target.checked) {
-                setSelectedCourses([...selectedCourses, option]);
+                setSelectedCourses([...selectedCourses, course.value]);
               } else {
-                setSelectedCourses(selectedCourses.filter(item => item !== option));
+                setSelectedCourses(selectedCourses.filter(item => item !== course.value));
               }
             }}
-            onClick={(e) => e.stopPropagation()}
           >
-            Course {option}
+            {course.label}
           </Checkbox>
-        </Menu.Item>
+        </div>
       ))}
-      <Menu.Divider />
-      <Menu.Item key="apply">
-        <Button 
-          variant="primary" 
-          size="sm" 
-          block
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            // Handle apply logic for courses
-            message.success(`Importing courses: ${selectedCourses.join(', ')}`);
-            setSelectedCourses([]);
-            setCourseDropdownVisible(false); // Close dropdown after apply
-          }}
-          disabled={selectedCourses.length === 0}
-        >
-          Apply
-        </Button>
-      </Menu.Item>
-    </Menu>
+      <Button
+        type="primary"
+        style={{ width: '100%', marginTop: '15px' }}
+        onClick={() => {
+          console.log('Selected courses:', selectedCourses);
+          message.success(`Selected courses: ${selectedCourses.join(', ')}`);
+        }}
+      >
+        Apply
+      </Button>
+    </div>
   );
-
-  // Semester dropdown menu
-  const semesterDropdownMenu = (
-    <Menu onClick={(e) => e.domEvent.stopPropagation()}>
-      <Menu.Item key="title" disabled style={{ cursor: 'default', fontWeight: 'bold' }}>
-        Select Semesters
-      </Menu.Item>
-      <Menu.Divider />
-      {semesterRomanOptions.map((option) => (
-        <Menu.Item key={option} onClick={(e) => e.domEvent.stopPropagation()}>
+  
+  // Simplified dropdown content for semesters
+  const semesterDropdownContent = (
+    <div style={{ background: 'white', padding: '15px', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)', width: '250px' }}>
+      <h6 style={{ marginBottom: '15px' }}>Select Semesters</h6>
+      {semesterOptions.map(semester => (
+        <div key={semester.value} style={{ marginBottom: '10px' }}>
           <Checkbox
-            checked={selectedSemesters.includes(option)}
-            onChange={(e) => {
-              e.stopPropagation();
+            checked={selectedSemesters.includes(semester.value)}
+            onChange={e => {
               if (e.target.checked) {
-                setSelectedSemesters([...selectedSemesters, option]);
+                setSelectedSemesters([...selectedSemesters, semester.value]);
               } else {
-                setSelectedSemesters(selectedSemesters.filter(item => item !== option));
+                setSelectedSemesters(selectedSemesters.filter(item => item !== semester.value));
               }
             }}
-            onClick={(e) => e.stopPropagation()}
           >
-            Semester {option}
+            {semester.label}
           </Checkbox>
-        </Menu.Item>
+        </div>
       ))}
-      <Menu.Divider />
-      <Menu.Item key="apply">
-        <Button 
-          variant="primary" 
-          size="sm" 
-          block
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            // Handle apply logic for semesters
-            message.success(`Importing semesters: ${selectedSemesters.join(', ')}`);
-            setSelectedSemesters([]);
-            setSemesterDropdownVisible(false); // Close dropdown after apply
-          }}
-          disabled={selectedSemesters.length === 0}
-        >
-          Apply
-        </Button>
-      </Menu.Item>
-    </Menu>
+      <Button
+        type="primary"
+        style={{ width: '100%', marginTop: '15px' }}
+        onClick={() => {
+          console.log('Selected semesters:', selectedSemesters);
+          message.success(`Selected semesters: ${selectedSemesters.join(', ')}`);
+        }}
+      >
+        Apply
+      </Button>
+    </div>
   );
 
   return (
@@ -511,93 +491,83 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
               className=""
             >
               <Card className="shadow-sm">
-                <Select
-                  showSearch
-                  value={searchTerm}
-                  placeholder="Search QP Master..."
-                  onSearch={handleSearch}
-                  onChange={setSearchTerm}
-                  notFoundContent={loading ? <Spin size="small" /> : "No results found"}
-                  style={{ width: "100%", marginBottom: "16px" }}
-                  dropdownRender={(menu) => (
-                    <div>
-                      {menu}
-                      {hasMore && data.length > 0 && (
-                        <div className="text-center p-2">
-                          <Button variant="outline-primary" size="sm" onClick={handleShowMore}>
-                            Show More
-                          </Button>
-                        </div>
-                      )}
+            <Select
+              showSearch
+              value={searchTerm}
+              placeholder="Search QP Master..."
+              onSearch={handleSearch}
+              onChange={setSearchTerm}
+              notFoundContent={loading ? <Spin size="small" /> : "No results found"}
+              style={{ width: "100%", marginBottom: "16px" }}
+              dropdownRender={(menu) => (
+                <div>
+                  {menu}
+                  {hasMore && data.length > 0 && (
+                    <div className="text-center p-2">
+                      <Button variant="outline-primary" size="sm" onClick={handleShowMore}>
+                        Show More
+                      </Button>
                     </div>
                   )}
-                >
-                  {data.map((item) => (
-                    <Option key={item.qpMasterId} value={item.paperTitle}>
-                      <Row className="align-items-center p-2">
-                        <Col xs={12} md={8}>
-                          <strong>{item.paperTitle}</strong>
-                          <br />
-                          <small>
-                            <strong>Course Name:</strong> {item.courseName} &nbsp; | &nbsp;
-                            <strong>NEP Code:</strong> {item.nepCode}
-                          </small>
-                        </Col>
-                        <Col xs={12} md={4} className="d-flex flex-row justify-content-end gap-3">
-                          <Tooltip title="Import Individual">
-                            <DownloadOutlined
-                              style={{ fontSize: "18px", cursor: "pointer", color: importing === item.qpMasterId ? "gray" : "#1890ff" }}
+                </div>
+              )}
+            >
+              {data.map((item) => (
+                <Option key={item.qpMasterId} value={item.paperTitle}>
+                  <Row className="align-items-center p-2">
+                    <Col xs={12} md={8}>
+                      <strong>{item.paperTitle}</strong>
+                      <br />
+                      <small>
+                        <strong>Course Name:</strong> {item.courseName} &nbsp; | &nbsp;
+                        <strong>NEP Code:</strong> {item.nepCode}
+                      </small>
+                    </Col>
+                    <Col xs={12} md={4} className="d-flex flex-row justify-content-end gap-3">
+                      <Tooltip title="Import Individual">
+                        <DownloadOutlined
+                          style={{ fontSize: "18px", cursor: "pointer", color: importing === item.qpMasterId ? "gray" : "#1890ff" }}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleImport(item);
                               }}
-                              disabled={importing === item.qpMasterId}
-                            />
-                          </Tooltip>
+                          disabled={importing === item.qpMasterId}
+                        />
+                      </Tooltip>
                           
                           {/* Course Dropdown */}
-                          <Dropdown 
-                            overlay={courseDropdownMenu} 
-                            trigger={['click']}
-                            visible={courseDropdownVisible}
-                            onVisibleChange={(visible) => setCourseDropdownVisible(visible)}
-                          >
-                            <div onClick={(e) => {
-                              e.stopPropagation();
-                              setCourseDropdownVisible(!courseDropdownVisible);
-                            }}>
-                              <Tooltip title="Import All by Course Name">
-                                <BookOutlined
-                                  style={{ fontSize: "18px", cursor: "pointer", color: "#52c41a" }}
-                                />
-                              </Tooltip>
-                            </div>
-                          </Dropdown>
+                      <Tooltip title="Import All by Course Name">
+                            <Dropdown
+                              overlay={courseDropdownContent}
+                              trigger={['click']}
+                              placement="bottomRight"
+                            >
+                        <BookOutlined
+                          style={{ fontSize: "18px", cursor: "pointer", color: "#52c41a" }}
+                                onClick={(e) => e.stopPropagation()}
+                        />
+                            </Dropdown>
+                      </Tooltip>
                           
                           {/* Semester Dropdown */}
-                          <Dropdown 
-                            overlay={semesterDropdownMenu} 
-                            trigger={['click']}
-                            visible={semesterDropdownVisible}
-                            onVisibleChange={(visible) => setSemesterDropdownVisible(visible)}
-                          >
-                            <div onClick={(e) => {
-                              e.stopPropagation();
-                              setSemesterDropdownVisible(!semesterDropdownVisible);
-                            }}>
-                              <Tooltip title="Import All by Semester">
-                                <CalendarOutlined
-                                  style={{ fontSize: "18px", cursor: "pointer", color: "#faad14" }}
-                                />
-                              </Tooltip>
-                            </div>
-                          </Dropdown>
-                        </Col>
-                      </Row>
-                    </Option>
-                  ))}
-                </Select>
-              </Card>
+                      <Tooltip title="Import All by Semester">
+                            <Dropdown
+                              overlay={semesterDropdownContent}
+                              trigger={['click']}
+                              placement="bottomRight"
+                            >
+                        <CalendarOutlined
+                          style={{ fontSize: "18px", cursor: "pointer", color: "#faad14" }}
+                                onClick={(e) => e.stopPropagation()}
+                        />
+                            </Dropdown>
+                      </Tooltip>
+                    </Col>
+                  </Row>
+                </Option>
+              ))}
+            </Select>
+          </Card>
             </Panel>
           </Collapse>
         </Col>
@@ -631,7 +601,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
                 suppressColumnVirtualisation={false}
               />
             </div>
-          </Card>
+            </Card>
         </Col>
       </Row>
     </div>
