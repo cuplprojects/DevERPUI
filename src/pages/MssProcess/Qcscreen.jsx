@@ -1,453 +1,288 @@
-import React, { useState } from 'react';
-import { Card, Button, Space, Progress, Tabs, Checkbox, Row, Col, Table } from 'antd';
-import { useStore } from 'zustand';
-import themeStore from '../../store/themeStore';
-import { useTranslation } from 'react-i18next';
-
+import React, { useEffect, useState } from 'react';
+import { Card, Button, Space, Checkbox, Row, Col, Table, Badge, Tooltip } from 'antd';
 import {
-  SearchOutlined,
-  PlusOutlined,
-  EditOutlined,
-  DeleteOutlined,
-  EyeOutlined,
-  NumberOutlined,
-  FileTextOutlined,
-  TranslationOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
-  CaretUpOutlined,
-  CaretDownOutlined,
-  SwapOutlined,
-  ClockCircleOutlined,
-  CalculatorOutlined,
+  FileTextOutlined,
+  ArrowLeftOutlined,
 } from '@ant-design/icons';
+import API from '../../CustomHooks/MasterApiHooks/api';
+import { success, error } from '../../CustomHooks/Services/AlertMessageService';
+import { useTranslation } from 'react-i18next';
+import { useStore } from 'zustand';
+import themeStore from '../../store/themeStore';
 
 const QcProcess = () => {
+  const { t } = useTranslation();
   const { getCssClasses } = useStore(themeStore);
   const cssClasses = getCssClasses();
   const [customDark, customMid, customLight, customBtn, customDarkText, customLightText, customLightBorder, customDarkBorder] = cssClasses;
-  const { t } = useTranslation();
 
   const [selectedRecord, setSelectedRecord] = useState(null);
-  const [loading, setLoading] = useState(false);
   const [tempVerification, setTempVerification] = useState({});
+  const [data, setData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [showback, setShowback] = useState(false);
 
-  const [data, setData] = useState([
-    {
-      srNo: 1,
-      catchNo: 'NP-710',
-      language: [''],
-      status: 100,
-      duration: '',
-      structure: '',
-      series: '',
-      totalMarks: '',
-      verified: {
-        catchNo: false,
-        language: false,
-        maxMarks: false,
-        questions: false,
-        duration: false,
-        structure: false,
-        series: false,
-        totalMarks: false
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await API.get('/QC/ByProject?projectId=74');
+        const transformedData = response.data.map(item => ({
+          ...item,
+          verified: item.verified || {},
+        }));
+        setData(transformedData);
+        setFilteredData((transformedData))
+      } catch (error) {
+        console.error('Failed to fetch data', error);
       }
+    };
+    fetchData();
+  }, []);
+
+
+  const verificationkeys = [
+    {
+      name: 'Catch No',
+      keyname: 'catchNo'
     },
     {
-      srNo: 2,
-      catchNo: 'NP-711',
-      language: [''],
-      status: '',
-      verified: {
-        catchNo: false,
-        language: false,
-        maxMarks: false,
-        questions: false
-      }
+      name: 'Language',
+      keyname: 'language'
     },
     {
-      srNo: 3,
-      catchNo: 'NP-712',
-      language: [''],
-      status: '',
-      verified: {
-        catchNo: false,
-        language: false,
-        maxMarks: false,
-        questions: false
-      }
+      name: 'Duration',
+      keyname: 'duration'
     },
     {
-      srNo: 4,
-      catchNo: 'NP-713',
-      language: [''],
-      status: '',
-      verified: {
-        catchNo: false,
-        language: false,
-        maxMarks: false,
-        questions: false
-      }
+      name: 'Structure',
+      keyname: 'structure'
     },
-  ]);
+    {
+      name: 'Series',
+      keyname: 'series'
+    },
+    {
+      name: 'Max Marks',
+      keyname: 'maxMarks'
+    },
+
+  ]
 
   const columns = [
     {
-      title: () => (
-        <div>
-          <Space direction="vertical" align="center" size={4}>
-            
-            <span style={{ fontSize: '14px' }}>Sr.No</span>
-          </Space>
-        </div>
-      ),
+      title: 'Sr.No',
       dataIndex: 'srNo',
       key: 'srNo',
-      width: 80,
       align: 'center',
+      render: (_, record, index) => index + 1,
       sorter: (a, b) => a.srNo - b.srNo,
     },
-    // Update other column headers with the same style
     {
-      title: () => (
-        <div >
-          <Space direction="vertical" align="center" size={4}>
-
-            <span style={{ fontSize: '14px' }}>Catch No</span>
-          </Space>
-        </div>
-      ),
+      title: 'Catch No',
       dataIndex: 'catchNo',
       key: 'catchNo',
-      width: 120,
       align: 'center',
-      render: (text, record) => (
-        <div style={{
-          padding: '2px',
-          backgroundColor: record.verified?.catchNo ? '#f6ffed' : '#fff1f0',
-          border: `1px solid ${record.verified?.catchNo ? '#b7eb8f' : '#ffa39e'}`,
-          borderRadius: '4px',
-          textAlign: 'center'
-        }}>
-          {text}
-          {record.verified?.catchNo ?
-            <CheckCircleOutlined style={{ color: '#52c41a', marginLeft: '8px' }} /> :
-            <CloseCircleOutlined style={{ color: '#ff4d4f', marginLeft: '8px' }} />
-          }
-        </div>
-      ),
+      render: (text, record) => renderVerificationField(record, 'catchNo', text),
+      sorter: (a, b) => {
+        if (typeof a.catchNo === 'number' && typeof b.catchNo === 'number') {
+          return a.catchNo - b.catchNo;
+        }
+        return String(a.catchNo).localeCompare(String(b.catchNo));
+      },
     },
-
     {
-      title: () => (
-        <Space style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <TranslationOutlined style={{ fontSize: '16px' }} />
-          <span style={{ marginLeft: '8px' }}>Language</span>
-        </Space>
-      ),
+      title: 'Language',
       dataIndex: 'language',
       key: 'language',
-      width: 115,
-      render: (text, record) => (
-        <div style={{
-          padding: '2px',
-          backgroundColor: record.verified?.language ? '#f6ffed' : '#fff1f0',
-          border: `1px solid ${record.verified?.language ? '#b7eb8f' : '#ffa39e'}`,
-          borderRadius: '4px',
-          textAlign: 'center'
-        }}>
-          {record.language.join(' / ')}
-          {record.verified?.language ?
-            <CheckCircleOutlined style={{ color: '#52c41a', marginLeft: '8px' }} /> :
-            <CloseCircleOutlined style={{ color: '#ff4d4f', marginLeft: '8px' }} />
-          }
-        </div>
-      ),
+      align: 'center',
+      render: (text, record) => renderVerificationField(record, 'language', text),
+      sorter: (a, b) => String(a.language).localeCompare(String(b.language)),
     },
     {
-      title: () => (
-        <Space>
-          <FileTextOutlined />
-          <span>Max Marks</span>
-        </Space>
-      ),
+      title: 'Max Marks',
       dataIndex: 'maxMarks',
       key: 'maxMarks',
-      width: 120,
-      render: (_, record) => (
-        <div style={{
-          padding: '2px',
-          backgroundColor: record.verified?.maxMarks ? '#f6ffed' : '#fff1f0',
-          border: `1px solid ${record.verified?.maxMarks ? '#b7eb8f' : '#ffa39e'}`,
-          borderRadius: '4px',
-          textAlign: 'center'
-
-        }}>
-          {record.verified?.maxMarks ? <CheckCircleOutlined style={{ color: '#52c41a' }} /> : <CloseCircleOutlined style={{ color: '#ff4d4f' }} />}
-        </div>
-      ),
+      align: 'center',
+      render: (text, record) => renderVerificationField(record, 'maxMarks', text),
+      sorter: (a, b) => {
+        if (typeof a.maxMarks === 'number' && typeof b.maxMarks === 'number') {
+          return a.maxMarks - b.maxMarks;
+        }
+        return String(a.maxMarks).localeCompare(String(b.maxMarks));
+      },
     },
     {
-      title: () => (
-        <Space>
-
-          <span>No. of Questions</span>
-        </Space>
-      ),
-      dataIndex: 'questions',
-      key: 'questions',
-      width: 120,
-      render: (_, record) => (
-        <div style={{
-          padding: '2px',
-          backgroundColor: record.verified?.questions ? '#f6ffed' : '#fff1f0',
-          border: `1px solid ${record.verified?.questions ? '#b7eb8f' : '#ffa39e'}`,
-          borderRadius: '4px',
-          textAlign: 'center'
-        }}>
-          {record.verified?.questions ? <CheckCircleOutlined style={{ color: '#52c41a' }} /> : <CloseCircleOutlined style={{ color: '#ff4d4f' }} />}
-        </div>
-      ),
-    },
-    {
-      title: () => (
-        <Space>
-          <ClockCircleOutlined />
-          <span>Duration</span>
-        </Space>
-      ),
+      title: 'Duration',
       dataIndex: 'duration',
       key: 'duration',
-      width: 120,
-      render: (_, record) => (
-        <div style={{
-          padding: '2px',
-          backgroundColor: record.verified?.duration ? '#f6ffed' : '#fff1f0',
-          border: `1px solid ${record.verified?.duration ? '#b7eb8f' : '#ffa39e'}`,
-          borderRadius: '4px',
-          textAlign: 'center'
-        }}>
-          {record.duration}
-          {record.verified?.duration ?
-            <CheckCircleOutlined style={{ color: '#52c41a', marginLeft: '8px' }} /> :
-            <CloseCircleOutlined style={{ color: '#ff4d4f', marginLeft: '8px' }} />
-          }
-        </div>
-      ),
+      align: 'center',
+      render: (text, record) => renderVerificationField(record, 'duration', text),
+      sorter: (a, b) => {
+        if (typeof a.duration === 'number' && typeof b.duration === 'number') {
+          return a.duration - b.duration;
+        }
+        return String(a.duration).localeCompare(String(b.duration));
+      },
     },
     {
-      title: () => (
-        <Space>
-          <FileTextOutlined />
-          <span>Structure of paper</span>
-        </Space>
-      ),
+      title: 'Structure of Paper',
       dataIndex: 'structure',
       key: 'structure',
-      width: 120,
-      render: (_, record) => (
-        <div style={{
-          padding: '2px',
-          backgroundColor: record.verified?.structure ? '#f6ffed' : '#fff1f0',
-          border: `1px solid ${record.verified?.structure ? '#b7eb8f' : '#ffa39e'}`,
-          borderRadius: '4px',
-          textAlign: 'center'
-        }}>
-          {record.structure}
-          {record.verified?.structure ?
-            <CheckCircleOutlined style={{ color: '#52c41a', marginLeft: '8px' }} /> :
-            <CloseCircleOutlined style={{ color: '#ff4d4f', marginLeft: '8px' }} />
-          }
-        </div>
-      ),
+      align: 'center',
+      render: (text, record) => renderVerificationField(record, 'structure', text),
+      sorter: (a, b) => String(a.structure).localeCompare(String(b.structure)),
     },
     {
-      title: () => (
-        <Space>
-          <NumberOutlined />
-          <span>Series</span>
-        </Space>
-      ),
+      title: 'Series',
       dataIndex: 'series',
       key: 'series',
-      width: 100,
-      render: (_, record) => (
-        <div style={{
-          padding: '2px',
-          backgroundColor: record.verified?.series ? '#f6ffed' : '#fff1f0',
-          border: `1px solid ${record.verified?.series ? '#b7eb8f' : '#ffa39e'}`,
-          borderRadius: '4px',
-          textAlign: 'center'
-        }}>
-          {record.series}
-          {record.verified?.series ?
-            <CheckCircleOutlined style={{ color: '#52c41a', marginLeft: '8px' }} /> :
-            <CloseCircleOutlined style={{ color: '#ff4d4f', marginLeft: '8px' }} />
-          }
-        </div>
-      ),
+      align: 'center',
+      render: (text, record) => renderVerificationField(record, 'series', text),
+      sorter: (a, b) => String(a.series).localeCompare(String(b.series)),
     },
     {
-      title: () => (
-        <Space>
-          <CalculatorOutlined />
-          <span>Total Marks</span>
-        </Space>
-      ),
-      dataIndex: 'totalMarks',
-      key: 'totalMarks',
-      width: 120,
-      render: (_, record) => (
-        <div style={{
-          padding: '2px',
-          backgroundColor: record.verified?.totalMarks ? '#f6ffed' : '#fff1f0',
-          border: `1px solid ${record.verified?.totalMarks ? '#b7eb8f' : '#ffa39e'}`,
-          borderRadius: '4px',
-          textAlign: 'center'
-        }}>
-          {record.totalMarks}
-          {record.verified?.totalMarks ?
-            <CheckCircleOutlined style={{ color: '#52c41a', marginLeft: '8px' }} /> :
-            <CloseCircleOutlined style={{ color: '#ff4d4f', marginLeft: '8px' }} />
-          }
-        </div>
-      ),
-    },
-    {
-      title: () => (
-        <Space>
-          <CheckCircleOutlined />
-          <span>Status</span>
-        </Space>
-      ),
-      dataIndex: 'status',
-      key: 'status',
-      width: 100,
-      render: (_, record) => {
-        const allVerified = Object.values(record.verified).every(value => value === true);
-        return (
-          <div style={{
-            padding: '2px',
-            backgroundColor: allVerified ? '#f6ffed' : '#fff1f0',
-            border: `1px solid ${allVerified ? '#b7eb8f' : '#ffa39e'}`,
-            borderRadius: '4px',
-            textAlign: 'center'
-          }}>
-            {allVerified ? <CheckCircleOutlined style={{ color: '#00b96b', fontSize: '24px' }} /> : <CloseCircleOutlined style={{ color: '#ff4d4f', fontSize: '24px' }} />}
-          </div>
-        );
-      }
-    },
-    {
-      title: () => (
-        <div >
-          <Space direction="vertical" align="center" size={4}>
-            <span style={{ fontSize: '14px' }}>Action</span>
-          </Space>
-        </div>
-      ),
+      title: 'Action',
       key: 'action',
-      width: 120,
       align: 'center',
       render: (_, record) => (
         <Button
-          className={`${customBtn} ${customLightBorder} hover-effect`}
-          icon={<CheckCircleOutlined style={{ color: '#52c41a', fontSize: '18px' }} />}
-          size="middle"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px',
-            padding: '4px 12px',
-            borderRadius: '6px',
-            transition: 'all 0.3s ease'
-          }}
-          onClick={(e) => {
-            e.stopPropagation();
-            handlePreview(record, 'verify');
-          }}
+          className={`${customBtn} ${customLightBorder}`}
+          icon={<CheckCircleOutlined />}
+          size="large"
+          onClick={(e) => handlePreview(record, 'verify')}
         >
-          Verify
+          {record.verified?.status === true ? 'Verified' : record.verified?.status === false ? 'Rejected' : 'Verify'}
         </Button>
       ),
-    }
-  ]; // End of columns array
+    },
+  ];
 
-  // Add new preview panel component
+  const renderVerificationField = (record, field, text) => {
+    const verified = record.verified?.[field];
+    return (
+      <div
+        style={{
+          padding: '2px',
+          backgroundColor: verified ? '#f6ffed' : '#fff1f0',
+          border: `1px solid ${verified ? '#b7eb8f' : '#ffa39e'}`,
+          borderRadius: '4px',
+          textAlign: 'center',
+        }}
+      >
+        {text}
+        {verified ? (
+          <CheckCircleOutlined style={{ color: '#52c41a', marginLeft: '8px' }} />
+        ) : (
+          <CloseCircleOutlined style={{ color: '#ff4d4f', marginLeft: '8px' }} />
+        )}
+      </div>
+    );
+  };
+
+  const handlePreview = (record, action = 'verify') => {
+    if (selectedRecord?.quantitysheetId === record.quantitysheetId) {
+      setSelectedRecord(null);
+      setTempVerification({});
+    } else {
+      setTempVerification(record.verified || {});
+      setSelectedRecord({ ...record, action });
+    }
+  };
+
+  const handleFinalVerification = async () => {
+    if (!selectedRecord) return;
+    const qcData = prepareQcData(true);
+    await postQcData(qcData);
+  };
+
+  const handleRejectVerification = async () => {
+    if (!selectedRecord) return;
+    const qcData = prepareQcData(false);
+    await postQcData(qcData);
+  };
+
+  const prepareQcData = (status) => {
+    return {
+      QuantitySheetId: selectedRecord.quantitysheetId,
+      Language: tempVerification.language,
+      MaxMarks: tempVerification.maxMarks,
+      Duration: tempVerification.duration,
+      Status: status,
+      StructureOfPaper: tempVerification.structure,
+      Series: tempVerification.series,
+      ProjectId: 74
+    };
+  };
+
+  const postQcData = async (qcData) => {
+    try {
+      const response = await API.post('/QC', qcData);
+      if (response.status === 200 || response.status === 201) {
+        console.log('QC data processed successfully', response.data);
+        setData((prevData) =>
+          prevData.map((item) =>
+            item.quantitysheetId === selectedRecord.quantitysheetId ? { ...item, ...qcData } : item
+          )
+        );
+        setSelectedRecord(null);
+        setTempVerification({});
+        success(t('recordSent'));
+        fetchData();
+      }
+    } catch (error) {
+      error(t('failedToSendResponse'));
+      console.error('Error processing QC data', error);
+    }
+  };
+
+  const filterDataByStatus = (status) => {
+    setStatusFilter(status);
+    if (status === 'verified') {
+      setFilteredData(data.filter((item) => item.verified?.status === true));
+      setShowback(true)
+    } else if (status === 'rejected') {
+      setFilteredData(data.filter((item) => item.verified?.status === false));
+      setShowback(true)
+    } else if (status == 'pending') {
+      setFilteredData(data.filter((item) => Object.keys(item.verified).length === 0));
+      setShowback(true)
+    }
+    else {
+      setFilteredData(data)
+      setShowback(false)
+    }
+  };
+
+  const resetFilter = () => {
+    setStatusFilter('all');
+    setShowback(false)
+    setFilteredData(data); // Reset to show all data
+  };
+
+  const allFieldsVerified = () => {
+    var verified = (verificationkeys.length === Object.values(tempVerification).filter(Boolean).length) && Object.values(tempVerification).filter(Boolean).length != 0
+    console.log(verificationkeys, Object.values(tempVerification).filter(Boolean))
+    console.log(verified)
+    return verified;
+  };
+
   const PreviewPanel = ({ record }) => {
     if (!record) return null;
 
-    // Add shouldShowItem function definition
     const shouldShowItem = (field) => {
       if (record.action === 'verify') return true;
-      if (record.action === 'verified') return record.verified[field];
-      if (record.action === 'reject') return !record.verified[field];
-      return true;
+      return record.verified[field];
     };
 
-    const handleVerificationChange = (field) => {
-      setTempVerification(prev => ({
-        ...prev,
-        [field]: !prev[field]
-      }));
-    };
-
-    // Add function to handle final verification
-    // Update handleFinalVerification function
-    const handleFinalVerification = (e) => {
-      e.stopPropagation();
-      const newData = data.map(item => {
-        if (item.srNo === selectedRecord.srNo) {
-          const updatedVerified = { ...item.verified };
-          Object.keys(tempVerification).forEach(key => {
-            updatedVerified[key] = tempVerification[key];
-          });
-
-          // Calculate status based on verified fields
-          const totalFields = Object.keys(updatedVerified).length;
-          const verifiedFields = Object.values(updatedVerified).filter(v => v).length;
-          const status = (verifiedFields / totalFields) * 100;
-
-          return {
-            ...item,
-            verified: updatedVerified,
-            status: status
-          };
-        }
-        return item;
-      });
-
-      setData(newData);
-      handlePreview(selectedRecord, 'verified');
-      setTempVerification({});
-    };
-
-    // Update handlePreview function
-    const handlePreview = (record, action = 'verify') => {
-      if (selectedRecord?.srNo === record.srNo && action === selectedRecord?.action) {
-        setSelectedRecord(null);
-        setTempVerification({});
-      } else {
-        const initialTemp = {};
-        Object.keys(record.verified).forEach(key => {
-          initialTemp[key] = record.verified[key];
-        });
-        setTempVerification(initialTemp);
-        setSelectedRecord({ ...record, action });
-      }
-    };
-
-    // Update verificationItem function
     const verificationItem = (label, value, field) => {
       if (!shouldShowItem(field)) return null;
 
       return (
         <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          padding: '12px',
-          borderBottom: '1px solid #f0f0f0',
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', borderBottom: '1px solid #f0f0f0',
           backgroundColor: tempVerification[field] ? '#f6ffed' : '#fff',
           transition: 'all 0.3s ease'
         }}>
@@ -455,12 +290,8 @@ const QcProcess = () => {
             <span style={{ fontSize: '14px', color: '#8c8c8c', marginBottom: '4px' }}>{label}</span>
             <span style={{ fontSize: '16px', fontWeight: '500', color: '#262626' }}>{value}</span>
           </div>
-          {record.action === 'verify' ? (
-            <Checkbox
-              checked={tempVerification[field] || false}
-              onChange={() => handleVerificationChange(field)}
-              style={{ marginLeft: '20px' }}
-            >
+          {record.action === 'verify' && (
+            <Checkbox checked={tempVerification[field] || false} onChange={() => handleVerificationChange(field)} style={{ marginLeft: '20px' }}>
               <span style={{
                 color: tempVerification[field] ? '#52c41a' : '#ff4d4f',
                 fontWeight: '500'
@@ -468,60 +299,54 @@ const QcProcess = () => {
                 Verify
               </span>
             </Checkbox>
-          ) : (
-            <span style={{
-              color: record.verified[field] ? '#52c41a' : '#ff4d4f',
-              fontWeight: '500'
-            }}>
-              {record.verified[field] ? 'Verified' : 'Not Verified'}
-            </span>
           )}
+          {!record.action && <span>{record.verified[field] ? 'Verified' : 'Not Verified'}</span>}
         </div>
       );
     };
 
-    // Update the action buttons section
-    // Inside PreviewPanel component, update the Card title section
+    const handleVerificationChange = (field) => {
+      setTempVerification((prev) => {
+        const updatedFieldStatus = !prev[field];
+        return { ...prev, [field]: updatedFieldStatus };
+      });
+    };
+
     return (
       <Card
-        title={
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            fontSize: '16px',
-            fontWeight: '600',
-            color: record.action === 'verify' ? '#1890ff' :
-              record.action === 'verified' ? '#52c41a' : '#ff4d4f'
-          }}>
-            <span>
-              {record.action === 'verify' ? 'MSS Verify' :
-                record.action === 'verified' ? 'MSS Verified Items' : 'MSS Rejected Items'}
-            </span>
+        title={<div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          fontSize: '16px',
+          fontWeight: '600',
+          color: record.action === 'verify' ? '#1890ff' :
+            record.action === 'verified' ? '#52c41a' : '#ff4d4f'
+        }}>
+          <span>
+            {record.action === 'verify' ? 'MSS Verify' :
+              record.action === 'verified' ? 'MSS Verified Items' : 'MSS Rejected Items'}
+          </span>
 
-          </div>
-        }
+        </div>}
         style={{
           marginTop: 16,
           boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
           borderRadius: '8px',
           border: `2px solid ${record.action === 'verify' ? '#1890ff' :
-              record.action === 'verified' ? '#52c41a' : '#ff4d4f'
+            record.action === 'verified' ? '#52c41a' : '#ff4d4f'
             }`
         }}
         bodyStyle={{ padding: 0 }}
       >
         <div style={{ padding: '8px' }}>
           {verificationItem('Catch No', record.catchNo, 'catchNo')}
-          {verificationItem('Language', 'Hindi / English', 'language')}
+          {verificationItem('Language', record.language, 'language')}
           {verificationItem('Duration', record.duration, 'duration')}
           {verificationItem('Structure', record.structure, 'structure')}
           {verificationItem('Series', record.series, 'series')}
-          {verificationItem('Max Marks', '100', 'maxMarks')}
-          {verificationItem('Total Marks', record.totalMarks, 'totalMarks')}
-          {verificationItem('No. of Questions', '100', 'questions')}
+          {verificationItem('Max Marks', record.maxMarks, 'maxMarks')}
 
-          {/* Add action buttons at the bottom */}
           {record.action === 'verify' && (
             <div style={{
               display: 'flex',
@@ -531,34 +356,34 @@ const QcProcess = () => {
               borderTop: '1px solid #f0f0f0',
               marginTop: '8px'
             }}>
-              <Button
-                style={{
-                  backgroundColor: '#52c41a',
-                  color: 'white',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-                onClick={handleFinalVerification}
-              >
-                Mark Verified<CheckCircleOutlined style={{ marginLeft: 8 }} />
-              </Button>
-              <Button
-                style={{
-                  backgroundColor: '#ff4d4f',
-                  color: 'white',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handlePreview(record, 'reject');
-                  setTempVerification({});
-                }}
-              >
-                Rejected<CloseCircleOutlined style={{ marginLeft: 8 }} />
-              </Button>
+              {(record.verified?.status === false || Object.keys(record.verified).length === 0) && (
+                <>
+                  <Button
+                    className={`${customBtn} ${customLightBorder}`}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginRight: '10px'
+                    }}
+                    disabled={!allFieldsVerified()}
+                    onClick={handleFinalVerification}
+                  >
+                    Mark Verified<CheckCircleOutlined style={{ marginLeft: 8 }} />
+                  </Button>
+                  <Button
+                    className={`${customBtn} ${customLightBorder}`}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                    onClick={handleRejectVerification}
+                  >
+                    Mark Rejected<CloseCircleOutlined style={{ marginLeft: 8 }} />
+                  </Button>
+                </>
+              )}
             </div>
           )}
         </div>
@@ -566,221 +391,82 @@ const QcProcess = () => {
     );
   };
 
-
-
-  // Modify the handlePreview function
-  const handlePreview = (record, action = 'verify') => {
-    if (selectedRecord?.srNo === record.srNo) {
-      setSelectedRecord(null);
-      setTempVerification({}); // Clear temp state when closing
-    } else {
-      // Initialize tempVerification with current verified state
-      const initialTemp = {};
-      Object.keys(record.verified).forEach(key => {
-        initialTemp[key] = record.verified[key];
-      });
-      setTempVerification(initialTemp);
-      setSelectedRecord({ ...record, action });
-    }
-  };
- 
-
   return (
     <div className={`container ${customLight} rounded py-2 shadow-lg ${customDark === "dark-dark" ? 'border' : ''}`}>
-      <style>
-        {`
-          .custom-table .ant-table {
-            background: ${customDark === "dark-dark" ? '#141414' : '#fff'};
-          }
-          .custom-table .ant-table-thead > tr > th {
-            background-color: ${customDark === "dark-dark" ? '#1f1f1f' : '#f0f7ff'} !important;
-            color: ${customDark === "dark-dark" ? '#fff' : '#1f2937'} !important;
-            border-bottom: 2px solid ${customDark === "dark-dark" ? '#2d2d2d' : '#e6f4ff'} !important;
-          }
-          .custom-table .ant-table-tbody > tr > td {
-            background-color: ${customDark === "dark-dark" ? '#141414' : '#fff'} !important;
-            color: ${customDark === "dark-dark" ? '#fff' : '#1f2937'} !important;
-            border-bottom: 1px solid ${customDark === "dark-dark" ? '#2d2d2d' : '#f0f0f0'} !important;
-          }
-          .custom-table .ant-table-tbody > tr:hover > td {
-            background-color: ${customDark === "dark-dark" ? '#1f1f1f' : '#fafafa'} !important;
-          }
-          .custom-table .ant-table-cell-row-hover {
-            background-color: ${customDark === "dark-dark" ? '#1f1f1f' : '#fafafa'} !important;
-          }
-          .custom-table .ant-pagination-item {
-            background-color: ${customDark === "dark-dark" ? '#141414' : '#fff'};
-            border-color: ${customDark === "dark-dark" ? '#434343' : '#d9d9d9'};
-          }
-          .custom-table .ant-pagination-item-active {
-            border-color: #1890ff;
-          }
-          .custom-table .ant-pagination-item a {
-            color: ${customDark === "dark-dark" ? '#fff' : '#1f2937'};
-          }
-          .custom-table .ant-table-bordered .ant-table-cell {
-            border-right: 1px solid ${customDark === "dark-dark" ? '#2d2d2d' : '#f0f0f0'} !important;
-          }
-          .custom-table .ant-table-bordered .ant-table-container {
-            border: 1px solid ${customDark === "dark-dark" ? '#2d2d2d' : '#f0f0f0'} !important;
-            border-right: none !important;
-            border-bottom: none !important;
-          }
-        `}
-      </style>
-      <Card className={customLight}>
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'flex-end',
-          alignItems: 'center', 
-          marginBottom: '16px' 
-        }}>
-          <Space size="large">
-            <div style={{ position: 'relative' }}>
-              <div className={`d-flex align-items-center`} 
-                   style={{ 
-                     padding: '8px 16px',
-                     borderRadius: '8px',
-                     backgroundColor: customDark === "dark-dark" ? '#1f1f1f' : '#f6ffed',
-                     border: `1px solid ${customDark === "dark-dark" ? '#434343' : '#b7eb8f'}`,
-                     transition: 'all 0.3s ease',
-                     cursor: 'pointer',
-                     boxShadow: selectedRecord?.action === 'verified' ? '0 2px 8px rgba(82, 196, 26, 0.15)' : 'none'
-                   }}
-                   onClick={(e) => {
-                     e.stopPropagation();
-                     if (selectedRecord) handlePreview(selectedRecord, 'verified');
-                   }}
-              >
-                <CheckCircleOutlined style={{
-                  color: selectedRecord?.action === 'verified' ? '#52c41a' : 
-                         customDark === "dark-dark" ? '#8c8c8c' : '#52c41a',
-                  fontSize: '24px',
-                  marginRight: '12px'
-                }} />
-                <span style={{
-                  color: customDark === "dark-dark" ? '#fff' : '#52c41a',
-                  fontWeight: '500'
-                }}>
-                  
-                </span>
-              </div>
-              <span style={{ 
-                position: 'absolute',
-                top: '-10px',
-                right: '-10px',
-                backgroundColor: customDark === "dark-dark" ? '#141414' : '#fff',
-                color: '#52c41a',
-                padding: '0px 8px',
-                borderRadius: '12px',
-                fontSize: '14px',
-                fontWeight: '600',
-                border: `1px solid ${customDark === "dark-dark" ? '#434343' : '#b7eb8f'}`,
-                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-              }}>
-                {data.filter(item => Object.values(item.verified).every(v => v)).length}
-              </span>
+      <Card>
+        <div className='d-flex align-items-center justify-content-between'>
+          <div>
+            {showback && (
+              <Button
+                type="text"
+                className={`${customBtn} ${customLightBorder}`}
+                icon={<ArrowLeftOutlined className='fs-5' />}
+                onClick={resetFilter}
+              />
+            )}
+          </div>
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
+              <Space size="large">
+                <Tooltip title="Verified Items">
+                  <Badge color='#52c41a' count={data.filter((item) => item.verified?.status === true).length}>
+                    <CheckCircleOutlined onClick={() => filterDataByStatus('verified')} className='fs-3' style={{ color: '#52c41a' }} />
+                  </Badge>
+                </Tooltip>
+                <Tooltip title="Rejected Items">
+                  <Badge color='#ff4d4f' count={data.filter((item) => item.verified?.status === false).length}>
+                    <CloseCircleOutlined onClick={() => filterDataByStatus('rejected')} className='fs-3' style={{ color: '#ff4d4f' }} />
+                  </Badge>
+                </Tooltip>
+                <Tooltip title="Pending Items">
+                  <Badge color='#ffc107' count={data.filter((item) => Object.keys(item.verified).length === 0).length}>
+                    <FileTextOutlined onClick={() => filterDataByStatus('pending')} className='fs-3' style={{ color: '#8c8c8c' }} />
+                  </Badge>
+                </Tooltip>
+              </Space>
             </div>
-
-            <div style={{ position: 'relative' }}>
-              <div className={`d-flex align-items-center`}
-                   style={{ 
-                     padding: '8px 16px',
-                     borderRadius: '8px',
-                     backgroundColor: customDark === "dark-dark" ? '#1f1f1f' : '#fff1f0',
-                     border: `1px solid ${customDark === "dark-dark" ? '#434343' : '#ffa39e'}`,
-                     transition: 'all 0.3s ease',
-                     cursor: 'pointer',
-                     boxShadow: selectedRecord?.action === 'reject' ? '0 2px 8px rgba(255, 77, 79, 0.15)' : 'none'
-                   }}
-                   onClick={(e) => {
-                     e.stopPropagation();
-                     if (selectedRecord) handlePreview(selectedRecord, 'reject');
-                   }}
-              >
-                <CloseCircleOutlined style={{
-                  color: selectedRecord?.action === 'reject' ? '#ff4d4f' : 
-                         customDark === "dark-dark" ? '#8c8c8c' : '#ff4d4f',
-                  fontSize: '24px',
-                  marginRight: '12px'
-                }} />
-                <span style={{
-                  color: customDark === "dark-dark" ? '#fff' : '#ff4d4f',
-                  fontWeight: '500'
-                }}>
-                  
-                </span>
-              </div>
-              {selectedRecord && (
-                <span style={{ 
-                  position: 'absolute',
-                  top: '-10px',
-                  right: '-10px',
-                  backgroundColor: customDark === "dark-dark" ? '#141414' : '#fff',
-                  color: '#ff4d4f',
-                  padding: '0px 8px',
-                  borderRadius: '12px',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  border: `1px solid ${customDark === "dark-dark" ? '#434343' : '#ffa39e'}`,
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                }}>
-                  {selectedRecord ? Object.values(selectedRecord.verified).filter(v => !v).length : 0}
-                </span>
-              )}
-            </div>
-          </Space>
+          </div>
         </div>
 
         <Row gutter={16}>
           <Col span={selectedRecord ? 16 : 24}>
             <Table
-            
+              className={`${customDark === "default-dark" ? "thead-default" : ""}
+                ${customDark === "red-dark" ? "thead-red" : ""}
+                ${customDark === "green-dark" ? "thead-green" : ""}
+                ${customDark === "blue-dark" ? "thead-blue" : ""}
+                ${customDark === "dark-dark" ? "thead-dark" : ""}
+                ${customDark === "pink-dark" ? "thead-pink" : ""}
+                ${customDark === "purple-dark" ? "thead-purple" : ""}
+                ${customDark === "light-dark" ? "thead-light" : ""}
+                ${customDark === "brown-dark" ? "thead-brown" : ""}`}
               columns={columns}
-              dataSource={data}
-              pagination={{
+              dataSource={filteredData}
+              pagination={{ 
                 pageSize: 5,
-                showSizeChanger: true,
-                showQuickJumper: true,
-                pageSizeOptions: [5, 10, 20, 30, 40, 50],
-                showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`,
+                total: filteredData.length,
+                showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`
               }}
-              scroll={{ x: 'max-content', y: 800 }}
+              bordered
+              scroll={{ x: 1300, y: 400 }}
+              rowClassName={(record, index) => index % 2 === 0 ? 'table-row-light' : 'table-row-dark'}
               onRow={(record) => ({
                 onClick: () => handlePreview(record),
               })}
               rowKey="srNo"
-              size="middle"
-              bordered
-              className={`${customDark === "default-dark" ? "thead-default" : ""
-              }
-          ${customDark === "red-dark" ? "thead-red" : ""}
-          ${customDark === "green-dark" ? "thead-green" : ""}
-          ${customDark === "blue-dark" ? "thead-blue" : ""}
-          ${customDark === "dark-dark" ? "thead-dark" : ""}
-          ${customDark === "pink-dark" ? "thead-pink" : ""}
-          ${customDark === "purple-dark" ? "thead-purple" : ""}
-          ${customDark === "light-dark" ? "thead-light" : ""}
-          ${customDark === "brown-dark" ? "thead-brown" : ""} `}
+              onChange={(pagination, filters, sorter) => {
+                console.log('Table params changed:', { pagination, filters, sorter });
+              }}
             />
           </Col>
           {selectedRecord && (
             <Col span={8}>
-              <PreviewPanel
-                record={selectedRecord}
-                style={{
-                  height: '800px',
-                  overflowY: 'auto',
-                  border: `2px solid ${customDark === "dark-dark" ? '#2d2d2d' : '#1890ff'}`,
-                  boxShadow: '0 0 10px rgba(24, 144, 255, 0.2)',
-                  borderRadius: '8px',
-                  backgroundColor: customDark === "dark-dark" ? '#141414' : '#fafafa'
-                }}
-              />
+              <PreviewPanel record={selectedRecord} />
             </Col>
           )}
         </Row>
       </Card>
+      
     </div>
   );
 };
