@@ -13,10 +13,16 @@ import { useStore } from "zustand";
 import { useTranslation } from "react-i18next";
 import API from "../CustomHooks/MasterApiHooks/api";
 import { useUserData } from "../store/userDataStore";
-import { getProjectProcessAndFeature, getProjectProcessByProjectAndSequence, } from "../CustomHooks/ApiServices/projectProcessAndFeatureService";
+import {
+  getProjectProcessAndFeature,
+  getProjectProcessByProjectAndSequence,
+} from "../CustomHooks/ApiServices/projectProcessAndFeatureService";
 import useCurrentProcessStore from "../store/currentProcessStore";
 import { decrypt } from "../Security/Security";
-import { getCombinedPercentages, getProjectTransactionsData, } from "../CustomHooks/ApiServices/transacationService";
+import {
+  getCombinedPercentages,
+  getProjectTransactionsData,
+} from "../CustomHooks/ApiServices/transacationService";
 import ToggleProject from "../pages/processPage/Components/ToggleProject";
 import ToggleProcess from "../pages/processPage/Components/ToggleProcess";
 import PreviousProcess from "../pages/processPage/Components/PreviousProcess";
@@ -26,6 +32,7 @@ import { IoIosArrowDropdownCircle } from "react-icons/io";
 import { Collapse } from "react-bootstrap";
 import ProcessProgressTrain from "./ProcessProgressTrain";
 import ProcessTrainModals from "./ProcessTrainModals ";
+import QcScreen from "./../pages/MssProcess/Qcscreen";
 
 const ProcessTable = () => {
   const { encryptedProjectId } = useParams();
@@ -35,18 +42,23 @@ const ProcessTable = () => {
   const { setProcess } = useCurrentProcessStore((state) => state.actions);
   const userData = useUserData();
   const [isHeaderOpen, setIsHeaderOpen] = useState(() => {
-    const saved = localStorage.getItem('processTableHeaderOpen');
+    const saved = localStorage.getItem("processTableHeaderOpen");
     return saved !== null ? JSON.parse(saved) : true;
   });
 
   useEffect(() => {
-    localStorage.setItem('processTableHeaderOpen', JSON.stringify(isHeaderOpen));
+    localStorage.setItem(
+      "processTableHeaderOpen",
+      JSON.stringify(isHeaderOpen)
+    );
   }, [isHeaderOpen]);
   const { t } = useTranslation();
 
-
   useEffect(() => {
-    localStorage.setItem('processTableHeaderOpen', JSON.stringify(isHeaderOpen));
+    localStorage.setItem(
+      "processTableHeaderOpen",
+      JSON.stringify(isHeaderOpen)
+    );
   }, [isHeaderOpen]);
 
   // Subscribe to theme store changes
@@ -73,7 +85,8 @@ const ProcessTable = () => {
   const [catchDetailModalShow, setCatchDetailModalShow] = useState(false);
   const [catchDetailModalData, setCatchDetailModalData] = useState(null);
   const [selectedLot, setSelectedLot] = useState(
-    localStorage.getItem('selectedLot') );
+    localStorage.getItem("selectedLot")
+  );
   const [projectName, setProjectName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [projectLots, setProjectLots] = useState([]);
@@ -94,7 +107,7 @@ const ProcessTable = () => {
   const [digitalandOffsetData, setDigitalandOffsetData] = useState([]);
   const [previousIndependent, setPreviousIndependent] = useState({
     process: null,
-    transactions: []
+    transactions: [],
   });
   // processs train states
   const [showProcessTrain, setShowProcessTrain] = useState(false);
@@ -120,7 +133,7 @@ const ProcessTable = () => {
 
         // Find independent process where rangeEnd matches current processId
         const independentProcess = processData.find(
-          p => p.processType === "Independent" && p.rangeEnd === processId
+          (p) => p.processType === "Independent" && p.rangeEnd === processId
         );
 
         if (independentProcess) {
@@ -132,19 +145,19 @@ const ProcessTable = () => {
 
           setPreviousIndependent({
             process: independentProcess,
-            transactions: transactions.data
+            transactions: transactions.data,
           });
         } else {
           setPreviousIndependent({
             process: null,
-            transactions: []
+            transactions: [],
           });
         }
       } catch (error) {
         console.error("Error fetching independent process data:", error);
         setPreviousIndependent({
           process: null,
-          transactions: []
+          transactions: [],
         });
       }
     };
@@ -181,18 +194,27 @@ const ProcessTable = () => {
 
             // Add logic to skip based on your conditions
             // If current process ID is 2, skip process ID 3
-            if (processData.processId === 2 && previousProcessData.processId === 3) {
+            if (
+              processData.processId === 2 &&
+              previousProcessData.processId === 3
+            ) {
               previousSequence--;
               continue;
             }
-            if (processData.processId === 4 && previousProcessData.processId === 3) {
+            if (
+              processData.processId === 4 &&
+              previousProcessData.processId === 3
+            ) {
               previousSequence--;
               continue;
             }
 
             // If current process ID is 3, skip process IDs 2 and 1
-            if (processData.processId === 3 &&
-              (previousProcessData.processId === 2 || previousProcessData.processId === 1)) {
+            if (
+              processData.processId === 3 &&
+              (previousProcessData.processId === 2 ||
+                previousProcessData.processId === 1)
+            ) {
               previousSequence--;
               continue;
             }
@@ -212,8 +234,10 @@ const ProcessTable = () => {
                 setPreviousProcess(previousProcessData);
                 break;
               } else if (previousProcessData.processType === "Independent") {
-                if (previousProcessData.rangeStart <= processData.sequence &&
-                  previousProcessData.rangeEnd >= processData.sequence) {
+                if (
+                  previousProcessData.rangeStart <= processData.sequence &&
+                  previousProcessData.rangeEnd >= processData.sequence
+                ) {
                   setPreviousProcess(previousProcessData);
                   break;
                 }
@@ -282,8 +306,8 @@ const ProcessTable = () => {
   }, [selectedProject, previousProcess, id]);
 
   const setLotInLocal = (lt) => {
-    localStorage.setItem("selectedLot", lt)
-  }
+    localStorage.setItem("selectedLot", lt);
+  };
 
   const handleProjectChange = async (selectedProject) => {
     if (!selectedProject || selectedProject.value === id) return;
@@ -338,7 +362,7 @@ const ProcessTable = () => {
           setProjectLots(uniqueLots.map((lotNo) => ({ lotNo })));
           if (uniqueLots.length > 0) {
             setSelectedLot(uniqueLots[0]);
-            setLotInLocal(uniqueLots[0])
+            setLotInLocal(uniqueLots[0]);
           }
         }
         if (firstProcess.sequence > 1) {
@@ -369,7 +393,10 @@ const ProcessTable = () => {
       const data = await getCombinedPercentages(selectedProject?.value || id);
       if (data && previousProcess) {
         // Default to 0 if no percentage data exists
-        const percentage = data?.lotProcessWeightageSum?.[selectedLot]?.[previousProcess.processId] || 0;
+        const percentage =
+          data?.lotProcessWeightageSum?.[selectedLot]?.[
+            previousProcess.processId
+          ] || 0;
         setPreviousProcessCompletionPercentage(percentage);
       } else {
         // Set to 0 if no previous process or data
@@ -463,10 +490,11 @@ const ProcessTable = () => {
             if (selectedProcess.processType === "Independent") {
               // For Independent process, use RangeStart as previous process
               try {
-                previousProcessData = await getProjectProcessByProjectAndSequence(
-                  selectedProject?.value || id,
-                  selectedProcess.rangeStart
-                );
+                previousProcessData =
+                  await getProjectProcessByProjectAndSequence(
+                    selectedProject?.value || id,
+                    selectedProcess.rangeStart
+                  );
                 setPreviousProcess(previousProcessData);
               } catch (error) {
                 setPreviousProcess(null);
@@ -475,15 +503,25 @@ const ProcessTable = () => {
             } else if (selectedProcess.processType === "Dependent") {
               // For Dependent process, check previous process conditions
               if (previousProcessData.processType === "Dependent") {
-                if (selectedProcess.processId === 3 && (previousProcessData.processId === 2 || previousProcessData.processId === 1)) {
+                if (
+                  selectedProcess.processId === 3 &&
+                  (previousProcessData.processId === 2 ||
+                    previousProcessData.processId === 1)
+                ) {
                   previousSequence--;
                   continue;
                 }
-                if (selectedProcess.processId === 2 && previousProcessData.processId === 3) {
+                if (
+                  selectedProcess.processId === 2 &&
+                  previousProcessData.processId === 3
+                ) {
                   previousSequence--;
                   continue;
                 }
-                if (selectedProcess.processId === 4 && previousProcessData.processId === 3) {
+                if (
+                  selectedProcess.processId === 4 &&
+                  previousProcessData.processId === 3
+                ) {
                   previousSequence--;
                   continue;
                 }
@@ -491,7 +529,9 @@ const ProcessTable = () => {
                 break;
               } else if (previousProcessData.processType === "Independent") {
                 // Check for independent process with rangeEnd matching current processId
-                if (previousProcessData.rangeEnd === selectedProcess.processId) {
+                if (
+                  previousProcessData.rangeEnd === selectedProcess.processId
+                ) {
                   setPreviousProcess(previousProcessData);
                   break;
                 }
@@ -499,18 +539,27 @@ const ProcessTable = () => {
             }
 
             // Apply special rules for processes 2 and 3
-            if (selectedProcess.processId === 2 && previousProcessData.processId === 3) {
+            if (
+              selectedProcess.processId === 2 &&
+              previousProcessData.processId === 3
+            ) {
               previousSequence--;
               continue;
             }
-            if (selectedProcess.processId === 4 && previousProcessData.processId === 3) {
+            if (
+              selectedProcess.processId === 4 &&
+              previousProcessData.processId === 3
+            ) {
               previousSequence--;
               continue;
             }
 
-            if (selectedProcess.processId === 3 &&
-              (previousProcessData.processId === 2 || previousProcessData.processId === 1)) {
-              previousSequence = 0;  // Prevent infinite loop and avoid fetching invalid previous process
+            if (
+              selectedProcess.processId === 3 &&
+              (previousProcessData.processId === 2 ||
+                previousProcessData.processId === 1)
+            ) {
+              previousSequence = 0; // Prevent infinite loop and avoid fetching invalid previous process
               continue;
             }
 
@@ -554,11 +603,13 @@ const ProcessTable = () => {
   useEffect(() => {
     const fetchDispatchedLots = async () => {
       try {
-        const response = await API.get(`/Dispatch/project/${selectedProject.value}`);
+        const response = await API.get(
+          `/Dispatch/project/${selectedProject.value}`
+        );
         const dispatchedLotNos = response.data
           .filter((dispatch) => dispatch.status === true) // Filter by status
           .map((dispatch) => dispatch.lotNo);
-        console.log(dispatchedLotNos)
+        console.log(dispatchedLotNos);
         setDispatchedLots(dispatchedLotNos);
       } catch (error) {
         console.error("Failed to fetch dispatched lots:", error);
@@ -591,11 +642,13 @@ const ProcessTable = () => {
 
             // Only try to access transactions if previousProcessData exists
             if (previousProcessData) {
-
               // Check if transactions array is empty before proceeding
-              if (!previousProcessData.transactions?.length &&
-                (previousProcess?.processId === 3 || previousProcess?.processId === 4) &&
-                digitalandOffsetData) {
+              if (
+                !previousProcessData.transactions?.length &&
+                (previousProcess?.processId === 3 ||
+                  previousProcess?.processId === 4) &&
+                digitalandOffsetData
+              ) {
                 // If no matching previous process data, find a matching digitalandOffsetData
                 previousProcessData = digitalandOffsetData.find(
                   (data) => data.quantitySheetId === item.quantitySheetId
@@ -632,19 +685,26 @@ const ProcessTable = () => {
               previousProcessData:
                 previousProcessData && previousProcess
                   ? {
-                    status: previousProcessData.transactions?.[0]?.status || 0,
-                    interimQuantity:
-                      previousProcessData.transactions?.[0]?.interimQuantity || 0,
-                    remarks: previousProcessData.transactions?.[0]?.remarks || "",
-                    alarmId: previousProcessData.transactions?.[0]?.alarmId || "",
-                    teamUserNames:
-                      previousProcessData.transactions?.[0]?.teamUserNames || [],
-                    machinename:
-                      previousProcessData.transactions?.[0]?.machinename || [],
-                    alarmMessage:
-                      previousProcessData.transactions?.[0]?.alarmMessage || null,
-                    thresholdQty: previousProcess?.thresholdQty || 0,
-                  }
+                      status:
+                        previousProcessData.transactions?.[0]?.status || 0,
+                      interimQuantity:
+                        previousProcessData.transactions?.[0]
+                          ?.interimQuantity || 0,
+                      remarks:
+                        previousProcessData.transactions?.[0]?.remarks || "",
+                      alarmId:
+                        previousProcessData.transactions?.[0]?.alarmId || "",
+                      teamUserNames:
+                        previousProcessData.transactions?.[0]?.teamUserNames ||
+                        [],
+                      machinename:
+                        previousProcessData.transactions?.[0]?.machinename ||
+                        [],
+                      alarmMessage:
+                        previousProcessData.transactions?.[0]?.alarmMessage ||
+                        null,
+                      thresholdQty: previousProcess?.thresholdQty || 0,
+                    }
                   : null,
               voiceRecording: item.transactions[0]?.voiceRecording || "",
               transactionId: item.transactions[0]?.transactionId || null,
@@ -661,23 +721,27 @@ const ProcessTable = () => {
               processIds: item.processIds || [],
               independentProcessData: independentData
                 ? {
-                  status: independentData.transactions[0]?.status || 0,
-                  interimQuantity: independentData.transactions[0]?.interimQuantity || 0,
-                  remarks: independentData.transactions[0]?.remarks || "",
-                  alarmId: independentData.transactions[0]?.alarmId || "",
-                  teamUserNames: independentData.transactions[0]?.teamUserNames || [],
-                  machinename: independentData.transactions[0]?.machinename || [],
-                  alarmMessage: independentData.transactions[0]?.alarmMessage || null,
-                  processName: previousIndependent.process?.processName || ""
-                }
+                    status: independentData.transactions[0]?.status || 0,
+                    interimQuantity:
+                      independentData.transactions[0]?.interimQuantity || 0,
+                    remarks: independentData.transactions[0]?.remarks || "",
+                    alarmId: independentData.transactions[0]?.alarmId || "",
+                    teamUserNames:
+                      independentData.transactions[0]?.teamUserNames || [],
+                    machinename:
+                      independentData.transactions[0]?.machinename || [],
+                    alarmMessage:
+                      independentData.transactions[0]?.alarmMessage || null,
+                    processName: previousIndependent.process?.processName || "",
+                  }
                 : null,
             };
           });
 
           const filteredData = selectedLot
             ? formDataGet.filter(
-              (item) => Number(item.lotNo) === Number(selectedLot)
-            )
+                (item) => Number(item.lotNo) === Number(selectedLot)
+              )
             : formDataGet;
 
           setTableData(filteredData);
@@ -697,7 +761,6 @@ const ProcessTable = () => {
         setProjectLots([]);
       }
     }
-
   }, [
     id,
     processId,
@@ -705,7 +768,7 @@ const ProcessTable = () => {
     previousProcessTransactions,
     selectedProject,
     previousProcess,
-    previousIndependent
+    previousIndependent,
   ]);
 
   useEffect(() => {
@@ -743,7 +806,7 @@ const ProcessTable = () => {
   const handleLotClick = async (lot) => {
     if (lot !== selectedLot) {
       setSelectedLot(lot);
-      setLotInLocal(lot)
+      setLotInLocal(lot);
       setIsLoading(true);
       try {
         const response = await getProjectTransactionsData(
@@ -787,61 +850,72 @@ const ProcessTable = () => {
 
   const combinedTableData =
     processName !== "Digital Printing" &&
-      processName !== "Offset Printing" &&
-      processName !== "CTP" &&
-      processName !== "Cutting" &&
-      processName !== "Proofreading"
-      ? tableData.reduce((acc, item) => {
-        const existingItem = acc.find(
-          (i) => i.catchNumber === item.catchNumber
-        );
-        if (existingItem) {
-          existingItem.quantity += item.quantity;
-          // Collect all statuses for this catch number
-          existingItem._allStatuses = existingItem._allStatuses || [];
-          existingItem._allStatuses.push(item.status);
+    processName !== "Offset Printing" &&
+    processName !== "CTP" &&
+    processName !== "Cutting" &&
+    processName !== "Proofreading"
+      ? tableData
+          .reduce((acc, item) => {
+            const existingItem = acc.find(
+              (i) => i.catchNumber === item.catchNumber
+            );
+            if (existingItem) {
+              existingItem.quantity += item.quantity;
+              // Collect all statuses for this catch number
+              existingItem._allStatuses = existingItem._allStatuses || [];
+              existingItem._allStatuses.push(item.status);
 
-          // Calculate combined status
-          const uniqueStatuses = new Set(existingItem._allStatuses);
-          if (uniqueStatuses.has(1)) {
-            existingItem.status = 1; // If any status is 1, combined status is 1
-          } else if (uniqueStatuses.size === 1 && uniqueStatuses.has(2)) {
-            existingItem.status = 2; // If all statuses are 2, combined status is 2
-          } else {
-            existingItem.status = 0; // Otherwise, combined status is 0
-          }
+              // Calculate combined status
+              const uniqueStatuses = new Set(existingItem._allStatuses);
+              if (uniqueStatuses.has(1)) {
+                existingItem.status = 1; // If any status is 1, combined status is 1
+              } else if (uniqueStatuses.size === 1 && uniqueStatuses.has(2)) {
+                existingItem.status = 2; // If all statuses are 2, combined status is 2
+              } else {
+                existingItem.status = 0; // Otherwise, combined status is 0
+              }
 
-          // Same logic for previous process status if it exists
-          if (item.previousProcessData) {
-            existingItem._allPreviousStatuses = existingItem._allPreviousStatuses || [];
-            existingItem._allPreviousStatuses.push(item.previousProcessData.status);
+              // Same logic for previous process status if it exists
+              if (item.previousProcessData) {
+                existingItem._allPreviousStatuses =
+                  existingItem._allPreviousStatuses || [];
+                existingItem._allPreviousStatuses.push(
+                  item.previousProcessData.status
+                );
 
-            const uniquePrevStatuses = new Set(existingItem._allPreviousStatuses);
-            if (uniquePrevStatuses.has(1)) {
-              existingItem.previousProcessData.status = 1;
-            } else if (uniquePrevStatuses.size === 1 && uniquePrevStatuses.has(2)) {
-              existingItem.previousProcessData.status = 2;
+                const uniquePrevStatuses = new Set(
+                  existingItem._allPreviousStatuses
+                );
+                if (uniquePrevStatuses.has(1)) {
+                  existingItem.previousProcessData.status = 1;
+                } else if (
+                  uniquePrevStatuses.size === 1 &&
+                  uniquePrevStatuses.has(2)
+                ) {
+                  existingItem.previousProcessData.status = 2;
+                } else {
+                  existingItem.previousProcessData.status = 0;
+                }
+              }
             } else {
-              existingItem.previousProcessData.status = 0;
+              // Remove seriesName and initialize status arrays for new items
+              const { seriesName, ...restItem } = item;
+              acc.push({
+                ...restItem,
+                _allStatuses: [item.status],
+                _allPreviousStatuses: item.previousProcessData
+                  ? [item.previousProcessData.status]
+                  : [],
+              });
             }
-          }
-        } else {
-          // Remove seriesName and initialize status arrays for new items
-          const { seriesName, ...restItem } = item;
-          acc.push({
-            ...restItem,
-            _allStatuses: [item.status],
-            _allPreviousStatuses: item.previousProcessData ? [item.previousProcessData.status] : []
-          });
-        }
-        return acc;
-      }, []).map(item => {
-        // Clean up temporary arrays before final output
-        const { _allStatuses, _allPreviousStatuses, ...cleanItem } = item;
-        return cleanItem;
-      })
+            return acc;
+          }, [])
+          .map((item) => {
+            // Clean up temporary arrays before final output
+            const { _allStatuses, _allPreviousStatuses, ...cleanItem } = item;
+            return cleanItem;
+          })
       : tableData;
-
 
   return (
     <div className="container-fluid">
@@ -850,9 +924,9 @@ const ProcessTable = () => {
           className={`me-2 ${customDarkText}`}
           size={24}
           style={{
-            cursor: 'pointer',
-            transform: isHeaderOpen ? 'rotate(0deg)' : 'rotate(-90deg)',
-            transition: 'transform 0.3s ease'
+            cursor: "pointer",
+            transform: isHeaderOpen ? "rotate(0deg)" : "rotate(-90deg)",
+            transition: "transform 0.3s ease",
           }}
           onClick={() => setIsHeaderOpen(!isHeaderOpen)}
         />
@@ -865,10 +939,11 @@ const ProcessTable = () => {
               <Card className="shadow-sm">
                 <Card.Header
                   as="h3"
-                  className={`${customDark === "dark-dark"
-                    ? `${customDark} text-white`
-                    : `${customDark} text-white`
-                    }`}
+                  className={`${
+                    customDark === "dark-dark"
+                      ? `${customDark} text-white`
+                      : `${customDark} text-white`
+                  }`}
                 >
                   <Row className="d-flex align-items-center">
                     <Col lg={3} md={4} xs={12}>
@@ -917,10 +992,8 @@ const ProcessTable = () => {
       </Row>
 
       {processName !== "Dispatch" && (
-
         <Row className="mb-2">
           <div className="d-flex align-items-center justify-content-between">
-
             <Col lg={2} md={4} className="Progressbarcolor">
               <CatchProgressBar data={combinedTableData} />
             </Col>
@@ -943,11 +1016,17 @@ const ProcessTable = () => {
             </Col>
           </div>
         </Row>
-
       )}
 
       {processName === "Dispatch" ? (
         <DispatchPage
+          projectId={selectedProject?.value || id}
+          processId={processId}
+          lotNo={selectedLot}
+          projectName={projectName}
+        />
+      ) : processName === "QC" ? (
+        <QcScreen
           projectId={selectedProject?.value || id}
           processId={processId}
           lotNo={selectedLot}
@@ -985,8 +1064,6 @@ const ProcessTable = () => {
               </Col>
             </Row>
           )}
-
-
         </>
       )}
 
