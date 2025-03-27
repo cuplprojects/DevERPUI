@@ -166,13 +166,14 @@ const QPTable = ({
           />
         </Col>
       </Row>
-      {qpData.length === 0 && <p>No data found for the selected filters.</p>}
+      
 
       <Row className="mb-4">
+        <Col md={2} className="d-md-none d-lg-block"></Col>
         <Col xs={12} md={3} className="mb-2">
           <Select
             className="w-100"
-            placeholder="Select Group"
+            placeholder="Group"  
             value={selectedGroupId}
             onChange={onGroupChange}
             allowClear
@@ -184,10 +185,10 @@ const QPTable = ({
             ))}
           </Select>
         </Col>
-        <Col xs={12} md={3} className="mb-2">
+        <Col xs={12} md={1} className="mb-2">
           <Select
             className="w-100"
-            placeholder="Select Type"
+            placeholder="Type"
             value={selectedTypeId}
             onChange={onTypeChange}
             allowClear
@@ -202,7 +203,7 @@ const QPTable = ({
         <Col xs={12} md={3} className="mb-2">
           <Select
             className="w-100"
-            placeholder="Select Course"
+            placeholder="Course"
             value={selectedCourseId}
             onChange={onCourseChange}
             allowClear
@@ -214,10 +215,10 @@ const QPTable = ({
             ))}
           </Select>
         </Col>
-        <Col xs={12} md={3} className="mb-2">
+        <Col xs={12} md={1} className="mb-2">
           <Select
             className="w-100"
-            placeholder="Select Semester"
+            placeholder="Semester"
             value={selectedExamTypeIds.length > 0 ? selectedExamTypeIds[0] : undefined}
             onChange={onSemesterChange}
             allowClear
@@ -237,7 +238,7 @@ const QPTable = ({
           <Button variant="primary" className="me-2" size="sm" onClick={onApplyClick}>
             Search
           </Button>
-          <Button variant="secondary" className="me-2" size="sm"  onClick={onClearClick}>
+          <Button variant="secondary" className="me-2" size="sm" onClick={onClearClick}>
             Clear Filters
           </Button>
           <Tooltip title={!selectedGroupId ? "Select a group first" : ""}>
@@ -246,7 +247,7 @@ const QPTable = ({
                 variant="success"
                 className="me-2"
                 onClick={() => setShowAddPaper(!showAddPaper)}
-                disabled={!selectedGroupId} size="sm" 
+                disabled={!selectedGroupId} size="sm"
               >
                 Add Paper {showAddPaper ? <FaChevronDown /> : <FaChevronRight />}
               </Button>
@@ -257,7 +258,7 @@ const QPTable = ({
               <Button
                 variant="info"
                 onClick={handleImportClick}
-                disabled={!selectedGroupId} size="sm" 
+                disabled={!selectedGroupId} size="sm"
               >
                 Import Paper
               </Button>
@@ -268,7 +269,9 @@ const QPTable = ({
       </Row>
 
       {showAddPaper && selectedGroupId && (
-        <AddPaperForm groupId={selectedGroupId} groupName={groups.find(group => group.id === selectedGroupId)?.name} />
+        <div className="">
+          <AddPaperForm groupId={selectedGroupId} groupName={groups.find(group => group.id === selectedGroupId)?.name} />
+        </div>
       )}
 
       {qpData.length > 0 && (
@@ -309,6 +312,7 @@ const QPTable = ({
           </div>
         </>
       )}
+      {qpData.length === 0 && <p className="text-center">No data found for the selected filters.</p>}
     </div>
   );
 };

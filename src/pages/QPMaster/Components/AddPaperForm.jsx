@@ -9,7 +9,7 @@ import API from "../../../CustomHooks/MasterApiHooks/api";
 const { Option } = Select;
 
 const AddPaperForm = ({ groupId, groupName }) => {
-    
+
     const [manualInputs, setManualInputs] = useState({});
     const [courses, setCourses] = useState([]);
     const [subject, setSubject] = useState([]);
@@ -131,13 +131,11 @@ const AddPaperForm = ({ groupId, groupName }) => {
         }
     };
 
+    // reqruied fields
     const handleAdd = async () => {
         const requiredFields = [
             "paperTitle",
-            "paperNumber",
             "examType",
-            "maxMarks",
-            "duration",
             "course",
             "subject",
         ];
@@ -257,37 +255,43 @@ const AddPaperForm = ({ groupId, groupName }) => {
     };
 
     return (
-        <Container fluid className="bg-ligh rounded">
-            <Row className="d-flex align-items-center">
+        <Container fluid className="bg-ligh rounded mb-2 d-flex flex-column ">
+            <Row className="d-flex align-items-center ">
                 <Col md={3} className="d-none">
                     {renderField("Group", "groupId", true, true, {
                         label: `${groupName} (ID: ${groupId})`,
                         value: groupId,
                     })}
                 </Col>
+                <Col md={1} className="d-lg-block d-md-none"></Col>
                 <Col md={2}>{renderField("Course", "course", true, false, null, courses, "courseName", "courseId")}  </Col>
-                <Col md={1}>{renderField("Semester", "examType", true, false, null, examtype, "typeName", "examTypeId")}</Col>
-                <Col md={2}>{renderField("Subject", "subject", true, false, null, subject, "subjectName", "subjectId")}</Col>
-                <Col md={1}>{renderField("Paper Number", "paperNumber", false)}</Col>-
-                <Col md={3}>{renderField("Paper Title", "paperTitle", false)}</Col>
+                <Col md={1}>{renderField("Semester*", "examType", true, false, null, examtype, "typeName", "examTypeId")}</Col>
+                <Col md={3}>{renderField("Paper Title*", "paperTitle", false)}</Col>
+
+                <Col md={2}>{renderField("Subject*", "subject", true, false, null, subject, "subjectName", "subjectId")}</Col>
+
                 <Col md={2}>{renderField("Enter NEP Code / Paper Code", "nepCode", false)}</Col>
             </Row>
             <Row className="d-flex align-items-center">
-                <Col md={3}>{renderField("Course Code / Private Code", "courseCode", false)}</Col>
+            <Col md={1} className="d-lg-block d-md-none"></Col>
+                <Col md={3}>{renderField("Course Code / Private Code*", "courseCode", false)}</Col>
+                <Col md={1}>{renderField("Paper Number*", "paperNumber", false)}</Col>                
+                <Col md={1}>{renderField("Language", "language", true, false, null, language, "languages", "languageId")}</Col>
+                <Col md={1}>{renderField("Duration*", "duration", false)}</Col>
+                <Col md={1}>{renderField("Max Marks*", "maxMarks", false)}</Col>
                 <Col md={1}>{renderField("Type", "type", true, false, null, type, "types", "typeId")}</Col>
-                <Col md={1}>{renderField("Language", "language", true, false, null, language, "languages", "languageId")}</Col>-
-                <Col md={1}>{renderField("Duration", "duration", false)}</Col>-
-                <Col md={1}>{renderField("Max Marks", "maxMarks", false)}</Col>-
-            </Row>
-            <Row className="d-flex justify-content-end align-items-center">
-                <Col md={3} className="d-flex justify-content-end">
-                    <Button type="primary" className="mt-3 me-2" size="sm" onClick={handleAdd}>
+                <Col md={1} className="d-flex justify-content-en">
+                    <Button type="primary" className="mt- me-2 w-100" size="sm" onClick={handleAdd}>
                         Add
                     </Button>
-                    <Button type="primary" className="mt-3 " size="sm"  onClick={handleClear}>
+                </Col>
+                <Col md={1}>
+                    <Button type="primary" className="mt- w-100" size="sm" onClick={handleClear}>
                         Clear
                     </Button>
                 </Col>
+            </Row>
+            <Row className="d-flex justify-content-end align-items-center">
             </Row>
 
             <Modal
