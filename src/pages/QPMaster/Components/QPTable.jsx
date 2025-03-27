@@ -1,15 +1,13 @@
-import React from "react";
+import React, { useState, useMemo, useRef, useCallback } from "react";
 import { FaHome, FaSearch } from "react-icons/fa";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
-import themeStore from "./../../../store/themeStore";
 import { useStore } from "zustand";
-import { useMemo, useState, useCallback, useRef } from "react";
-import "./QPTable.css";
-import { decrypt, encrypt } from "./../../../Security/Security";
 import { Row, Col, Button, InputGroup, Form } from "react-bootstrap";
-import { Select } from "antd";
+import { Select, Tooltip } from "antd";
+import AddPaperForm from "./AddPaperForm"; // Import the new component
+import themeStore from "./../../../store/themeStore";
 
 const { Option } = Select;
 
@@ -36,8 +34,9 @@ const QPTable = ({
   const themeState = useStore(themeStore);
   const cssClasses = useMemo(() => themeState.getCssClasses(), [themeState]);
   const [globalFilter, setGlobalFilter] = useState("");
+  const [showAddPaper, setShowAddPaper] = useState(false);
   const gridRef = useRef(null);
-  
+
   const [
     customDark,
     customMid,
@@ -49,22 +48,19 @@ const QPTable = ({
     customDarkBorder,
   ] = cssClasses;
 
-  //Button Click Actions
   const handleHomeClick = () => {
     setShowTable(false);
   };
 
-  // Global search handler
   const onFilterTextChange = useCallback((e) => {
     const value = e.target.value;
     setGlobalFilter(value);
-    
+
     if (gridRef.current && gridRef.current.api) {
       gridRef.current.api.setQuickFilter(value);
     }
   }, []);
 
-  // Clear search field
   const clearSearch = useCallback(() => {
     setGlobalFilter("");
     if (gridRef.current && gridRef.current.api) {
@@ -72,7 +68,6 @@ const QPTable = ({
     }
   }, []);
 
-  // Define all possible columns
   const columnDefs = [
     {
       headerName: "S.No.",
@@ -83,7 +78,6 @@ const QPTable = ({
       valueGetter: (params) => params.node.rowIndex + 1,
       width: 80,
     },
-    // { headerName: "QP Master ID", field: "qpMasterId", sortable: true, filter: true },
     {
       headerName: "Group Name",
       field: "groupName",
@@ -137,35 +131,11 @@ const QPTable = ({
     },
   ];
 
-  // Conditionally include columns based on applied filters
-  // const columnDefs = useMemo(() => {
-  //   return allColumnDefs.filter((col) => {
-  //     switch (col.field) {
-  //       case "groupName":
-  //         return !filters.groupName;
-  //       case "type":
-  //         return !filters.selectedTypeName;
-  //       case "courseName":
-  //         return !filters.selectedCourseName;
-  //       case "examTypeName":
-  //         return !filters.selectedExamTypeName;
-  //       default:
-  //         return true;
-  //     }
-  //   });
-  // }, [filters]);
-
   return (
     <div className="w-100">
       <Row className="">
         <Col xs={12} className="text-center position-relative">
-          <h1
-            className={`${customDarkText} mb-4`}
-            style={{
-              fontSize: "3rem",
-              fontWeight: "bold",
-            }}
-          >
+          <h1 className={`${customDarkText} mb-4`} style={{ fontSize: "3rem", fontWeight: "bold" }}>
             QP-Masters
           </h1>
           <FaHome
@@ -179,7 +149,6 @@ const QPTable = ({
       </Row>
       {qpData.length === 0 && <p>No data found for the selected filters.</p>}
 
-      {/* Filters Section */}
       <Row className="mb-4">
         <Col xs={12} md={3} className="mb-2">
           <Select
@@ -230,11 +199,7 @@ const QPTable = ({
           <Select
             className="w-100"
             placeholder="Select Semester"
-            value={
-              selectedExamTypeIds.length > 0
-                ? selectedExamTypeIds[0]
-                : undefined
-            }
+            value={selectedExamTypeIds.length > 0 ? selectedExamTypeIds[0] : undefined}
             onChange={onSemesterChange}
             allowClear
           >
@@ -245,19 +210,40 @@ const QPTable = ({
             ))}
           </Select>
         </Col>
-        <Col xs={12} className="text-center mt-3">
+      </Row>
+
+      <Row className="mb-4 align-items-center">
+        <Col xs={12} lg={3} className="d-none d-lg-block"></Col>
+        <Col xs={12} md={12} lg={6} className="text-center mb-2 mb-md-0">
           <Button variant="primary" className="me-2" onClick={onApplyClick}>
-            Apply Filters
+            Search
           </Button>
-          <Button variant="secondary" onClick={onClearClick}>
+          <Button variant="secondary" className="me-2" onClick={onClearClick}>
             Clear Filters
           </Button>
+          <Tooltip title={!selectedGroupId ? "Select a group first" : ""}>
+            <span>
+              <Button
+                variant="success"
+                className="me-2"
+                onClick={() => setShowAddPaper(true)}
+                disabled={!selectedGroupId}
+              >
+                Add Paper
+              </Button>
+            </span>
+          </Tooltip>
+          <Button variant="info">Import Paper</Button>
         </Col>
+        <Col xs={12} lg={3} className="d-none d-lg-block"></Col>
       </Row>
+
+      {showAddPaper && selectedGroupId && (
+        <AddPaperForm groupId={selectedGroupId} groupName={groups.find(group => group.id === selectedGroupId)?.name} />
+      )}
 
       {qpData.length > 0 && (
         <>
-          {/* Global Search Bar */}
           <Row className="mb-3">
             <Col xs={12} md={6} lg={4} className="mx-auto">
               <InputGroup>
@@ -280,10 +266,7 @@ const QPTable = ({
             </Col>
           </Row>
 
-          <div
-            className="ag-theme-alpine"
-            style={{ height: "60vh", width: "100%" }}
-          >
+          <div className="ag-theme-alpine" style={{ height: "60vh", width: "100%" }}>
             <AgGridReact
               ref={gridRef}
               rowData={qpData}
