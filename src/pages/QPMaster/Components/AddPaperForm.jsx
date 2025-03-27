@@ -209,7 +209,7 @@ const AddPaperForm = ({ groupId, groupName }) => {
                 {/* <h5 className={`mb-0  ${cssClasses[5]}`}>{label}</h5> */}
                 {isDropdown ? (
                     <Select
-                        placeholder={`Select ${label}`}
+                        placeholder={`${label}`}
                         className="mb-1 w-100"
                         style={{ width: "100%" }}
                         onChange={(value) => handleManualInput({ target: { value } }, field)}
@@ -245,7 +245,7 @@ const AddPaperForm = ({ groupId, groupName }) => {
                     </Select>
                 ) : (
                     <Input
-                        placeholder={`Enter ${label}`}
+                        placeholder={`${label}`}
                         className="mb-1 w-100"
                         onChange={(e) => handleManualInput(e, field)}
                         value={manualInputs[field] || ""}
@@ -259,34 +259,32 @@ const AddPaperForm = ({ groupId, groupName }) => {
     return (
         <Container fluid className="bg-ligh rounded">
             <Row className="d-flex align-items-center">
-                <Col md={3}>
+                <Col md={3} className="d-none">
                     {renderField("Group", "groupId", true, true, {
                         label: `${groupName} (ID: ${groupId})`,
                         value: groupId,
                     })}
                 </Col>
+                <Col md={2}>{renderField("Course", "course", true, false, null, courses, "courseName", "courseId")}  </Col>
+                <Col md={1}>{renderField("Semester", "examType", true, false, null, examtype, "typeName", "examTypeId")}</Col>
+                <Col md={2}>{renderField("Subject", "subject", true, false, null, subject, "subjectName", "subjectId")}</Col>
+                <Col md={1}>{renderField("Paper Number", "paperNumber", false)}</Col>-
                 <Col md={3}>{renderField("Paper Title", "paperTitle", false)}</Col>
-                <Col md={3}>{renderField("Paper Number", "paperNumber", false)}</Col>
-                <Col md={3}>{renderField("Exam Type", "examType", true, false, null, examtype, "typeName", "examTypeId")}</Col>
+                <Col md={2}>{renderField("Enter NEP Code / Paper Code", "nepCode", false)}</Col>
             </Row>
             <Row className="d-flex align-items-center">
-                <Col md={3}>{renderField("Max Marks", "maxMarks", false)}</Col>
-                <Col md={3}>{renderField("Duration", "duration", false)}</Col>
-                <Col md={3}>{renderField("Type", "type", true, false, null, type, "types", "typeId")}</Col>
-                <Col md={3}>{renderField("Subject", "subject", true, false, null, subject, "subjectName", "subjectId")}</Col>
-            </Row>
-            <Row className="d-flex align-items-center">
-                <Col md={3}>{renderField("NEP Code / Paper Code", "nepCode", false)}</Col>
-                <Col md={3}>{renderField("Course", "course", true, false, null, courses, "courseName", "courseId")}  </Col>
                 <Col md={3}>{renderField("Course Code / Private Code", "courseCode", false)}</Col>
-                <Col md={3}>{renderField("Language", "language", true, false, null, language, "languages", "languageId")}</Col>
+                <Col md={1}>{renderField("Type", "type", true, false, null, type, "types", "typeId")}</Col>
+                <Col md={1}>{renderField("Language", "language", true, false, null, language, "languages", "languageId")}</Col>-
+                <Col md={1}>{renderField("Duration", "duration", false)}</Col>-
+                <Col md={1}>{renderField("Max Marks", "maxMarks", false)}</Col>-
             </Row>
             <Row className="d-flex justify-content-end align-items-center">
                 <Col md={3} className="d-flex justify-content-end">
-                    <Button type="primary" className="mt-3 me-2 w-25" onClick={handleAdd}>
+                    <Button type="primary" className="mt-3 me-2" size="sm" onClick={handleAdd}>
                         Add
                     </Button>
-                    <Button type="primary" className="mt-3 w-25" onClick={handleClear}>
+                    <Button type="primary" className="mt-3 " size="sm"  onClick={handleClear}>
                         Clear
                     </Button>
                 </Col>

@@ -234,10 +234,10 @@ const QPTable = ({
       <Row className="mb-4 align-items-center">
         <Col xs={12} lg={3} className="d-none d-lg-block"></Col>
         <Col xs={12} md={12} lg={6} className="text-center mb-2 mb-md-0">
-          <Button variant="primary" className="me-2" onClick={onApplyClick}>
+          <Button variant="primary" className="me-2" size="sm" onClick={onApplyClick}>
             Search
           </Button>
-          <Button variant="secondary" className="me-2" onClick={onClearClick}>
+          <Button variant="secondary" className="me-2" size="sm"  onClick={onClearClick}>
             Clear Filters
           </Button>
           <Tooltip title={!selectedGroupId ? "Select a group first" : ""}>
@@ -246,7 +246,7 @@ const QPTable = ({
                 variant="success"
                 className="me-2"
                 onClick={() => setShowAddPaper(!showAddPaper)}
-                disabled={!selectedGroupId}
+                disabled={!selectedGroupId} size="sm" 
               >
                 Add Paper {showAddPaper ? <FaChevronDown /> : <FaChevronRight />}
               </Button>
@@ -257,7 +257,7 @@ const QPTable = ({
               <Button
                 variant="info"
                 onClick={handleImportClick}
-                disabled={!selectedGroupId}
+                disabled={!selectedGroupId} size="sm" 
               >
                 Import Paper
               </Button>
