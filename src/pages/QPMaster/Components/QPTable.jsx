@@ -308,6 +308,8 @@ const QPTable = ({
               quickFilterText={globalFilter}
               suppressMenu={false}
               cacheQuickFilter={true}
+              // useValueFormatterForExport = {true}
+              suppressMultiRanges={true}
             />
           </div>
         </>
