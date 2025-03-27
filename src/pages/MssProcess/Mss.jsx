@@ -7,6 +7,7 @@ import API from "../../CustomHooks/MasterApiHooks/api";
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
+import "./mss.css"
 
 const { Option } = Select;
 const { Panel } = Collapse;
@@ -25,11 +26,11 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
   const [subjectOptions, setSubjectOptions] = useState([]);
   const [languageOptions, setLanguageOptions] = useState([]);
   const [collapseSearch, setCollapseSearch] = useState(false);
-  
+
   // Simplified state for selections
   const [selectedCourses, setSelectedCourses] = useState(['Course I']);  // Default first option selected
   const [selectedSemesters, setSelectedSemesters] = useState(['Semester I']);  // Default first option selected
-  
+
   // Fixed options - simplified
   const courseOptions = [
     { label: 'Course I', value: 'Course I' },
@@ -37,7 +38,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
     { label: 'Course III', value: 'Course III' },
     { label: 'Course IV', value: 'Course IV' }
   ];
-  
+
   const semesterOptions = [
     { label: 'Semester I', value: 'Semester I' },
     { label: 'Semester II', value: 'Semester II' },
@@ -443,7 +444,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
       </Button>
     </div>
   );
-  
+
   // Simplified dropdown content for semesters
   const semesterDropdownContent = (
     <div style={{ background: 'white', padding: '15px', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)', width: '250px' }}>
@@ -479,96 +480,92 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
 
   return (
     <div className="mt-4">
-      <Row className="w-50">
-        <Col xs={12} md={12} lg={12}>
+      <Row className="w-100 d-flex  justify-content-center">
+        <Col xs={12} md={12} lg={6}>
           <Collapse
             defaultActiveKey={['1']}
             expandIconPosition="right"
           >
-            <Panel
-              header="Search & Import QP Masters"
-              key="1"
-              className=""
-            >
-              <Card className="shadow-sm">
-            <Select
-              showSearch
-              value={searchTerm}
-              placeholder="Search QP Master..."
-              onSearch={handleSearch}
-              onChange={setSearchTerm}
-              notFoundContent={loading ? <Spin size="small" /> : "No results found"}
-              style={{ width: "100%", marginBottom: "16px" }}
-              dropdownRender={(menu) => (
-                <div>
-                  {menu}
-                  {hasMore && data.length > 0 && (
-                    <div className="text-center p-2">
-                      <Button variant="outline-primary" size="sm" onClick={handleShowMore}>
-                        Show More
-                      </Button>
+              <div className="shadow-sm ">
+                <Select
+                  showSearch
+                  value={searchTerm}
+                  placeholder="Search QP Master..."
+                  onSearch={handleSearch}
+                  onChange={setSearchTerm}
+                  notFoundContent={loading ? <Spin size="small" /> : "No results found"}
+                  style={{ width: "100%" }}
+                  allowClear={true}
+                  defaultOpen={false}
+                  dropdownRender={(menu) => (
+                    <div>
+                      {menu}
+                      {hasMore && data.length > 0 && (
+                        <div className="text-center p-2">
+                          <Button variant="outline-primary" size="sm" onClick={handleShowMore}>
+                            Show More
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   )}
-                </div>
-              )}
-            >
-              {data.map((item) => (
-                <Option key={item.qpMasterId} value={item.paperTitle}>
-                  <Row className="align-items-center p-2">
-                    <Col xs={12} md={8}>
-                      <strong>{item.paperTitle}</strong>
-                      <br />
-                      <small>
-                        <strong>Course Name:</strong> {item.courseName} &nbsp; | &nbsp;
-                        <strong>NEP Code:</strong> {item.nepCode}
-                      </small>
-                    </Col>
-                    <Col xs={12} md={4} className="d-flex flex-row justify-content-end gap-3">
-                      <Tooltip title="Import Individual">
-                        <DownloadOutlined
-                          style={{ fontSize: "18px", cursor: "pointer", color: importing === item.qpMasterId ? "gray" : "#1890ff" }}
+                >
+                  {data.map((item) => (
+                    <Option key={item.qpMasterId} value={item.paperTitle}>
+                      <Row className="align-items-center p-2">
+                        <Col xs={12} md={8}>
+                          <strong>{item.paperTitle}</strong>
+                          <br />
+                          <small>
+                            <strong>Course Name:</strong> {item.courseName} &nbsp; | &nbsp;
+                            <strong>NEP Code:</strong> {item.nepCode}
+                          </small>
+                        </Col>
+                        <Col xs={12} md={4} className="d-flex flex-row justify-content-end gap-3">
+                          <Tooltip title="Import Individual">
+                            <DownloadOutlined
+                              style={{ fontSize: "18px", cursor: "pointer", color: importing === item.qpMasterId ? "gray" : "#1890ff" }}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleImport(item);
                               }}
-                          disabled={importing === item.qpMasterId}
-                        />
-                      </Tooltip>
-                          
+                              disabled={importing === item.qpMasterId}
+                            />
+                          </Tooltip>
+
                           {/* Course Dropdown */}
-                      <Tooltip title="Import All by Course Name">
+                          <Tooltip title="Import All by Course Name">
                             <Dropdown
                               overlay={courseDropdownContent}
                               trigger={['click']}
                               placement="bottomRight"
                             >
-                        <BookOutlined
-                          style={{ fontSize: "18px", cursor: "pointer", color: "#52c41a" }}
+                              <BookOutlined
+                                style={{ fontSize: "18px", cursor: "pointer", color: "#52c41a" }}
                                 onClick={(e) => e.stopPropagation()}
-                        />
+                              />
                             </Dropdown>
-                      </Tooltip>
-                          
+                          </Tooltip>
+
                           {/* Semester Dropdown */}
-                      <Tooltip title="Import All by Semester">
+                          <Tooltip title="Import All by Semester">
                             <Dropdown
                               overlay={semesterDropdownContent}
                               trigger={['click']}
                               placement="bottomRight"
                             >
-                        <CalendarOutlined
-                          style={{ fontSize: "18px", cursor: "pointer", color: "#faad14" }}
+                              <CalendarOutlined
+                                style={{ fontSize: "18px", cursor: "pointer", color: "#faad14" }}
                                 onClick={(e) => e.stopPropagation()}
-                        />
+                              />
                             </Dropdown>
-                      </Tooltip>
-                    </Col>
-                  </Row>
-                </Option>
-              ))}
-            </Select>
-          </Card>
-            </Panel>
+                          </Tooltip>
+                        </Col>
+                      </Row>
+                    </Option>
+                  ))}
+                </Select>
+              </div>
           </Collapse>
         </Col>
       </Row>
@@ -601,7 +598,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
                 suppressColumnVirtualisation={false}
               />
             </div>
-            </Card>
+          </Card>
         </Col>
       </Row>
     </div>

@@ -14,7 +14,7 @@ import { useTranslation } from 'react-i18next';
 import { useStore } from 'zustand';
 import themeStore from '../../store/themeStore';
 
-const QcProcess = (projectId) => {
+const QcProcess = ({projectId}) => {
   const { t } = useTranslation();
   const { getCssClasses } = useStore(themeStore);
   const cssClasses = getCssClasses();
