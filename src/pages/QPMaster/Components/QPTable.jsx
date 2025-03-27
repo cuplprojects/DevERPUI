@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useRef, useCallback } from "react";
-import { FaHome, FaSearch } from "react-icons/fa";
+import React, { useState, useMemo, useRef, useCallback, useEffect } from "react";
+import { FaHome, FaSearch, FaChevronRight, FaChevronDown } from "react-icons/fa";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
@@ -8,6 +8,8 @@ import { Row, Col, Button, InputGroup, Form } from "react-bootstrap";
 import { Select, Tooltip } from "antd";
 import AddPaperForm from "./AddPaperForm"; // Import the new component
 import themeStore from "./../../../store/themeStore";
+import { useNavigate } from "react-router-dom";
+import { encrypt } from "../../../Security/Security"; // Assuming you have an encrypt function
 
 const { Option } = Select;
 
@@ -36,6 +38,19 @@ const QPTable = ({
   const [globalFilter, setGlobalFilter] = useState("");
   const [showAddPaper, setShowAddPaper] = useState(false);
   const gridRef = useRef(null);
+  const navigate = useNavigate();
+  const [encryptedGroupId, setEncryptedGroupId] = useState("");
+  const [encryptedGroupName, setEncryptedGroupName] = useState("");
+
+  useEffect(() => {
+    if (selectedGroupId) {
+      const encryptedId = encrypt(selectedGroupId.toString());
+      const selectedGroup = groups.find(group => group.id === selectedGroupId);
+      const encryptedName = selectedGroup ? encrypt(selectedGroup.name) : "";
+      setEncryptedGroupId(encryptedId);
+      setEncryptedGroupName(encryptedName);
+    }
+  }, [selectedGroupId, groups]);
 
   const [
     customDark,
@@ -50,6 +65,10 @@ const QPTable = ({
 
   const handleHomeClick = () => {
     setShowTable(false);
+  };
+
+  const handleImportClick = () => {
+    navigate(`/Import-Paper/${encryptedGroupId}/${encryptedGroupName}`);
   };
 
   const onFilterTextChange = useCallback((e) => {
@@ -226,14 +245,24 @@ const QPTable = ({
               <Button
                 variant="success"
                 className="me-2"
-                onClick={() => setShowAddPaper(true)}
+                onClick={() => setShowAddPaper(!showAddPaper)}
                 disabled={!selectedGroupId}
               >
-                Add Paper
+                Add Paper {showAddPaper ? <FaChevronDown /> : <FaChevronRight />}
               </Button>
             </span>
           </Tooltip>
-          <Button variant="info">Import Paper</Button>
+          <Tooltip title={!selectedGroupId ? "Select a group first" : ""}>
+            <span>
+              <Button
+                variant="info"
+                onClick={handleImportClick}
+                disabled={!selectedGroupId}
+              >
+                Import Paper
+              </Button>
+            </span>
+          </Tooltip>
         </Col>
         <Col xs={12} lg={3} className="d-none d-lg-block"></Col>
       </Row>
