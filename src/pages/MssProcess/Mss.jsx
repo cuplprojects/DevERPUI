@@ -1,19 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { Select, Spin, message, Card, Table, Tooltip, Collapse, Dropdown, Menu, Checkbox } from "antd";
+import { Select, Spin, message, Card, Table, Tooltip, Collapse, Dropdown, Checkbox } from "antd";
 import axios from "axios";
 import { Button, Col, Row, Container } from "react-bootstrap";
-import { DownloadOutlined, BookOutlined, CalendarOutlined, CheckCircleOutlined, DeleteOutlined, UpOutlined, DownOutlined } from "@ant-design/icons";
+import { DownloadOutlined, BookOutlined, CalendarOutlined, CheckCircleOutlined, DeleteOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import API from "../../CustomHooks/MasterApiHooks/api";
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
-import "./mss.css"
+import 'ag-grid-enterprise'; // Ensure AG Grid Enterprise is imported
+import "./mss.css";
 
 const { Option } = Select;
 const { Panel } = Collapse;
 
 const Mss = ({ projectId, processId, lotNo, projectName }) => {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState(null);
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [importing, setImporting] = useState(null);
@@ -128,6 +129,11 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
     }
   };
 
+  const handleRejectedQCsClick = () => {
+    console.log("Rejected QCs clicked");
+    // You can show a modal, dropdown, or navigate to another page
+  };
+
   const fetchSubjectOptions = async () => {
     try {
       const response = await API.get('/Subjects');
@@ -182,7 +188,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
       const updatedData = { ...data, mssStatus: 2 };
 
       // Call API to update the record
-      await API.put(`/QuantitySheet/update/${data.quantitySheetId}`, updatedData);
+      await API.put(`/QuantitySheet/UpdateStatus?id=${data.quantitySheetId}`, updatedData);
 
       message.success("Item marked as received successfully");
 
@@ -253,49 +259,30 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
       width: 120
     },
     {
-      headerName: "A",
-      field: "courseId",
+      headerName: "Course",
+      field: "courseName",
       editable: true,
       sortable: true,
       filter: true,
       width: 150,
-      cellEditor: 'agSelectCellEditor',
-      cellEditorParams: {
-        values: courseOptions.map(course => course.value),
-        valueFormatter: (params) => {
-          const course = courseOptions.find(c => c.value === params.value);
-          return course ? course.label : '';
-        }
-      },
-      valueFormatter: (params) => {
-        const course = courseOptions.find(c => c.value === params.value);
-        return course ? course.label : '';
-      }
+      
     },
     {
-      headerName: "B",
-      field: "subjectId",
+      headerName: "Subject",
+      field: "subjectName",
       editable: true,
       sortable: true,
       filter: true,
       width: 150,
-      cellEditor: 'agSelectCellEditor',
-      cellEditorParams: {
-        values: subjectOptions.map(subject => subject.value),
-        valueFormatter: (params) => {
-          const subject = subjectOptions.find(s => s.value === params.value);
-          return subject ? subject.label : '';
-        }
-      },
-      valueFormatter: (params) => {
-        const subject = subjectOptions.find(s => s.value === params.value);
-        return subject ? subject.label : '';
-      }
+      
     },
     {
       headerName: "Language",
       field: "languageId",
       editable: true,
+      suppressFillHandle: false,
+      enableFillHandle: true,
+      fillHandleDirection: 'xy',
       sortable: true,
       filter: true,
       width: 150,
@@ -346,7 +333,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
       width: 120,
       cellEditor: 'agSelectCellEditor',
       cellEditorParams: {
-        values: [0, 1, 2, 3],
+        values: [0, 1, 2],
         valueFormatter: (params) => {
           const statusMap = {
             0: 'Pending',
@@ -382,6 +369,11 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
     flex: 1,
     minWidth: 100,
     resizable: true,
+    enableFillHandle: true,// Enable auto-fill feature
+    sortable: true,  // Ensure sorting works
+    filter: true,    // Enable filtering
+    editable: true,  // Ensure editing works
+    movable: true,
   };
 
   // Grid ready event handler
@@ -478,21 +470,22 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
     </div>
   );
 
+ 
+  
+
   return (
     <div className="mt-4">
-      <Row className="w-100 d-flex  justify-content-center">
-        <Col xs={12} md={12} lg={6}>
-          <Collapse
-            defaultActiveKey={['1']}
-            expandIconPosition="right"
-          >
-              <div className="shadow-sm ">
+      <Row className="w-100 d-flex justify-content-left align-items-center">
+        <div className="d-flex align-items-center justify-content-between">
+          <Col xs={12} md={12} lg={5} className="d-flex align-items-center">
+            <Collapse defaultActiveKey={['1']} expandIconPosition="right" className="flex-grow-1">
+              <div className="shadow-sm w-100">
                 <Select
                   showSearch
                   value={searchTerm}
                   placeholder="Search QP Master..."
                   onSearch={handleSearch}
-                  onChange={setSearchTerm}
+                  onChange={(value) => setSearchTerm(value || null)}
                   notFoundContent={loading ? <Spin size="small" /> : "No results found"}
                   style={{ width: "100%" }}
                   allowClear={true}
@@ -535,29 +528,15 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
 
                           {/* Course Dropdown */}
                           <Tooltip title="Import All by Course Name">
-                            <Dropdown
-                              overlay={courseDropdownContent}
-                              trigger={['click']}
-                              placement="bottomRight"
-                            >
-                              <BookOutlined
-                                style={{ fontSize: "18px", cursor: "pointer", color: "#52c41a" }}
-                                onClick={(e) => e.stopPropagation()}
-                              />
+                            <Dropdown overlay={courseDropdownContent} trigger={['click']} placement="bottomRight">
+                              <BookOutlined style={{ fontSize: "18px", cursor: "pointer", color: "#52c41a" }} onClick={(e) => e.stopPropagation()} />
                             </Dropdown>
                           </Tooltip>
 
                           {/* Semester Dropdown */}
                           <Tooltip title="Import All by Semester">
-                            <Dropdown
-                              overlay={semesterDropdownContent}
-                              trigger={['click']}
-                              placement="bottomRight"
-                            >
-                              <CalendarOutlined
-                                style={{ fontSize: "18px", cursor: "pointer", color: "#faad14" }}
-                                onClick={(e) => e.stopPropagation()}
-                              />
+                            <Dropdown overlay={semesterDropdownContent} trigger={['click']} placement="bottomRight">
+                              <CalendarOutlined style={{ fontSize: "18px", cursor: "pointer", color: "#faad14" }} onClick={(e) => e.stopPropagation()} />
                             </Dropdown>
                           </Tooltip>
                         </Col>
@@ -566,10 +545,20 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
                   ))}
                 </Select>
               </div>
-          </Collapse>
-        </Col>
+            </Collapse>
+
+            {/* Rejected QC Records Icon */}
+            <Tooltip title="View Rejected QCs">
+              <ExclamationCircleOutlined
+                style={{ fontSize: "22px", color: "#ff4d4f", cursor: "pointer", marginLeft: "10px" }}
+                onClick={handleRejectedQCsClick}
+              />
+            </Tooltip>
+          </Col>
+        </div>
       </Row>
-      <Row className="justify-content-cente">
+
+      <Row className="justify-content-center">
         <Col xs={12} md={12} lg={12}>
           {/* AG Grid for Quantity Sheet Data */}
           <Card title="Quantity Sheet Data" className="shadow-sm mt-4">
@@ -595,6 +584,9 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
                 undoRedoCellEditing={true}
                 undoRedoCellEditingLimit={20}
                 suppressMovableColumns={false}
+                enableFilter={true}
+                enableColResize={true}
+                enableSorting={true}
                 suppressColumnVirtualisation={false}
               />
             </div>

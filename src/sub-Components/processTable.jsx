@@ -1027,7 +1027,12 @@ const ProcessTable = () => {
           projectName={projectName}
         />
       ) : processName === "QC" ? (
-        <QcScreen projectId={selectedProject?.value || id}/>
+        <QcScreen 
+        projectId={selectedProject?.value || id}
+        processId={processId}
+        lotNo={selectedLot}
+        projectName={projectName}
+        />
       ) : processName === "MSS" ? (
         <MSS
           projectId={selectedProject?.value || id}
