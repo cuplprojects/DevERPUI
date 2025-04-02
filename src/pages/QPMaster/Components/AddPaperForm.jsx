@@ -214,19 +214,20 @@ const AddPaperForm = ({ groupId, groupName }) => {
                         value={manualInputs[field]}
                         disabled={isDisabled}
                         showSearch
+                        allowClear
                         mode={field === "language" ? "multiple" : undefined}
-                        notFoundContent={
-                            <div
-                                className="d-flex justify-content-center align-items-center"
-                                style={{ cursor: "pointer" }}
-                                onClick={() => {
-                                    setSelectedField(field);
-                                    setIsModalVisible(true);
-                                }}
-                            >
-                                <span>+</span> Add New
-                            </div>
-                        }
+                        // notFoundContent={
+                        //     <div
+                        //         className="d-flex justify-content-center align-items-center"
+                        //         style={{ cursor: "pointer" }}
+                        //         onClick={() => {
+                        //             setSelectedField(field);
+                        //             setIsModalVisible(true);
+                        //         }}
+                        //     >
+                        //         <span>+</span> Add New
+                        //     </div>
+                        // }
                         filterOption={(input, option) =>
                             option.children?.toString().toLowerCase().includes(input.toLowerCase())
                         }
@@ -293,7 +294,7 @@ const AddPaperForm = ({ groupId, groupName }) => {
             </Row>
             <Row className="d-flex justify-content-end align-items-center">
             </Row>
-
+{/* 
             <Modal
                 title={`Add New ${selectedField}`}
                 visible={isModalVisible}
@@ -305,7 +306,7 @@ const AddPaperForm = ({ groupId, groupName }) => {
                     value={newOptionValue}
                     onChange={(e) => setNewOptionValue(e.target.value)}
                 />
-            </Modal>
+            </Modal> */}
         </Container>
     );
 };
