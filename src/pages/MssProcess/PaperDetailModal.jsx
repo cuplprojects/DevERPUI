@@ -87,14 +87,14 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
       const payload = [{
         paperTitle: values.PaperTitle,
         courseId: selectedCourse ? selectedCourse.courseId : 0,
-        subjectId: selectedSubject? selectedSubject.subjectId : 0,
+        subjectId: selectedSubject ? selectedSubject.subjectId : 0,
         quantity: Number(values.Quantity),
         examDate: values.ExamDate ? values.ExamDate.format('YYYY-MM-DD') : null,
         examTime: values.ExamTime,
         maxMarks: Number(values.MaxMarks),
         duration: values.Duration,
         languageId: [],
-        examTypeId: selectedExamType? selectedExamType.examTypeId : 0,
+        examTypeId: selectedExamType ? selectedExamType.examTypeId : 0,
         nepCode: values.NEPCode,
         privateCode: values.PrivateCode,
         catchNo: values.CatchNo,
@@ -149,9 +149,16 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
             </Col>
             <Col md={2}>
               <Form.Item name="CourseId" label="Course">
-                <Input allowClear />
+                <Select allowClear>
+                  {courses.map((course) => (
+                    <Option key={course.courseId} value={course.courseName}>
+                      {course.courseName}
+                    </Option>
+                  ))}
+                </Select>
               </Form.Item>
             </Col>
+
             <Col md={2}>
               <Form.Item name="ExamTypeId" label="Semester">
                 <Input allowClear />
