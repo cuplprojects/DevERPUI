@@ -168,7 +168,7 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
                 <Select allowClear>
                   {examType?.map((exam) => (
                     <Option key={exam.examTypeId} value={exam.examTypeId}>
-                      {exam.type}
+                      {exam.typeName}
                     </Option>
                   ))}
                 </Select>

@@ -31,10 +31,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
   const [languageOptions, setLanguageOptions] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
 
-  // Simplified state for selections
-  const [selectedCourses, setSelectedCourses] = useState([]);  // Default first option selected
-  const [selectedSemesters, setSelectedSemesters] = useState([]);  // Default first option selected
-
+ 
   // Fixed options - simplified
 
   useEffect(() => {
