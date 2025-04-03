@@ -7,11 +7,19 @@ import API from "../../CustomHooks/MasterApiHooks/api";
 import MSSTable from "./MSSTable"; // Import the new component
 import PaperDetailModal from './PaperDetailModal'; // Import the new modal component
 import "./mss.css";
+import themeStore from "../../store/themeStore";
+import { useStore } from "zustand";
 
 const { Option } = Select;
 const { Panel } = Collapse;
 
 const Mss = ({ projectId, processId, lotNo, projectName }) => {
+
+  const { getCssClasses } = useStore(themeStore);
+  const cssClasses = getCssClasses();
+  const [customDark, customMid, customLight, customBtn, customDarkText, customLightText, customLightBorder, customDarkBorder] = cssClasses;
+
+
   const [searchTerm, setSearchTerm] = useState(null);
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -259,6 +267,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
         onCancel={() => setSelectedItem(null)}
         onImport={handleImport}
         importing={importing}
+        cssClasses={cssClasses}
       />
     </div>
   );
