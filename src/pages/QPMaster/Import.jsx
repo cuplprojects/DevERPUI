@@ -109,7 +109,6 @@ const Import = () => {
           );
           autoMappings[col] = matchingHeaders.length > 0 ? matchingHeaders : [];
         });
-
         setFieldMappings(autoMappings);
       } catch (err) {
         console.error("File processing error:", err);
@@ -267,25 +266,6 @@ const Import = () => {
     }
   };
 
-  // const getLanguageIdByName = async (language) => {
-  //   try {
-  //     const languageResponse = await API.get(
-  //       `Language/Language?language=${language}`
-  //     );
-  //     let languageId = languageResponse.data;
-
-  //     if (!languageId) {
-  //       const newLanguageResponse = await API.post("/Language", {
-  //         languages: language,
-  //       });
-  //       languageId = newLanguageResponse.data.languageId;
-  //     }
-  //     return languageId;
-  //   } catch (err) {
-  //     console.error("Error in fetching or inserting type:", err);
-  //     throw err;
-  //   }
-  // };
 
   const getLanguageIdByName = async (language) => {
     try {
