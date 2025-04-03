@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Modal as BootstrapModal, Button, Form, Input, DatePicker, Select, message } from "antd";
 import axios from "axios";
 import moment from "moment";
@@ -11,16 +11,53 @@ const { Option } = Select;
 const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssClasses }) => {
   const [form] = Form.useForm();
   const [customDark, customMid, customLight, customBtn, customDarkText, customLightText, customLightBorder, customDarkBorder] = cssClasses;
+  const [courses, setCourses] = useState();
+  const [subject, setSubject] = useState();
+  const [examType, setExamType] = useState();
+
 
   useEffect(() => {
+
+    const fetchCourses = async () => {
+      try {
+        const response = await API.get("/Course");
+        setCourses(response.data);
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+      }
+    };
+
+    const fetchSubject = async () => {
+      try {
+        const response = await API.get("/Subject");
+        setSubject(response.data);
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+      }
+    };
+
+    const fetchExamType = async () => {
+      try {
+        const response = await API.get("/ExamType");
+        setExamType(response.data);
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+      }
+    };
+
+    fetchCourses();
+    fetchSubject();
+    fetchExamType();
+
+
     if (item) {
       console.log(item);
       // Set the form fields with the values from the item
       form.setFieldsValue({
         QPId: item.qpMasterId,
         Quantity: item.quantity ?? 0.0,
-        CourseId: item.courseId ?? 0,
-        SubjectId: item.subjectId ?? 0,
+        CourseId: item.courseName ?? 0,
+        SubjectId: item.subjectName ?? 0,
         CatchNo: "", // Initialize as an empty string to allow user input
         InnerEnvelope: item.innerEnvelope ?? "",
         OuterEnvelope: item.outerEnvelope ?? 0,
@@ -29,9 +66,9 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
         ExamDate: item.examDate ? moment(item.examDate) : null,
         ExamTime: item.examTime ?? null,
         MaxMarks: item.maxMarks ?? 0,
-        Duration: item.duration ?? "",
+        Duration: item.duration ?? null,
         LanguageId: item.languageId ?? [0],
-        ExamTypeId: item.examTypeId ?? 0,
+        ExamTypeId: item.examTypeName ?? 0,
         NEPCode: item.nepCode ?? "",
         PrivateCode: item.privateCode ?? "",
       });
@@ -42,18 +79,22 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
     try {
       const values = await form.validateFields();
 
+      const selectedCourse = courses.find(course => course.courseName === values.CourseId);
+      const selectedSubject = subject.find(subject => subject.subjectName === values.SubjectId);
+      const selectedExamType = examType.find(examType => examType.examTypeName === values.ExamTypeId);
+
       // Format the payload according to the API's requirements
       const payload = [{
         paperTitle: values.PaperTitle,
-        courseId: values.CourseId,
-        subjectId: Number(values.SubjectId),
+        courseId: selectedCourse ? selectedCourse.courseId : 0,
+        subjectId: selectedSubject? selectedSubject.subjectId : 0,
         quantity: Number(values.Quantity),
         examDate: values.ExamDate ? values.ExamDate.format('YYYY-MM-DD') : null,
         examTime: values.ExamTime,
         maxMarks: Number(values.MaxMarks),
         duration: values.Duration,
         languageId: [],
-        examTypeId: Number(values.ExamTypeId),
+        examTypeId: selectedExamType? selectedExamType.examTypeId : 0,
         nepCode: values.NEPCode,
         privateCode: values.PrivateCode,
         catchNo: values.CatchNo,
@@ -107,7 +148,7 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
               </Form.Item>
             </Col>
             <Col md={2}>
-              <Form.Item name="CourseId" label="Course ID">
+              <Form.Item name="CourseId" label="Course">
                 <Input allowClear />
               </Form.Item>
             </Col>
@@ -163,7 +204,7 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
               </Form.Item>
             </Col>
             <Col md={6}>
-              <Form.Item name="LanguageId" label="Language ID">
+              <Form.Item name="LanguageId" label="Language">
                 <Select mode="multiple">
                   {/* Add options dynamically based on available languages */}
                   <Option value={0}>Default Language</Option>

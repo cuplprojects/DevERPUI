@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { Select, Spin, message, Card, Table, Tooltip, Collapse, Dropdown, Checkbox } from "antd";
-import axios from "axios";
-import { Button, Col, Row, Container } from "react-bootstrap";
-import { DownloadOutlined, BookOutlined, CalendarOutlined, CheckCircleOutlined, DeleteOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
+import { Select, Spin, message, Card,  Tooltip, Collapse } from "antd";
+import { Button, Col, Row } from "react-bootstrap";
+import { DownloadOutlined,  ExclamationCircleOutlined } from "@ant-design/icons";
 import API from "../../CustomHooks/MasterApiHooks/api";
 import MSSTable from "./MSSTable"; // Import the new component
 import PaperDetailModal from './PaperDetailModal'; // Import the new modal component
@@ -11,7 +10,7 @@ import themeStore from "../../store/themeStore";
 import { useStore } from "zustand";
 
 const { Option } = Select;
-const { Panel } = Collapse;
+
 
 const Mss = ({ projectId, processId, lotNo, projectName }) => {
 
@@ -30,12 +29,11 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
   const [quantitySheetData, setQuantitySheetData] = useState([]);
   const [subjectOptions, setSubjectOptions] = useState([]);
   const [languageOptions, setLanguageOptions] = useState([]);
-  const [collapseSearch, setCollapseSearch] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
 
   // Simplified state for selections
-  const [selectedCourses, setSelectedCourses] = useState(['Course I']);  // Default first option selected
-  const [selectedSemesters, setSelectedSemesters] = useState(['Semester I']);  // Default first option selected
+  const [selectedCourses, setSelectedCourses] = useState([]);  // Default first option selected
+  const [selectedSemesters, setSelectedSemesters] = useState([]);  // Default first option selected
 
   // Fixed options - simplified
 
@@ -119,7 +117,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
 
   const fetchSubjectOptions = async () => {
     try {
-      const response = await API.get('/Subjects');
+      const response = await API.get('/Subject');
       setSubjectOptions(response.data);
     } catch (error) {
       console.error("Error fetching subject options:", error);
@@ -135,41 +133,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
     }
   };
 
-  // Simplified dropdown content for courses
-  const courseDropdownContent = (
-    <div style={{ background: 'white', padding: '15px', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)', width: '250px' }}>
-      <h6 style={{ marginBottom: '15px' }}>Select Courses</h6>
 
-      <Button
-        type="primary"
-        style={{ width: '100%', marginTop: '15px' }}
-        onClick={() => {
-          console.log('Selected courses:', selectedCourses);
-          message.success(`Selected courses: ${selectedCourses.join(', ')}`);
-        }}
-      >
-        Apply
-      </Button>
-    </div>
-  );
-
-  // Simplified dropdown content for semesters
-  const semesterDropdownContent = (
-    <div style={{ background: 'white', padding: '15px', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)', width: '250px' }}>
-      <h6 style={{ marginBottom: '15px' }}>Select Semesters</h6>
-
-      <Button
-        type="primary"
-        style={{ width: '100%', marginTop: '15px' }}
-        onClick={() => {
-          console.log('Selected semesters:', selectedSemesters);
-          message.success(`Selected semesters: ${selectedSemesters.join(', ')}`);
-        }}
-      >
-        Apply
-      </Button>
-    </div>
-  );
 
   return (
     <div className="mt-4">
