@@ -31,6 +31,7 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
       try {
         const response = await API.get("/Subject");
         setSubject(response.data);
+        console.log(subject) // Log the fetched subject
       } catch (error) {
         console.error("Error fetching courses:", error);
       }
@@ -89,14 +90,14 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
       const payload = [{
         paperTitle: values.PaperTitle,
         courseId: selectedCourse ? selectedCourse.courseId : 0,
-        subjectId: selectedSubject ? selectedSubject.subjectId : 0,
+        // subjectId: selectedSubject ? selectedSubject.subjectId : 0,
+        subjectId: values.SubjectId,
         quantity: Number(values.Quantity),
         examDate: values.ExamDate ? values.ExamDate.format('YYYY-MM-DD') : null,
         examTime: values.ExamTime,
         maxMarks: Number(values.MaxMarks),
         duration: values.Duration,
         languageId: [],
-        // examTypeId: selectedExamType ? selectedExamType.examTypeId : 0,
         examTypeId: selectedExamType ? selectedExamType.examTypeId : 0,
         nepCode: values.NEPCode,
         privateCode: values.PrivateCode,
@@ -185,7 +186,13 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
           <Row>
             <Col md={3}>
               <Form.Item name="SubjectId" label="Subject">
-                <Input allowClear />
+              <Select allowClear>
+                  {subject?.map((subject) => (
+                    <Option key={subject.subjectId} value={subject.subjectId}>
+                      {subject.subjectName}
+                    </Option>
+                  ))}
+                </Select>
               </Form.Item>
             </Col>
             <Col md={3}>
