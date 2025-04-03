@@ -40,6 +40,7 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
       try {
         const response = await API.get("/ExamType");
         setExamType(response.data);
+        console.log(examType)
       } catch (error) {
         console.error("Error fetching courses:", error);
       }
@@ -81,7 +82,8 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
 
       const selectedCourse = courses.find(course => course.courseName === values.CourseId);
       const selectedSubject = subject.find(subject => subject.subjectName === values.SubjectId);
-      const selectedExamType = examType.find(examType => examType.examTypeName === values.ExamTypeId);
+      const selectedExamType = examType.find((exam) => exam.examTypeId === values.ExamTypeId);
+
 
       // Format the payload according to the API's requirements
       const payload = [{
@@ -94,6 +96,7 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
         maxMarks: Number(values.MaxMarks),
         duration: values.Duration,
         languageId: [],
+        // examTypeId: selectedExamType ? selectedExamType.examTypeId : 0,
         examTypeId: selectedExamType ? selectedExamType.examTypeId : 0,
         nepCode: values.NEPCode,
         privateCode: values.PrivateCode,
@@ -161,9 +164,17 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
 
             <Col md={2}>
               <Form.Item name="ExamTypeId" label="Semester">
-                <Input allowClear />
+                <Select allowClear>
+                  {examType?.map((exam) => (
+                    <Option key={exam.examTypeId} value={exam.examTypeId}>
+                      {exam.type}
+                    </Option>
+                  ))}
+                </Select>
               </Form.Item>
             </Col>
+
+
             <Col md={6}>
               <Form.Item name="PaperTitle" label="Paper Title">
                 <Input allowClear />
