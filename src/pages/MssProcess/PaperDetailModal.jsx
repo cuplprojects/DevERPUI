@@ -14,6 +14,7 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
   const [courses, setCourses] = useState();
   const [subject, setSubject] = useState();
   const [examType, setExamType] = useState();
+  const [language, setLanguage] = useState();
 
 
   useEffect(() => {
@@ -47,10 +48,20 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
       }
     };
 
+    const fetchLanguage = async () => {
+      try {
+        const response = await API.get("/Language");
+        setLanguage(response.data);
+        console.log(language)
+      } catch (error) {
+        console.error("Error fetching Languages:", error);
+      }
+    };
+
     fetchCourses();
     fetchSubject();
     fetchExamType();
-
+    fetchLanguage();
 
     if (item) {
       console.log(item);
@@ -84,6 +95,7 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
       const selectedCourse = courses.find(course => course.courseName === values.CourseId);
       const selectedSubject = subject.find(subject => subject.subjectName === values.SubjectId);
       const selectedExamType = examType.find((exam) => exam.examTypeId === values.ExamTypeId);
+      const selectedLanguages = values.LanguageId?.length ? values.LanguageId : [0];
 
 
       // Format the payload according to the API's requirements
@@ -97,7 +109,7 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
         examTime: values.ExamTime,
         maxMarks: Number(values.MaxMarks),
         duration: values.Duration,
-        languageId: [],
+        languageId: selectedLanguages,
         examTypeId: selectedExamType ? selectedExamType.examTypeId : 0,
         nepCode: values.NEPCode,
         privateCode: values.PrivateCode,
@@ -186,7 +198,7 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
           <Row>
             <Col md={3}>
               <Form.Item name="SubjectId" label="Subject">
-              <Select allowClear>
+                <Select allowClear>
                   {subject?.map((subject) => (
                     <Option key={subject.subjectId} value={subject.subjectId}>
                       {subject.subjectName}
@@ -230,11 +242,16 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
             </Col>
             <Col md={6}>
               <Form.Item name="LanguageId" label="Language">
-                <Select mode="multiple">
-                  {/* Add options dynamically based on available languages */}
-                  <Option value={0}>Default Language</Option>
+                <Select mode="multiple" allowClear>
+                  {/* <Option key={0} value={0}>Default Language</Option> */}
+                  {language?.map((lang) => (
+                    <Option key={lang.languageId} value={lang.languageId}>
+                      {lang.languages}
+                    </Option>
+                  ))}
                 </Select>
               </Form.Item>
+
             </Col>
           </Row>
 
