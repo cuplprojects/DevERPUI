@@ -80,16 +80,16 @@ const QcProcess = () => {
         style={{
           padding: '2px',
           backgroundColor: verified ? '#f6ffed' : '#fff1f0',
-          border: `1px solid ${verified ? '#b7eb8f' : '#ffa39e'}`,
+          border: `1px solid ${verified ? '#52c41a' : '#ffa39e'}`,
           borderRadius: '4px',
           textAlign: 'center',
         }}
       >
         {text}
         {verified ? (
-          <CheckCircleOutlined style={{ color: '#52c41a', marginLeft: '8px' }} />
+          <CheckCircleOutlined style={{ color: 'green', marginLeft: '8px' }} />
         ) : (
-          <CloseCircleOutlined style={{ color: '#ff4d4f', marginLeft: '8px' }} />
+          <CloseCircleOutlined style={{ color: 'red', marginLeft: '8px' }} />
         )}
       </div>
     );
@@ -102,15 +102,15 @@ const QcProcess = () => {
         style={{
           padding: '2px',
           backgroundColor: verified ? '#f6ffed' : '#fff1f0',
-          border: `1px solid ${verified ? '#b7eb8f' : '#ffa39e'}`,
+          border: `1px solid ${verified ? '#52c41a' : '#ffa39e'}`,
           borderRadius: '4px',
           textAlign: 'center',
         }}
       >
         {verified ? (
-          <CheckCircleOutlined style={{ color: '#52c41a' }} />
+          <CheckCircleOutlined style={{ color: 'green' }} />
         ) : (
-          <CloseCircleOutlined style={{ color: '#ff4d4f' }} />
+          <CloseCircleOutlined style={{ color: 'red' }} />
         )}
       </div>
     );
@@ -122,6 +122,7 @@ const QcProcess = () => {
       dataIndex: 'srNo',
       key: 'srNo',
       align: 'center',
+      width:80,
       render: (_, record, index) => index + 1,
       sorter: (a, b) => a.srNo - b.srNo,
     },
@@ -425,24 +426,80 @@ const QcProcess = () => {
               <Space size="large">
                 <Tooltip title="Verified Items">
                   <Badge color='#52c41a' count={data.filter((item) => item.verified?.status === true).length}>
-                    <CheckCircleOutlined onClick={() => filterDataByStatus('verified')} className='fs-3' style={{ color: '#52c41a' }} />
+                    <CheckCircleOutlined 
+                      onClick={() => filterDataByStatus('verified')} 
+                      className='fs-3' 
+                      style={{ 
+                        color: '#52c41a',
+                        padding: '8px',
+                        borderRadius: '50%',
+                        backgroundColor: statusFilter === 'verified' ? 'rgba(82, 196, 26, 0.3)' : 'transparent',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                        boxShadow: statusFilter === 'verified' ? '0 0 8px rgba(82, 196, 26, 0.5)' : 'none'
+                      }} 
+                    />
                   </Badge>
                 </Tooltip>
                 <Tooltip title="Rejected Items">
                   <Badge color='#ff4d4f' count={data.filter((item) => item.verified?.status === false).length}>
-                    <CloseCircleOutlined onClick={() => filterDataByStatus('rejected')} className='fs-3' style={{ color: '#ff4d4f' }} />
+                    <CloseCircleOutlined 
+                      onClick={() => filterDataByStatus('rejected')} 
+                      className='fs-3' 
+                      style={{ 
+                        color: '#ff4d4f',
+                        padding: '8px',
+                        borderRadius: '50%',
+                        backgroundColor: statusFilter === 'rejected' ? 'rgba(255, 77, 79, 0.3)' : 'transparent',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                        boxShadow: statusFilter === 'rejected' ? '0 0 8px rgba(255, 77, 79, 0.5)' : 'none'
+                      }} 
+                    />
                   </Badge>
                 </Tooltip>
                 <Tooltip title="Pending Items">
                   <Badge color='#ffc107' count={data.filter((item) => Object.keys(item.verified).length === 0).length}>
-                    <FileTextOutlined onClick={() => filterDataByStatus('pending')} className='fs-3' style={{ color: '#8c8c8c' }} />
+                    <FileTextOutlined 
+                      onClick={() => filterDataByStatus('pending')} 
+                      className='fs-3' 
+                      style={{ 
+                        color: '#8c8c8c',
+                        padding: '8px',
+                        borderRadius: '50%',
+                        backgroundColor: statusFilter === 'pending' ? 'rgba(140, 140, 140, 0.3)' : 'transparent',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                        boxShadow: statusFilter === 'pending' ? '0 0 8px rgba(140, 140, 140, 0.5)' : 'none'
+                      }} 
+                    />
                   </Badge>
                 </Tooltip>
                 <Tooltip title="Re-verify Items">
                   <Badge color='#1890ff' count={data.filter((item) => item.verified?.status === false && Object.values(item.verified).some(value => value === true)).length}>
                     <div style={{ position: 'relative', display: 'inline-block' }}>
-                      <SyncOutlined onClick={() => filterDataByStatus('reverify')} className='fs-2' style={{ color: '#1890ff' }} />
-                      <CheckOutlined style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: '12px', color: '#1890ff' }} />
+                      <SyncOutlined 
+                        onClick={() => filterDataByStatus('reverify')} 
+                        className='fs-2' 
+                        style={{ 
+                          color: '#1890ff',
+                          padding: '8px',
+                          borderRadius: '50%',
+                          backgroundColor: statusFilter === 'reverify' ? 'rgba(24, 144, 255, 0.1)' : 'transparent',
+                          cursor: 'pointer',
+                          transition: 'all 0.3s ease'
+                        }} 
+                      />
+                      <CheckOutlined 
+                        style={{ 
+                          position: 'absolute', 
+                          top: '50%', 
+                          left: '50%', 
+                          transform: 'translate(-50%, -50%)', 
+                          fontSize: '12px', 
+                          color: '#1890ff' 
+                        }} 
+                      />
                     </div>
                   </Badge>
                 </Tooltip>
