@@ -67,7 +67,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
     setLoading(true);
     try {
       const response = await API.get(
-        `/QPMasters/SearchInQpMaster?search=${value}&groupId=${selectedGroup}&examTypeId=${selectedSemester}page=${newPage}&pageSize=5`
+        `/QPMasters/SearchInQpMaster?search=${value}&groupId=${selectedGroup}&examTypeId=${selectedSemester}&pageSize=${newPage}`
       );
 
       setHasMore(response.data.length > 0);
