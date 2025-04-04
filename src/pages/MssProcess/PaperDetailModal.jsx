@@ -16,6 +16,9 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
   const [examType, setExamType] = useState();
   const [language, setLanguage] = useState();
 
+  console.log(item)
+  console.log(importing)
+
 
   useEffect(() => {
 
@@ -153,7 +156,7 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
   return (
     <Modal show={visible} onHide={onCancel} size="lg">
       <Modal.Header className={`${customDark} ${customLightText}`}>
-        <Modal.Title>Paper Details</Modal.Title>
+        <Modal.Title>Paper Details : {item.paperTitle}</Modal.Title>
       </Modal.Header>
       <Modal.Body className={`${customLight}`}>
         <Form form={form} layout="vertical">
