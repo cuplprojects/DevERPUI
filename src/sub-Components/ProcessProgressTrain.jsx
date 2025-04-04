@@ -19,7 +19,7 @@ const ProcessProgressTrain = ({ ProjectID, lotNumber, previousProcess, showProce
   // const [selectedStatus, setSelectedStatus] = useState(null);
   // const [selectedProcessId, setSelectedProcessId] = useState(null);
 
-  console.log(ProjectID, lotNumber);
+  // console.log(ProjectID, lotNumber);
   useEffect(() => {
     const fetchDispatch = async () =>{
       if(ProjectID && lotNumber)
@@ -29,7 +29,7 @@ const ProcessProgressTrain = ({ ProjectID, lotNumber, previousProcess, showProce
         const response = await API.get(
           `/Dispatch/project/${projectIdInt}/lot/${lotNumber}`
         );
-        console.log(response.data);
+        // console.log(response.data);
         if (response.data.length !=0 && response.data[0].status === true) {
           setIsDispatched(true);
         }
@@ -55,7 +55,7 @@ const ProcessProgressTrain = ({ ProjectID, lotNumber, previousProcess, showProce
           setsectionsData([]);
         }
         setsectionsData(response.data);
-        console.log(response.data);
+        // console.log(response.data);
       }
     };
 
@@ -63,7 +63,7 @@ const ProcessProgressTrain = ({ ProjectID, lotNumber, previousProcess, showProce
   }, [ProjectID, lotNumber]);
 
   useEffect(() => {
-    console.log(sectionsData);
+    // console.log(sectionsData);
   }, [sectionsData]);
 
   const handleExpand = () => {

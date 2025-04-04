@@ -13,12 +13,10 @@ const { Option } = Select;
 
 
 const Mss = ({ projectId, processId, lotNo, projectName }) => {
-
+  
   const { getCssClasses } = useStore(themeStore);
   const cssClasses = getCssClasses();
   const [customDark, customMid, customLight, customBtn, customDarkText, customLightText, customLightBorder, customDarkBorder] = cssClasses;
-
-
   const [searchTerm, setSearchTerm] = useState(null);
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -31,14 +29,33 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
   const [languageOptions, setLanguageOptions] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
 
+  const [selectedGroup, setSelectedGroup] = useState(null);
+  const [selectedSemester, setSelectedSemester] = useState(1);
  
+
+
   // Fixed options - simplified
 
   useEffect(() => {
     fetchQuantitySheetData();
     fetchSubjectOptions();
     fetchLanguageOptions();
-  }, [projectId]);
+    fetchSelectedGroupAndSem();
+  }, [projectId,processId,lotNo]);
+
+  const fetchSelectedGroupAndSem = async () => {
+    try {
+      const response = await API.get(`/Project/${projectId}`);
+      setSelectedGroup(response.data.groupId);
+      setSelectedSemester(response.data.examTypeId);
+    } catch (error) {
+      console.error("Error fetching selected group:", error);
+    }
+  };
+  
+  // console.log("fetchedProjectDetails:", response.data);      
+  // console.log("Selected Group:",  selectedGroup);      
+  // console.log("Selected Semester:", selectedSemester);      
 
   const fetchResults = async (value, newPage = 1, append = false) => {
     if (!value) {
@@ -50,7 +67,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
     setLoading(true);
     try {
       const response = await API.get(
-        `/QPMasters/SearchInQpMaster?search=${value}&page=${newPage}&pageSize=5`
+        `/QPMasters/SearchInQpMaster?search=${value}&groupId=${selectedGroup}&examTypeId=${selectedSemester}page=${newPage}&pageSize=5`
       );
 
       setHasMore(response.data.length > 0);
@@ -101,15 +118,10 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
     try {
       const response = await API.get(`/QuantitySheet/byProject/${projectId}`);
       setQuantitySheetData(response.data);
-      console.log("Quantity Sheet Data:", response.data);
+      // console.log("Quantity Sheet Data:", response.data);
     } catch (error) {
       console.error("Error fetching quantity sheet data:", error);
     }
-  };
-
-  const handleRejectedQCsClick = () => {
-    console.log("Rejected QCs clicked");
-    // You can show a modal, dropdown, or navigate to another page
   };
 
   const fetchSubjectOptions = async () => {
@@ -129,8 +141,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
       console.error("Error fetching language options:", error);
     }
   };
-
-
+// console.log("Selected Group:", selectedGroup);
 
   return (
     <div className="mt-4">
@@ -201,7 +212,6 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
             <Tooltip title="View Rejected QCs">
               <ExclamationCircleOutlined
                 style={{ fontSize: "22px", color: "#ff4d4f", cursor: "pointer", marginLeft: "10px" }}
-                onClick={handleRejectedQCsClick}
               />
             </Tooltip>
           </Col>

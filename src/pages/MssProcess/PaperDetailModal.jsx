@@ -16,12 +16,10 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
   const [examType, setExamType] = useState();
   const [language, setLanguage] = useState();
 
-  console.log(item)
+  // console.log(item)
   // console.log(importing)
 
-
   useEffect(() => {
-
     const fetchCourses = async () => {
       try {
         const response = await API.get("/Course");
@@ -34,7 +32,7 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
     const fetchSubject = async () => {
       try {
         const response = await API.get("/Subject");
-        setSubject(response.data);
+        // setSubject(response.data);
         // console.log(subject) // Log the fetched subject
       } catch (error) {
         console.error("Error fetching courses:", error);
@@ -87,6 +85,7 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
         ExamTypeId: item.examTypeName ?? 0,
         NEPCode: item.nepCode ?? "",
         PrivateCode: item.privateCode ?? "",
+        StructureOfPaper: item.structureOfPaper ?? "", // Set default value for StructureOfPaper
       });
     }
   }, [item, form]);
@@ -99,7 +98,6 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
       const selectedSubject = subject.find(subject => subject.subjectName === values.SubjectId);
       const selectedExamType = examType.find((exam) => exam.examTypeId === values.ExamTypeId);
       const selectedLanguages = values.LanguageId?.length ? values.LanguageId : [0];
-
 
       // Format the payload according to the API's requirements
       const payload = [{
@@ -129,6 +127,7 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
         stopCatch: 0, // Assuming a default value for StopCatch
         mssStatus: 0, // Assuming a default value for MSSStatus
         ttfStatus: 0, // Assuming a default value for TTFStatus
+        structureOfPaper: values.StructureOfPaper, // Include StructureOfPaper in the payload
       }];
 
       // Log the payload to inspect the data being sent
@@ -189,7 +188,6 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
                 </Select>
               </Form.Item>
             </Col>
-
 
             <Col md={6}>
               <Form.Item name="PaperTitle" label="Paper Title">
@@ -254,7 +252,6 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
                   ))}
                 </Select>
               </Form.Item>
-
             </Col>
           </Row>
 
@@ -272,6 +269,14 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
             <Col md={4}>
               <Form.Item name="Quantity" label="Quantity">
                 <Input type="number" allowClear />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row>
+            <Col md={12}>
+              <Form.Item name="StructureOfPaper" label="Structure of Paper">
+                <Input.TextArea rows={2} allowClear />
               </Form.Item>
             </Col>
           </Row>

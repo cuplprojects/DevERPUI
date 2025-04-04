@@ -610,7 +610,7 @@ const ProcessTable = () => {
         const dispatchedLotNos = response.data
           .filter((dispatch) => dispatch.status === true) // Filter by status
           .map((dispatch) => dispatch.lotNo);
-        console.log(dispatchedLotNos);
+        // console.log(dispatchedLotNos);
         setDispatchedLots(dispatchedLotNos);
       } catch (error) {
         console.error("Failed to fetch dispatched lots:", error);
