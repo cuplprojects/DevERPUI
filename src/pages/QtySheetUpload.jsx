@@ -680,11 +680,7 @@ const QtySheetUpload = () => {
                   <Button
                     className={customBtn}
                     type="primary"
-                    onClick={() => {
-                      setIsLotsFetched(false);
-                      setShowTable(false);
-                      setShowBtn(false);
-                    }}
+                    onClick={() => setIsUpdateMode(true)}
                   >
                     {t("updateFile")}
                   </Button>
