@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Button, Space, Checkbox, Row, Col, Table, Badge, Tooltip } from 'antd';
+import { Card, Button, Space, Checkbox, Row, Col, Table, Badge, Tooltip, Modal } from 'antd';
 import {
   CheckCircleOutlined,
   CloseCircleOutlined,
@@ -14,7 +14,7 @@ import { useTranslation } from 'react-i18next';
 import { useStore } from 'zustand';
 import themeStore from '../../store/themeStore';
 
-const QcProcess = () => {
+const QcProcess = ({ projectId }) => {
   const { t } = useTranslation();
   const { getCssClasses } = useStore(themeStore);
   const cssClasses = getCssClasses();
@@ -26,11 +26,12 @@ const QcProcess = () => {
   const [filteredData, setFilteredData] = useState([]);
   const [statusFilter, setStatusFilter] = useState('all');
   const [showback, setShowback] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await API.get('/QC/ByProject?projectId=74');
+        const response = await API.get(`/QC/ByProject?projectId=${projectId}`);
         const transformedData = response.data.map(item => ({
           ...item,
           verified: item.verified || {},
@@ -200,10 +201,18 @@ const QcProcess = () => {
     if (selectedRecord?.quantitysheetId === record.quantitysheetId) {
       setSelectedRecord(null);
       setTempVerification({});
+      setIsModalVisible(false);
     } else {
       setTempVerification(record.verified || {});
       setSelectedRecord({ ...record, action });
+      setIsModalVisible(true);
     }
+  };
+
+  const handleModalClose = () => {
+    setIsModalVisible(false);
+    setSelectedRecord(null);
+    setTempVerification({});
   };
 
   const handleFinalVerification = async () => {
@@ -243,6 +252,7 @@ const QcProcess = () => {
         setFilteredData(updatedData);
         setSelectedRecord(null);
         setTempVerification({});
+        setIsModalVisible(false);
         success(t('recordSent'));
       }
     } catch (error) {
@@ -303,14 +313,14 @@ const QcProcess = () => {
           transition: 'all 0.3s ease'
         }}>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{ fontSize: '14px', color: '#8c8c8c', marginBottom: '4px' }}>{label}</span>
-            <span style={{ fontSize: '16px', fontWeight: '500', color: '#262626' }}>{value}</span>
+            <span style={{ fontSize: '14px', color: '#8c8c8c', marginBottom: '4px', fontSize: "1.5rem" }}>{label}</span>
+            <span style={{ fontSize: '16px', fontWeight: '500', color: '#262626', fontSize: "1.5rem" }}>{value}</span>
           </div>
           {record.action === 'verify' && (
             <Checkbox checked={tempVerification[field] || false} onChange={() => handleVerificationChange(field)} style={{ marginLeft: '20px' }}>
               <span style={{
                 color: tempVerification[field] ? '#52c41a' : '#ff4d4f',
-                fontWeight: '500'
+                fontWeight: '500', fontSize: "1.5rem"
               }}>
                 Verify
               </span>
@@ -329,81 +339,45 @@ const QcProcess = () => {
     };
 
     return (
-      <Card
-        title={<div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          fontSize: '16px',
-          fontWeight: '600',
-          color: record.action === 'verify' ? '#1890ff' :
-            record.action === 'verified' ? '#52c41a' : '#ff4d4f'
-        }}>
-          <span>
-            {record.action === 'verify' ? 'MSS Verify' :
-              record.action === 'verified' ? 'MSS Verified Items' : 'MSS Rejected Items'}
-          </span>
+      <div style={{ padding: '8px' }}>
+        {verificationItem('Catch No', record.catchNo, 'catchNo')}
+        {verificationItem('Language', record.language, 'language')}
+        {verificationItem('Duration', record.duration, 'duration')}
+        {verificationItem('Structure', record.structure, 'structure')}
+        {verificationItem('Series', record.series, 'series')}
+        {verificationItem('Max Marks', record.maxMarks, 'maxMarks')}
 
-        </div>}
-        style={{
-          marginTop: 16,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          borderRadius: '8px',
-          border: `2px solid ${record.action === 'verify' ? '#1890ff' :
-            record.action === 'verified' ? '#52c41a' : '#ff4d4f'
-            }`
-        }}
-        bodyStyle={{ padding: 0 }}
-      >
-        <div style={{ padding: '8px' }}>
-          {verificationItem('Catch No', record.catchNo, 'catchNo')}
-          {verificationItem('Language', record.language, 'language')}
-          {verificationItem('Duration', record.duration, 'duration')}
-          {verificationItem('Structure', record.structure, 'structure')}
-          {verificationItem('Series', record.series, 'series')}
-          {verificationItem('Max Marks', record.maxMarks, 'maxMarks')}
-
-          {record.action === 'verify' && (
-            <div style={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              gap: '10px',
-              padding: '10px',
-              borderTop: '1px solid #f0f0f0',
-              marginTop: '8px'
-            }}>
-              {(record.verified?.status === false || Object.keys(record.verified).length === 0) && (
-                <>
-                  <Button
-                    className={`${customBtn} ${customLightBorder}`}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      marginRight: '10px'
-                    }}
-                    disabled={!allFieldsVerified()}
-                    onClick={handleFinalVerification}
-                  >
-                     <span className="d-none d-lg-inline">Mark Verified</span><CheckCircleOutlined style={{ marginLeft: 8 }} />
-                  </Button>
-                  <Button
-                    className={`${customBtn} ${customLightBorder}`}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}
-                    onClick={handleRejectVerification}
-                  >
-                    <span className="d-none d-lg-inline">Mark Rejected</span><CloseCircleOutlined style={{ marginLeft: 8 }} />
-                  </Button>
-                </>
-              )}
-            </div>
-          )}
-        </div>
-      </Card>
+        {record.action === 'verify' && (
+          <div style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            gap: '10px',
+            padding: '10px',
+            borderTop: '1px solid #f0f0f0',
+            marginTop: '8px'
+          }}>
+            {(record.verified?.status === false || Object.keys(record.verified).length === 0) && (
+              <>
+                <Button
+                  className={`${customBtn} ${customLightBorder}`}
+                  disabled={!allFieldsVerified()}
+                  onClick={handleFinalVerification}
+                >
+                  <span className="d-none d-lg-inline">Mark Verified</span>
+                  <CheckCircleOutlined style={{ marginLeft: 8 }} />
+                </Button>
+                <Button
+                  className={`${customBtn} ${customLightBorder}`}
+                  onClick={handleRejectVerification}
+                >
+                  <span className="d-none d-lg-inline">Mark Rejected</span>
+                  <CloseCircleOutlined style={{ marginLeft: 8 }} />
+                </Button>
+              </>
+            )}
+          </div>
+        )}
+      </div>
     );
   };
 
@@ -509,7 +483,7 @@ const QcProcess = () => {
         </div>
 
         <Row gutter={16}>
-          <Col span={selectedRecord ? 16 : 24}>
+          <Col span={24}>
             <Table
               className={`${customDark === "default-dark" ? "thead-default" : ""}
                 ${customDark === "red-dark" ? "thead-red" : ""}
@@ -522,7 +496,7 @@ const QcProcess = () => {
                 ${customDark === "brown-dark" ? "thead-brown" : ""}`}
               columns={columns}
               dataSource={filteredData}
-              pagination={{ 
+              pagination={{
                 pageSize: 5,
                 total: filteredData.length,
                 showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`
@@ -539,14 +513,32 @@ const QcProcess = () => {
               }}
             />
           </Col>
-          {selectedRecord && (
-            <Col span={8}>
-              <PreviewPanel record={selectedRecord} />
-            </Col>
-          )}
         </Row>
+
+        <Modal
+          title={
+            <div style={{
+              color: selectedRecord?.action === 'verify' ? '#1890ff' :
+                selectedRecord?.action === 'verified' ? '#52c41a' : '#ff4d4f', fontSize: "1.5rem"
+            }}>
+              {selectedRecord?.action === 'verify' ? 'MSS Verify' :
+                selectedRecord?.action === 'verified' ? 'MSS Verified Items' : 'MSS Rejected Items'}
+            </div>
+          }
+          visible={isModalVisible}
+          onCancel={handleModalClose}
+          footer={null}
+          width="50%"
+          style={{ top: 80 }}
+          bodyStyle={{
+            maxHeight: 'calc(100vh - 200px)',
+            overflowY: 'auto'
+          }}
+          destroyOnClose={true}
+        >
+          {selectedRecord && <PreviewPanel record={selectedRecord} />}
+        </Modal>
       </Card>
-      
     </div>
   );
 };

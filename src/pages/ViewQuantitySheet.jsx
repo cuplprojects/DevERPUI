@@ -37,22 +37,7 @@ const ViewQuantitySheet = ({ selectedLotNo, showBtn, showTable, lots }) => {
   const [selectedProcessIds, setSelectedProcessIds] = useState([]);
   const [selectedCatches, setSelectedCatches] = useState([]);
   const [quantitySheetId, setQuantitySheetId] = useState(null);
-  const [newRowData, setNewRowData] = useState({
-    catchNo: "",
-    paper: "",
-    course: "",
-    subject: "",
-    innerEnvelope: "",
-    outerEnvelope: 0,
-    examDate: "",
-    examTime: "",
-    quantity: 0,
-    percentageCatch: 0,
-    status: 0,
-    projectId: projectId,
-    quantitySheetId: quantitySheetId,
-    pages: 0,
-  });
+  const [newRowData, setNewRowData] = useState({});
   const [formErrors, setFormErrors] = useState({});
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showStopModal, setShowStopModal] = useState(false);
@@ -86,6 +71,64 @@ const ViewQuantitySheet = ({ selectedLotNo, showBtn, showTable, lots }) => {
   const [isinTransaction, setIsInTransaction] = useState([]);
   const [editableRowKey, setEditableRowKey] = useState(null); // Track editable row
   const [editedRow, setEditedRow] = useState({}); // Store edited row data
+  const [courses, setCourses] = useState([]);
+  const [subject, setSubject] = useState([]);
+  const [examtype, setExamType] = useState([]);
+  const [type, setType] = useState([]);
+  const [language, setLanguage] = useState([]);
+
+  const getCourse = async () => {
+    try {
+      const response = await API.get("/Course");
+      setCourses(response.data);
+    } catch (error) {
+      console.error("Failed to fetch courses");
+    }
+  };
+
+  const getSubject = async () => {
+    try {
+      const response = await API.get("/Subject");
+      setSubject(response.data);
+    } catch (error) {
+      console.error("Failed to fetch courses");
+    }
+  };
+
+  const getExamType = async () => {
+    try {
+      const response = await API.get("/ExamType");
+      setExamType(response.data);
+    } catch (error) {
+      console.error("Failed to fetch courses");
+    }
+  };
+
+  const getLanguage = async () => {
+    try {
+      const response = await API.get("/Language");
+      setLanguage(response.data);
+    } catch (error) {
+      console.error("Failed to fetch courses");
+    }
+  };
+
+  const getType = async () => {
+    try {
+      const response = await API.get("/PaperTypes");
+      setType(response.data);
+    } catch (error) {
+      console.error("Failed to fetch courses");
+    }
+  };
+
+  useEffect(() => {
+    getCourse();
+    getSubject();
+    getType();
+    getLanguage();
+    getExamType();
+  }, []);
 
   const columns = [
     {
@@ -132,39 +175,47 @@ const ViewQuantitySheet = ({ selectedLotNo, showBtn, showTable, lots }) => {
       sorter: (a, b) => a.catchNo.localeCompare(b.catchNo),
     },
     {
-      title: t("paper"),
-      dataIndex: "paper",
-      key: "paper",
+      title: t("paperNumber"),
+      dataIndex: "paperNumber",
+      key: "paperNumber",
       width: 100,
       sorter: (a, b) => a.paper.localeCompare(b.paper),
       render: (text, record) => {
-
         if (editableRowKey === record.key) {
-
           return (
-
             <Input
-
               value={editedRow.paper}
-
               onChange={(e) => handleInputChange("paper", e.target.value)}
-
             />
-
           );
-
         }
-
         return text;
-
+      },
+    },
+    {
+      title: t("paperTitle"),
+      dataIndex: "paperTitle",
+      key: "paperTitle",
+      width: 100,
+      sorter: (a, b) => a.paperTitle.localeCompare(b.paperTitle),
+      render: (text, record) => {
+        if (editableRowKey === record.key) {
+          return (
+            <Input
+              value={editedRow.paperTitle}
+              onChange={(e) => handleInputChange("paper", e.target.value)}
+            />
+          );
+        }
+        return text;
       },
     },
     {
       title: t("course"),
-      dataIndex: "course",
-      key: "course",
+      dataIndex: "courseName",
+      key: "courseName",
       width: 100,
-      sorter: (a, b) => a.course.localeCompare(b.course),
+      sorter: (a, b) => a.courseName.localeCompare(b.courseName),
       render: (text, record) => {
 
         if (editableRowKey === record.key) {
@@ -173,26 +224,24 @@ const ViewQuantitySheet = ({ selectedLotNo, showBtn, showTable, lots }) => {
 
             <Input
 
-              value={editedRow.course}
+              value={editedRow.courseName}
 
               onChange={(e) => handleInputChange("course", e.target.value)}
 
             />
 
           );
-
         }
-
         return text;
 
       },
     },
     {
       title: t("subject"),
-      dataIndex: "subject",
-      key: "subject",
+      dataIndex: "subjectName",
+      key: "subjectName",
       width: 100,
-      sorter: (a, b) => a.subject.localeCompare(b.subject),
+      sorter: (a, b) => a.subjectName.localeCompare(b.subjectName),
       render: (text, record) => {
 
         if (editableRowKey === record.key) {
@@ -424,7 +473,6 @@ const ViewQuantitySheet = ({ selectedLotNo, showBtn, showTable, lots }) => {
           key === "projectId"
         )
           return false;
-
         const value = record[key];
         if (value === null || value === undefined) return false;
 
@@ -674,24 +722,23 @@ const ViewQuantitySheet = ({ selectedLotNo, showBtn, showTable, lots }) => {
     }
   };
 
-  const handleNewRowChange = (e) => {
-    const { name, value } = e.target;
+  const handleNewRowChange = (value, field) => {
     setNewRowData((prevData) => ({
       ...prevData,
-      [name]: value,
+      [field]: value, // Update the specific field with the new value
     }));
+  
     // Clear error when user starts typing
     setFormErrors((prev) => ({
       ...prev,
-      [name]: "",
+      [field]: "",
     }));
   };
+  
 
   const validateForm = () => {
     const errors = {};
     if (!newRowData.catchNo) errors.catchNo = t('catchNoRequired');
-    // if (!newRowData.examDate) errors.examDate = t('examDateRequired');
-    //if (!newRowData.examTime) errors.examTime = t('examTimeRequired');
     if (!newRowData.quantity || newRowData.quantity <= 0) errors.quantity = t('validQuantityRequired');
 
     setFormErrors(errors);
@@ -711,21 +758,31 @@ const ViewQuantitySheet = ({ selectedLotNo, showBtn, showTable, lots }) => {
     const payload = [
       {
         catchNo: newRowData.catchNo,
-        paper: newRowData.paper,
-        course: newRowData.course,
-        subject: newRowData.subject,
+        paperNumber: newRowData.paperNumber,
+        paperTitle: newRowData.paperTitle,
+        courseId: newRowData.courseId,
+        subjectId: newRowData.subjectId,
         innerEnvelope: newRowData.innerEnvelope,
-        outerEnvelope: newRowData.outerEnvelope,
+        outerEnvelope: Number(newRowData.outerEnvelope),
         lotNo: selectedLotNo,
         quantity: parseInt(newRowData.quantity, 10),
         percentageCatch: 0,
-        projectId: projectId,
+        projectId: Number(projectId),
         examDate: newRowData.examDate,
         examTime: newRowData.examTime,
         processId: [],
         status: 0,
         pages: newRowData.pages,
-        stopCatch: 0
+        stopCatch: 0,
+        mssStatus: 0,
+        ttfStatus: 0,
+        maxMarks: newRowData.maxMarks,
+        duration: newRowData.duration,
+        languageId: newRowData.languageId,
+        examTypeId: newRowData.examTypeId,
+        qpId: 0,
+        nepCode: newRowData.nepCode,
+        privateCode: newRowData.privateCode
       },
     ];
 
@@ -753,7 +810,14 @@ const ViewQuantitySheet = ({ selectedLotNo, showBtn, showTable, lots }) => {
         percentageCatch: 0,
         projectId: projectId,
         status: 0,
-        stopCatch:0
+        stopCatch: 0,
+        mssStatus: 0,
+        ttfStatus: 0,
+        maxMarks: 0,
+        duration: "",
+        language: [],
+        examTypeId: 0,
+        qpId: 0,
       });
       setFormErrors({});
       fetchQuantity(selectedLotNo);
@@ -775,10 +839,6 @@ const ViewQuantitySheet = ({ selectedLotNo, showBtn, showTable, lots }) => {
     }
 
   };
-
-
-
-
 
   const handleCatchEditButton = (key) => {
 
@@ -802,53 +862,28 @@ const ViewQuantitySheet = ({ selectedLotNo, showBtn, showTable, lots }) => {
   };
 
   const handleSave = async () => {
-
     try {
-
       const response = await API.put(
-
         `/QuantitySheet/update/${editedRow.quantitySheetId}`,
-
         editedRow
-
       );
-
-
-
       if (response.status === 200) {
-
         message.success(t("updateSuccess"));
-
         setEditableRowKey(null); // Exit edit mode
-
         fetchQuantity()
-
       } else {
-
         message.error(t("updateFailed"));
-
       }
-
     } catch (error) {
-
       console.error(error);
-
       message.error(t("updateFailed"));
-
     }
-
   };
-
-
 
   const handleCancel = () => {
-
     setEditableRowKey(null); // Exit edit mode
-
     setEditedRow({}); // Reset edited row
-
   };
-
 
   const handlePageSizeChange = (current, size) => {
     setPageSize(size);
@@ -943,7 +978,7 @@ const ViewQuantitySheet = ({ selectedLotNo, showBtn, showTable, lots }) => {
                       size="small"
                       name="catchNo"
                       value={newRowData.catchNo}
-                      onChange={handleNewRowChange}
+                      onChange={(e) => handleNewRowChange(e.target.value, 'catchNo')}
                       placeholder={t('enterCatchNo')}
                     />
                   </Form.Item>
@@ -951,44 +986,171 @@ const ViewQuantitySheet = ({ selectedLotNo, showBtn, showTable, lots }) => {
                 <Col span={6}>
                   <Form.Item
                     label={<>
-                      {t('paperCode')}
+                      {t('paperNumber')}
                     </>}
-                    help={formErrors.paper}
+                    help={formErrors.paperNumber}
                   >
                     <Input
                       size="small"
-                      name="paper"
-                      value={newRowData.paper}
-                      onChange={handleNewRowChange}
-                      placeholder={t('enterPaperCode')}
+                      name="paperNumber"
+                      value={newRowData.paperNumber}
+                      onChange={(e) => handleNewRowChange(e.target.value, 'paperNumber')}
+                      placeholder={t('enterpaperNumber')}
                     />
                   </Form.Item>
                 </Col>
                 <Col span={6}>
                   <Form.Item
                     label={<>
-                      {t('course')}
+                      {t('paperTitle')}
                     </>}
-                    help={formErrors.course}
+                    help={formErrors.paperTitle}
                   >
                     <Input
                       size="small"
-                      name="course"
-                      value={newRowData.course}
-                      onChange={handleNewRowChange}
-                      placeholder={t('enterCourse')}
+                      name="paperTitle"
+                      value={newRowData.paperTitle}
+                      onChange={(e) => handleNewRowChange(e.target.value, 'paperTitle')}
+                      placeholder={t('enterpaperTitle')}
                     />
                   </Form.Item>
                 </Col>
                 <Col span={6}>
-                  <Form.Item label={t('subject')}>
+                  <Form.Item
+                    label={<>
+                      {t('nepCode')}
+                    </>}
+                    help={formErrors.nepCode}
+                  >
                     <Input
                       size="small"
-                      name="subject"
-                      value={newRowData.subject}
-                      onChange={handleNewRowChange}
-                      placeholder={t('enterSubject')}
+                      name="nepCode"
+                      value={newRowData.nepCode}
+                      onChange={(e) => handleNewRowChange(e.target.value, 'nepCode')}
+                      placeholder={t('enternepCode')}
                     />
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item
+                    label={<>
+                      {t('privateCode')}
+                    </>}
+                    help={formErrors.privateCode}
+                  >
+                    <Input
+                      size="small"
+                      name="privateCode"
+                      value={newRowData.privateCode}
+                      onChange={(e) => handleNewRowChange(e.target.value, 'privateCode')}
+                      placeholder={t('enterprivateCode')}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item
+                    label={<>
+                      {t('maxMarks')}
+                    </>}
+                    help={formErrors.maxMarks}
+                  >
+                    <Input
+                      size="small"
+                      name="maxMarks"
+                      value={newRowData.maxMarks}
+                      onChange={(e) => handleNewRowChange(e.target.value, 'courseId')}
+                      placeholder={t('entermaxMarks')}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item
+                    label={<>
+                      {t('duration')}
+                    </>}
+                    help={formErrors.duration}
+                  >
+                    <Input
+                      size="small"
+                      name="duration"
+                      value={newRowData.duration}
+                      onChange={(e) => handleNewRowChange(e.target.value, 'courseId')}
+                      placeholder={t('enterduration')}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item
+                    label={<>
+                      {t('examType')}
+                    </>}
+                    help={formErrors.examType}
+                  >
+                    <Select
+                      size="small"
+                      name="examTypeId"
+                      value={newRowData.examTypeId}
+                      onChange={(value) => handleNewRowChange(value, 'examTypeId')}
+                      placeholder={t('enterexamType')}
+                    >
+                      {examtype.map(examtype => (
+                        <Select.Option key={examtype.examTypeId} value={examtype.examTypeId}>
+                          {examtype.typeName}  {/* Or another field that describes the course */}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item label={t('course')}>
+                    <Select
+                      size="small"
+                      name="courseId"
+                      value={newRowData.courseId}
+                      onChange={(value) => handleNewRowChange(value, 'courseId')}
+                      placeholder={t('entercourse')}
+                    >
+                      {courses.map(course => (
+                        <Select.Option key={course.courseId} value={course.courseId}>
+                          {course.courseName}  {/* Or another field that describes the course */}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item label={t('language')}>
+                    <Select
+                      size="small"
+                      name="languageId"
+                      value={newRowData.languageId}
+                      onChange={(value) => handleNewRowChange(value, 'languageId')}
+                      placeholder={t('enterlanguage')}
+                      mode="multiple"
+                    >
+                      {language.map(languages => (
+                        <Select.Option key={languages.languageId} value={languages.languageId}>
+                          {languages.languages}  {/* Or another field that describes the course */}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item label={t('subject')}>
+                    <Select
+                      size="small"
+                      name="subjectId"
+                      value={newRowData.subjectId}
+                      onChange={(value) => handleNewRowChange(value, 'subjectId')}
+                      placeholder={t('enterSubject')}
+                    >
+                       {subject.map(subjects => (
+                        <Select.Option key={subjects.subjectId} value={subjects.subjectId}>
+                          {subjects.subjectName}  {/* Or another field that describes the course */}
+                        </Select.Option>
+                      ))}
+                    </Select>
                   </Form.Item>
                 </Col>
               </Row>
@@ -998,15 +1160,13 @@ const ViewQuantitySheet = ({ selectedLotNo, showBtn, showTable, lots }) => {
                     label={<>
                       {t('examDate')}
                     </>}
-
-
                   >
                     <Input
                       size="small"
                       type="date"
                       name="examDate"
                       value={newRowData.examDate}
-                      onChange={handleNewRowChange}
+                      onChange={(e) => handleNewRowChange(e.target.value, 'examDate')}
                       min={minDate}
                       max={maxDate}
                       //disabled={dates.length === 0}
@@ -1026,7 +1186,7 @@ const ViewQuantitySheet = ({ selectedLotNo, showBtn, showTable, lots }) => {
                       size="small"
                       name="examTime"
                       value={newRowData.examTime}
-                      onChange={handleNewRowChange}
+                      onChange={(e) => handleNewRowChange(e.target.value, 'examTime')}
                       placeholder={t('enterExamTime')}
                     />
                   </Form.Item>
@@ -1037,7 +1197,7 @@ const ViewQuantitySheet = ({ selectedLotNo, showBtn, showTable, lots }) => {
                       size="small"
                       name="innerEnvelope"
                       value={newRowData.innerEnvelope}
-                      onChange={handleNewRowChange}
+                      onChange={(e) => handleNewRowChange(e.target.value, 'innerEnvelope')}
                       placeholder={t('enterInnerEnvelope')}
                     />
                   </Form.Item>
@@ -1048,7 +1208,7 @@ const ViewQuantitySheet = ({ selectedLotNo, showBtn, showTable, lots }) => {
                       size="small"
                       name="outerEnvelope"
                       value={newRowData.outerEnvelope}
-                      onChange={handleNewRowChange}
+                      onChange={(e) => handleNewRowChange(e.target.value, 'outerEnvelope')}
                       placeholder={t('enterOuterEnvelope')}
                     />
                   </Form.Item>
@@ -1069,7 +1229,7 @@ const ViewQuantitySheet = ({ selectedLotNo, showBtn, showTable, lots }) => {
                       type="number"
                       name="pages"
                       value={newRowData.pages}
-                      onChange={handleNewRowChange}
+                      onChange={(e) => handleNewRowChange(e.target.value, 'pages')}
                       placeholder={t('enterPages')}
                     />
                   </Form.Item>
@@ -1087,7 +1247,7 @@ const ViewQuantitySheet = ({ selectedLotNo, showBtn, showTable, lots }) => {
                       type="number"
                       name="quantity"
                       value={newRowData.quantity}
-                      onChange={handleNewRowChange}
+                      onChange={(e) => handleNewRowChange(e.target.value, 'quantity')}
                       placeholder={t('enterQuantity')}
                     />
                   </Form.Item>
@@ -1228,10 +1388,10 @@ const ViewQuantitySheet = ({ selectedLotNo, showBtn, showTable, lots }) => {
               {t("cancel")}
             </Button>
             <Button variant="danger" onClick={handleConfirmStop}>
-            {itemToStop.stopCatch === 0
-              ?t("stop")
-              : t("resume")
-            }
+              {itemToStop.stopCatch === 0
+                ? t("stop")
+                : t("resume")
+              }
             </Button>
           </BootstrapModal.Footer>
         </BootstrapModal>

@@ -30,6 +30,7 @@
     "@tanstack/react-table": "^8.21.2",
     "@tippyjs/react": "^4.2.6",
     "ag-grid-community": "^32.2.0",
+    "ag-grid-enterprise": "^33.2.1",
     "ag-grid-react": "^32.2.0",
     "antd": "5.3",
     "apexcharts": "^3.53.0",

@@ -190,11 +190,13 @@ const QPMiddleArea = () => {
       setLoading(false);
     }
   };
+
   const handleAddClick = () => {
     const encryptedGroupId = encrypt(selectedGroupId);
     const encryptedGroupName = encrypt(selectedGroupName);
     navigate(`/Add-Paper/${encryptedGroupId}/${encryptedGroupName}`);
   };
+
   const handleClearClick = () => {
     setSelectedGroupId(null);
     setSelectedGroupName("");
@@ -212,7 +214,7 @@ const QPMiddleArea = () => {
   return (
     <div className={`${customLight} p-4 w-100 rounded shadow h-100`}>
       {!showTable ? (
-        <div>
+        <div className="">
           <Row className="mb-4">
             <Col xs={12} className="text-center">
               <h1
@@ -305,7 +307,7 @@ const QPMiddleArea = () => {
                 selectedTypeId ||
                 selectedCourseId ||
                 selectedExamTypeIds.length > 0
-                  ? "Apply & View"
+                  ? "Search"
                   : "View All"}
               </Button>
 
@@ -314,7 +316,7 @@ const QPMiddleArea = () => {
               </Button>
             </Col>
           </Row>
-          <Row>
+          {/* <Row>
             <Col
               xs={12}
               className={`text-center fw-bold fs-4 ${customDarkText}`}
@@ -337,7 +339,7 @@ const QPMiddleArea = () => {
                 </span>
               </Tooltip>
             </Col>
-          </Row>
+          </Row> */}
 
           {error && (
             <Row>
