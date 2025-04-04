@@ -17,7 +17,7 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
   const [language, setLanguage] = useState();
 
   console.log(item)
-  console.log(importing)
+  // console.log(importing)
 
 
   useEffect(() => {
@@ -35,7 +35,7 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
       try {
         const response = await API.get("/Subject");
         setSubject(response.data);
-        console.log(subject) // Log the fetched subject
+        // console.log(subject) // Log the fetched subject
       } catch (error) {
         console.error("Error fetching courses:", error);
       }
@@ -45,7 +45,7 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
       try {
         const response = await API.get("/ExamType");
         setExamType(response.data);
-        console.log(examType)
+        // console.log(examType)
       } catch (error) {
         console.error("Error fetching courses:", error);
       }
@@ -55,7 +55,7 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
       try {
         const response = await API.get("/Language");
         setLanguage(response.data);
-        console.log(language)
+        // console.log(language)
       } catch (error) {
         console.error("Error fetching Languages:", error);
       }
@@ -67,7 +67,7 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
     fetchLanguage();
 
     if (item) {
-      console.log(item);
+      // console.log(item);
       // Set the form fields with the values from the item
       form.setFieldsValue({
         QPId: item.qpMasterId,
@@ -83,7 +83,7 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
         ExamTime: item.examTime ?? null,
         MaxMarks: item.maxMarks ?? 0,
         Duration: item.duration ?? null,
-        LanguageId: item.languageId ?? [0],
+        LanguageId: item.languageNames ?? [],
         ExamTypeId: item.examTypeName ?? 0,
         NEPCode: item.nepCode ?? "",
         PrivateCode: item.privateCode ?? "",
@@ -156,7 +156,7 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
   return (
     <Modal show={visible} onHide={onCancel} size="lg">
       <Modal.Header className={`${customDark} ${customLightText}`}>
-        <Modal.Title>Paper Details : {item.paperTitle}</Modal.Title>
+        <Modal.Title className="text-center">{item.paperTitle}</Modal.Title>
       </Modal.Header>
       <Modal.Body className={`${customLight}`}>
         <Form form={form} layout="vertical">
