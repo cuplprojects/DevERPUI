@@ -83,7 +83,7 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
         ExamTime: item.examTime ?? null,
         MaxMarks: item.maxMarks ?? 0,
         Duration: item.duration ?? null,
-        LanguageId: item.languageNames ?? [],
+        LanguageId: item.languageIds ?? [],
         ExamTypeId: item.examTypeName ?? 0,
         NEPCode: item.nepCode ?? "",
         PrivateCode: item.privateCode ?? "",
