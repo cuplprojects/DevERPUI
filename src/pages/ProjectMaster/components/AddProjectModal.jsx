@@ -1,7 +1,7 @@
 import { Modal, Button, Form, Row, Col } from 'react-bootstrap';
 import { BsInfoCircleFill, BsPlusCircle, BsDashCircle } from "react-icons/bs";
 import { useState, useEffect } from 'react';
-import { Tooltip, Spin } from 'antd';
+import { Tooltip, Spin, Select } from 'antd';
 
 const AddProjectModal = ({
   visible,
@@ -39,7 +39,7 @@ const AddProjectModal = ({
   const [pageQuantities, setPageQuantities] = useState([{ pages: '', quantity: '' }]);
   const [descriptionValue, setDescriptionValue] = useState(selectedProject?.description || '');
   const [projectNameSuffix, setProjectNameSuffix] = useState('');
-
+console.log(showSeriesFields)
   useEffect(() => {
     if (selectedProject) {
       setNumberOfSeries(selectedProject.numberOfSeries);
@@ -52,18 +52,20 @@ const AddProjectModal = ({
   }, [selectedProject, setNumberOfSeries, setSeriesNames]);
 
   useEffect(() => {
-
-    if (selectedGroup && selectedType && selectedSession && selectedExamType) {
-
+    if (selectedGroup && selectedType && selectedSession && selectedExamType.length > 0) {
       const selectedGroupName = groups.find(g => g.id === selectedGroup.id)?.name || '';
       const selectedTypeName = types.find(t => t.typeId === selectedType.typeId)?.types || '';
       const selectedSessionName = sessions.find(s => s.sessionId === selectedSession.sessionId)?.session || '';
-      const selectedExamTypeName = examTypes.find(e => e.examTypeId === selectedExamType.examTypeId)?.typeName;
-      console.log(selectedSessionName);
-      const baseName = `${selectedGroupName}-${selectedTypeName} - ${selectedSessionName} - ${selectedExamTypeName}`;
+      
+      // Combine names of all selected exam types
+      const selectedExamTypeNames = selectedExamType
+        .map(e => examTypes.find(exam => exam.examTypeId === e.examTypeId)?.typeName)
+        .join(', ');  // Join the selected exam type names with commas
+      
+      const baseName = `${selectedGroupName}-${selectedTypeName} - ${selectedSessionName} - ${selectedExamTypeNames}`;
       setProjectName(baseName + (projectNameSuffix ? `-${projectNameSuffix}` : ''));
     }
-  }, [selectedGroup, selectedType,selectedSession,selectedExamType, groups, types,sessions,examTypes, projectNameSuffix]);
+  }, [selectedGroup, selectedType, selectedSession, selectedExamType, groups, types, sessions, examTypes, projectNameSuffix]);
 
   const handleAddRow = () => {
     setPageQuantities([...pageQuantities, { pages: '', quantity: '' }]);
@@ -80,31 +82,28 @@ const AddProjectModal = ({
     setPageQuantities(newEntries);
   };
 
-  // const handleProjectNameChange = (e) => {
-  //   const value = e.target.value;
-  //   const baseProjectName = `${selectedGroup?.name || ''}-${selectedType?.types || ''} - ${selectedSession?.session || ''}`;
-  //   if (value.startsWith(baseProjectName)) {
-  //     const suffix = value.slice(baseProjectName.length).replace(/^-/, '');
-  //     setProjectNameSuffix(suffix);
-  //     setProjectName(value);
-  //   }
-  // };
   const handleProjectNameChange = (e) => {
     const value = e.target.value;
-    console.log(selectedExamType)
-    const baseProjectName = `${selectedGroup?.name || ''}-${selectedType?.types || ''} - ${selectedSession?.session || ''} - ${selectedExamType?.typeName || ''}`;
+    
+    // Combine names of all selected exam types
+    const selectedExamTypeNames = selectedExamType
+      .map(e => e.typeName)
+      .join(', ');  // Join the selected exam type names with commas
+  
+    const baseProjectName = `${selectedGroup?.name || ''}-${selectedType?.types || ''} - ${selectedSession?.session || ''} - ${selectedExamTypeNames || ''}`;
     
     // Check if the value starts with the base project name and allows only additions
     if (value.startsWith(baseProjectName)) {
-     // setProjectName(value); // Allow the addition of text
+      // Allow the addition of text
       const suffix = value.slice(baseProjectName.length).replace(/^-/, ''); // Extract any text added after the prefix
       setProjectNameSuffix(suffix); // Save the suffix
       setProjectName(value);
-    } 
+    }
   };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
-    
+     const selectedExamTypeIds = selectedExamType.map(exam => exam.examTypeId);
     const projectData = {
       name: projectName,
       status: status,
@@ -112,7 +111,7 @@ const AddProjectModal = ({
       groupId: selectedGroup?.id,
       typeId: selectedType?.typeId,
       sessionId: selectedSession?.sessionId,
-      examTypeId: selectedExamType?.examTypeId,
+      examTypeId: selectedExamTypeIds,
       noOfSeries: parseInt(numberOfSeries) || 0,
       seriesName: seriesNames || null,
       quantityThreshold: JSON.stringify(pageQuantities.filter(entry => entry.pages && entry.quantity))
@@ -146,7 +145,7 @@ const AddProjectModal = ({
       <Modal.Body className={`${customLight}`}>
         <Form id="addProjectForm" onSubmit={handleSubmit} form={form}>
           <Row className="mb-3">
-            <Col xs={12}>
+            <Col xs={6}>
               <Form.Group controlId="group">
                 <Form.Label className={customDarkText}>{t('group')}
                   <span className='text-danger ms-2 fs-6'>*</span>
@@ -164,9 +163,7 @@ const AddProjectModal = ({
                 </Form.Text>
               </Form.Group>
             </Col>
-          </Row>
-          <Row className="mb-3">
-            <Col xs={12}>
+            <Col xs={6}>
               <Form.Group controlId="type">
                 <Form.Label className={customDarkText}>{t('type')}
                   <span className='text-danger ms-2 fs-6'>*</span>
@@ -186,7 +183,7 @@ const AddProjectModal = ({
             </Col>
           </Row>
           <Row className="mb-3">
-            <Col xs={12}>
+            <Col xs={6}>
               <Form.Group controlId="session">
                 <Form.Label className={customDarkText}>{t('session')}
                   <span className='text-danger ms-2 fs-6'>*</span>
@@ -204,21 +201,34 @@ const AddProjectModal = ({
                 </Form.Text>
               </Form.Group>
             </Col>
-          </Row>
-          <Row className="mb-3">
-            <Col xs={12}>
+            <Col xs={6}>
               <Form.Group controlId="examType">
-                <Form.Label className={customDarkText}>{t('examType')}
+                <Form.Label className={customDarkText}>
+                  {t('examType')}
                   <span className='text-danger ms-2 fs-6'>*</span>
                 </Form.Label>
-                <Form.Select onChange={handleExamTypeChange} disabled={ !selectedType || !selectedGroup } required>
-                  <option value="">{t('selectExamType')}</option>
+                <Select
+                  mode="multiple"
+                  style={{ width: '100%' }}
+                  placeholder={t('selectExamType')}
+                  onChange={handleExamTypeChange}
+                  disabled={!selectedType || !selectedGroup}
+                  optionFilterProp="children"
+                  maxTagCount={2}
+                  dropdownStyle={{ maxHeight: 200 }}
+                  popupMatchSelectWidth={false}
+                  listHeight={200}
+                  menuItemSelectedIcon={<span className="ant-select-item-option-state">✓</span>}
+                >
                   {examTypes.map((examType) => (
-                    <option key={examType.examTypeId} value={examType.examTypeId}>
+                    <Select.Option 
+                      key={examType.examTypeId} 
+                      value={examType.examTypeId}
+                    >
                       {examType.typeName}
-                    </option>
+                    </Select.Option>
                   ))}
-                </Form.Select>
+                </Select>
                 <Form.Text className="text-danger">
                   {form.getFieldError('examType')?.[0]}
                 </Form.Text>
@@ -402,3 +412,6 @@ const AddProjectModal = ({
 };
 
 export default AddProjectModal;
+
+
+

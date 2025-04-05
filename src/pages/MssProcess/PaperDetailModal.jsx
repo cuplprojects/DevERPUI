@@ -1,22 +1,46 @@
 import React, { useEffect, useState } from "react";
-import { Modal as BootstrapModal, Button, Form, Input, DatePicker, Select, message } from "antd";
+import {
+  Modal as BootstrapModal,
+  Button,
+  Form,
+  Input,
+  DatePicker,
+  Select,
+  message,
+} from "antd";
 import axios from "axios";
 import moment from "moment";
 import API from "../../CustomHooks/MasterApiHooks/api";
 import { Row, Col } from "react-bootstrap";
-import Modal from 'react-bootstrap/Modal';
+import Modal from "react-bootstrap/Modal";
 
 const { Option } = Select;
 
-const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssClasses }) => {
+const PaperDetailModal = ({
+  visible,
+  item,
+  onCancel,
+  onImport,
+  importing,
+  cssClasses,
+}) => {
   const [form] = Form.useForm();
-  const [customDark, customMid, customLight, customBtn, customDarkText, customLightText, customLightBorder, customDarkBorder] = cssClasses;
+  const [
+    customDark,
+    customMid,
+    customLight,
+    customBtn,
+    customDarkText,
+    customLightText,
+    customLightBorder,
+    customDarkBorder,
+  ] = cssClasses;
   const [courses, setCourses] = useState();
   const [subject, setSubject] = useState();
   const [examType, setExamType] = useState();
   const [language, setLanguage] = useState();
 
-  // console.log(item)
+  console.log(item);
   // console.log(importing)
 
   useEffect(() => {
@@ -32,10 +56,9 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
     const fetchSubject = async () => {
       try {
         const response = await API.get("/Subject");
-        // setSubject(response.data);
-        // console.log(subject) // Log the fetched subject
+        setSubject(response.data);
       } catch (error) {
-        console.error("Error fetching courses:", error);
+        console.error("Error fetching subjects:", error);
       }
     };
 
@@ -71,7 +94,7 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
         QPId: item.qpMasterId,
         Quantity: item.quantity ?? 0.0,
         CourseId: item.courseName ?? 0,
-        SubjectId: item.subjectName ?? 0,
+        SubjectId: item.subjectId ?? 0,
         CatchNo: "", // Initialize as an empty string to allow user input
         InnerEnvelope: item.innerEnvelope ?? "",
         OuterEnvelope: item.outerEnvelope ?? 0,
@@ -79,7 +102,7 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
         PaperNumber: item.paperNumber,
         ExamDate: item.examDate ? moment(item.examDate) : null,
         ExamTime: item.examTime ?? null,
-        MaxMarks: item.maxMarks ?? 0,
+        MaxMarks: item.MaxMarks ?? 0,
         Duration: item.duration ?? null,
         LanguageId: item.languageIds ?? [],
         ExamTypeId: item.examTypeName ?? 0,
@@ -93,53 +116,60 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
   const handleUpdate = async () => {
     try {
       const values = await form.validateFields();
-
-      const selectedCourse = courses.find(course => course.courseName === values.CourseId);
-      const selectedSubject = subject.find(subject => subject.subjectName === values.SubjectId);
-      const selectedExamType = examType.find((exam) => exam.examTypeId === values.ExamTypeId);
-      const selectedLanguages = values.LanguageId?.length ? values.LanguageId : [0];
-
+  
+      const selectedCourse = courses.find(
+        (course) => course.courseName === values.CourseId
+      );
+      const selectedExamType = examType.find(
+        (exam) => exam.examTypeId === values.ExamTypeId
+      );
+      const selectedLanguages = values.LanguageId?.length
+        ? values.LanguageId
+        : [0];
+  
       // Format the payload according to the API's requirements
-      const payload = [{
-        paperTitle: values.PaperTitle,
-        courseId: selectedCourse ? selectedCourse.courseId : 0,
-        // subjectId: selectedSubject ? selectedSubject.subjectId : 0,
-        subjectId: values.SubjectId,
-        quantity: Number(values.Quantity),
-        examDate: values.ExamDate ? values.ExamDate.format('YYYY-MM-DD') : null,
-        examTime: values.ExamTime,
-        maxMarks: Number(values.MaxMarks),
-        duration: values.Duration,
-        languageId: selectedLanguages,
-        examTypeId: selectedExamType ? selectedExamType.examTypeId : 0,
-        nepCode: values.NEPCode,
-        privateCode: values.PrivateCode,
-        catchNo: values.CatchNo,
-        innerEnvelope: values.InnerEnvelope,
-        outerEnvelope: Number(values.OuterEnvelope),
-        qpId: item.qpMasterId, // Ensure QPId is sent correctly
-        projectId: 1, // Ensure ProjectId is sent correctly
-        lotNo: "1001", // Assuming a default value for LotNo
-        processId: [0], // Assuming a default value for ProcessId
-        pages: 0, // Assuming a default value for Pages
-        percentageCatch: 0, // Assuming a default value for PercentageCatch
-        status: 0, // Assuming a default value for Status
-        stopCatch: 0, // Assuming a default value for StopCatch
-        mssStatus: 0, // Assuming a default value for MSSStatus
-        ttfStatus: 0, // Assuming a default value for TTFStatus
-        structureOfPaper: values.StructureOfPaper, // Include StructureOfPaper in the payload
-      }];
-
+      const finalPayload = [
+        {
+          paperNumber: values.PaperNumber || "",
+          paperTitle: values.PaperTitle || "",
+          courseId: selectedCourse ? selectedCourse.courseId : 0,
+          subjectId: values.SubjectId || 0,
+          quantity: Number(values.Quantity) || 0,
+          examDate: values.ExamDate ? values.ExamDate.format("DD-MM-YYYY") : "",
+          examTime: values.ExamTime || "",
+          maxMarks: Number(values.MaxMarks) || 0,
+          duration: values.Duration || "",
+          languageId: selectedLanguages,
+          examTypeId: selectedExamType ? selectedExamType.examTypeId : 0,
+          nepCode: values.NEPCode || "",
+          privateCode: values.PrivateCode || "",
+          catchNo: values.CatchNo || 0,
+          innerEnvelope: values.InnerEnvelope || "",
+          outerEnvelope: Number(values.OuterEnvelope) || 0,
+          qpId: item.qpMasterId || 0,
+          projectId: 1,
+          lotNo: "M",
+          processId: [0],
+          pages: 0,
+          percentageCatch: 0,
+          status: 0,
+          stopCatch: 0,
+          mssStatus: 0,
+          ttfStatus: 0,
+          structureOfPaper: values.StructureOfPaper || "",
+        },
+      ];
+  
       // Log the payload to inspect the data being sent
-      console.log("Payload:", payload);
-
+      console.log("Payload:", finalPayload);
+  
       // Send updated values to the server with the Authorization header
-      await API.post("/QuantitySheet", payload, {
+      await API.post("/QuantitySheet", finalPayload, {
         headers: {
           "Content-Type": "application/json",
         },
       });
-
+  
       message.success("Data updated successfully!");
       onCancel(); // Close the modal after successful update
     } catch (error) {
@@ -147,6 +177,7 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
       message.error("Failed to update data.");
     }
   };
+  
 
   if (!item) {
     return null; // Don't render the modal if item is null
@@ -179,7 +210,9 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
 
             <Col md={2}>
               <Form.Item name="ExamTypeId" label="Semester">
-                <Select allowClear>
+                <Select 
+                allowClear
+                >
                   {examType?.map((exam) => (
                     <Option key={exam.examTypeId} value={exam.examTypeId}>
                       {exam.typeName}
@@ -189,8 +222,13 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
               </Form.Item>
             </Col>
 
-            <Col md={6}>
+            <Col md={4}>
               <Form.Item name="PaperTitle" label="Paper Title">
+                <Input allowClear />
+              </Form.Item>
+            </Col>
+            <Col md={2}>
+              <Form.Item name="PaperNumber" label="Paper #">
                 <Input allowClear />
               </Form.Item>
             </Col>
@@ -199,10 +237,15 @@ const PaperDetailModal = ({ visible, item, onCancel, onImport, importing, cssCla
           <Row>
             <Col md={3}>
               <Form.Item name="SubjectId" label="Subject">
-                <Select allowClear>
-                  {subject?.map((subject) => (
-                    <Option key={subject.subjectId} value={subject.subjectId}>
-                      {subject.subjectName}
+                <Select
+                  allowClear
+                  onChange={(value) => {
+                    form.setFieldsValue({ SubjectId: value });
+                  }}
+                >
+                  {subject?.map((subj) => (
+                    <Option key={subj.subjectId} value={subj.subjectId}>
+                      {subj.subjectName}
                     </Option>
                   ))}
                 </Select>
