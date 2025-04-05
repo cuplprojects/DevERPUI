@@ -18,7 +18,6 @@ const UpdateQuantitySheet = ({ projectId, onClose }) => {
   const [filterOutLots, setFilterOutLots] = useState([]);
   const [apiData, setApiData] = useState([]);
   const [selectedFieldsToUpdate, setSelectedFieldsToUpdate] = useState({});
-  const [selectedCatchToupdate, setSelectedCatchToupdate] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const pageSize = 10;
@@ -29,7 +28,8 @@ const UpdateQuantitySheet = ({ projectId, onClose }) => {
   const fields = [
     { name: "CatchNo", type: "string" },
     { name: "LotNo", type: "string" },
-    { name: "Paper", type: "string" },
+    { name: "PaperNumber", type: "string" },
+    { name: "PaperTitle", type: "string" },
     { name: "Course", type: "string" },
     { name: "Subject", type: "string" },
     { name: "ExamDate", type: "string" },
@@ -67,7 +67,7 @@ const UpdateQuantitySheet = ({ projectId, onClose }) => {
         const response = await API.get(
           `/QuantitySheet/Lots?ProjectId=${projectId}`
         );
-        const lots = response.data; // ["1", "2", ..., "12"]
+        const lots = response.data; 
 
         let dispatchedLots = [];
         let availableLots = [];
@@ -339,9 +339,9 @@ const UpdateQuantitySheet = ({ projectId, onClose }) => {
           catchNo: currentCatchNo || "",
           paper:
             getColumnData(mappedFields["Paper"])[index]?.toString() || "",
-          course:
+          courseName:
             getColumnData(mappedFields["Course"])[index]?.toString() || "",
-          subject:
+          subjectName:
             getColumnData(mappedFields["Subject"])[index]?.toString() || "",
           innerEnvelope:
             getColumnData(mappedFields["InnerEnvelope"])[index] || "",
