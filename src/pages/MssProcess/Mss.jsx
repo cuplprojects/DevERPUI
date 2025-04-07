@@ -130,8 +130,8 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
   };
 
   return (
-    <div className="mt-4">
-      <Row className="w-100 d-flex justify-content-between align-items-center">
+    <div className="mt-4" style={{ maxWidth: '100%', overflowX: 'hidden' }}>
+     <Row className="w-100 d-flex justify-content-between align-items-center">
         <Col xs={12} md={6} lg={6} className="d-flex align-items-center">
           <Collapse
             defaultActiveKey={["1"]}

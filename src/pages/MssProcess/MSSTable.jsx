@@ -166,11 +166,11 @@ const MSSTable = ({
         return text;
       },
       sorter: (a, b) => {
-        const aLanguages = a.languageId.map((id) =>
-          languageOptions.find((l) => l.languageId === id)?.languageName
+        const aLanguages = a.languageId.map(
+          (id) => languageOptions.find((l) => l.languageId === id)?.languageName
         );
-        const bLanguages = b.languageId.map((id) =>
-          languageOptions.find((l) => l.languageId === id)?.languageName
+        const bLanguages = b.languageId.map(
+          (id) => languageOptions.find((l) => l.languageId === id)?.languageName
         );
         return aLanguages.join(", ").localeCompare(bLanguages.join(", "));
       },
@@ -223,8 +223,9 @@ const MSSTable = ({
   );
 
   return (
-    <Table
-      className={`${customDark === "default-dark" ? "thead-default" : ""}
+    <div className="table-responsive" style={{ overflowX: 'auto', width: '100%' }}>
+      <Table
+        className={`${customDark === "default-dark" ? "thead-default" : ""}
 ${customDark === "red-dark" ? "thead-red" : ""}
 ${customDark === "green-dark" ? "thead-green" : ""}
 ${customDark === "blue-dark" ? "thead-blue" : ""}
@@ -233,20 +234,21 @@ ${customDark === "pink-dark" ? "thead-pink" : ""}
 ${customDark === "purple-dark" ? "thead-purple" : ""}
 ${customDark === "light-dark" ? "thead-light" : ""}
 ${customDark === "brown-dark" ? "thead-brown" : ""} `}
-      responsive={true}
-      columns={columns}
-      dataSource={filteredData}
-      rowKey="quantitySheetId"
-      pagination={{
-        current: currentPage,
-        pageSize: pageSize,
-        total: filteredData.length,
-        onChange: handleTableChange,
-      }}
-      onChange={(pagination, filters, sorter, extra) => {
-        console.log("params", pagination, filters, sorter, extra);
-      }}
-    />
+        responsive={true}
+        columns={columns}
+        dataSource={filteredData}
+        rowKey="quantitySheetId"
+        pagination={{
+          current: currentPage,
+          pageSize: pageSize,
+          total: filteredData.length,
+          onChange: handleTableChange,
+        }}
+        onChange={(pagination, filters, sorter, extra) => {
+          console.log("params", pagination, filters, sorter, extra);
+        }}
+      />
+    </div>
   );
 };
 
