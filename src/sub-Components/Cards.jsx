@@ -80,6 +80,14 @@ const Cards = ({ item, onclick, disableProject, activeCardStyle }) => {
       if (hasMSS) {
         const isUserAssigned = hasMSS.userId.includes(userData?.userId);
         console.log("Is User Assigned:", isUserAssigned);
+
+        const selectedProject = {
+          value: projectId,
+          label: item.name,
+          seriesInfo: ""
+        };
+        localStorage.setItem("selectedProject", JSON.stringify(selectedProject));
+        
         return isUserAssigned;
       } else {
         console.log("No MSS project found.");
