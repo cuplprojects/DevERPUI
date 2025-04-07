@@ -67,6 +67,29 @@ const Cards = ({ item, onclick, disableProject, activeCardStyle }) => {
     }
   };
 
+  const checkMSS = async (projectId) => {
+    try {
+      const response = await API.get(
+        `/ProjectProcess/GetProjectProcesses/${projectId}`
+      );
+      const project = response.data;
+      console.log(project)
+      // Check if the project has the MSS feature and if the logged-in user is assigned to it
+      const hasMSS = project.find(project => project.name === "MSS");
+      console.log(hasMSS)
+      if (hasMSS) {
+        const isUserAssigned = hasMSS.userId.includes(userData?.userId);
+        console.log("Is User Assigned:", isUserAssigned);
+        return isUserAssigned;
+      } else {
+        console.log("No MSS project found.");
+        return false;
+      }
+    } catch (error) {
+      console.error("Error fetching project data:", error);
+      return false;
+    }
+  };
   // Check transaction status
   const checkTransactionStatus = async () => {
     try {
@@ -82,115 +105,124 @@ const Cards = ({ item, onclick, disableProject, activeCardStyle }) => {
       }
     }
   };
-     const setLotInLocal = (lt) => {
-        localStorage.setItem("selectedLot", lt)
-      }
+  const setLotInLocal = (lt) => {
+    localStorage.setItem("selectedLot", lt)
+  }
   // Navigate to the dashboard and send projectId as a route parameter
-  const handleCardClick = () => {
+  const handleCardClick = async () => {
+    if (await checkMSS(item.projectId)) {
+      console.log(item.projectId)
+      navigate(`/project-details/${encrypt(item.projectId)}`);
+    
+  } else {
+    // Existing logic for when the project is not MSS or the user is not assigned
     if (!disableProject) {
-      setTooltipVisible(true);
-      setTimeout(() => {
-        setTooltipVisible(false);
-      }, 2000);
-      return;
-    }
-    if (supervisor) {
-      setLotInLocal(1)
-      navigate(`/project-details/${encrypt(item.projectId)}/${encrypt(1)}`);
-    } else {
-      navigate(`/dashboard/${encrypt(item.projectId)}`);
-    }
-    // Store selected project in local storage
-    const selectedProject = {
-      value: item.projectId,
-      label: item.name,
-      seriesInfo: ""
-    };
-    localStorage.setItem("selectedProject", JSON.stringify(selectedProject));
-  };
+    setTooltipVisible(true);
+    setTimeout(() => {
+      setTooltipVisible(false);
+    }, 2000);
+    return;
+  }
+  if (supervisor) {
+    setLotInLocal(1);
+    navigate(`/project-details/${encrypt(item.projectId)}/${encrypt(1)}`);
+  } else {
+    navigate(`/dashboard/${encrypt(item.projectId)}`);
+  }
 
-  // Handle info button click
-  const handleInfoClick = (e) => {
-    e.stopPropagation();
-    if (!disableProject) {
-      return;
-    }
-    onclick(item);
+  // Store selected project in local storage
+  const selectedProject = {
+    value: item.projectId,
+    label: item.name,
+    seriesInfo: ""
   };
-  return (
-    <StyledWrapper>
-      <Tooltip
-        title={
-          isUploadDisabled
-            ? t("firstAddProjectConfiguration")
-            : !disableProject
-              ? t("uploadQuantitySheetfirst")
-              : ""
-        }
-        placement="below"
-        visible={tooltipVisible}
+  localStorage.setItem("selectedProject", JSON.stringify(selectedProject));
+}
+};
+
+
+// Handle info button click
+const handleInfoClick = (e) => {
+  e.stopPropagation();
+  if (!disableProject) {
+    return;
+  }
+  onclick(item);
+};
+return (
+  <StyledWrapper>
+    <Tooltip
+      title={
+        isUploadDisabled
+          ? t("firstAddProjectConfiguration")
+          : !disableProject
+            ? t("uploadQuantitySheetfirst")
+            : ""
+      }
+      placement="below"
+      visible={tooltipVisible}
+    >
+      <div
+        className={` card ${!activeCardStyle
+          ? `${customLight} ${customDarkText}`
+          : `${customDark === "dark-dark"
+            ? `bg-white text-dark border border-dark `
+            : `${customDark} ${customDark === "blue-dark"
+              ? "border-white"
+              : customLightBorder
+            } ${customLightText}`
+          }  `
+          }`}
+        onClick={handleCardClick}
       >
-        <div
-          className={` card ${!activeCardStyle
-            ? `${customLight} ${customDarkText}`
-            : `${customDark === "dark-dark"
-              ? `bg-white text-dark border border-dark `
-              : `${customDark} ${customDark === "blue-dark"
-                ? "border-white"
-                : customLightBorder
-              } ${customLightText}`
-            }  `
-            }`}
-          onClick={handleCardClick}
-        >
-          {item.isrecent && (
-            <div className="recent-icon">
-              <AiFillStar />
-            </div>
-          )}
-          <div className="header">
-            <h4 className="project-name">{item.projectName}</h4>
-            <Tooltip
-              title={
-                isUploadDisabled
-                  ? t("firstAddProjectConfiguration")
-                  : t("uploadQuantitySheet")
-              }
-              placement="top"
-            >
-              <div
-                className="upload-button"
-                onClick={handleUploadClick}
-                style={{
-                  opacity: isUploadDisabled ? 0.5 : 1,
-                  cursor: isUploadDisabled ? "not-allowed" : "pointer",
-                }}
-              >
-                <FaUpload />
-              </div>
-            </Tooltip>
+        {item.isrecent && (
+          <div className="recent-icon">
+            <AiFillStar />
           </div>
-          <p className="p-0 m-0">
-            {parseFloat(item.completionPercentage) >= 99.99 ? 100 : parseFloat(item.completionPercentage).toFixed(2)}%
-            {t("completed")}
-          </p>
-          <p className="p-0 m-0">
-            {parseFloat(item.completionPercentage) >= 99.99 ? 0 : parseFloat(item.remainingPercentage).toFixed(2)}%
-            {t("remaining")}
-          </p>
-          <p className="p-0 m-0">Status: {transactionStatus}</p>
-          <Tooltip title={t("viewProjectInfo")} placement="top">
+        )}
+        <div className="header">
+          <h4 className="project-name">{item.projectName}</h4>
+          <Tooltip
+            title={
+              isUploadDisabled
+                ? t("firstAddProjectConfiguration")
+                : t("uploadQuantitySheet")
+            }
+            placement="top"
+          >
             <div
-              className={`info-button ${!disableProject ? "disabled" : ""}`}
-              onClick={handleInfoClick}
+              className="upload-button"
+              onClick={handleUploadClick}
+              style={{
+                opacity: isUploadDisabled ? 0.5 : 1,
+                cursor: isUploadDisabled ? "not-allowed" : "pointer",
+              }}
             >
-              <FaInfoCircle />
+              <FaUpload />
             </div>
           </Tooltip>
         </div>
-      </Tooltip>
-    </StyledWrapper>
-  );
+        <p className="p-0 m-0">
+          {parseFloat(item.completionPercentage) >= 99.99 ? 100 : parseFloat(item.completionPercentage).toFixed(2)}%
+          {t("completed")}
+        </p>
+        <p className="p-0 m-0">
+          {parseFloat(item.completionPercentage) >= 99.99 ? 0 : parseFloat(item.remainingPercentage).toFixed(2)}%
+          {t("remaining")}
+        </p>
+        <p className="p-0 m-0">Status: {transactionStatus}</p>
+        <Tooltip title={t("viewProjectInfo")} placement="top">
+          <div
+            className={`info-button ${!disableProject ? "disabled" : ""}`}
+            onClick={handleInfoClick}
+          >
+            <FaInfoCircle />
+          </div>
+        </Tooltip>
+      </div>
+    </Tooltip>
+  </StyledWrapper>
+);
 };
 
 const StyledWrapper = styled.div`
