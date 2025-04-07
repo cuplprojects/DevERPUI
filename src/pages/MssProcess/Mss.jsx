@@ -40,6 +40,10 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [selectedSemester, setSelectedSemester] = useState(1);
 
+  useEffect(()=>{
+    setSearchTerm(null);
+  },[projectId, processId, lotNo]);
+
   // Fixed options - simplified
 
   useEffect(() => {
@@ -241,11 +245,12 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
       <PaperDetailModal
         visible={!!selectedItem}
         item={selectedItem}
-        onCancel={() => setSelectedItem(null)}
+        onCancel={() => {setSelectedItem(null); setSearchTerm(null)}}
         importing={importing}
         cssClasses={cssClasses}
         projectId={projectId}
         fetchQuantitySheetData={fetchQuantitySheetData}
+        setSearchTerm={setSearchTerm}
       />
     </div>
   );

@@ -23,7 +23,8 @@ const PaperDetailModal = ({
   importing,
   cssClasses,
   projectId,
-  fetchQuantitySheetData
+  fetchQuantitySheetData,
+  setSearchTerm
 }) => {
   const [form] = Form.useForm();
   const [
@@ -174,6 +175,7 @@ const PaperDetailModal = ({
       message.success("Data updated successfully!");
       onCancel(); // Close the modal after successful update
       fetchQuantitySheetData();
+      setSearchTerm(null);
     } catch (error) {
       console.error("Error updating data:", error);
       message.error("Failed to update data.");
