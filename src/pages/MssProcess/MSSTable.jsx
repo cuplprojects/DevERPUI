@@ -3,6 +3,8 @@ import { Table, Input, Button, Space, message, Select } from "antd";
 import { CheckCircleOutlined, DeleteOutlined } from "@ant-design/icons";
 import API from "../../CustomHooks/MasterApiHooks/api";
 import Highlighter from "react-highlight-words";
+import themeStore from "../../store/themeStore";
+import { useStore } from "zustand";
 
 const { Option } = Select;
 
@@ -13,7 +15,18 @@ const MSSTable = ({
 }) => {
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
-
+  const { getCssClasses } = useStore(themeStore);
+  const [
+    customDark,
+    customMid,
+    customLight,
+    customBtn,
+    customDarkText,
+    customLightText,
+    customLightBorder,
+    customDarkBorder,
+    customThead,
+  ] = getCssClasses();
   const handleMarkReceived = async (record) => {
     try {
       const updatedData = { ...record, mssStatus: 2 };
@@ -208,6 +221,15 @@ const MSSTable = ({
 
   return (
     <Table
+      className={`${customDark === "default-dark" ? "thead-default" : ""}
+${customDark === "red-dark" ? "thead-red" : ""}
+${customDark === "green-dark" ? "thead-green" : ""}
+${customDark === "blue-dark" ? "thead-blue" : ""}
+${customDark === "dark-dark" ? "thead-dark" : ""}
+${customDark === "pink-dark" ? "thead-pink" : ""}
+${customDark === "purple-dark" ? "thead-purple" : ""}
+${customDark === "light-dark" ? "thead-light" : ""}
+${customDark === "brown-dark" ? "thead-brown" : ""} `}
       responsive={true}
       // autoLayout={true}
       columns={columns}

@@ -40,9 +40,9 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [selectedSemester, setSelectedSemester] = useState(1);
 
-  useEffect(()=>{
+  useEffect(() => {
     setSearchTerm(null);
-  },[projectId, processId, lotNo]);
+  }, [projectId, processId, lotNo]);
 
   // Fixed options - simplified
 
@@ -102,7 +102,6 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
     fetchResults(searchTerm, page + 1, true);
   };
 
-
   const fetchQuantitySheetData = async () => {
     try {
       const response = await API.get(`/QuantitySheet/byProject/${projectId}`);
@@ -140,9 +139,9 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
             <Collapse
               defaultActiveKey={["1"]}
               expandIconPosition="right"
-              className="flex-grow-1"
+              className="flex-grow-1 border-0"
             >
-              <div className="shadow-sm w-100">
+              <div className="w-100 mb-2 border-0">
                 <Select
                   showSearch
                   value={searchTerm}
@@ -223,21 +222,16 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
           </Col>
         </div>
       </Row>
-      <Row>
-        <Col xs={12} md={12} lg={12}>
-                
-        </Col>
-      </Row>
 
       <Row className="justify-content-center">
-        <Col xs={12} md={12} lg={12}>
-          <Card title="Quantity Sheet Data" className="shadow-sm mt-4 ">
-            <MSSTable
-              quantitySheetData={quantitySheetData}
-              fetchQuantitySheetData={fetchQuantitySheetData}
-              languageOptions={languageOptions}
-            />
-          </Card>
+        <Col xs={12} md={12} lg={12} className="">
+          {/* <Card title="Quantity Sheet Data" className="shadow-sm mt-2 "> */}
+          <MSSTable
+            quantitySheetData={quantitySheetData}
+            fetchQuantitySheetData={fetchQuantitySheetData}
+            languageOptions={languageOptions}
+          />
+          {/* </Card> */}
         </Col>
       </Row>
 
@@ -245,7 +239,10 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
       <PaperDetailModal
         visible={!!selectedItem}
         item={selectedItem}
-        onCancel={() => {setSelectedItem(null); setSearchTerm(null)}}
+        onCancel={() => {
+          setSelectedItem(null);
+          setSearchTerm(null);
+        }}
         importing={importing}
         cssClasses={cssClasses}
         projectId={projectId}
