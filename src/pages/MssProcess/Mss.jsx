@@ -217,11 +217,11 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
           </Col>
         </div>
       </Row>
+            
 
-      <Row className="justify-content-center">
+      {/* <Row className="justify-content-center">
         <Col xs={12} md={12} lg={12}>
-          {/* AG Grid for Quantity Sheet Data */}
-          <Card title="Quantity Sheet Data" className="shadow-sm mt-4">
+          <Card title="Quantity Sheet Data" className="shadow-sm mt-4 ">
             <MSSTable
               quantitySheetData={quantitySheetData}
               fetchQuantitySheetData={fetchQuantitySheetData}
@@ -229,7 +229,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
             />
           </Card>
         </Col>
-      </Row>
+      </Row> */}
 
       {/* Paper Modal */}
       <PaperDetailModal
