@@ -1,7 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { Select, Spin, message, Card, Tooltip, Collapse, Input } from "antd";
+import {
+  Select,
+  Spin,
+  message,
+  Card,
+  Tooltip,
+  Collapse,
+  Input,
+  Badge,
+} from "antd";
 import { Button, Col, Row } from "react-bootstrap";
-import { DownloadOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
+import {
+  CloseCircleOutlined,
+  DownloadOutlined,
+  ExclamationCircleOutlined,
+} from "@ant-design/icons";
 import API from "../../CustomHooks/MasterApiHooks/api";
 import MSSTable from "./MSSTable";
 import PaperDetailModal from "./PaperDetailModal";
@@ -27,6 +40,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
   const [searchTerm, setSearchTerm] = useState(null);
   const [tableSearchTerm, setTableSearchTerm] = useState("");
   const [data, setData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [importing, setImporting] = useState(null);
   const [page, setPage] = useState(1);
@@ -101,6 +115,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
     try {
       const response = await API.get(`/QuantitySheet/byProject/${projectId}`);
       setQuantitySheetData(response.data);
+      console.log("Quantity Sheet Data -", response.data);
     } catch (error) {
       console.error("Error fetching quantity sheet data:", error);
     }
@@ -129,9 +144,33 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
     setPageSize(pagination.pageSize);
   };
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await API.get(`/QC/ByProject?projectId=${projectId}`);
+        setFilteredData(response.data);
+        console.log("Filtered Data -", response.data);
+      } catch (error) {
+        console.error("Failed to fetch data", error);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const filterDataByStatus = () => {
+    // const status = 0;
+    const rejectedData = quantitySheetData.filter(
+      (item) => item.verified?.status === status
+    );
+    // setQuantitySheetData(rejectedData);
+    console.log("Rejected Button Clicked", status);
+    console.log("Rejected Data -", rejectedData);
+    console.log("Filtered Data -", filteredData);
+  };
+
   return (
-    <div className="mt-4" style={{ maxWidth: '100%', overflowX: 'hidden' }}>
-     <Row className="w-100 d-flex justify-content-between align-items-center">
+    <div className="mt-4" style={{ maxWidth: "100%", overflowX: "hidden" }}>
+      <Row className="w-100 d-flex justify-content-between align-items-center">
         <Col xs={12} md={6} lg={6} className="d-flex align-items-center">
           <Collapse
             defaultActiveKey={["1"]}
@@ -179,8 +218,8 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
                         <strong>{item.paperTitle}</strong>
                         <br />
                         <small>
-                          <strong>Course Name:</strong> {item.courseName}{" "}
-                          &nbsp; | &nbsp;
+                          <strong>Course Name:</strong> {item.courseName} &nbsp;
+                          | &nbsp;
                           <strong>NEP Code:</strong> {item.nepCode} &nbsp; |
                           &nbsp;
                           <strong>Semester:</strong> {item.examTypeName}
@@ -202,8 +241,27 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
               }}
             />
           </Tooltip>
+          <Tooltip title="Rejected Items">
+            <Badge
+              color="#ff4d4f"
+              count={
+                data.filter((item) => item.verified?.status === false).length
+              }
+            >
+              <CloseCircleOutlined
+                onClick={filterDataByStatus}
+                className="fs-3"
+                style={{ color: "#ff4d4f" }}
+              />
+            </Badge>
+          </Tooltip>
         </Col>
-        <Col xs={12} md={6} lg={6} className="d-flex justify-content-end align-items-center">
+        <Col
+          xs={12}
+          md={6}
+          lg={6}
+          className="d-flex justify-content-end align-items-center"
+        >
           <Input.Search
             placeholder="Search within table..."
             value={tableSearchTerm}
