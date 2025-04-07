@@ -162,25 +162,25 @@ const MSSTable = ({
       key: "privateCode",
       ...getColumnSearchProps("privateCode"),
     },
-    {
-      title: "MSS Status",
-      dataIndex: "mssStatus",
-      key: "mssStatus",
-      filters: [
-        { text: "Pending", value: 0 },
-        { text: "Started", value: 1 },
-        { text: "Completed", value: 2 },
-      ],
-      onFilter: (value, record) => record.mssStatus === value,
-      render: (text) => {
-        const statusMap = {
-          0: "Pending",
-          1: "Started",
-          2: "Completed",
-        };
-        return statusMap[text] || "";
-      },
-    },
+    // {
+    //   title: "MSS Status",
+    //   dataIndex: "mssStatus",
+    //   key: "mssStatus",
+    //   filters: [
+    //     { text: "Pending", value: 0 },
+    //     { text: "Started", value: 1 },
+    //     { text: "Completed", value: 2 },
+    //   ],
+    //   onFilter: (value, record) => record.mssStatus === value,
+    //   render: (text) => {
+    //     const statusMap = {
+    //       0: "Pending",
+    //       1: "Started",
+    //       2: "Completed",
+    //     };
+    //     return statusMap[text] || "";
+    //   },
+    // },
     {
       title: "Actions",
       key: "actions",
@@ -194,13 +194,13 @@ const MSSTable = ({
           >
             <CheckCircleOutlined />
           </Button>
-          <Button
+          {/* <Button
             type="link"
             onClick={() => handleRemove(record)}
             title="Remove"
           >
             <DeleteOutlined />
-          </Button>
+          </Button> */}
         </Space>
       ),
     },

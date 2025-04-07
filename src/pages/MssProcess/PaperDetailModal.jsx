@@ -20,9 +20,10 @@ const PaperDetailModal = ({
   visible,
   item,
   onCancel,
-  onImport,
   importing,
   cssClasses,
+  projectId,
+  fetchQuantitySheetData
 }) => {
   const [form] = Form.useForm();
   const [
@@ -40,7 +41,7 @@ const PaperDetailModal = ({
   const [examType, setExamType] = useState();
   const [language, setLanguage] = useState();
 
-  // console.log(item);
+  console.log(item);
   // console.log(importing)
 
   useEffect(() => {
@@ -116,7 +117,7 @@ const PaperDetailModal = ({
   const handleUpdate = async () => {
     try {
       const values = await form.validateFields();
-  
+
       const selectedCourse = courses.find(
         (course) => course.courseName === values.CourseId
       );
@@ -126,7 +127,7 @@ const PaperDetailModal = ({
       const selectedLanguages = values.LanguageId?.length
         ? values.LanguageId
         : [0];
-  
+
       // Format the payload according to the API's requirements
       const finalPayload = [
         {
@@ -147,7 +148,7 @@ const PaperDetailModal = ({
           innerEnvelope: values.InnerEnvelope || "",
           outerEnvelope: Number(values.OuterEnvelope) || 0,
           qpId: item.qpMasterId || 0,
-          projectId: 1,
+          projectId: projectId,
           lotNo: "M",
           processId: [0],
           pages: 0,
@@ -159,25 +160,25 @@ const PaperDetailModal = ({
           structureOfPaper: values.StructureOfPaper || "",
         },
       ];
-  
+
       // Log the payload to inspect the data being sent
       console.log("Payload:", finalPayload);
-  
+
       // Send updated values to the server with the Authorization header
       await API.post("/QuantitySheet", finalPayload, {
         headers: {
           "Content-Type": "application/json",
         },
       });
-  
+
       message.success("Data updated successfully!");
       onCancel(); // Close the modal after successful update
+      fetchQuantitySheetData();
     } catch (error) {
       console.error("Error updating data:", error);
       message.error("Failed to update data.");
     }
   };
-  
 
   if (!item) {
     return null; // Don't render the modal if item is null
@@ -192,7 +193,7 @@ const PaperDetailModal = ({
         <Form form={form} layout="vertical">
           <Row>
             <Col md={2}>
-              <Form.Item name="CatchNo" label="Catch No">
+              <Form.Item name="CatchNo" label="Catch No" required>
                 <Input allowClear />
               </Form.Item>
             </Col>
@@ -210,9 +211,7 @@ const PaperDetailModal = ({
 
             <Col md={2}>
               <Form.Item name="ExamTypeId" label="Semester">
-                <Select 
-                allowClear
-                >
+                <Select allowClear>
                   {examType?.map((exam) => (
                     <Option key={exam.examTypeId} value={exam.examTypeId}>
                       {exam.typeName}
@@ -310,7 +309,7 @@ const PaperDetailModal = ({
               </Form.Item>
             </Col>
             <Col md={4}>
-              <Form.Item name="Quantity" label="Quantity">
+              <Form.Item name="Quantity" label="Quantity" required>
                 <Input type="number" allowClear />
               </Form.Item>
             </Col>
@@ -334,7 +333,7 @@ const PaperDetailModal = ({
           onClick={handleUpdate}
           disabled={importing === item.qpMasterId}
         >
-          Update
+          Import
         </Button>
       </Modal.Footer>
     </Modal>
