@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Table, Input, Button, Space, message, Select } from "antd";
 import { CheckCircleOutlined, DeleteOutlined } from "@ant-design/icons";
 import API from "../../CustomHooks/MasterApiHooks/api";
@@ -12,6 +12,10 @@ const MSSTable = ({
   quantitySheetData,
   fetchQuantitySheetData,
   languageOptions,
+  tableSearchTerm,
+  currentPage,
+  pageSize,
+  handleTableChange,
 }) => {
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
@@ -27,6 +31,7 @@ const MSSTable = ({
     customDarkBorder,
     customThead,
   ] = getCssClasses();
+
   const handleMarkReceived = async (record) => {
     try {
       const updatedData = { ...record, mssStatus: 2 };
@@ -120,24 +125,28 @@ const MSSTable = ({
       title: "Catch No",
       dataIndex: "catchNo",
       key: "catchNo",
+      sorter: (a, b) => a.catchNo.localeCompare(b.catchNo),
       ...getColumnSearchProps("catchNo"),
     },
     {
       title: "Duration",
       dataIndex: "duration",
       key: "duration",
+      sorter: (a, b) => a.duration - b.duration,
       ...getColumnSearchProps("duration"),
     },
     {
       title: "Course",
       dataIndex: "courseName",
       key: "courseName",
+      sorter: (a, b) => a.courseName.localeCompare(b.courseName),
       ...getColumnSearchProps("courseName"),
     },
     {
       title: "Subject",
       dataIndex: "subjectName",
       key: "subjectName",
+      sorter: (a, b) => a.subjectName.localeCompare(b.subjectName),
       ...getColumnSearchProps("subjectName"),
     },
     {
@@ -156,44 +165,37 @@ const MSSTable = ({
         }
         return text;
       },
+      sorter: (a, b) => {
+        const aLanguages = a.languageId.map((id) =>
+          languageOptions.find((l) => l.languageId === id)?.languageName
+        );
+        const bLanguages = b.languageId.map((id) =>
+          languageOptions.find((l) => l.languageId === id)?.languageName
+        );
+        return aLanguages.join(", ").localeCompare(bLanguages.join(", "));
+      },
     },
     {
       title: "Max Marks",
       dataIndex: "maxMarks",
       key: "maxMarks",
+      sorter: (a, b) => a.maxMarks - b.maxMarks,
       ...getColumnSearchProps("maxMarks"),
     },
     {
       title: "NEP Code",
       dataIndex: "nepCode",
       key: "nepCode",
+      sorter: (a, b) => a.nepCode.localeCompare(b.nepCode),
       ...getColumnSearchProps("nepCode"),
     },
     {
       title: "Private Code",
       dataIndex: "privateCode",
       key: "privateCode",
+      sorter: (a, b) => a.privateCode.localeCompare(b.privateCode),
       ...getColumnSearchProps("privateCode"),
     },
-    // {
-    //   title: "MSS Status",
-    //   dataIndex: "mssStatus",
-    //   key: "mssStatus",
-    //   filters: [
-    //     { text: "Pending", value: 0 },
-    //     { text: "Started", value: 1 },
-    //     { text: "Completed", value: 2 },
-    //   ],
-    //   onFilter: (value, record) => record.mssStatus === value,
-    //   render: (text) => {
-    //     const statusMap = {
-    //       0: "Pending",
-    //       1: "Started",
-    //       2: "Completed",
-    //     };
-    //     return statusMap[text] || "";
-    //   },
-    // },
     {
       title: "Actions",
       key: "actions",
@@ -207,17 +209,18 @@ const MSSTable = ({
           >
             <CheckCircleOutlined />
           </Button>
-          {/* <Button
-            type="link"
-            onClick={() => handleRemove(record)}
-            title="Remove"
-          >
-            <DeleteOutlined />
-          </Button> */}
         </Space>
       ),
     },
   ];
+
+  const filteredData = quantitySheetData.filter((record) =>
+    Object.values(record).some((value) =>
+      value
+        ? value.toString().toLowerCase().includes(tableSearchTerm.toLowerCase())
+        : false
+    )
+  );
 
   return (
     <Table
@@ -231,11 +234,15 @@ ${customDark === "purple-dark" ? "thead-purple" : ""}
 ${customDark === "light-dark" ? "thead-light" : ""}
 ${customDark === "brown-dark" ? "thead-brown" : ""} `}
       responsive={true}
-      // autoLayout={true}
       columns={columns}
-      dataSource={quantitySheetData}
+      dataSource={filteredData}
       rowKey="quantitySheetId"
-      pagination={{ pageSize: 10 }}
+      pagination={{
+        current: currentPage,
+        pageSize: pageSize,
+        total: filteredData.length,
+        onChange: handleTableChange,
+      }}
       onChange={(pagination, filters, sorter, extra) => {
         console.log("params", pagination, filters, sorter, extra);
       }}
