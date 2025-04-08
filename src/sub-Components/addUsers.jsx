@@ -31,6 +31,7 @@ const AddUsers = () => {
     status: true,
     address: '',
     profilePicturePath: "",
+    locationId: '',
   };
   const [usernameError, setUsernameError] = useState('');
   const [formData, setFormData] = useState(initialState);
@@ -38,6 +39,7 @@ const AddUsers = () => {
   const [showModal, setShowModal] = useState(false);
   const [message, setMessage] = useState(false);
   const [roles, setRoles] = useState([]);
+  const [location, setLocation] = useState([]);
   const userData = useUserData();
   console.log(userData)
 
@@ -54,6 +56,7 @@ const AddUsers = () => {
       formData.mobileNo &&
       formData.roleId &&
       formData.address &&
+      formData.locationId &&
       isUsernameValid(formData.username)
     );
   };
@@ -69,6 +72,7 @@ const AddUsers = () => {
       { name: 'mobileNo', value: formData.mobileNo },
       { name: 'roleId', value: formData.roleId },
       { name: 'address', value: formData.address },
+      { name: 'locationId', value: formData.locationId },
     ];
     setDisplayName(`${formData.firstName} ${formData.middleName} ${formData.lastName}`);
     const errors = requiredFields
@@ -119,6 +123,19 @@ const AddUsers = () => {
 
     fetchRoles();
   }, [t, userData.role?.roleId]);
+
+   useEffect(() => {
+      const getLocation = async () => {
+        try {
+          const response = await API.get('/Location')
+          setLocation(response.data)
+        }
+        catch (error) {
+          console.error("Failed to get data", error)
+        }
+      }
+      getLocation();
+    }, [t])
 
   // Generate username suggestion based on input
   useEffect(() => {
@@ -311,7 +328,7 @@ const AddUsers = () => {
               </Form.Select>
             </Form.Group>
           </Col>
-          <Col lg={12} md={12} sm={12} xs={12} className='mt-3'>
+          <Col lg={6} md={12} sm={12} xs={12} className='mt-3'>
             <Form.Group controlId="formBasicAddress">
               <Form.Label className={customDarkText}>{t('address')}: <span style={{ color: 'red' }}>*</span></Form.Label>
               <Form.Control
@@ -322,6 +339,19 @@ const AddUsers = () => {
                 placeholder={t('address')}
                 required
               />
+            </Form.Group>
+          </Col>
+          <Col lg={6} md={12} sm={12} xs={12} className='mt-3'>
+            <Form.Group controlId="formBasicLocation">
+              <Form.Label className={customDarkText}>{t('location')}: <span style={{ color: 'red' }}>*</span></Form.Label>
+              <Form.Select
+                name="locationId"
+                value={formData.locationId}
+                onChange={handleInputChange}
+                required
+              >
+                <option value="">{t('selectALocation')}</option>
+                {location.map(l=>(<option key={l.locationId} value={l.locationName}>{l.locationName}</option>))}</Form.Select>
             </Form.Group>
           </Col>
         </Row>

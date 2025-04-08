@@ -28,6 +28,7 @@ const UserProfile = () => {
   const [roles, setRoles] = useState([]);
   const [userRole, setUserRole] = useState('');
   const [showPinModal, setShowPinModal] = useState(false);
+  const [location, setLocation] = useState([])
 
   const APIUrlBase = import.meta.env.VITE_API_BASE_URL;
 
@@ -153,6 +154,20 @@ const UserProfile = () => {
     return imagePath.startsWith('http') ? imagePath : `${APIUrlBase}/${imagePath}?${profileImageKey}`;
   };
 
+  useEffect(() => {
+    const getLocation = async () => {
+      try {
+        const response = await API.get('/Location')
+        setLocation(response.data)
+      }
+      catch (error) {
+        console.error("Failed to get data", error)
+      }
+    }
+    getLocation();
+  }, [])
+
+
   const isValidImageFormat = (imagePath) => {
     const validExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp'];
     const extension = imagePath.split('.').pop().toLowerCase();
@@ -167,7 +182,7 @@ const UserProfile = () => {
     return <div>{t('errorUnableToLoadUserData')}</div>;
   }
   const welcomeLabel = t('welcome');
-const userName = userData.firstName;
+  const userName = userData.firstName;
   return (
     <Container className="my-4">
       <div className={`d-flex justify-content-between align-items-center ${customDark} ${customDark === 'dark-dark' ? `${customLightBorder} border-top border-start border-end border-light border-bottom-0` : ""} 
@@ -191,7 +206,7 @@ const userName = userData.firstName;
           placement="top"
           overlay={<Tooltip>{t('changeScreenLockPin')}</Tooltip>}
         >
-          <Button 
+          <Button
             variant="link"
             size="sm"
             className={`${customDark === 'dark-dark' ? customDark : customLight}`}
@@ -200,9 +215,9 @@ const userName = userData.firstName;
             <FaLock size={24} className={customDarkText} />
           </Button>
         </OverlayTrigger>
-        <ScreenLockPin 
-          show={showPinModal} 
-          onHide={() => setShowPinModal(false)} 
+        <ScreenLockPin
+          show={showPinModal}
+          onHide={() => setShowPinModal(false)}
         />
       </div>
       <div className={`p-4 rounded-bottom shadow-lg ${customLight} ${customDark === 'dark-dark' ? `${customDarkBorder} border-1` : "border-light"}`}>
@@ -256,7 +271,7 @@ const userName = userData.firstName;
             <h4 className={`${customDarkText}`}>{userData.userName}</h4>
             <p className={`text-muted mb-0 ${customDarkText}`}>{`${userData.firstName} ${userData.middleName} ${userData.lastName}`}</p>
           </Col>
-          
+
         </Row>
         <Form>
           <Row className="mb-3">
@@ -343,7 +358,7 @@ const userName = userData.firstName;
             </Col>
           </Row>
           <Row className="mb-3">
-            <Col xs={12}>
+            <Col xs={12} sm={6} md={6}>
               <Form.Group controlId="formAddress">
                 <Form.Label className={`${customDarkText}`}>{t('address')}</Form.Label>
                 <Form.Control
@@ -354,6 +369,27 @@ const userName = userData.firstName;
                   onChange={handleChange}
                   disabled={!isEditing}
                 />
+              </Form.Group>
+            </Col>
+            <Col xs={12} sm={6} md={6}>
+              <Form.Group controlId="formLocation">
+                <Form.Label className={`${customDarkText}`}>{t('location')}</Form.Label>
+                <Form.Select
+                  name="location"
+                  placeholder={t('yourLocation')}
+                  value={userData.locationName}
+                  className='rounded'
+                  onChange={handleChange}
+                  disabled={!isEditing}
+                >
+                  <option value="">{t('selectLocation')}</option>
+                  {location.map((l) => (
+                    <option key={l.locationId} value={l.locationName}>
+                      {l.locationName}
+                    </option>
+                  ))}
+                </Form.Select>
+
               </Form.Group>
             </Col>
           </Row>
