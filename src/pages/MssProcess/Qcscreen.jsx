@@ -235,7 +235,7 @@ const QcProcess = ({ projectId }) => {
       Status: status,
       StructureOfPaper: tempVerification.structure,
       Series: tempVerification.series,
-      ProjectId: 74
+      ProjectId: projectId
     };
   };
 

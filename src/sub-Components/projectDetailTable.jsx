@@ -1808,6 +1808,22 @@ const ProjectDetailsTable = ({
               </Dropdown>
             </div>
           </Col>
+          <Col lg={1} md={1} xs={2}>
+            <div className="d-flex justify-content-end ms-">
+              <Dropdown overlay={menu} trigger={["click"]}>
+                <Button
+                  style={{
+                    backgroundColor: "transparent", // Remove background
+                    border: "none", // Remove border
+                    boxShadow: "none", // Remove shadow
+                    padding: 0, // Optional: adjust padding if needed
+                  }}
+                >
+                 Transfer to Factory
+                </Button>
+              </Dropdown>
+            </div>
+          </Col>
         </Row>
       </div>
       <div>
