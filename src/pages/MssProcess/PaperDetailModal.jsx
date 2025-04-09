@@ -158,7 +158,7 @@ const PaperDetailModal = ({
           stopCatch: 0,
           mssStatus: 0,
           ttfStatus: 0,
-          structureOfPaper: values.StructureOfPaper || "",
+          structureOfPaper: values.StructureOfPaper || null,
         },
       ];
 
