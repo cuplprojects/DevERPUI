@@ -384,14 +384,15 @@ const QcProcess = ({ projectId }) => {
     <div className={` ${customLight} rounded py-2 shadow-lg ${customDark === "dark-dark" ? 'border' : ''}`}>
       <Card>
         <div className='d-flex align-items-center justify-content-between'>
-          <div>
+          <div className='d-flex align-items-center justify-content-between'>
             {showback && (
-              <Button
-                type="text"
-                className={`${customBtn} ${customLightBorder}`}
-                icon={<ArrowLeftOutlined className='fs-5' />}
-                onClick={resetFilter}
-              />
+              <ArrowLeftOutlined className={`fs-5 p-1 rounded-3 ${customDark} ${customLightText}`}   onClick={resetFilter}/>
+              // <Button
+              //   type="text"
+              //   className={`${customBtn} ${customLightBorder}`}
+              //   icon={<ArrowLeftOutlined className='fs-6' />}
+              //   onClick={resetFilter}
+              // />
             )}
           </div>
           <div>

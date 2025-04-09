@@ -223,7 +223,10 @@ const MSSTable = ({
   );
 
   return (
-    <div className="table-responsive" style={{ overflowX: 'auto', width: '100%' }}>
+    <div
+      className="table-responsive"
+      style={{ overflowX: "auto", width: "100%" }}
+    >
       <Table
         className={`${customDark === "default-dark" ? "thead-default" : ""}
 ${customDark === "red-dark" ? "thead-red" : ""}

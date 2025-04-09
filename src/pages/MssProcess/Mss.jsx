@@ -113,7 +113,10 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
 
   const fetchQuantitySheetData = async () => {
     try {
-      const response = await API.get(`/QuantitySheet/byProject/${projectId}`);
+      // const response = await API.get(`/QuantitySheet/byProject/${projectId}`);
+      const response = await API.get(
+        `/QuantitySheet/CatchByproject?ProjectId=${projectId}`
+      );
       setQuantitySheetData(response.data);
       console.log("Quantity Sheet Data -", response.data);
     } catch (error) {
@@ -158,15 +161,26 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
   }, []);
 
   const filterDataByStatus = () => {
-    // const status = 0;
-    const rejectedData = quantitySheetData.filter(
-      (item) => item.verified?.status === status
+    // Filter only those with verified.status === false
+    const rejectedItems = filteredData.filter(
+      item => item.verified?.status === false
     );
-    // setQuantitySheetData(rejectedData);
-    console.log("Rejected Button Clicked", status);
-    console.log("Rejected Data -", rejectedData);
-    console.log("Filtered Data -", filteredData);
+  
+    // Extract the quantitySheetIds of those rejected items
+    const rejectedIds = rejectedItems.map(item => item.quantitysheetId);
+  
+    // Filter quantitySheetData to include only those with matching quantitySheetId
+    const matchedData = quantitySheetData.filter(item =>
+      rejectedIds.includes(item.quantitySheetId)
+    );
+  
+    // Update the state to show only matched and rejected entries
+    setQuantitySheetData(matchedData);
+  
+    console.log("Rejected QuantitySheet IDs:", rejectedIds);
+    console.log("Final Filtered Quantity Sheet Data:", matchedData);
   };
+  
 
   return (
     <div className="mt-4" style={{ maxWidth: "100%", overflowX: "hidden" }}>
@@ -231,7 +245,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
               </Select>
             </div>
           </Collapse>
-          <Tooltip title="View Rejected QCs">
+          {/* <Tooltip title="View Rejected QCs">
             <ExclamationCircleOutlined
               style={{
                 fontSize: "22px",
@@ -240,8 +254,8 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
                 marginLeft: "10px",
               }}
             />
-          </Tooltip>
-          <Tooltip title="Rejected Items">
+          </Tooltip> */}
+          <Tooltip title="Rejected Items" className="ms-2">
             <Badge
               color="#ff4d4f"
               count={
