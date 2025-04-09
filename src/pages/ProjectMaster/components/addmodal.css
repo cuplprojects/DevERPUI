@@ -1,0 +1,19 @@
+/* Add this to your CSS file or style section */
+.ant-select-dropdown {
+    position: absolute;
+    z-index: 1050;
+  }
+  
+  .ant-select-selection-item {
+    display: inline-flex;
+    align-items: center;
+  }
+  
+  .ant-select-item-option-state {
+    position: absolute;
+    right: 8px;
+  }
+  
+  .ant-select-item-option-selected {
+    background-color: #e6f7ff;
+  }

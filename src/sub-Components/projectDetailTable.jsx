@@ -123,7 +123,7 @@ const ProjectDetailsTable = ({
   const [inputPagesModalData, setInputPagesModalData] = useState(null);
   const [inputPagesModalShow, setInputPagesModalShow] = useState(false);
   const [envelopeData, setEnvelopeData] = useState({});
-console.log(tableData)
+// console.log(tableData)
   const showNotification = (type, messageKey, descriptionKey, details = "") => {
     notification[type]({
       message: t(messageKey),
@@ -156,7 +156,7 @@ console.log(tableData)
             `/QuantitySheet/Catch?ProjectId=${projectId}&lotNo=${lotNo}`
           );
           const data = response.data || [];
-          console.log(data);
+          // console.log(data);
 
           // Parse envelope data
           const envelopeMap = {};
@@ -735,9 +735,9 @@ console.log(tableData)
                 key: envKey,
                 render: (_, record) => {
                   // Log to debug
-                  console.log('Record:', record);
-                  console.log('Envelope Data:', envelopeData);
-                  console.log('Specific Envelope:', envelopeData[record.catchNumber]);
+                  // console.log('Record:', record);
+                  // console.log('Envelope Data:', envelopeData);
+                  // console.log('Specific Envelope:', envelopeData[record.catchNumber]);
                   
                   return envelopeData[record.catchNumber]?.[envKey] || 
                          envelopeData[record.catchNo]?.[envKey] || ''
@@ -1672,7 +1672,7 @@ console.log(tableData)
                       );
                     }
                   }
-                  console.log(updateall)
+                  // console.log(updateall)
                   if (!updateall) {
                     return null; // Return null if permission is not granted
                   }
@@ -1804,6 +1804,22 @@ console.log(tableData)
                     className={` ${customDark === "dark-dark" ? "text-white" : customDarkText
                       }`}
                   />
+                </Button>
+              </Dropdown>
+            </div>
+          </Col>
+          <Col lg={1} md={1} xs={2}>
+            <div className="d-flex justify-content-end ms-">
+              <Dropdown overlay={menu} trigger={["click"]}>
+                <Button
+                  style={{
+                    backgroundColor: "transparent", // Remove background
+                    border: "none", // Remove border
+                    boxShadow: "none", // Remove shadow
+                    padding: 0, // Optional: adjust padding if needed
+                  }}
+                >
+                 Transfer to Factory
                 </Button>
               </Dropdown>
             </div>

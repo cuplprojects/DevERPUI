@@ -32,21 +32,22 @@ const EditProjectModal = ({
   selectedGroup,
   selectedSession,
   selectedExamType,
+  handleExamTypeChange,
   selectedType
 }) => {
   const [pageQuantities, setPageQuantities] = useState([{ pages: '', quantity: '' }]);
-  
+
   useEffect(() => {
     const quantityThresholdValue = form.getFieldValue('quantityThreshold');
-    
+
     if (quantityThresholdValue) {
       try {
         // First, replace single quotes with double quotes to make it a valid JSON string
         const jsonString = quantityThresholdValue.replace(/'/g, '"');
-        
+
         // Parse the JSON string
         const parsedData = JSON.parse(jsonString);
-        
+
         // Ensure it's an array and has entries
         if (Array.isArray(parsedData) && parsedData.length > 0) {
           // Ensure each entry has pages and quantity
@@ -54,7 +55,7 @@ const EditProjectModal = ({
             pages: entry.pages || '',
             quantity: entry.quantity || ''
           }));
-          
+
           setPageQuantities(validatedData);
         } else {
           // Fallback to default state if no valid entries
@@ -93,10 +94,10 @@ const EditProjectModal = ({
       quantityThreshold: JSON.stringify(pageQuantities.filter(entry => entry.pages && entry.quantity))
         .replace(/"/g, "'"), // Use single quotes for backend consistency
     };
-    
+
     await onFinish(formattedValues);
   };
-  
+
   return (
     <Modal
       show={visible}
@@ -122,7 +123,9 @@ const EditProjectModal = ({
                   {groups.map((group) => (
                     <Option key={group.id} value={group.id}>{group.name}</Option>
                   ))}
+                  
                 </Select>
+                
               </Form.Item>
             </Col>
             <Col xs={24} sm={24}>
@@ -140,33 +143,33 @@ const EditProjectModal = ({
             </Col>
           </Row>
           <Row>
-            <Col  xs={24} sm={24}>
-                  <Form.Item
-                  name = "session"
-                  label={t('session')}
+            <Col xs={24} sm={24}>
+              <Form.Item
+                name="session"
+                label={t('session')}
                 rules={[{ required: true, message: t('pleaseSelectsession') }]}
-                  >
-                    <Select placeholder={t('selectSession')}>
+              >
+                <Select placeholder={t('selectSession')}>
                   {sessions.map((session) => (
                     <Option key={session.sessionId} value={session.sessionId}>{session.session}</Option>
                   ))}
                 </Select>
-                  </Form.Item>
+              </Form.Item>
             </Col>
-            <Col  xs={24} sm={24}>
-            <Form.Item
-                  name = "examType"
-                  label={t('examType')}
+            <Col xs={24} sm={24}>
+              <Form.Item
+                name="examType"
+                label={t('examType')}
                 rules={[{ required: true, message: t('pleaseSelectExamType') }]}
-                  >
-                    <Select placeholder={t('selectExamType')}>
-                    {examTypes.map((examType) => (
+              >
+                <Select placeholder={t('selectExamType')}  mode="multiple" onChange={handleExamTypeChange}>
+                  {examTypes.map((examType) => (
                     <Option key={examType.examTypeId} value={examType.examTypeId}>
                       {examType.typeName}
                     </Option>
                   ))}
                 </Select>
-                  </Form.Item>
+              </Form.Item>
             </Col>
           </Row>
           {showSeriesFields && (
@@ -177,11 +180,11 @@ const EditProjectModal = ({
                   label={<span className={customDarkText}>{t('numberOfSeries')}</span>}
                   rules={[{ required: true, message: t('pleaseEnterNumberOfSeries') }]}
                 >
-                  <Select 
+                  <Select
                     placeholder={t('selectNumberOfSeries')}
                     onChange={(value) => setNumberOfSeries(value)}
                   >
-                    {[1,2,3,4,5,6,7,8].map(num => (
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
                       <Option key={num} value={num}>{num}</Option>
                     ))}
                   </Select>
@@ -196,7 +199,7 @@ const EditProjectModal = ({
                     { validator: validateSeriesInput }
                   ]}
                 >
-                  <Input 
+                  <Input
                     placeholder={t('ENTERSERIESNAME')}
                     maxLength={numberOfSeries}
                     style={{ textTransform: 'uppercase' }}
@@ -218,7 +221,7 @@ const EditProjectModal = ({
                 label={<span className={customDarkText}>{t('projectName')}</span>}
                 rules={[{ required: true, message: t('pleaseEnterProjectName') }]}
               >
-                <Input 
+                <Input
                   placeholder={t('enterProjectName')}
                   value={projectName}
                   onChange={(e) => setProjectName(e.target.value)}
@@ -236,53 +239,53 @@ const EditProjectModal = ({
             </Col>
             <Col xs={24}>
               <Form.Item
-              label={<span className={customDarkText}>
-                {t('pageQuantities')}
-                <Tooltip title={t('pageQuantitiesTooltip')}>
-                <BsInfoCircleFill className='ms-2'/>
-                </Tooltip>
-              </span>}
+                label={<span className={customDarkText}>
+                  {t('pageQuantities')}
+                  <Tooltip title={t('pageQuantitiesTooltip')}>
+                    <BsInfoCircleFill className='ms-2' />
+                  </Tooltip>
+                </span>}
               >
-              <div className="page-quantities-container">
-                {pageQuantities.map((entry, index) => (
-                <Row key={index} className="mb-2" gutter={[16, 0]}>
-                  <Col xs={10}>
-                  <Input
-                    type="number"
-                    min={0}
-                    placeholder={t('enterPages')}
-                    value={entry.pages}
-                    onChange={(e) => handlePageQuantityChange(index, 'pages', e.target.value)}
-                  />
-                  </Col>
-                  <Col xs={10}>
-                  <Input
-                    type="number"
-                    min={0}
-                    placeholder={t('enterQuantity')}
-                    value={entry.quantity}
-                    onChange={(e) => handlePageQuantityChange(index, 'quantity', e.target.value)}
-                  />
-                  </Col>
-                  <Col xs={4} className="d-flex align-items-center">
-                  {pageQuantities.length > 1 && (
-                    <BsDashCircle
-                    className="text-danger cursor-pointer me-2"
-                    onClick={() => handleRemoveRow(index)}
-                    style={{ cursor: 'pointer' }}
-                    />
-                  )}
-                  {index === pageQuantities.length - 1 && (
-                    <BsPlusCircle
-                    className="text-success cursor-pointer"
-                    onClick={handleAddRow}
-                    style={{ cursor: 'pointer' }}
-                    />
-                  )}
-                  </Col>
-                </Row>
-                ))}
-              </div>
+                <div className="page-quantities-container">
+                  {pageQuantities.map((entry, index) => (
+                    <Row key={index} className="mb-2" gutter={[16, 0]}>
+                      <Col xs={10}>
+                        <Input
+                          type="number"
+                          min={0}
+                          placeholder={t('enterPages')}
+                          value={entry.pages}
+                          onChange={(e) => handlePageQuantityChange(index, 'pages', e.target.value)}
+                        />
+                      </Col>
+                      <Col xs={10}>
+                        <Input
+                          type="number"
+                          min={0}
+                          placeholder={t('enterQuantity')}
+                          value={entry.quantity}
+                          onChange={(e) => handlePageQuantityChange(index, 'quantity', e.target.value)}
+                        />
+                      </Col>
+                      <Col xs={4} className="d-flex align-items-center">
+                        {pageQuantities.length > 1 && (
+                          <BsDashCircle
+                            className="text-danger cursor-pointer me-2"
+                            onClick={() => handleRemoveRow(index)}
+                            style={{ cursor: 'pointer' }}
+                          />
+                        )}
+                        {index === pageQuantities.length - 1 && (
+                          <BsPlusCircle
+                            className="text-success cursor-pointer"
+                            onClick={handleAddRow}
+                            style={{ cursor: 'pointer' }}
+                          />
+                        )}
+                      </Col>
+                    </Row>
+                  ))}
+                </div>
               </Form.Item>
             </Col>
             <Col xs={24}>

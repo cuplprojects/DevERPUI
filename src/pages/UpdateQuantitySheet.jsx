@@ -18,7 +18,6 @@ const UpdateQuantitySheet = ({ projectId, onClose }) => {
   const [filterOutLots, setFilterOutLots] = useState([]);
   const [apiData, setApiData] = useState([]);
   const [selectedFieldsToUpdate, setSelectedFieldsToUpdate] = useState({});
-  const [selectedCatchToupdate, setSelectedCatchToupdate] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const pageSize = 10;
@@ -29,9 +28,10 @@ const UpdateQuantitySheet = ({ projectId, onClose }) => {
   const fields = [
     { name: "CatchNo", type: "string" },
     { name: "LotNo", type: "string" },
-    { name: "Paper", type: "string" },
-    { name: "Course", type: "string" },
-    { name: "Subject", type: "string" },
+    { name: "PaperNumber", type: "string" },
+    { name: "PaperTitle", type: "string" },
+    { name: "CourseName", type: "string" },
+    { name: "SubjectName", type: "string" },
     { name: "ExamDate", type: "string" },
     { name: "ExamTime", type: "string" },
     {
@@ -47,6 +47,12 @@ const UpdateQuantitySheet = ({ projectId, onClose }) => {
       multiSelect: false,
     },
     { name: "Quantity", type: "string" },
+    { name: "NEPCode", type: "string" },
+    { name: "PrivateCode", type: "string" },
+    { name: "MaxMarks", type: "int" },
+    { name: "Duration", type: "string" },
+    { name: "ExamTypes", type: "string" },
+    { name: "Languages", type: "string" },
     { name: "Pages", type: "string" },
   ];
 
@@ -58,7 +64,7 @@ const UpdateQuantitySheet = ({ projectId, onClose }) => {
 
     // Create date object in IST timezone
     const date = new Date(year, month - 1, day, 5, 30); // Add 5:30 for IST offset
-    return date.toISOString(); 
+    return date.toISOString();
   };
 
   useEffect(() => {
@@ -67,7 +73,7 @@ const UpdateQuantitySheet = ({ projectId, onClose }) => {
         const response = await API.get(
           `/QuantitySheet/Lots?ProjectId=${projectId}`
         );
-        const lots = response.data; // ["1", "2", ..., "12"]
+        const lots = response.data;
 
         let dispatchedLots = [];
         let availableLots = [];
@@ -272,9 +278,136 @@ const UpdateQuantitySheet = ({ projectId, onClose }) => {
     return `${day}/${month}/${year}`;
   };
 
+  // const handleSubmit = async () => {
+  //   if (isSubmitting) return;
+
+  //   try {
+  //     setIsSubmitting(true);
+  //     const filteredData = getFilteredData();
+  //     const displayedData = filteredData.filter((row) => {
+  //       const lotNoHeader = mappedFields["LotNo"];
+  //       if (!lotNoHeader) return true;
+  //       const lotNoIndex = excelHeaders.indexOf(lotNoHeader);
+  //       if (lotNoIndex === -1) return true;
+  //       const rowLotNo = row[lotNoIndex]?.toString().trim();
+  //       return !filterOutLots.includes(rowLotNo);
+  //     });
+
+  //     // Validate required fields
+  //     const missingFields = displayedData.some((row) => {
+  //       const catchNoIndex = excelHeaders.indexOf(mappedFields["CatchNo"]);
+  //       const lotNoIndex = excelHeaders.indexOf(mappedFields["LotNo"]);
+  //       const quantityIndex = excelHeaders.indexOf(mappedFields["Quantity"]);
+
+  //       const catchNo = catchNoIndex !== -1 ? row[catchNoIndex]?.toString().trim() : '';
+  //       const lotNo = lotNoIndex !== -1 ? row[lotNoIndex]?.toString().trim() : '';
+  //       const quantity = quantityIndex !== -1 ? Number(row[quantityIndex]) : 0;
+
+  //       return !catchNo || !lotNo || !quantity;
+  //     });
+
+  //     if (missingFields) {
+  //       error("Lot, Catch, and Quantity are required fields for all rows");
+  //       return;
+  //     }
+
+  //     const formattedData = displayedData.map((row, index) => {
+  //       const catchNoIndex = excelHeaders.indexOf(mappedFields["CatchNo"]);
+  //       const currentCatchNo =
+  //         catchNoIndex !== -1 ? row[catchNoIndex]?.toString().trim() : null;
+
+  //       // Find all matching records for the current catch number
+  //       const matchingRecords = apiData.filter(
+  //         (apiRow) => apiRow.catchNo?.toString().trim() === currentCatchNo
+  //       );
+
+  //       // Calculate combined quantity from all matching records
+  //       const totalQuantity = matchingRecords.reduce(
+  //         (sum, record) => sum + (record.quantity || 0),
+  //         0
+  //       );
+
+  //       const examDate = convertExcelDate(
+  //         getColumnData(mappedFields["ExamDate"])[index]
+  //       );
+
+  //       const lotNoIndex = excelHeaders.indexOf(mappedFields["LotNo"]);
+  //       const rowLotNo =
+  //         lotNoIndex !== -1 ? row[lotNoIndex]?.toString().trim() : "";
+
+  //       // Skip if lot is filtered out
+  //       if (filterOutLots.includes(rowLotNo)) {
+  //         return null;
+  //       }
+
+  //       console.log(matchingRecords);
+  //       const rowData = {
+  //         quantitySheetId: matchingRecords[0]?.quantitySheetId || 0,
+  //         catchNo: currentCatchNo || "",
+  //         paper:
+  //           getColumnData(mappedFields["Paper"])[index]?.toString() || "",
+  //         courseName:
+  //           getColumnData(mappedFields["Course"])[index]?.toString() || "",
+  //         subjectName:
+  //           getColumnData(mappedFields["Subject"])[index]?.toString() || "",
+  //         innerEnvelope:
+  //           getColumnData(mappedFields["InnerEnvelope"])[index] || "",
+  //         outerEnvelope:
+  //           Number(getColumnData(mappedFields["OuterEnvelope"])[index]) || 0,
+  //         examDate: formatDateForDB(examDate) || "",
+  //         examTime:
+  //           getColumnData(mappedFields["ExamTime"])[index]?.toString() || "",
+  //         lotNo: updateMode === "lot" ? selectedLot : rowLotNo || "",
+  //         quantity: selectedFieldsToUpdate["Quantity"]
+  //           ? Number(getColumnData(mappedFields["Quantity"])[index]) || 0
+  //           : totalQuantity ||
+  //             Number(getColumnData(mappedFields["Quantity"])[index]) ||
+  //             0,
+  //         pages: Number(getColumnData(mappedFields["Pages"])[index]) || 0,
+  //         percentageCatch: 0,
+  //         projectId: projectId,
+  //         processId: [0],
+  //         status: 0,
+  //         stopCatch: 0,
+  //       };
+
+  //       // For existing catches, preserve original data for unselected fields
+  //       if (matchingRecords.length > 0) {
+  //         fields.forEach((field) => {
+  //           const key =
+  //             field.name.charAt(0).toLowerCase() + field.name.slice(1);
+  //           if (!selectedFieldsToUpdate[field.name]) {
+  //             if (key === "quantity") {
+  //               rowData[key] = totalQuantity; // Always use combined quantity for existing records
+  //             } else if (["outerEnvelope", "pages"].includes(key)) {
+  //               rowData[key] = Number(matchingRecords[0][key]) || 0;
+  //             } else if (key === "examDate") {
+  //               rowData[key] = matchingRecords[0][key] || "";
+  //             } else {
+  //               rowData[key] = matchingRecords[0][key]?.toString() || "";
+  //             }
+  //           }
+  //         });
+  //       }
+
+  //       return rowData;
+  //     });
+
+  //     const response = await API.put("/QuantitySheet", formattedData);
+  //     console.log("Update successful:", response);
+  //     success("Quantity sheet updated successfully");
+  //     onClose();
+  //   } catch (err) {
+  //     error("Failed to update quantity sheet:", err);
+  //   } finally {
+  //     setIsSubmitting(false);
+  //   }
+  // };
+
+
   const handleSubmit = async () => {
     if (isSubmitting) return;
-
+  
     try {
       setIsSubmitting(true);
       const filteredData = getFilteredData();
@@ -286,89 +419,171 @@ const UpdateQuantitySheet = ({ projectId, onClose }) => {
         const rowLotNo = row[lotNoIndex]?.toString().trim();
         return !filterOutLots.includes(rowLotNo);
       });
-
+  
       // Validate required fields
       const missingFields = displayedData.some((row) => {
         const catchNoIndex = excelHeaders.indexOf(mappedFields["CatchNo"]);
         const lotNoIndex = excelHeaders.indexOf(mappedFields["LotNo"]);
         const quantityIndex = excelHeaders.indexOf(mappedFields["Quantity"]);
-
+  
         const catchNo = catchNoIndex !== -1 ? row[catchNoIndex]?.toString().trim() : '';
         const lotNo = lotNoIndex !== -1 ? row[lotNoIndex]?.toString().trim() : '';
         const quantity = quantityIndex !== -1 ? Number(row[quantityIndex]) : 0;
-
+  
         return !catchNo || !lotNo || !quantity;
       });
-
+  
       if (missingFields) {
         error("Lot, Catch, and Quantity are required fields for all rows");
         return;
       }
-
-      const formattedData = displayedData.map((row, index) => {
+  
+      const formattedData = await Promise.all(displayedData.map(async (row, index) => {
         const catchNoIndex = excelHeaders.indexOf(mappedFields["CatchNo"]);
-        const currentCatchNo =
-          catchNoIndex !== -1 ? row[catchNoIndex]?.toString().trim() : null;
-
+        const currentCatchNo = catchNoIndex !== -1 ? row[catchNoIndex]?.toString().trim() : null;
+  
         // Find all matching records for the current catch number
         const matchingRecords = apiData.filter(
           (apiRow) => apiRow.catchNo?.toString().trim() === currentCatchNo
         );
-
+  
         // Calculate combined quantity from all matching records
         const totalQuantity = matchingRecords.reduce(
           (sum, record) => sum + (record.quantity || 0),
           0
         );
-
+  
         const examDate = convertExcelDate(
           getColumnData(mappedFields["ExamDate"])[index]
         );
-
+  
         const lotNoIndex = excelHeaders.indexOf(mappedFields["LotNo"]);
-        const rowLotNo =
-          lotNoIndex !== -1 ? row[lotNoIndex]?.toString().trim() : "";
-
+        const rowLotNo = lotNoIndex !== -1 ? row[lotNoIndex]?.toString().trim() : "";
+  
         // Skip if lot is filtered out
         if (filterOutLots.includes(rowLotNo)) {
           return null;
         }
-        console.log(matchingRecords);
+  
+        const courseName = getColumnData(mappedFields["CourseName"])[index]?.toString() || "";
+        const subjectName = getColumnData(mappedFields["SubjectName"])[index]?.toString() || "";
+        const language = getColumnData(mappedFields["Languages"])[index]?.toString() || "";
+        const examtype = getColumnData(mappedFields["ExamTypes"])[index]?.toString() || "";
+  
+        let courseId, subjectId, languageId = 0, examTypeId = 0;
+  
+        try {
+          // Handle Course
+          if (courseName !== "") {
+            let courseResponse = await API.get(`Course/GetCourse?courseName=${courseName}`);
+            console.log("Course Response", courseResponse);
+  
+            if (!courseResponse || courseResponse === 0) {
+              // Create a new course if not found
+              const newCourseResponse = await API.post(`Course`, { courseName });
+              if (newCourseResponse.data && newCourseResponse.data.courseId) {
+                courseId = newCourseResponse.data.courseId;
+              } else {
+                console.error("Error: courseId not found in new course response");
+                throw new Error("courseId not found in new course response");
+              }
+            } else {
+              // If course exists, get the courseId
+              courseId = courseResponse.data;
+            }
+          }
+  
+          // Handle Subject
+          if (subjectName !== "") {
+            let subjectResponse = await API.get(`Subject/Subject?subject=${subjectName}`);
+            if (!subjectResponse || subjectResponse === 0) {
+              // Create a new subject if not found
+              const newSubjectResponse = await API.post(`Subject`, { subjectName });
+              if (newSubjectResponse.data && newSubjectResponse.data.subjectId) {
+                subjectId = newSubjectResponse.data.subjectId;
+              } else {
+                console.error("Error: subjectId not found in new subjectId response");
+                throw new Error("subjectId not found in new subjectId response");
+              }
+            } else {
+              subjectId = subjectResponse.data;
+            }
+          }
+  
+          // Handle Language
+          if (language !== "") {
+            const encodedLanguage = encodeURIComponent(language);
+            let languageResponse = await API.get(`Language/Language?language=${encodedLanguage}`);
+            if (!languageResponse || languageResponse === 0) {
+              // Create a new language if not found
+              const newLanguageResponse = await API.post(`Language`, { language });
+              if (newLanguageResponse.data && newLanguageResponse.data.courseId) {
+                languageId = newLanguageResponse.data.languageId;
+              } else {
+                console.error("Error: courseId not found in new course response");
+                throw new Error("courseId not found in new course response");
+              }
+            } else {
+              languageId = languageResponse.data;
+            }
+          }
+  
+          // Handle Exam Type
+          if (examtype !== "") {
+            let examtypeResponse = await API.get(`ExamType/ExamType?examtype=${examtype}`);
+            if (!examtypeResponse || examtypeResponse === 0) {
+              // Create a new exam type if not found
+              const newExamTypeResponse = await API.post(`ExamType`, { examtype });
+              if (newExamTypeResponse.data && newExamTypeResponse.data.examTypeId) {
+                examTypeId = newExamTypeResponse.data.examTypeId;
+              } else {
+                console.error("Error: examTypeId not found in new examTypeId response");
+                throw new Error("examTypeId not found in new examTypeId response");
+              }
+            } else {
+              examTypeId = examtypeResponse.data;
+            }
+          }
+        } catch (err) {
+          console.error(`Error fetching data for row ${index}:`, err);
+          throw err;
+        }
+  
         const rowData = {
           quantitySheetId: matchingRecords[0]?.quantitySheetId || 0,
           catchNo: currentCatchNo || "",
-          paper:
-            getColumnData(mappedFields["Paper"])[index]?.toString() || "",
-          course:
-            getColumnData(mappedFields["Course"])[index]?.toString() || "",
-          subject:
-            getColumnData(mappedFields["Subject"])[index]?.toString() || "",
-          innerEnvelope:
-            getColumnData(mappedFields["InnerEnvelope"])[index] || "",
-          outerEnvelope:
-            Number(getColumnData(mappedFields["OuterEnvelope"])[index]) || 0,
+          paperNumber: getColumnData(mappedFields["PaperNumber"])[index]?.toString() || "",
+          paperTitle: getColumnData(mappedFields["PaperTitle"])[index]?.toString() || "",
+          languageId: [],
+          courseId: courseId,  // Include courseId only if it was found/created
+          subjectId: subjectId,
+          innerEnvelope: getColumnData(mappedFields["InnerEnvelope"])[index] || "",
+          outerEnvelope: Number(getColumnData(mappedFields["OuterEnvelope"])[index]) || 0,
           examDate: formatDateForDB(examDate) || "",
-          examTime:
-            getColumnData(mappedFields["ExamTime"])[index]?.toString() || "",
+          examTime: getColumnData(mappedFields["ExamTime"])[index]?.toString() || "",
           lotNo: updateMode === "lot" ? selectedLot : rowLotNo || "",
           quantity: selectedFieldsToUpdate["Quantity"]
             ? Number(getColumnData(mappedFields["Quantity"])[index]) || 0
-            : totalQuantity ||
-              Number(getColumnData(mappedFields["Quantity"])[index]) ||
-              0,
+            : totalQuantity || Number(getColumnData(mappedFields["Quantity"])[index]) || 0,
           pages: Number(getColumnData(mappedFields["Pages"])[index]) || 0,
           percentageCatch: 0,
-          projectId: projectId,
+          projectId: Number(projectId),
           processId: [0],
           status: 0,
           stopCatch: 0,
+          mssStatus: 0,
+          ttfStatus: 0,
+          nepCode: getColumnData(mappedFields["NEPCode"])[index] || "",
+          privateCode: getColumnData(mappedFields["PrivateCode"])[index] || "",
+          maxMarks: getColumnData(mappedFields["MaxMarks"])[index] || 0,
+          duration: getColumnData(mappedFields["Duration"])[index] || "",
+          examTypeId: examTypeId,
         };
-
+  
         // For existing catches, preserve original data for unselected fields
         if (matchingRecords.length > 0) {
           fields.forEach((field) => {
-            const key =
-              field.name.charAt(0).toLowerCase() + field.name.slice(1);
+            const key = field.name.charAt(0).toLowerCase() + field.name.slice(1);
             if (!selectedFieldsToUpdate[field.name]) {
               if (key === "quantity") {
                 rowData[key] = totalQuantity; // Always use combined quantity for existing records
@@ -382,22 +597,22 @@ const UpdateQuantitySheet = ({ projectId, onClose }) => {
             }
           });
         }
-
+  
         return rowData;
-      });
-
+      }));
+  
       const response = await API.put("/QuantitySheet", formattedData);
       console.log("Update successful:", response);
       success("Quantity sheet updated successfully");
       onClose();
     } catch (err) {
-      error("Failed to update quantity sheet:", err);
+      console.error("Failed to update quantity sheet:", err);
+      error(`Failed to update quantity sheet: ${err.message}`);
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  // Check if any fields have been mapped
+  
   const hasAnyMappedFields = Object.keys(mappedFields).length > 0;
 
   // Modified getFilteredData to strictly filter by lot number
@@ -735,7 +950,7 @@ const UpdateQuantitySheet = ({ projectId, onClose }) => {
                                       style={{
                                         color:
                                           isMatching &&
-                                          !selectedFieldsToUpdate[field.name]
+                                            !selectedFieldsToUpdate[field.name]
                                             ? "blue"
                                             : "green",
                                         position: "relative",
@@ -817,7 +1032,7 @@ const UpdateQuantitySheet = ({ projectId, onClose }) => {
                                   style={{
                                     color:
                                       isMatching &&
-                                      !selectedFieldsToUpdate[field.name]
+                                        !selectedFieldsToUpdate[field.name]
                                         ? "blue"
                                         : "green",
                                     position: "relative",

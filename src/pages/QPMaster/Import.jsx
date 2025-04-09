@@ -326,7 +326,6 @@ const Import = () => {
         maxMarks: item.MaxMarks || 0,
         duration: item.Duration || "",
         languageId: item.LanguageId|| [],
-        // languageId: Array.isArray(item.LanguageId) ? item.LanguageId : [item.LanguageId || 0],        
         customizedField1: item.customizedField1 || "",
         customizedField2: item.customizedField2 || "",
         customizedField3: item.customizedField3 || "",

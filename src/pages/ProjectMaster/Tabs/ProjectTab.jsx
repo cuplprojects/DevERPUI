@@ -29,7 +29,7 @@ const ProjectTab = ({ setActiveTabKey, setSelectedProject }) => {
   const [editingProject, setEditingProject] = useState(null);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [selectedType, setSelectedType] = useState(null);
-  const [selectedExamType, setSelectedExamType] = useState(null);
+  const [selectedExamType, setSelectedExamType] = useState([]);
   const [selectedSession, setSelectedSession] = useState(null);
   const [showSeriesFields, setShowSeriesFields] = useState(false);
   const [numberOfSeries, setNumberOfSeries] = useState(0);
@@ -110,14 +110,14 @@ const ProjectTab = ({ setActiveTabKey, setSelectedProject }) => {
       error(t('pleaseSelectGroupAndType'));
       return;
     }
-    console.log(values)
+    const selectedExamTypeIds = selectedExamType.map(exam => exam.examTypeId);
     const newProject = {
       name: projectName,
       status: values.status || true,
       description: values.description || '',
       groupId: selectedGroup.id,
       typeId: selectedType.typeId,
-      examTypeId: selectedExamType.examTypeId,
+      examTypeId: selectedExamTypeIds,
       sessionId: selectedSession.sessionId,
       noOfSeries: numberOfSeries || 0,
       seriesName: seriesNames,
@@ -133,7 +133,7 @@ const ProjectTab = ({ setActiveTabKey, setSelectedProject }) => {
       setProjectName('');
       setSelectedGroup(null);
       setSelectedType(null);
-      setSelectedExamType(null);
+      setSelectedExamType([]);
       setSelectedSession(null);
       setNumberOfSeries(0); // Reset numberOfSeries
       setSeriesNames('');
@@ -284,49 +284,7 @@ const ProjectTab = ({ setActiveTabKey, setSelectedProject }) => {
     currentPage * pageSize
   );
 
-  // const handleGroupChange = (event) => {
-  //   const selectedGroupId = parseInt(event.target.value, 10);
-  //   const selectedGroupObj = groups.find((group) => group.id === selectedGroupId);
-  //   setSelectedGroup(selectedGroupObj);
 
-  //   if (selectedGroupObj && selectedType && selectedSession) {
-  //     setProjectName(`${selectedGroupObj.name}-${selectedType.types} - ${selectedSession.session}`);
-  //   } else {
-  //     setProjectName('');
-  //   }
-  // };
-
-  // const handleSessionChange = (event) => {
-  //   const selectedSessionId = parseInt(event.target.value, 10);
-  //   const selectedSessionObj = sessions.find((session) => session.sessionId === selectedSessionId);
-  //   setSelectedSession(selectedSessionObj);
-
-  //   if (selectedGroup && selectedType && selectedSessionObj) {
-  //     setProjectName(`${selectedGroup.name}-${selectedType.types} - ${selectedSessionObj.session}`);
-  //   } else {
-  //     setProjectName('');
-  //   }
-  // };
-
-  // const handleTypeChange = (event) => {
-  //   const selectedTypeId = parseInt(event.target.value, 10);
-  //   const selectedTypeObj = types.find((type) => type.typeId === selectedTypeId);
-  //   setSelectedType(selectedTypeObj);
-
-  //   if (selectedGroup && selectedTypeObj && selectedSession) {
-  //     const typeName = selectedTypeObj.types.toLowerCase();
-  //     if (typeName === 'booklet') {
-  //       setProjectName(`${selectedGroup.name}-${selectedTypeObj.types} - ${selectedSession.session}`);
-  //       setShowSeriesFields(true);
-  //     } else {
-  //       setShowSeriesFields(false);
-  //       setProjectName(`${selectedGroup.name}-${selectedTypeObj.types} - ${selectedSession.session}`);
-  //     }
-  //   } else {
-  //     setProjectName('');
-  //     setShowSeriesFields(false);
-  //   }
-  // };
   const handleGroupChange = (event) => {
     const selectedGroupId = parseInt(event.target.value, 10);
     const selectedGroupObj = groups.find((group) => group.id === selectedGroupId);
@@ -351,28 +309,40 @@ const ProjectTab = ({ setActiveTabKey, setSelectedProject }) => {
     }
   };
   
-  const handleExamTypeChange = (event) => {
-    const selectedExamTypeId = parseInt(event.target.value, 10);
-    const selectedExamTypeObj = examTypes.find((typeName) => typeName.examTypeId === selectedExamTypeId);
-    setSelectedExamType(selectedExamTypeObj);
+  const handleExamTypeChange = (value) => {
+    // Find the exam type objects corresponding to the selected IDs
+    const selectedExamTypeObjs = examTypes.filter((type) => value.includes(type.examTypeId));
   
-    if (selectedGroup && selectedType && selectedSession && selectedExamTypeObj) {
-      setProjectName(`${selectedGroup.name}-${selectedType.types} - ${selectedSession.session} - ${selectedExamTypeObj.typeName}`);
+    console.log(selectedExamTypeObjs); // Log the selected exam types
+  
+    setSelectedExamType(selectedExamTypeObjs);
+  
+    if (selectedGroup && selectedType && selectedSession && selectedExamTypeObjs.length > 0) {
+      // Combine the selected exam types' names into a string for the project name
+      const examTypeNames = selectedExamTypeObjs.map((obj) => obj.typeName).join(', ');
+      console.log(examTypeNames); // Log the combined exam type names
+  
+      setProjectName(`${selectedGroup.name}-${selectedType.types} - ${selectedSession.session} - ${examTypeNames}`);
     } else {
       setProjectName('');
     }
   };
+  
 
   const handleTypeChange = (event) => {
+   
     const selectedTypeId = parseInt(event.target.value, 10);
+   
     const selectedTypeObj = types.find((type) => type.typeId === selectedTypeId);
+    console.log(selectedTypeObj)
     setSelectedType(selectedTypeObj);
   
     if (selectedGroup && selectedTypeObj && selectedSession ) {
-      const typeName = selectedTypeObj.types.toLowerCase();
-      if (typeName === 'booklet') {
+      const typeName = selectedTypeObj.types;
+      if (typeName === 'Booklet') {
         setProjectName(`${selectedGroup.name}-${selectedTypeObj.types} - ${selectedSession.session} - ${selectedExamType.typeName}`);
         setShowSeriesFields(true);
+      
       } else {
         setShowSeriesFields(false);
         setProjectName(`${selectedGroup.name}-${selectedTypeObj.types} - ${selectedSession.session} - ${selectedExamType.typeName}`);
@@ -512,6 +482,7 @@ const ProjectTab = ({ setActiveTabKey, setSelectedProject }) => {
         customDarkBorder={customDarkBorder}
         numberOfSeries={numberOfSeries}
         setNumberOfSeries={setNumberOfSeries}
+        handleExamTypeChange={handleExamTypeChange}
         seriesNames={seriesNames}
         setSeriesNames={setSeriesNames}
         t={t}

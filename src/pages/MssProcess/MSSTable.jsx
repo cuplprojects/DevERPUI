@@ -1,22 +1,44 @@
-import React from "react";
-import { AgGridReact } from 'ag-grid-react';
-import 'ag-grid-community/styles/ag-grid.css';
-import 'ag-grid-community/styles/ag-theme-alpine.css';
-import 'ag-grid-enterprise';
-import { Button } from "react-bootstrap";
+import React, { useState, useEffect } from "react";
+import { Table, Input, Button, Space, message, Select } from "antd";
 import { CheckCircleOutlined, DeleteOutlined } from "@ant-design/icons";
-import { message } from "antd";
 import API from "../../CustomHooks/MasterApiHooks/api";
+import Highlighter from "react-highlight-words";
+import themeStore from "../../store/themeStore";
+import { useStore } from "zustand";
 
+const { Option } = Select;
 
-const MSSTable = ({ quantitySheetData, fetchQuantitySheetData, languageOptions }) => {
-  const [gridApi, setGridApi] = React.useState(null);
-  const [gridColumnApi, setGridColumnApi] = React.useState(null);
+const MSSTable = ({
+  quantitySheetData,
+  fetchQuantitySheetData,
+  languageOptions,
+  tableSearchTerm,
+  currentPage,
+  pageSize,
+  handleTableChange,
+}) => {
+  const [searchText, setSearchText] = useState("");
+  const [searchedColumn, setSearchedColumn] = useState("");
+  const { getCssClasses } = useStore(themeStore);
+  const [
+    customDark,
+    customMid,
+    customLight,
+    customBtn,
+    customDarkText,
+    customLightText,
+    customLightBorder,
+    customDarkBorder,
+    customThead,
+  ] = getCssClasses();
 
-  const handleMarkReceived = async (data) => {
+  const handleMarkReceived = async (record) => {
     try {
-      const updatedData = { ...data, mssStatus: 2 };
-      await API.put(`/QuantitySheet/UpdateStatus?id=${data.quantitySheetId}`, updatedData);
+      const updatedData = { ...record, mssStatus: 2 };
+      await API.put(
+        `/QuantitySheet/UpdateStatus?id=${record.quantitySheetId}`,
+        updatedData
+      );
       message.success("Item marked as received successfully");
       await fetchQuantitySheetData();
     } catch (error) {
@@ -25,9 +47,9 @@ const MSSTable = ({ quantitySheetData, fetchQuantitySheetData, languageOptions }
     }
   };
 
-  const handleRemove = async (data) => {
+  const handleRemove = async (record) => {
     try {
-      await API.delete(`/QuantitySheet/${data.quantitySheetId}`);
+      await API.delete(`/QuantitySheet/${record.quantitySheetId}`);
       message.success("Item removed successfully");
       await fetchQuantitySheetData();
     } catch (error) {
@@ -36,208 +58,195 @@ const MSSTable = ({ quantitySheetData, fetchQuantitySheetData, languageOptions }
     }
   };
 
-  const ActionCellRenderer = (params) => {
-    return (
-      <div className="d-flex gap-2 justify-content-center">
-        <Button
-          variant="outline-success"
-          size="sm"
-          onClick={() => handleMarkReceived(params.data)}
-          disabled={params.data.mssStatus === 2}
-          title="Mark as Received"
-        >
-          <CheckCircleOutlined />
-        </Button>
-        <Button
-          variant="outline-danger"
-          size="sm"
-          onClick={() => handleRemove(params.data)}
-          title="Remove"
-        >
-          <DeleteOutlined />
-        </Button>
+  const getColumnSearchProps = (dataIndex) => ({
+    filterDropdown: ({
+      setSelectedKeys,
+      selectedKeys,
+      confirm,
+      clearFilters,
+    }) => (
+      <div style={{ padding: 8 }}>
+        <Input
+          placeholder={`Search ${dataIndex}`}
+          value={selectedKeys[0]}
+          onChange={(e) =>
+            setSelectedKeys(e.target.value ? [e.target.value] : [])
+          }
+          onPressEnter={() => confirm()}
+          style={{ width: 188, marginBottom: 8, display: "block" }}
+        />
+        <Space>
+          <Button
+            type="primary"
+            onClick={() => confirm()}
+            icon={<CheckCircleOutlined />}
+            size="small"
+            style={{ width: 90 }}
+          >
+            Search
+          </Button>
+          <Button
+            onClick={() => clearFilters()}
+            size="small"
+            style={{ width: 90 }}
+          >
+            Reset
+          </Button>
+        </Space>
       </div>
-    );
-  };
+    ),
+    filterIcon: (filtered) => (
+      <CheckCircleOutlined
+        style={{ color: filtered ? "#1890ff" : undefined }}
+      />
+    ),
+    onFilter: (value, record) =>
+      record[dataIndex]
+        ? record[dataIndex]
+            .toString()
+            .toLowerCase()
+            .includes(value.toLowerCase())
+        : "",
+    render: (text) =>
+      searchedColumn === dataIndex ? (
+        <Highlighter
+          highlightStyle={{ backgroundColor: "#ffc069", padding: 0 }}
+          searchWords={[searchText]}
+          autoEscape
+          textToHighlight={text ? text.toString() : ""}
+        />
+      ) : (
+        text
+      ),
+  });
 
-  const columnDefs = [
+  const columns = [
     {
-      headerName: "Catch No",
-      field: "catchNo",
-      editable: true,
-      sortable: true,
-      filter: true,
-      width: 120
+      title: "Catch No",
+      dataIndex: "catchNo",
+      key: "catchNo",
+      sorter: (a, b) => a.catchNo.localeCompare(b.catchNo),
+      ...getColumnSearchProps("catchNo"),
     },
     {
-      headerName: "Duration",
-      field: "duration",
-      editable: true,
-      sortable: true,
-      filter: true,
-      width: 120
+      title: "Duration",
+      dataIndex: "duration",
+      key: "duration",
+      sorter: (a, b) => a.duration - b.duration,
+      ...getColumnSearchProps("duration"),
     },
     {
-      headerName: "Course",
-      field: "courseName",
-      editable: true,
-      sortable: true,
-      filter: true,
-      width: 150,
+      title: "Course",
+      dataIndex: "courseName",
+      key: "courseName",
+      sorter: (a, b) => a.courseName.localeCompare(b.courseName),
+      ...getColumnSearchProps("courseName"),
     },
     {
-      headerName: "Subject",
-      field: "subjectName",
-      editable: true,
-      sortable: true,
-      filter: true,
-      width: 150,
+      title: "Subject",
+      dataIndex: "subjectName",
+      key: "subjectName",
+      sorter: (a, b) => a.subjectName.localeCompare(b.subjectName),
+      ...getColumnSearchProps("subjectName"),
     },
     {
-      headerName: "Language",
-      field: "languageId",
-      editable: true,
-      suppressFillHandle: false,
-      enableFillHandle: true,
-      fillHandleDirection: 'xy',
-      sortable: true,
-      filter: true,
-      width: 150,
-      valueFormatter: (params) => {
-        if (!params.value) return '';
-        if (Array.isArray(params.value)) {
-          return params.value.map(id => {
-            const language = languageOptions.find(l => l.languageId === id);
-            return language ? language.languageName : id;
-          }).join(', ');
+      title: "Language",
+      dataIndex: "languageId",
+      key: "languageId",
+      render: (text) => {
+        if (!text) return "";
+        if (Array.isArray(text)) {
+          return text
+            .map((id) => {
+              const language = languageOptions.find((l) => l.languageId === id);
+              return language ? language.languageName : id;
+            })
+            .join(", ");
         }
-        return params.value;
-      }
-    },
-    {
-      headerName: "Max Marks",
-      field: "maxMarks",
-      editable: true,
-      sortable: true,
-      filter: true,
-      width: 120,
-      valueParser: (params) => {
-        return Number(params.newValue);
-      }
-    },
-    {
-      headerName: "NEP Code",
-      field: "nepCode",
-      editable: true,
-      sortable: true,
-      filter: true,
-      width: 130
-    },
-    {
-      headerName: "Private Code",
-      field: "privateCode",
-      editable: true,
-      sortable: true,
-      filter: true,
-      width: 130
-    },
-    {
-      headerName: "MSS Status",
-      field: "mssStatus",
-      editable: true,
-      sortable: true,
-      filter: true,
-      width: 120,
-      cellEditor: 'agSelectCellEditor',
-      cellEditorParams: {
-        values: [0, 1, 2],
-        valueFormatter: (params) => {
-          const statusMap = {
-            0: 'Pending',
-            1: 'Started',
-            2: 'Completed'
-          };
-          return statusMap[params.value] || '';
-        }
+        return text;
       },
-      valueFormatter: (params) => {
-        const statusMap = {
-          0: 'Pending',
-          1: 'Started',
-          2: 'Completed'
-        };
-        return statusMap[params.value] || '';
-      }
+      sorter: (a, b) => {
+        const aLanguages = a.languageId.map(
+          (id) => languageOptions.find((l) => l.languageId === id)?.languageName
+        );
+        const bLanguages = b.languageId.map(
+          (id) => languageOptions.find((l) => l.languageId === id)?.languageName
+        );
+        return aLanguages.join(", ").localeCompare(bLanguages.join(", "));
+      },
     },
     {
-      headerName: "Actions",
-      field: "actions",
-      sortable: false,
-      filter: false,
-      editable: false,
-      pinned: 'right',
-      width: 120,
-      cellRenderer: ActionCellRenderer
-    }
+      title: "Max Marks",
+      dataIndex: "maxMarks",
+      key: "maxMarks",
+      sorter: (a, b) => a.maxMarks - b.maxMarks,
+      ...getColumnSearchProps("maxMarks"),
+    },
+    {
+      title: "NEP Code",
+      dataIndex: "nepCode",
+      key: "nepCode",
+      sorter: (a, b) => a.nepCode.localeCompare(b.nepCode),
+      ...getColumnSearchProps("nepCode"),
+    },
+    {
+      title: "Private Code",
+      dataIndex: "privateCode",
+      key: "privateCode",
+      sorter: (a, b) => a.privateCode.localeCompare(b.privateCode),
+      ...getColumnSearchProps("privateCode"),
+    },
+    {
+      title: "Actions",
+      key: "actions",
+      render: (_, record) => (
+        <Space size="middle">
+          <Button
+            type="link"
+            onClick={() => handleMarkReceived(record)}
+            disabled={record.mssStatus === 2}
+            title="Mark as Received"
+          >
+            <CheckCircleOutlined />
+          </Button>
+        </Space>
+      ),
+    },
   ];
 
-  const defaultColDef = {
-    flex: 1,
-    minWidth: 100,
-    resizable: true,
-    enableFillHandle: true,
-    sortable: true,
-    filter: true,
-    editable: true,
-    movable: true,
-  };
-
-  const onGridReady = (params) => {
-    setGridApi(params.api);
-    setGridColumnApi(params.columnApi);
-    params.api.sizeColumnsToFit();
-  };
-
-  const onCellValueChanged = async (params) => {
-    console.log("Cell value changed:", params);
-    try {
-      const updatedData = params.data;
-      await API.put(`/QuantitySheet/update/${updatedData.quantitySheetId}`, updatedData);
-      message.success("Data updated successfully");
-    } catch (error) {
-      console.error("Failed to update data:", error);
-      message.error("Failed to update data");
-      gridApi.refreshCells();
-    }
-  };
+  const filteredData = quantitySheetData.filter((record) =>
+    Object.values(record).some((value) =>
+      value
+        ? value.toString().toLowerCase().includes(tableSearchTerm.toLowerCase())
+        : false
+    )
+  );
 
   return (
-    <div
-      className="ag-theme-alpine"
-      style={{
-        height: 400,
-        width: '100%'
-      }}
-    >
-      <AgGridReact
-        rowData={quantitySheetData}
-        columnDefs={columnDefs}
-        defaultColDef={defaultColDef}
-        onGridReady={onGridReady}
-        onCellValueChanged={onCellValueChanged}
-        pagination={true}
-        paginationPageSize={10}
-        rowSelection="multiple"
-        enableCellTextSelection={true}
-        stopEditingWhenCellsLoseFocus={true}
-        suppressRowClickSelection={true}
-        undoRedoCellEditing={true}
-        undoRedoCellEditingLimit={20}
-        suppressMovableColumns={false}
-        enableFilter={true}
-        enableColResize={true}
-        enableSorting={true}
-        suppressColumnVirtualisation={false}
+    <div className="table-responsive" style={{ overflowX: 'auto', width: '100%' }}>
+      <Table
+        className={`${customDark === "default-dark" ? "thead-default" : ""}
+${customDark === "red-dark" ? "thead-red" : ""}
+${customDark === "green-dark" ? "thead-green" : ""}
+${customDark === "blue-dark" ? "thead-blue" : ""}
+${customDark === "dark-dark" ? "thead-dark" : ""}
+${customDark === "pink-dark" ? "thead-pink" : ""}
+${customDark === "purple-dark" ? "thead-purple" : ""}
+${customDark === "light-dark" ? "thead-light" : ""}
+${customDark === "brown-dark" ? "thead-brown" : ""} `}
+        responsive={true}
+        columns={columns}
+        dataSource={filteredData}
+        rowKey="quantitySheetId"
+        pagination={{
+          current: currentPage,
+          pageSize: pageSize,
+          total: filteredData.length,
+          onChange: handleTableChange,
+        }}
+        onChange={(pagination, filters, sorter, extra) => {
+          console.log("params", pagination, filters, sorter, extra);
+        }}
       />
     </div>
   );

@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Card, Form, Row, Col, Button, Table } from 'react-bootstrap';
+import { Container, Card, Form, Row, Col, Button, Table, InputGroup } from 'react-bootstrap';
 import Select from 'react-select';
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
 import API from '../CustomHooks/MasterApiHooks/api';
 import themeStore from './../store/themeStore';
 import { useStore } from 'zustand';
 import { success, error } from '../CustomHooks/Services/AlertMessageService';
+import { FaSearch } from 'react-icons/fa';
 
 const ABCDMaster = () => {
   const { getCssClasses } = useStore(themeStore);
@@ -24,6 +25,11 @@ const ABCDMaster = () => {
 
   // Add new state for all configurations
   const [allConfigurations, setAllConfigurations] = useState([]);
+
+  // Add new state for pagination and search
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(5);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Add function to fetch all configurations
   const fetchAllConfigurations = async () => {
@@ -125,7 +131,60 @@ const ABCDMaster = () => {
     fetchAllConfigurations();
   }, []);
 
+  // Add filtered configurations based on search term
+  const filteredConfigurations = allConfigurations.filter(config => {
+    const groupName = groups.find(g => g.id === config.groupId)?.name || `Group ${config.groupId}`;
+    const sessionName = sessions.find(s => s.sessionId === config.sessionId)?.session || '';
+    
+    return (
+      groupName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      config.a?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      config.b?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      config.c?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      config.d?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      sessionName.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  });
 
+  // Calculate pagination
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredConfigurations.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredConfigurations.length / itemsPerPage);
+
+  // Add pagination controls
+  const renderPagination = () => {
+    const pageNumbers = [];
+    for (let i = 1; i <= totalPages; i++) {
+      pageNumbers.push(i);
+    }
+
+    return (
+      <div className="d-flex justify-content-end mt-3">
+        <nav>
+          <ul className="pagination mb-0">
+            <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+              <button className="page-link" onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}>
+                Previous
+              </button>
+            </li>
+            {pageNumbers.map(number => (
+              <li key={number} className={`page-item ${currentPage === number ? 'active' : ''}`}>
+                <button className="page-link" onClick={() => setCurrentPage(number)}>
+                  {number}
+                </button>
+              </li>
+            ))}
+            <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+              <button className="page-link" onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}>
+                Next
+              </button>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    );
+  };
 
   // Modify reset handler to only reset values
   // Modify reset handler
@@ -135,9 +194,6 @@ const ABCDMaster = () => {
     setSelectedSessionId('');
     setShowTable(false);
   };
-
-
-
 
   const handleValueChange = (label, value) => {
     if (label === 'A') {
@@ -227,7 +283,6 @@ const ABCDMaster = () => {
 
     return (
       <>
-
         <Form.Control
           type="text"
           placeholder="Type custom value and press "
@@ -395,34 +450,54 @@ const ABCDMaster = () => {
       {/* Configuration Summary Card */}
       <Card className={`shadow-sm rounded-3 border-0 ${customDark === "dark-dark" ? `${customDark} border` : ''}`}>
         <Card.Body className={`p-0 ${customDark === "dark-dark" ? customMid : ''}`}>
+          {/* Add Search Box */}
+          <div className="p-3 border-bottom d-flex justify-content-end">
+            <InputGroup style={{ width: '300px' }}>
+              <InputGroup.Text className={customDark === "dark-dark" ? customDarkText : ''}>
+                <FaSearch />
+              </InputGroup.Text>
+              <Form.Control
+                type="text"
+                placeholder="Search configurations..."
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className={customDark === "dark-dark" ? customDarkText : ''}
+                style={{ fontSize: '0.9rem' }}
+              />
+            </InputGroup>
+          </div>
+
           <div className="table-responsive">
             <Table hover striped bordered className="mb-0 align-middle">
               <thead>
                 <tr className={`${customLight}`}>
-                  <th className="px-3 py-3 text-center rounded-start" style={{ width: '5%' }}>Sr.</th>
-                  <th className="px-3 py-3 text-center" style={{ width: '20%' }}>Group</th>
-                  <th className="px-3 py-3 text-center" style={{ width: '15%' }}>
+                  <th className="px-2 py-2 text-center" style={{ width: '5%' }}>Sr.</th>
+                  <th className="px-2 py-2 text-center" style={{ width: '15%' }}>Group</th>
+                  <th className="px-2 py-2 text-center" style={{ width: '20%' }}>
                     <span className="badge rounded-pill bg-success">A</span>
                   </th>
-                  <th className="px-3 py-3 text-center" style={{ width: '15%' }}>
+                  <th className="px-2 py-2 text-center" style={{ width: '15%' }}>
                     <span className="badge rounded-pill bg-success">B</span>
                   </th>
-                  <th className="px-3 py-3 text-center" style={{ width: '15%' }}>
+                  <th className="px-2 py-2 text-center" style={{ width: '15%' }}>
                     <span className="badge rounded-pill bg-success">C</span>
                   </th>
-                  <th className="px-3 py-3 text-center rounded-end" style={{ width: '15%' }}>
+                  <th className="px-2 py-2 text-center" style={{ width: '15%' }}>
                     <span className="badge rounded-pill bg-success">D</span>
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {allConfigurations.map((config, index) => (
+                {currentItems.map((config, index) => (
                   <tr key={config.abcdId}>
-                    <td className="px-3 py-3 text-center fw-medium">{index + 1}</td>
-                    <td className="px-3 py-3 text-center fw-medium">
+                    <td className="px-2 py-2 text-center fw-medium">{indexOfFirstItem + index + 1}</td>
+                    <td className="px-2 py-2 text-center fw-medium">
                       {groups.find(g => g.id === config.groupId)?.name || `Group ${config.groupId}`}
                     </td>
-                    <td className="px-3 py-3 text-center">
+                    <td className="px-2 py-2 text-center">
                       <span className="text-secondary fw-medium">
                         {config.sessionId && sessions.find(s => s.sessionId === config.sessionId)?.session}
                         {config.a && config.a !== 'null' && (
@@ -433,28 +508,35 @@ const ABCDMaster = () => {
                         )}
                       </span>
                     </td>
-                    <td className="px-3 py-3 text-center">
+                    <td className="px-2 py-2 text-center">
                       <span className="text-secondary fw-medium">{config.b}</span>
                     </td>
-                    <td className="px-3 py-3 text-center">
+                    <td className="px-2 py-2 text-center">
                       <span className="text-secondary fw-medium">{config.c}</span>
                     </td>
-                    <td className="px-3 py-3 text-center">
+                    <td className="px-2 py-2 text-center">
                       <span className="text-secondary fw-medium">{config.d}</span>
                     </td>
                   </tr>
                 ))}
-                {allConfigurations.length === 0 && (
+                {currentItems.length === 0 && (
                   <tr>
                     <td colSpan="6" className="text-center py-5 text-muted">
                       <i className="bi bi-inbox me-2"></i>
-                      No configurations found
+                      {searchTerm ? 'No matching configurations found' : 'No configurations found'}
                     </td>
                   </tr>
                 )}
               </tbody>
             </Table>
           </div>
+
+          {/* Add Pagination */}
+          {filteredConfigurations.length > 0 && (
+            <div className="p-3 border-top">
+              {renderPagination()}
+            </div>
+          )}
         </Card.Body>
       </Card>
     </Container>

@@ -13,6 +13,7 @@ import { decrypt } from "./../Security/Security";
 import { IoMdEye } from "react-icons/io";
 import { success, error, warning } from "./../CustomHooks/Services/AlertMessageService";
 import UpdateQuantitySheet from "./UpdateQuantitySheet";
+import { BsCheckCircleFill } from "react-icons/bs";
 // Helper function to convert Excel date number to JS Date
 const convertExcelDate = (excelDate) => {
   if (!excelDate) return null;
@@ -218,7 +219,7 @@ const QtySheetUpload = () => {
         const lotNo = String(item.LotNo || "").trim();
         const catchNo = String(item.CatchNo || "").trim();
         const innerEnvelope = String(item.InnerEnvelope || "").trim();
-        console.log(projectId)
+        // console.log(projectId)
         return {
           catchNo: item.CatchNo || "",
           paperNumber: item.PaperNumber || "",
@@ -315,7 +316,7 @@ const QtySheetUpload = () => {
                 let value = row[index] || "";
                 if (["LotNo", "CatchNo", "InnerEnvelope"].includes(property)) {
                   value = String(value).trim();
-                  console.log(`${property} value before sending:`, value, `Type:`, typeof value);
+                  // console.log(`${property} value before sending:`, value, `Type:`, typeof value);
                 }
                 rowData[property] = value || "";
               }
@@ -548,7 +549,7 @@ const QtySheetUpload = () => {
     fetchLots();
   };
   const getCourseIdByName = async (courseName) => {
-    console.log("Course Name being passed to API:", courseName);
+    // console.log("Course Name being passed to API:", courseName);
     try {
       const courseResponse = await API.get(`Course/GetCourse?courseName=${courseName}`);
       let courseId = courseResponse.data;
@@ -680,11 +681,7 @@ const QtySheetUpload = () => {
                   <Button
                     className={customBtn}
                     type="primary"
-                    onClick={() => {
-                      setIsLotsFetched(false);
-                      setShowTable(false);
-                      setShowBtn(false);
-                    }}
+                    onClick={() => setIsUpdateMode(true)}
                   >
                     {t("updateFile")}
                   </Button>
