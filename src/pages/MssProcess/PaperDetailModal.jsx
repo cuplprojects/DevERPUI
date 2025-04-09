@@ -109,7 +109,7 @@ const PaperDetailModal = ({
         LanguageId: item.languageIds ?? [],
         ExamTypeId: item.examTypeName ?? 0,
         NEPCode: item.nepCode ?? "",
-        PrivateCode: item.privateCode ?? "",
+        UniqueCode: item.uniqueCode ?? "",
         StructureOfPaper: item.structureOfPaper ?? "", // Set default value for StructureOfPaper
       });
     }
@@ -144,7 +144,7 @@ const PaperDetailModal = ({
           languageId: selectedLanguages,
           examTypeId: selectedExamType ? selectedExamType.examTypeId : 0,
           nepCode: values.NEPCode || "",
-          privateCode: values.PrivateCode || "",
+          uniqueCode: values.UniqueCode || "",
           catchNo: values.CatchNo || 0,
           innerEnvelope: values.InnerEnvelope || "",
           outerEnvelope: Number(values.OuterEnvelope) || 0,
@@ -258,7 +258,7 @@ const PaperDetailModal = ({
               </Form.Item>
             </Col>
             <Col md={2}>
-              <Form.Item name="PrivateCode" label="Private Code">
+              <Form.Item name="UniqueCode" label="Private Code">
                 <Input allowClear />
               </Form.Item>
             </Col>
