@@ -44,6 +44,7 @@ const AllUsers = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
   const [roles, setRoles] = useState([]);
+  const [locations, setLocation] = useState([]);
   const [pageSize, setPageSize] = useState(5); // Default page size
   const [currentPage, setCurrentPage] = useState(1); // Track current page
   const isMobile = useMediaQuery({ maxWidth: 767 });
@@ -68,7 +69,21 @@ const AllUsers = () => {
       }
     };
     getRoles();
+ 
+
+  
+    const getLocation = async () => {
+      try {
+        const response = await API.get('/Location');
+        setLocation(response.data);
+      } catch (error) {
+        console.error(t("errorFetchingLanguage"), error);
+      }
+    };
+    getLocation();
   }, [t]);
+
+
 
   const handleFilterChange = useCallback((value) => {
     setFilterType(value);
@@ -269,6 +284,37 @@ const AllUsers = () => {
       },
       width: 120,
     },
+    visibleColumns.location && {
+      title: t('location'),
+      dataIndex: 'locationId',
+      key: 'locationId',
+      render: (text, record) => {
+        const editable = record.userId === editingUserId;
+        const currentLocation = locations.find(l => l.locationId === text);
+        console.log(currentLocation)
+      
+        return editable ? (
+          <Select
+          value={currentUserData.locationId}
+          onChange={(value) => setCurrentUserData(prev => ({ ...prev, locationId: value }))}
+          style={{ width: '200px' }}
+        >
+          <Option key={currentLocation?.locationId} value={currentLocation?.locationId}>
+            {currentLocation?.locationName}
+          </Option>
+          {locations
+            .map(l => (
+              <Option key={l.locationId} value={l.locationId}>
+                {l.locationName}
+              </Option>
+            ))}
+        </Select>
+        ) : (
+          currentLocation?.locationName || text
+        );
+      },
+      width: 120,
+    },
     {
       title: t('actions'),
       key: 'actions',
@@ -323,7 +369,7 @@ const AllUsers = () => {
         );
       },
     },
-  ].filter(Boolean), [visibleColumns, isValidImageUrl, editingUserId, currentUserData, handleSave, handleCancel, customBtn, roles, t]);
+  ].filter(Boolean), [visibleColumns, isValidImageUrl, editingUserId, currentUserData, handleSave, handleCancel, customBtn, roles, t,locations]);
 
   const showUserDetails = useCallback((user) => {
     setCurrentUser(user);
@@ -395,7 +441,7 @@ const AllUsers = () => {
         </Col>
         <Col lg={12} md={12} xs={12}>
           <div className={`d-flex ${window.innerWidth >= 992 ? 'flex-row' : 'flex-column'} justify-content-lg-end justify-content-md-end justify-content-center align-items-center h-100 gap-3`}>
-            {['profilePicture', 'address', 'mobileNo'].map((column) => (
+            {['profilePicture', 'address', 'mobileNo','location'].map((column) => (
               <Checkbox
                 key={column}
                 checked={visibleColumns[column]}
