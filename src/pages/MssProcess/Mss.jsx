@@ -197,10 +197,19 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
     setSelectedRejectedItem(null);
   };
 
-  const handleUpdateSubmit = (updatedItem) => {
-    // Handle update logic here
-    // console.log("Updated Item:", updatedItem);
+  const handleUpdateSubmit = async (updatedItem) => {
+    try {
+      // Make an API call to update the item
+      await API.put(`/api/QuantitySheet/update/${updatedItem.quantitySheetId}`, updatedItem);
+      message.success("Item updated successfully");
+      // Refresh the data
+      fetchQuantitySheetData();
+    } catch (error) {
+      console.error("Failed to update item:", error);
+      message.error("Failed to update item");
+    }
   };
+  
 
   return (
     <div className="mt-4" style={{ maxWidth: "100%", overflowX: "hidden" }}>

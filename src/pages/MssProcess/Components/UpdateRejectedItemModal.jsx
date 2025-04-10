@@ -7,11 +7,12 @@ const UpdateRejectedItemModal = ({ show, handleClose, data, onUpdate }) => {
   }
 
   const { item, filteredData } = data;
-
+  console.log("data in the items -", item);
+  console.log("data in filtered data -", filteredData);
   const matchedItem = filteredData.find(
     (dataItem) => dataItem.quantitysheetId === item.quantitySheetId
   );
-
+  console.log("data in matchedData -",matchedItem)
   const rejectionReasons = matchedItem?.verified || {};
 
   const rejectionFields = {
@@ -27,7 +28,9 @@ const UpdateRejectedItemModal = ({ show, handleClose, data, onUpdate }) => {
     .filter(([key]) => rejectionReasons[key] === false)
     .map(([key, label]) => (
       <li key={key}>
-        <Badge bg="danger" className="me-2">Rejected</Badge>
+        <Badge bg="danger" className="me-2">
+          Rejected
+        </Badge>
         {label}
       </li>
     ));
@@ -47,9 +50,7 @@ const UpdateRejectedItemModal = ({ show, handleClose, data, onUpdate }) => {
         {rejectedEntries.length > 0 && (
           <Alert variant="danger">
             <strong>Rejection Reasons:</strong>
-            <ul className="mb-0 mt-2">
-              {rejectedEntries}
-            </ul>
+            <ul className="mb-0 mt-2">{rejectedEntries}</ul>
           </Alert>
         )}
 
@@ -58,13 +59,13 @@ const UpdateRejectedItemModal = ({ show, handleClose, data, onUpdate }) => {
             <Form.Label>Catch No</Form.Label>
             <Form.Control
               type="text"
-              defaultValue={matchedItem?.catchNo || ''}
+              defaultValue={matchedItem?.catchNo || ""}
               disabled
             />
           </Form.Group>
 
           {/* Add more editable fields as needed */}
-          
+
           <div className="d-flex justify-content-end">
             <Button variant="primary" type="submit">
               Update
