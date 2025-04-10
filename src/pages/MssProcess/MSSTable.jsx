@@ -18,6 +18,8 @@ const MSSTable = ({
   handleTableChange,
   rejectedActive,handleUpdateItem,
 }) => {
+  console.log(languageOptions)
+
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
   const { getCssClasses } = useStore(themeStore);

@@ -1,7 +1,7 @@
 import React from "react";
 import { Modal, Button, Form, Alert, Badge } from "react-bootstrap";
 
-const UpdateRejectedItemModal = ({ show, handleClose, data, onUpdate }) => {
+const UpdateRejectedItemModal = ({ show, handleClose, data, onUpdate,languageOptions }) => {
   if (!data) {
     return null; // Do not render the modal if data is null
   }

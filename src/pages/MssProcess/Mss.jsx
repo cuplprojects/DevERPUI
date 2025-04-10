@@ -61,7 +61,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
   const [rejectedActive, setRejectedActive] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [selectedRejectedItem, setSelectedRejectedItem] = useState(null);
-
+  
   useEffect(() => {
     setSearchTerm(null);
     setTableSearchTerm("");
@@ -130,13 +130,13 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
 
   const fetchLanguageOptions = async () => {
     try {
-      const response = await API.get("/Languages");
+      const response = await API.get("/Language");
       setLanguageOptions(response.data);
     } catch (error) {
       console.error("Error fetching language options:", error);
     }
   };
-
+  console.log(languageOptions);
   const handleTableChange = (pagination) => {
     setCurrentPage(pagination.current);
     setPageSize(pagination.pageSize);
@@ -338,6 +338,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
             handleUpdateItem={handleUpdateItem}
           />
           <UpdateRejectedItemModal
+          languageOptions={languageOptions}
             show={showUpdateModal}
             handleClose={handleCloseUpdateModal}
             data={selectedRejectedItem}
