@@ -148,7 +148,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
         `/QuantitySheet/CatchByproject?ProjectId=${projectId}`
       );
       setQuantitySheetData(response.data);
-      console.log("Quantity Sheet Data -", response.data);
+      // console.log("Quantity Sheet Data -", response.data);
     } catch (error) {
       console.error("Error fetching quantity sheet data:", error);
     }
@@ -159,7 +159,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
       try {
         const response = await API.get(`/QC/ByProject?projectId=${projectId}`);
         setFilteredData(response.data);
-        console.log("Filtered Data -", response.data);
+        // console.log("Filtered Data -", response.data);
       } catch (error) {
         console.error("Failed to fetch data", error);
       }
@@ -177,8 +177,8 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
     );
     setRejectedQuantitySheetData(matchedData);
     setRejectedCount(matchedData.length);
-    console.log("Rejected QuantitySheet IDs:", rejectedIds);
-    console.log("Final Filtered Quantity Sheet Data:", matchedData);
+    // console.log("Rejected QuantitySheet IDs:", rejectedIds);
+    // console.log("Final Filtered Quantity Sheet Data:", matchedData);
   };
 
   useEffect(() => {
@@ -191,15 +191,15 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
     setSelectedRejectedItem({ item, filteredData });
     setShowUpdateModal(true);
   };
-  
+
   const handleCloseUpdateModal = () => {
     setShowUpdateModal(false);
     setSelectedRejectedItem(null);
   };
-  
+
   const handleUpdateSubmit = (updatedItem) => {
     // Handle update logic here
-    console.log("Updated Item:", updatedItem);
+    // console.log("Updated Item:", updatedItem);
   };
 
   return (
@@ -269,15 +269,20 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
             <Badge color="#ff4d4f" count={rejectedCount}>
               <CloseCircleOutlined
                 onClick={() => setRejectedActive(true)}
-                className="fs-3"
-                style={{ color: "#ff4d4f" }}
+                className="fs-2"
+                style={{
+                  color: "#ff4d4f",
+                  cursor: rejectedCount > 0 ? "pointer" : "not-allowed",
+                }}
+                disabled={rejectedCount === 0}
               />
             </Badge>
           </Tooltip>
+
           <Tooltip title="Refresh" className="ms-2">
             <HiRefresh
               onClick={() => setRejectedActive(false)}
-              className="fs-3"
+              className="fs-2"
               color="blue"
             />
           </Tooltip>

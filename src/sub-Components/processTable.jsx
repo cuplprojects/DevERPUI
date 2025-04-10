@@ -785,11 +785,11 @@ const ProcessTable = () => {
           processId
         );
         const transactionsData = response.data;
-        console.log(previousProcess?.processId)
+        // console.log(previousProcess?.processId)
         if (Array.isArray(transactionsData)) {
           // If the previous process is ID 21, fetch from quantitySheet and skip previous transactions mapping
           if (previousProcess?.processId === 24) {
-            console.log(previousProcess?.processId);
+            // console.log(previousProcess?.processId);
             // Fetch or use data from quantitySheet here instead of previous transactions
             const quantitySheetData = await quantitySheetService.getCatchByProject(
               selectedProject?.value || id,

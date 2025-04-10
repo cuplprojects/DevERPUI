@@ -202,15 +202,7 @@ const MSSTable = ({
       key: "actions",
       render: (_, record) => (
         <Space size="middle">
-          <Button
-            type="link"
-            onClick={() => handleMarkReceived(record)}
-            disabled={record.mssStatus === 2}
-            title="Mark as Received"
-          >
-            <CheckCircleOutlined />
-          </Button>
-          {rejectedActive && (
+          {rejectedActive ? (
             <Button
               type="link"
               onClick={() => handleUpdateItem(record)}
@@ -218,10 +210,19 @@ const MSSTable = ({
             >
               Update
             </Button>
+          ) : (
+            <Button
+              type="link"
+              onClick={() => handleMarkReceived(record)}
+              disabled={record.mssStatus === 2}
+              title="Mark as Received"
+            >
+              <CheckCircleOutlined />
+            </Button>
           )}
         </Space>
       ),
-    },
+    }    
   ];
 
   const filteredData = quantitySheetData.filter((record) =>
