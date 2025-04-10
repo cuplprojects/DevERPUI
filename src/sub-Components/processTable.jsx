@@ -43,6 +43,8 @@ const ProcessTable = () => {
   const { processId, processName } = useCurrentProcessStore();
   const { setProcess } = useCurrentProcessStore((state) => state.actions);
   const userData = useUserData();
+  const role = userData?.role;
+  const supervisor = role.roleId === 5;
   const [isHeaderOpen, setIsHeaderOpen] = useState(() => {
     const saved = localStorage.getItem("processTableHeaderOpen");
     return saved !== null ? JSON.parse(saved) : true;
@@ -397,7 +399,7 @@ const ProcessTable = () => {
         // Default to 0 if no percentage data exists
         const percentage =
           data?.lotProcessWeightageSum?.[selectedLot]?.[
-            previousProcess.processId
+          previousProcess.processId
           ] || 0;
         setPreviousProcessCompletionPercentage(percentage);
       } else {
@@ -569,7 +571,7 @@ const ProcessTable = () => {
           } while (previousSequence >= 0);
 
           // Fetch transactions for previous process if found
-       
+
           if (previousProcessData) {
             const prevTransactions = await getProjectTransactionsData(
               selectedProject?.value || id,
@@ -783,16 +785,16 @@ const ProcessTable = () => {
           processId
         );
         const transactionsData = response.data;
-   console.log(previousProcess?.processId)
+        console.log(previousProcess?.processId)
         if (Array.isArray(transactionsData)) {
           // If the previous process is ID 21, fetch from quantitySheet and skip previous transactions mapping
           if (previousProcess?.processId === 24) {
-           console.log(previousProcess?.processId);
+            console.log(previousProcess?.processId);
             // Fetch or use data from quantitySheet here instead of previous transactions
             const quantitySheetData = await quantitySheetService.getCatchByProject(
               selectedProject?.value || id,
             );
-            const formDataGet = quantitySheetData.filter((item)=>item.mssStatus==3).map((item) => ({
+            const formDataGet = quantitySheetData.filter((item) => item.mssStatus == 3).map((item) => ({
               catchNumber: item.catchNo,
               srNo: item.quantitySheetId,
               seriesName: item.seriesName,
@@ -819,28 +821,28 @@ const ProcessTable = () => {
               alarmMessage: item.alarmMessage || null,
               processIds: item.processIds || [],
             }));
-  
+
             setTableData(formDataGet);
-  
+
             const uniqueLots = [
               ...new Set(quantitySheetData.map((item) => item.lotNo)),
             ].sort((a, b) => a - b);
             const filteredUniqueLots = uniqueLots.filter(
               (lotNo) => !dispatchedLots.includes(lotNo)
             );
-  
+
             setProjectLots(filteredUniqueLots.map((lotNo) => ({ lotNo })));
           } else {
             // Continue with your original logic for previous process transactions
             const validTransactions = transactionsData.filter((item) =>
               item.processIds?.includes(Number(processId))
             );
-  
+
             const formDataGet = validTransactions.map((item) => {
               let previousProcessData = previousProcessTransactions.find(
                 (prevTrans) => prevTrans.quantitySheetId === item.quantitySheetId
               );
-  
+
               if (previousProcessData) {
                 if (
                   !previousProcessData.transactions?.length &&
@@ -853,11 +855,11 @@ const ProcessTable = () => {
                   );
                 }
               }
-  
+
               const independentData = previousIndependent.transactions.find(
                 (indTrans) => indTrans.quantitySheetId === item.quantitySheetId
               );
-  
+
               return {
                 catchNumber: item.catchNo,
                 srNo: item.quantitySheetId,
@@ -882,26 +884,26 @@ const ProcessTable = () => {
                 previousProcessData:
                   previousProcessData && previousProcess
                     ? {
-                        status:
-                          previousProcessData.transactions?.[0]?.status || 0,
-                        interimQuantity:
-                          previousProcessData.transactions?.[0]
-                            ?.interimQuantity || 0,
-                        remarks:
-                          previousProcessData.transactions?.[0]?.remarks || "",
-                        alarmId:
-                          previousProcessData.transactions?.[0]?.alarmId || "",
-                        teamUserNames:
-                          previousProcessData.transactions?.[0]?.teamUserNames ||
-                          [],
-                        machinename:
-                          previousProcessData.transactions?.[0]?.machinename ||
-                          [],
-                        alarmMessage:
-                          previousProcessData.transactions?.[0]?.alarmMessage ||
-                          null,
-                        thresholdQty: previousProcess?.thresholdQty || 0,
-                      }
+                      status:
+                        previousProcessData.transactions?.[0]?.status || 0,
+                      interimQuantity:
+                        previousProcessData.transactions?.[0]
+                          ?.interimQuantity || 0,
+                      remarks:
+                        previousProcessData.transactions?.[0]?.remarks || "",
+                      alarmId:
+                        previousProcessData.transactions?.[0]?.alarmId || "",
+                      teamUserNames:
+                        previousProcessData.transactions?.[0]?.teamUserNames ||
+                        [],
+                      machinename:
+                        previousProcessData.transactions?.[0]?.machinename ||
+                        [],
+                      alarmMessage:
+                        previousProcessData.transactions?.[0]?.alarmMessage ||
+                        null,
+                      thresholdQty: previousProcess?.thresholdQty || 0,
+                    }
                     : null,
                 voiceRecording: item.transactions[0]?.voiceRecording || "",
                 transactionId: item.transactions[0]?.transactionId || null,
@@ -918,38 +920,38 @@ const ProcessTable = () => {
                 processIds: item.processIds || [],
                 independentProcessData: independentData
                   ? {
-                      status: independentData.transactions[0]?.status || 0,
-                      interimQuantity:
-                        independentData.transactions[0]?.interimQuantity || 0,
-                      remarks: independentData.transactions[0]?.remarks || "",
-                      alarmId: independentData.transactions[0]?.alarmId || "",
-                      teamUserNames:
-                        independentData.transactions[0]?.teamUserNames || [],
-                      machinename:
-                        independentData.transactions[0]?.machinename || [],
-                      alarmMessage:
-                        independentData.transactions[0]?.alarmMessage || null,
-                      processName: previousIndependent.process?.processName || "",
-                    }
+                    status: independentData.transactions[0]?.status || 0,
+                    interimQuantity:
+                      independentData.transactions[0]?.interimQuantity || 0,
+                    remarks: independentData.transactions[0]?.remarks || "",
+                    alarmId: independentData.transactions[0]?.alarmId || "",
+                    teamUserNames:
+                      independentData.transactions[0]?.teamUserNames || [],
+                    machinename:
+                      independentData.transactions[0]?.machinename || [],
+                    alarmMessage:
+                      independentData.transactions[0]?.alarmMessage || null,
+                    processName: previousIndependent.process?.processName || "",
+                  }
                   : null,
               };
             });
-  
+
             const filteredData = selectedLot
               ? formDataGet.filter(
-                  (item) => Number(item.lotNo) === Number(selectedLot)
-                )
+                (item) => Number(item.lotNo) === Number(selectedLot)
+              )
               : formDataGet;
-  
+
             setTableData(filteredData);
-  
+
             const uniqueLots = [
               ...new Set(validTransactions.map((item) => item.lotNo)),
             ].sort((a, b) => a - b);
             const filteredUniqueLots = uniqueLots.filter(
               (lotNo) => !dispatchedLots.includes(lotNo)
             );
-  
+
             setProjectLots(filteredUniqueLots.map((lotNo) => ({ lotNo })));
           }
         }
@@ -968,8 +970,8 @@ const ProcessTable = () => {
     previousProcess,
     previousIndependent,
   ]);
-  
-  
+
+
   useEffect(() => {
     fetchData();
 
@@ -1049,71 +1051,71 @@ const ProcessTable = () => {
 
   const combinedTableData =
     processName !== "Digital Printing" &&
-    processName !== "Offset Printing" &&
-    processName !== "CTP" &&
-    processName !== "Cutting" &&
-    processName !== "Proofreading"
+      processName !== "Offset Printing" &&
+      processName !== "CTP" &&
+      processName !== "Cutting" &&
+      processName !== "Proofreading"
       ? tableData
-          .reduce((acc, item) => {
-            const existingItem = acc.find(
-              (i) => i.catchNumber === item.catchNumber
-            );
-            if (existingItem) {
-              existingItem.quantity += item.quantity;
-              // Collect all statuses for this catch number
-              existingItem._allStatuses = existingItem._allStatuses || [];
-              existingItem._allStatuses.push(item.status);
+        .reduce((acc, item) => {
+          const existingItem = acc.find(
+            (i) => i.catchNumber === item.catchNumber
+          );
+          if (existingItem) {
+            existingItem.quantity += item.quantity;
+            // Collect all statuses for this catch number
+            existingItem._allStatuses = existingItem._allStatuses || [];
+            existingItem._allStatuses.push(item.status);
 
-              // Calculate combined status
-              const uniqueStatuses = new Set(existingItem._allStatuses);
-              if (uniqueStatuses.has(1)) {
-                existingItem.status = 1; // If any status is 1, combined status is 1
-              } else if (uniqueStatuses.size === 1 && uniqueStatuses.has(2)) {
-                existingItem.status = 2; // If all statuses are 2, combined status is 2
-              } else {
-                existingItem.status = 0; // Otherwise, combined status is 0
-              }
-
-              // Same logic for previous process status if it exists
-              if (item.previousProcessData) {
-                existingItem._allPreviousStatuses =
-                  existingItem._allPreviousStatuses || [];
-                existingItem._allPreviousStatuses.push(
-                  item.previousProcessData.status
-                );
-
-                const uniquePrevStatuses = new Set(
-                  existingItem._allPreviousStatuses
-                );
-                if (uniquePrevStatuses.has(1)) {
-                  existingItem.previousProcessData.status = 1;
-                } else if (
-                  uniquePrevStatuses.size === 1 &&
-                  uniquePrevStatuses.has(2)
-                ) {
-                  existingItem.previousProcessData.status = 2;
-                } else {
-                  existingItem.previousProcessData.status = 0;
-                }
-              }
+            // Calculate combined status
+            const uniqueStatuses = new Set(existingItem._allStatuses);
+            if (uniqueStatuses.has(1)) {
+              existingItem.status = 1; // If any status is 1, combined status is 1
+            } else if (uniqueStatuses.size === 1 && uniqueStatuses.has(2)) {
+              existingItem.status = 2; // If all statuses are 2, combined status is 2
             } else {
-              // Remove seriesName and initialize status arrays for new items
-              const { seriesName, ...restItem } = item;
-              acc.push({
-                ...restItem,
-                _allStatuses: [item.status],
-                _allPreviousStatuses: item.previousProcessData
-                  ? [item.previousProcessData.status]
-                  : [],
-              });
+              existingItem.status = 0; // Otherwise, combined status is 0
             }
-            return acc;
-          }, [])
-          .map((item) => {
-            // Clean up temporary arrays before final output
-            const { _allStatuses, _allPreviousStatuses, ...cleanItem } = item;
-            return cleanItem;
-          })
+
+            // Same logic for previous process status if it exists
+            if (item.previousProcessData) {
+              existingItem._allPreviousStatuses =
+                existingItem._allPreviousStatuses || [];
+              existingItem._allPreviousStatuses.push(
+                item.previousProcessData.status
+              );
+
+              const uniquePrevStatuses = new Set(
+                existingItem._allPreviousStatuses
+              );
+              if (uniquePrevStatuses.has(1)) {
+                existingItem.previousProcessData.status = 1;
+              } else if (
+                uniquePrevStatuses.size === 1 &&
+                uniquePrevStatuses.has(2)
+              ) {
+                existingItem.previousProcessData.status = 2;
+              } else {
+                existingItem.previousProcessData.status = 0;
+              }
+            }
+          } else {
+            // Remove seriesName and initialize status arrays for new items
+            const { seriesName, ...restItem } = item;
+            acc.push({
+              ...restItem,
+              _allStatuses: [item.status],
+              _allPreviousStatuses: item.previousProcessData
+                ? [item.previousProcessData.status]
+                : [],
+            });
+          }
+          return acc;
+        }, [])
+        .map((item) => {
+          // Clean up temporary arrays before final output
+          const { _allStatuses, _allPreviousStatuses, ...cleanItem } = item;
+          return cleanItem;
+        })
       : tableData;
 
   return (
@@ -1138,11 +1140,10 @@ const ProcessTable = () => {
               <Card className="shadow-sm">
                 <Card.Header
                   as="h3"
-                  className={`${
-                    customDark === "dark-dark"
+                  className={`${customDark === "dark-dark"
                       ? `${customDark} text-white`
                       : `${customDark} text-white`
-                  }`}
+                    }`}
                 >
                   <Row className="d-flex align-items-center">
                     <Col lg={3} md={4} xs={12}>
@@ -1225,11 +1226,11 @@ const ProcessTable = () => {
           projectName={projectName}
         />
       ) : processName === "QC" ? (
-        <QcScreen 
-        projectId={selectedProject?.value || id}
-        processId={processId}
-        lotNo={selectedLot}
-        projectName={projectName}
+        <QcScreen
+          projectId={selectedProject?.value || id}
+          processId={processId}
+          lotNo={selectedLot}
+          projectName={projectName}
         />
       ) : processName === "MSS" ? (
         <MSS
