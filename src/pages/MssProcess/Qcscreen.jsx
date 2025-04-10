@@ -312,8 +312,8 @@ const QcProcess = ({ projectId }) => {
           transition: 'all 0.3s ease'
         }}>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{ fontSize: '14px', color: '#8c8c8c', marginBottom: '4px', fontSize: "1.5rem" }}>{label}</span>
-            <span style={{ fontSize: '16px', fontWeight: '500', color: '#262626', fontSize: "1.5rem" }}>{value}</span>
+            <span style={{  color: '#8c8c8c', marginBottom: '4px', fontSize: "1.5rem" }}>{label}</span>
+            <span style={{  fontWeight: '500', color: '#262626', fontSize: "1.5rem" }}>{value}</span>
           </div>
           {record.action === 'verify' && (
             <Checkbox checked={tempVerification[field] || false} onChange={() => handleVerificationChange(field)} style={{ marginLeft: '20px' }}>

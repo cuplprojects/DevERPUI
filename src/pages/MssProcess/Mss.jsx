@@ -21,6 +21,7 @@ import PaperDetailModal from "./PaperDetailModal";
 import "./mss.css";
 import themeStore from "../../store/themeStore";
 import { useStore } from "zustand";
+import { HiRefresh } from "react-icons/hi";
 
 const { Option } = Select;
 
@@ -268,6 +269,13 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
                 style={{ color: "#ff4d4f" }}
               />
             </Badge>
+          </Tooltip>
+          <Tooltip title="Refresh" className="ms-2">
+              <HiRefresh
+                onClick={fetchQuantitySheetData}
+                className="fs-3"
+                color="blue"
+              />
           </Tooltip>
         </Col>
         <Col
