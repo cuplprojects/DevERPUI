@@ -16,6 +16,7 @@ const MSSTable = ({
   currentPage,
   pageSize,
   handleTableChange,
+  rejectedActive,handleUpdateItem,
 }) => {
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
@@ -209,6 +210,15 @@ const MSSTable = ({
           >
             <CheckCircleOutlined />
           </Button>
+          {rejectedActive && (
+            <Button
+              type="link"
+              onClick={() => handleUpdateItem(record)}
+              title="Update Item"
+            >
+              Update
+            </Button>
+          )}
         </Space>
       ),
     },

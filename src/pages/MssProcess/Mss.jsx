@@ -22,6 +22,7 @@ import "./mss.css";
 import themeStore from "../../store/themeStore";
 import { useStore } from "zustand";
 import { HiRefresh } from "react-icons/hi";
+import UpdateRejectedItemModal from "./Components/UpdateRejectedItemModal";
 
 const { Option } = Select;
 
@@ -46,10 +47,10 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
   const [importing, setImporting] = useState(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
-  const [importedData, setImportedData] = useState([]);
   const [quantitySheetData, setQuantitySheetData] = useState([]);
-  const [rejectedQuantitySheetData, setRejectedQuantitySheetData] = useState([]);
-  const [subjectOptions, setSubjectOptions] = useState([]);
+  const [rejectedQuantitySheetData, setRejectedQuantitySheetData] = useState(
+    []
+  );
   const [languageOptions, setLanguageOptions] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
   const [selectedGroup, setSelectedGroup] = useState(null);
@@ -57,7 +58,9 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [rejectedCount, setRejectedCount] = useState(0);
-  const [rejectedActive,setRejectedActive] = useState(false);
+  const [rejectedActive, setRejectedActive] = useState(false);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [selectedRejectedItem, setSelectedRejectedItem] = useState(null);
 
   useEffect(() => {
     setSearchTerm(null);
@@ -141,7 +144,6 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
 
   const fetchQuantitySheetData = async () => {
     try {
-      // const response = await API.get(`/QuantitySheet/byProject/${projectId}`);
       const response = await API.get(
         `/QuantitySheet/CatchByproject?ProjectId=${projectId}`
       );
@@ -166,20 +168,13 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
   }, []);
 
   const filterDataByStatus = () => {
-    // Filter only those with verified.status === false
     const rejectedItems = filteredData.filter(
       (item) => item.verified?.status === false
     );
-
-    // Extract the quantitySheetIds of those rejected items
     const rejectedIds = rejectedItems.map((item) => item.quantitysheetId);
-
-    // Filter quantitySheetData to include only those with matching quantitySheetId
     const matchedData = quantitySheetData.filter((item) =>
       rejectedIds.includes(item.quantitySheetId)
     );
-
-    // Update the state to show only matched and rejected entries
     setRejectedQuantitySheetData(matchedData);
     setRejectedCount(matchedData.length);
     console.log("Rejected QuantitySheet IDs:", rejectedIds);
@@ -191,8 +186,21 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
       filterDataByStatus();
     }
   }, [filteredData, quantitySheetData]);
+
+  const handleUpdateItem = (item) => {
+    setSelectedRejectedItem(item);
+    setShowUpdateModal(true);
+  };
   
+  const handleCloseUpdateModal = () => {
+    setShowUpdateModal(false);
+    setSelectedRejectedItem(null);
+  };
   
+  const handleUpdateSubmit = (updatedItem) => {
+    // Handle update logic here
+    console.log("Updated Item:", updatedItem);
+  };
 
   return (
     <div className="mt-4" style={{ maxWidth: "100%", overflowX: "hidden" }}>
@@ -258,14 +266,9 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
             </div>
           </Collapse>
           <Tooltip title="Rejected Items" className="ms-2">
-            <Badge
-              color="#ff4d4f"
-              count={
-                rejectedCount
-              }
-            >
+            <Badge color="#ff4d4f" count={rejectedCount}>
               <CloseCircleOutlined
-                onClick={() =>setRejectedActive(true)}
+                onClick={() => setRejectedActive(true)}
                 className="fs-3"
                 style={{ color: "#ff4d4f" }}
               />
@@ -308,13 +311,23 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
       <Row className="justify-content-center">
         <Col xs={12} md={12} lg={12} className="">
           <MSSTable
-             quantitySheetData={rejectedActive ? rejectedQuantitySheetData : quantitySheetData}
+            quantitySheetData={
+              rejectedActive ? rejectedQuantitySheetData : quantitySheetData
+            }
             fetchQuantitySheetData={fetchQuantitySheetData}
             languageOptions={languageOptions}
             tableSearchTerm={tableSearchTerm}
             currentPage={currentPage}
             pageSize={pageSize}
             handleTableChange={handleTableChange}
+            rejectedActive={rejectedActive}
+            handleUpdateItem={handleUpdateItem}
+          />
+          <UpdateRejectedItemModal
+            show={showUpdateModal}
+            handleClose={handleCloseUpdateModal}
+            item={selectedRejectedItem}
+            onUpdate={handleUpdateSubmit}
           />
         </Col>
       </Row>
