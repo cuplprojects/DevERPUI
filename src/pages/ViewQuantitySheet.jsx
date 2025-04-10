@@ -782,7 +782,7 @@ const ViewQuantitySheet = ({ selectedLotNo, showBtn, showTable, lots }) => {
         examTypeId: newRowData.examTypeId,
         qpId: 0,
         nepCode: newRowData.nepCode,
-        privateCode: newRowData.privateCode
+        uniqueCode: newRowData.uniqueCode
       },
     ];
 
@@ -1034,16 +1034,16 @@ const ViewQuantitySheet = ({ selectedLotNo, showBtn, showTable, lots }) => {
                 <Col span={6}>
                   <Form.Item
                     label={<>
-                      {t('privateCode')}
+                      {t('uniqueCode')}
                     </>}
-                    help={formErrors.privateCode}
+                    help={formErrors.uniqueCode}
                   >
                     <Input
                       size="small"
-                      name="privateCode"
-                      value={newRowData.privateCode}
-                      onChange={(e) => handleNewRowChange(e.target.value, 'privateCode')}
-                      placeholder={t('enterprivateCode')}
+                      name="uniqueCode"
+                      value={newRowData.uniqueCode}
+                      onChange={(e) => handleNewRowChange(e.target.value, 'uniqueCode')}
+                      placeholder={t('enteruniqueCode')}
                     />
                   </Form.Item>
                 </Col>

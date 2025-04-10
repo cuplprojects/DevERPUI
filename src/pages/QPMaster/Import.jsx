@@ -319,7 +319,7 @@ const Import = () => {
         groupId: groupId,
         typeId: item.TypeId || 0,
         nepCode: String(item.NEPCode || ""),
-        privateCode: item.PrivateCode || "",
+        uniqueCode: item.UniqueCode || "",
         subjectId: item.SubjectId || 0,
         paperNumber: String(item.PaperNumber || ""),
         paperTitle: item.PaperTitle || "",

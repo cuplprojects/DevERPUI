@@ -191,10 +191,10 @@ const MSSTable = ({
     },
     {
       title: "Private Code",
-      dataIndex: "privateCode",
-      key: "privateCode",
-      sorter: (a, b) => a.privateCode.localeCompare(b.privateCode),
-      ...getColumnSearchProps("privateCode"),
+      dataIndex: "uniqueCode",
+      key: "uniqueCode",
+      sorter: (a, b) => a.uniqueCode.localeCompare(b.uniqueCode),
+      ...getColumnSearchProps("uniqueCode"),
     },
     {
       title: "Actions",

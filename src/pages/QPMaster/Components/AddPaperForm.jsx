@@ -156,7 +156,7 @@ const AddPaperForm = ({ groupId, groupName }) => {
                 groupId: manualInputs.groupId || 0,
                 typeId: manualInputs.type || 0,
                 nepCode: manualInputs.nepCode || "string",
-                privateCode: manualInputs.courseCode || "string",
+                uniqueCode: manualInputs.uniqueCode || "string",
                 subjectId: manualInputs.subject || 0,
                 paperNumber: manualInputs.paperNumber || "string",
                 paperTitle: manualInputs.paperTitle || "string",
@@ -275,7 +275,7 @@ const AddPaperForm = ({ groupId, groupName }) => {
             </Row>
             <Row className="d-flex align-items-center">
             <Col md={1} className="d-lg-block d-md-none"></Col>
-                <Col md={3}>{renderField("Course Code / Private Code*", "courseCode", false)}</Col>
+                <Col md={3}>{renderField("Unique Code*", "uniqueCode", false)}</Col>
                 <Col md={1}>{renderField("Paper Number*", "paperNumber", false)}</Col>                
                 <Col md={1}>{renderField("Language", "language", true, false, null, language, "languages", "languageId")}</Col>
                 <Col md={1}>{renderField("Duration*", "duration", false)}</Col>

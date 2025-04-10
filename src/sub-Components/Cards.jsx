@@ -54,6 +54,7 @@ const Cards = ({ item, onclick, disableProject, activeCardStyle }) => {
       const response = await API.get(
         `/ProjectProcess/GetProjectProcesses/${item.projectId}`
       );
+      console.log(response)
       if (response.data.length === 0) {
         setIsUploadDisabled(true);
       } else {

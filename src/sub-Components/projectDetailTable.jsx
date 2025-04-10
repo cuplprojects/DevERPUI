@@ -37,6 +37,7 @@ import { useTranslation } from "react-i18next";
 import Tippy from "@tippyjs/react";
 import InputPages from "../menus/InputPages";
 import { success } from "../CustomHooks/Services/AlertMessageService";
+import TransferToFactoryModal from "../menus/TransferTofactoryModal";
 
 
 const { Option } = Select;
@@ -107,6 +108,8 @@ const ProjectDetailsTable = ({
   const [selectMachineModalShow, setSelectMachineModalShow] = useState(false);
   const [assignTeamModalShow, setAssignTeamModalShow] = useState(false);
   const [selectZoneModalData, setSelectZoneModalData] = useState(null);
+  const [transfertoFactoryModalShow, setTransferToFactoryModalShow] = useState(false);
+  const [transfertoFactoryModalData, setTransferToFactoryModalData] = useState(null);
   const [selectMachineModalData, setSelectMachineModalData] = useState(null);
   const [assignTeamModalData, setAssignTeamModalData] = useState(null);
   const [showOnlyAlerts, setShowOnlyAlerts] = useState(false);
@@ -119,11 +122,11 @@ const ProjectDetailsTable = ({
   const [courseData, setCourseData] = useState([]);
   const [subjectData, setSubjectData] = useState([]);
   const [examDate, setExamDate] = useState([]);
-  const [examTime,setExamTime] = useState([]);
+  const [examTime, setExamTime] = useState([]);
   const [inputPagesModalData, setInputPagesModalData] = useState(null);
   const [inputPagesModalShow, setInputPagesModalShow] = useState(false);
   const [envelopeData, setEnvelopeData] = useState({});
-// console.log(tableData)
+  // console.log(tableData)
   const showNotification = (type, messageKey, descriptionKey, details = "") => {
     notification[type]({
       message: t(messageKey),
@@ -389,7 +392,7 @@ const ProjectDetailsTable = ({
 
   const columns = [
     {
-      fixed:'left',
+      fixed: 'left',
       title: (
         <input
           type="checkbox"
@@ -415,7 +418,7 @@ const ProjectDetailsTable = ({
         <input
           type="checkbox"
           checked={selectedRowKeys.includes(record.srNo)}
-        
+
           onChange={(e) => {
             const checked = e.target.checked;
             if (checked) {
@@ -435,7 +438,7 @@ const ProjectDetailsTable = ({
     },
     {
       title: t("srNo"),
-      fixed:'left',
+      fixed: 'left',
       key: "srNo",
       align: "center",
       render: (_, __, index) => (currentPage - 1) * pageSize + index + 1,
@@ -443,7 +446,7 @@ const ProjectDetailsTable = ({
     },
     {
       title: t("catchNo"),
-      fixed:'left',
+      fixed: 'left',
       dataIndex: "catchNumber",
       key: "catchNumber",
       align: "center",
@@ -565,28 +568,28 @@ const ProjectDetailsTable = ({
         },
       ]
       : []),
-      ...(columnVisibility["Exam Time"]
-        ? [
-          {
-            title: t("examTime"),
-            dataIndex: "examTime",
-            align: "center",
-            key: "examTime",
-            sorter: (a, b) => a.examTime - b.examTime,
-          },
-        ]
-        : []),
-      ...(columnVisibility["Pages"]
-        ? [
-            {
-              title: t("Pages"),
-              dataIndex: "pages",
-              align: "center",
-              key: "pages",
-              sorter: (a, b) => a.pages - b.pages,
-            },
-          ]
-        : []),
+    ...(columnVisibility["Exam Time"]
+      ? [
+        {
+          title: t("examTime"),
+          dataIndex: "examTime",
+          align: "center",
+          key: "examTime",
+          sorter: (a, b) => a.examTime - b.examTime,
+        },
+      ]
+      : []),
+    ...(columnVisibility["Pages"]
+      ? [
+        {
+          title: t("Pages"),
+          dataIndex: "pages",
+          align: "center",
+          key: "pages",
+          sorter: (a, b) => a.pages - b.pages,
+        },
+      ]
+      : []),
     ...(columnVisibility["Interim Quantity"]
       ? [
         {
@@ -675,7 +678,7 @@ const ProjectDetailsTable = ({
         },
       ]
       : []),
-    ...(columnVisibility["Paper"] 
+    ...(columnVisibility["Paper"]
       ? [
         {
           title: t("questionPaper"),
@@ -687,65 +690,60 @@ const ProjectDetailsTable = ({
         },
       ]
       : []),
-      ...(columnVisibility["Paper Details"]
-        ? [
-            {
-              title: t("paperDetails"),
-              dataIndex: "paperDetails",
-              width: "20%",
-              align: "center",
-              key: "paperDetails",
-              render: (_, record) => (
-                <div className="d-flex flex-column">
-                  <span className="fw-bold">{`Catch: ${
-                    record.catchNumber || "N/A"
-                  }`}</span>
-                  <span className="fw-bold">{`Course: ${
-                    record.course || "N/A"
-                  }`}</span>
-                  <span className="fw-bold">{`Paper: ${
-                    record.paper || "N/A"
-                  }`}</span>
-                  <span className="fw-bold">{`Exam Date: ${
-                    formatDate(record.examDate) || "N/A"
-                  }`}</span>
-                  <span className="fw-bold">{`Exam Time: ${
-                    record.examTime || "N/A"
-                  }`}</span>
-                </div>
-              ),
-              sorter: (a, b) => a.catchNumber.localeCompare(b.catchNumber),
-            },
-          ]
-        : []),
-      ...(columnVisibility["Envelopes"] 
-        ? [
-            {
-              title: t("innerEnvelope"),
-              dataIndex: "envelopes",
-              width: "20%",
-              align: "center",
-              key: "envelopes",
-              children: Object.keys(
-                Object.values(envelopeData)[0] || {}
-              ).map((envKey) => ({
-                title: envKey,
-                align: "center",
-                dataIndex: "catchNo",
-                key: envKey,
-                render: (_, record) => {
-                  // Log to debug
-                  // console.log('Record:', record);
-                  // console.log('Envelope Data:', envelopeData);
-                  // console.log('Specific Envelope:', envelopeData[record.catchNumber]);
-                  
-                  return envelopeData[record.catchNumber]?.[envKey] || 
-                         envelopeData[record.catchNo]?.[envKey] || ''
-                }
-              }))
+    ...(columnVisibility["Paper Details"]
+      ? [
+        {
+          title: t("paperDetails"),
+          dataIndex: "paperDetails",
+          width: "20%",
+          align: "center",
+          key: "paperDetails",
+          render: (_, record) => (
+            <div className="d-flex flex-column">
+              <span className="fw-bold">{`Catch: ${record.catchNumber || "N/A"
+                }`}</span>
+              <span className="fw-bold">{`Course: ${record.course || "N/A"
+                }`}</span>
+              <span className="fw-bold">{`Paper: ${record.paper || "N/A"
+                }`}</span>
+              <span className="fw-bold">{`Exam Date: ${formatDate(record.examDate) || "N/A"
+                }`}</span>
+              <span className="fw-bold">{`Exam Time: ${record.examTime || "N/A"
+                }`}</span>
+            </div>
+          ),
+          sorter: (a, b) => a.catchNumber.localeCompare(b.catchNumber),
+        },
+      ]
+      : []),
+    ...(columnVisibility["Envelopes"]
+      ? [
+        {
+          title: t("innerEnvelope"),
+          dataIndex: "envelopes",
+          width: "20%",
+          align: "center",
+          key: "envelopes",
+          children: Object.keys(
+            Object.values(envelopeData)[0] || {}
+          ).map((envKey) => ({
+            title: envKey,
+            align: "center",
+            dataIndex: "catchNo",
+            key: envKey,
+            render: (_, record) => {
+              // Log to debug
+              // console.log('Record:', record);
+              // console.log('Envelope Data:', envelopeData);
+              // console.log('Specific Envelope:', envelopeData[record.catchNumber]);
+
+              return envelopeData[record.catchNumber]?.[envKey] ||
+                envelopeData[record.catchNo]?.[envKey] || ''
             }
-          ]
-        : []),
+          }))
+        }
+      ]
+      : []),
     {
       title: t("status"),
       dataIndex: "status",
@@ -1134,9 +1132,12 @@ const ProjectDetailsTable = ({
       } else if (action === "Remarks") {
         setRemarksModalShow(true);
         setRemarksModalData(selectedRows[0]); // Pass first selected row for single-row modals
-      } else if (action === "Select Zone" && hasFeaturePermission(1)) {
+      } else if (action == "Transfer To Factory" && hasFeaturePermission(8)) {
+        setTransferToFactoryModalShow(true);
+        setTransferToFactoryModalData(selectedRows);
+      }
+      else if (action === "Select Zone" && hasFeaturePermission(1)) {
         setSelectZoneModalShow(true);
-
         setSelectZoneModalData(selectedRows); // Pass array of all selected rows
       } else if (action === "Select Machine" && hasFeaturePermission(3)) {
         setSelectMachineModalShow(true);
@@ -1374,6 +1375,12 @@ const ProjectDetailsTable = ({
           {t("remarks")}
         </Menu.Item>
       )}
+      {hasFeaturePermission(8) &&
+        allStatusZero && (
+          <Menu.Item onClick={() => handleDropdownSelect("Transfer To Factory")} disabled={selectedRowKeys.length === 0}>
+            {t("transfertofactory")}
+          </Menu.Item>
+        )}
       <Menu.Item onClick={() => setColumnModalShow(true)}>
         {t("columns")}
       </Menu.Item>
@@ -1587,17 +1594,17 @@ const ProjectDetailsTable = ({
               <div className="mt-1 d-flex align-items-center">
                 {
                   hasFeaturePermission(8) && (
-                     <span
-                  className={`me-2 ${customDark === "dark-dark"
-                    ? "text-white"
-                    : "custom-theme-dark-text"
-                    } fs-6 fw-bold`}
-                >
-                  {t("updateStatus")}
-                </span>
+                    <span
+                      className={`me-2 ${customDark === "dark-dark"
+                        ? "text-white"
+                        : "custom-theme-dark-text"
+                        } fs-6 fw-bold`}
+                    >
+                      {t("updateStatus")}
+                    </span>
                   )
                 }
-               
+
                 {(() => {
                   const requirements = [];
                   const selectedRows = selectedRowKeys
@@ -1710,34 +1717,31 @@ const ProjectDetailsTable = ({
             )}
           </Col>
 
-          <Col lg={6} md={8}  className="pe-0">
-          <div className="d-flex flex-wrap gap-2 justify-content-center">
-            {projectLots.map((lot, index) => (
-              <button
-                key={index}
-                className={`btn btn-sm ${
-                  lotNo === lot.lotNo
-                    ? "bg-white text-dark border-dark"
-                    : customBtn
-                } ${
-                  customDark === "dark-dark" ? "border" : "custom-light-border"
-                } 
-                d-flex align-items-center justify-content-center p-2 rounded-2 ${
-                  customDark === "dark-dark"
-                    ? "text-dark border-dark"
-                    : "text-dark"
-                } ${customDarkBorder}`}
-                onClick={() => handleLotClick(lot.lotNo)}
-                style={{
-                  minWidth: "100px",
-                  transition: "all 0.2s",
-                }}
-              >
-                {t("lot")} {lot.lotNo}
-              </button>
-            ))}
-          </div>
-        </Col>
+          <Col lg={6} md={8} className="pe-0">
+            <div className="d-flex flex-wrap gap-2 justify-content-center">
+              {projectLots.map((lot, index) => (
+                <button
+                  key={index}
+                  className={`btn btn-sm ${lotNo === lot.lotNo
+                      ? "bg-white text-dark border-dark"
+                      : customBtn
+                    } ${customDark === "dark-dark" ? "border" : "custom-light-border"
+                    } 
+                d-flex align-items-center justify-content-center p-2 rounded-2 ${customDark === "dark-dark"
+                      ? "text-dark border-dark"
+                      : "text-dark"
+                    } ${customDarkBorder}`}
+                  onClick={() => handleLotClick(lot.lotNo)}
+                  style={{
+                    minWidth: "100px",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  {t("lot")} {lot.lotNo}
+                </button>
+              ))}
+            </div>
+          </Col>
 
           {/* search box */}
           <Col lg={3} md={1} xs={12}>
@@ -1804,22 +1808,6 @@ const ProjectDetailsTable = ({
                     className={` ${customDark === "dark-dark" ? "text-white" : customDarkText
                       }`}
                   />
-                </Button>
-              </Dropdown>
-            </div>
-          </Col>
-          <Col lg={1} md={1} xs={2}>
-            <div className="d-flex justify-content-end ms-">
-              <Dropdown overlay={menu} trigger={["click"]}>
-                <Button
-                  style={{
-                    backgroundColor: "transparent", // Remove background
-                    border: "none", // Remove border
-                    boxShadow: "none", // Remove shadow
-                    padding: 0, // Optional: adjust padding if needed
-                  }}
-                >
-                 Transfer to Factory
                 </Button>
               </Dropdown>
             </div>
@@ -1892,6 +1880,14 @@ const ProjectDetailsTable = ({
         data={catchDetailModalData}
         handleSave={handleCatchDetailSave}
         processId={processId}
+      />
+      <TransferToFactoryModal
+        show={transfertoFactoryModalShow}
+        handleClose={() => setTransferToFactoryModalShow(false)}
+        data={transfertoFactoryModalData}
+        handleSave={handleCatchDetailSave}
+        processId={processId}
+
       />
       <SelectZoneModal
         show={selectZoneModalShow}

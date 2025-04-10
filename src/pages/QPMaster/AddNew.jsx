@@ -278,7 +278,7 @@ const ImportPage = () => {
         groupId: manualInputs.groupId || 0,
         typeId: manualInputs.type || 0,
         nepCode: manualInputs.nepCode || "string",
-        privateCode: manualInputs.courseCode || "string",
+        uniqueCode: manualInputs.uniqueCode || "string",
         subjectId: manualInputs.subject || 0,
         paperNumber: manualInputs.paperNumber || "string",
         paperTitle: manualInputs.paperTitle || "string",
@@ -384,7 +384,7 @@ const ImportPage = () => {
                 "subjectId"
               )}
               {renderField("NEP Code / Paper Code", "nepCode", false)}
-              {renderField("Course Code / Private Code", "courseCode", false)}
+              {renderField("UniqueCode", "uniqueCode", false)}
               {renderField(
                 "Language",
                 "language",

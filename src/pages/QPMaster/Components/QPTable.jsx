@@ -106,8 +106,8 @@ const QPTable = ({
     { headerName: "Type", field: "type", sortable: true, filter: true },
     { headerName: "NEP Code", field: "nepCode", sortable: true, filter: true },
     {
-      headerName: "Private Code",
-      field: "privateCode",
+      headerName: "Unique Code",
+      field: "uniqueCode",
       sortable: true,
       filter: true,
     },

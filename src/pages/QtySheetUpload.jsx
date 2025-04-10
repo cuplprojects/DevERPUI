@@ -246,7 +246,7 @@ const QtySheetUpload = () => {
           languageId: item.LanguageId || [0],
           examtypeId: item.ExamTypeId || 0,
           nepCode: item.NEPCode || "",
-          privateCode: item.PrivateCode || "",
+          uniqueCode: item.UniqueCode || "",
         };
       });
 
