@@ -12,7 +12,7 @@ const UpdateRejectedItemModal = ({ show, handleClose, data, onUpdate }) => {
   const matchedItem = filteredData.find(
     (dataItem) => dataItem.quantitysheetId === item.quantitySheetId
   );
-  console.log("data in matchedData -",matchedItem)
+  console.log("data in matchedData -", matchedItem);
   const rejectionReasons = matchedItem?.verified || {};
 
   const rejectionFields = {
@@ -41,8 +41,26 @@ const UpdateRejectedItemModal = ({ show, handleClose, data, onUpdate }) => {
     handleClose();
   };
 
+  const sampleData = {
+    catchNo: "811",
+    quantitysheetId: 764,
+    languageId: [1, 2],
+    duration: "2",
+    maxMarks: 0,
+    series: "",
+    verified: {
+      catchNo: "811",
+      language: false,
+      maxMarks: false,
+      duration: false,
+      structure: false,
+      series: false,
+      status: false,
+    },
+  };
+
   return (
-    <Modal show={show} onHide={handleClose}>
+    <Modal show={show} onHide={handleClose} size="lg">
       <Modal.Header closeButton>
         <Modal.Title>Update Rejected Item</Modal.Title>
       </Modal.Header>
