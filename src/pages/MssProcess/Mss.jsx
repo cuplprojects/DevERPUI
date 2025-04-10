@@ -188,7 +188,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
   }, [filteredData, quantitySheetData]);
 
   const handleUpdateItem = (item) => {
-    setSelectedRejectedItem(item);
+    setSelectedRejectedItem({ item, filteredData });
     setShowUpdateModal(true);
   };
   
@@ -326,7 +326,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
           <UpdateRejectedItemModal
             show={showUpdateModal}
             handleClose={handleCloseUpdateModal}
-            item={selectedRejectedItem}
+            data={selectedRejectedItem}
             onUpdate={handleUpdateSubmit}
           />
         </Col>
