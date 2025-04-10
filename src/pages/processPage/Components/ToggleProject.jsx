@@ -12,23 +12,58 @@ const ToggleProject = ({ projectName, selectedLot, onChange }) => {
   const userData = useUserData();
   const [visible, setVisible] = useState(false);
 
+  // useEffect(() => {
+  //   const fetchProjects = async () => {
+  //     try {
+  //       const projectData = await API.get(
+  //         `/Project/GetDistinctProjectsForUser/${userData.userId}`
+  //       );
+  //       const activeProjects = projectData.data.filter(
+  //         (project) => project.status
+  //       );
+  //       setProjects(activeProjects);
+  //     } catch (error) {
+  //       console.error("Error fetching project data:", error);
+  //     }
+  //   };
+  //   fetchProjects();
+  // }, [userData.userId]);
+
+
   useEffect(() => {
     const fetchProjects = async () => {
       try {
         const projectData = await API.get(
           `/Project/GetDistinctProjectsForUser/${userData.userId}`
         );
-        const activeProjects = projectData.data.filter(
-          (project) => project.status
-        );
-        setProjects(activeProjects);
+  
+        const activeProjects = projectData.data.filter((project) => project.status);
+  
+        // Fetch project processes for each project and filter
+        const filteredProjects = [];
+        for (const project of activeProjects) {
+          try {
+            const response = await API.get(
+              `/ProjectProcess/GetProjectProcesses/${project.projectId}`
+            );
+            if (response.data && response.data.length > 0) {
+              filteredProjects.push(project);
+            }
+          } catch (err) {
+            console.error(`Error fetching processes for project ${project.name}:`, err);
+          }
+        }
+  
+        setProjects(filteredProjects);
       } catch (error) {
         console.error("Error fetching project data:", error);
       }
     };
+  
     fetchProjects();
   }, [userData.userId]);
 
+  
   const handleMenuClick = (project) => {
     onChange({
       value: project.projectId,
