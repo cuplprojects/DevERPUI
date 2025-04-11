@@ -7,12 +7,13 @@ const UpdateRejectedItemModal = ({ show, handleClose, data, onUpdate,languageOpt
   }
 
   const { item, filteredData } = data;
-  console.log("data in the items -", item);
-  console.log("data in filtered data -", filteredData);
   const matchedItem = filteredData.find(
     (dataItem) => dataItem.quantitysheetId === item.quantitySheetId
   );
+  console.log("data in the items -", item);
   console.log("data in matchedData -", matchedItem);
+  console.log("data in lannguage -",languageOptions)
+  //   console.log("data in filtered data -", filteredData);
   const rejectionReasons = matchedItem?.verified || {};
 
   const rejectionFields = {
@@ -41,61 +42,6 @@ const UpdateRejectedItemModal = ({ show, handleClose, data, onUpdate,languageOpt
     handleClose();
   };
 
-  const sampleData = {
-    "quantitySheetId": 764,
-    "catchNo": "811",
-    "paperTitle": "string",
-    "maxMarks": 0,
-    "duration": "2",
-    "mssStatus": 2,
-    "ttfStatus": 0,
-    "languageId": [
-        1,
-        2
-    ],
-    "languages": [
-        "Hindi",
-        "English"
-    ],
-    "examTypeId": 0,
-    "examTypes": null,
-    "paperNumber": "string",
-    "examDate": "string",
-    "examTime": "string",
-    "courseId": 0,
-    "courseName": null,
-    "subjectId": 0,
-    "subjectName": null,
-    "innerEnvelope": "string",
-    "outerEnvelope": 0,
-    "lotNo": "M",
-    "quantity": 0,
-    "percentageCatch": 1.1664564943253468,
-    "projectId": 14,
-    "processId": [
-        23,
-        24,
-        1,
-        2,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        13,
-        14,
-        15
-    ],
-    "pages": 0,
-    "stopCatch": 0,
-    "qpId": 1979,
-    "nepCode": "56456",
-    "uniqueCode": ""
-};
 
   return (
     <Modal show={show} onHide={handleClose} size="lg">
