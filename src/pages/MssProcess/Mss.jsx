@@ -10,9 +10,7 @@ import {
   Badge,
 } from "antd";
 import { Button, Col, Row } from "react-bootstrap";
-import {
-  CloseCircleOutlined,
-} from "@ant-design/icons";
+import { CloseCircleOutlined } from "@ant-design/icons";
 import API from "../../CustomHooks/MasterApiHooks/api";
 import MSSTable from "./MSSTable";
 import PaperDetailModal from "./PaperDetailModal";
@@ -59,7 +57,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
   const [rejectedActive, setRejectedActive] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [selectedRejectedItem, setSelectedRejectedItem] = useState(null);
-  
+
   useEffect(() => {
     setSearchTerm(null);
     setTableSearchTerm("");
@@ -197,9 +195,12 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
 
   const handleUpdateSubmit = async (updatedItem) => {
     try {
-      console.log("Payload Data -",updatedItem)
+      console.log("Payload Data -", updatedItem);
       // Make an API call to update the item
-      await API.put(`/QuantitySheet/update/${updatedItem.quantitySheetId}`, updatedItem);
+      await API.put(
+        `/QuantitySheet/update/${updatedItem.quantitySheetId}`,
+        updatedItem
+      );
       message.success("Item updated successfully");
       // Refresh the data
       fetchQuantitySheetData();
@@ -208,7 +209,6 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
       message.error("Failed to update item");
     }
   };
-  
 
   return (
     <div className="mt-4" style={{ maxWidth: "100%", overflowX: "hidden" }}>
@@ -276,13 +276,16 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
           <Tooltip title="Rejected Items" className="ms-2">
             <Badge color="#ff4d4f" count={rejectedCount}>
               <CloseCircleOutlined
-                onClick={() => setRejectedActive(true)}
+                onClick={() => {
+                  if (rejectedCount > 0) {
+                    setRejectedActive(true);
+                  }
+                }}
                 className="fs-2"
                 style={{
                   color: "#ff4d4f",
                   cursor: rejectedCount > 0 ? "pointer" : "not-allowed",
                 }}
-                disabled={rejectedCount === 0}
               />
             </Badge>
           </Tooltip>
@@ -337,7 +340,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
             handleUpdateItem={handleUpdateItem}
           />
           <UpdateRejectedItemModal
-          languageOptions={languageOptions}
+            languageOptions={languageOptions}
             show={showUpdateModal}
             handleClose={handleCloseUpdateModal}
             data={selectedRejectedItem}

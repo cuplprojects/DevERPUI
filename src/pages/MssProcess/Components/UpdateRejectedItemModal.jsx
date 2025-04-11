@@ -6,6 +6,9 @@ import API from "../../../CustomHooks/MasterApiHooks/api";
 const { Option } = Select;
 
 const UpdateRejectedItemModal = ({ show, handleClose, data, onUpdate, languageOptions }) => {
+
+console.log(data)
+
   const [formData, setFormData] = useState({});
   const [processOptions, setProcessOptions] = useState([]);
   const [courseOptions, setCourseOptions] = useState([]);
@@ -246,56 +249,6 @@ const UpdateRejectedItemModal = ({ show, handleClose, data, onUpdate, languageOp
 
           <Row>
             <Col md={6}>
-              <Form.Group controlId="formPercentageCatch" className="mb-3">
-                <Form.Label>Percentage Catch</Form.Label>
-                <Form.Control
-                  type="number"
-                  name="percentageCatch"
-                  value={formData.percentageCatch || ""}
-                  onChange={handleChange}
-                />
-              </Form.Group>
-            </Col>
-            <Col md={6}>
-              <Form.Group controlId="formProjectId" className="mb-3">
-                <Form.Label>Project ID</Form.Label>
-                <Form.Control
-                  type="number"
-                  name="projectId"
-                  value={formData.projectId || ""}
-                  onChange={handleChange}
-                />
-              </Form.Group>
-            </Col>
-          </Row>
-
-          <Row>
-            <Col md={6}>
-              <Form.Group controlId="formStatus" className="mb-3">
-                <Form.Label>Status</Form.Label>
-                <Form.Control
-                  type="number"
-                  name="status"
-                  value={formData.status || ""}
-                  onChange={handleChange}
-                />
-              </Form.Group>
-            </Col>
-            <Col md={6}>
-              <Form.Group controlId="formStopCatch" className="mb-3">
-                <Form.Label>Stop Catch</Form.Label>
-                <Form.Control
-                  type="number"
-                  name="stopCatch"
-                  value={formData.stopCatch || ""}
-                  onChange={handleChange}
-                />
-              </Form.Group>
-            </Col>
-          </Row>
-
-          <Row>
-            <Col md={6}>
               <Form.Group controlId="formPaperNumber" className="mb-3">
                 <Form.Label>Paper Number</Form.Label>
                 <Form.Control
@@ -320,17 +273,6 @@ const UpdateRejectedItemModal = ({ show, handleClose, data, onUpdate, languageOp
           </Row>
 
           <Row>
-            <Col md={6}>
-              <Form.Group controlId="formQpId" className="mb-3">
-                <Form.Label>QP ID</Form.Label>
-                <Form.Control
-                  type="number"
-                  name="qpId"
-                  value={formData.qpId || ""}
-                  onChange={handleChange}
-                />
-              </Form.Group>
-            </Col>
             <Col md={6}>
               <Form.Group controlId="formMaxMarks" className="mb-3">
                 <Form.Label>Max Marks</Form.Label>
@@ -379,7 +321,7 @@ const UpdateRejectedItemModal = ({ show, handleClose, data, onUpdate, languageOp
           <Row>
             <Col md={6}>
               <Form.Group controlId="formExamTypeId" className="mb-3">
-                <Form.Label>Exam Type ID</Form.Label>
+                <Form.Label>Semester</Form.Label>
                 <Form.Control
                   type="number"
                   name="examTypeId"
@@ -402,43 +344,7 @@ const UpdateRejectedItemModal = ({ show, handleClose, data, onUpdate, languageOp
           </Row>
 
           <Row>
-            <Col md={6}>
-              <Form.Group controlId="formUniqueCode" className="mb-3">
-                <Form.Label>Unique Code</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="uniqueCode"
-                  value={formData.uniqueCode || ""}
-                  onChange={handleChange}
-                />
-              </Form.Group>
-            </Col>
-            <Col md={6}>
-              <Form.Group controlId="formMssStatus" className="mb-3">
-                <Form.Label>MSS Status</Form.Label>
-                <Form.Control
-                  type="number"
-                  name="mssStatus"
-                  value={formData.mssStatus || ""}
-                  onChange={handleChange}
-                />
-              </Form.Group>
-            </Col>
-          </Row>
-
-          <Row>
-            <Col md={6}>
-              <Form.Group controlId="formTtfStatus" className="mb-3">
-                <Form.Label>TTF Status</Form.Label>
-                <Form.Control
-                  type="number"
-                  name="ttfStatus"
-                  value={formData.ttfStatus || ""}
-                  onChange={handleChange}
-                />
-              </Form.Group>
-            </Col>
-            <Col md={6}>
+            <Col md={12}>
               <Form.Group controlId="formStructureOfPaper" className="mb-3">
                 <Form.Label>Structure of Paper</Form.Label>
                 <Form.Control
@@ -450,28 +356,6 @@ const UpdateRejectedItemModal = ({ show, handleClose, data, onUpdate, languageOp
               </Form.Group>
             </Col>
           </Row>
-
-          <Row>
-            <Col md={12}>
-              <Form.Group controlId="formProcessId" className="mb-3">
-                <Form.Label>Processes</Form.Label>
-                <Select
-                  mode="multiple"
-                  style={{ width: '100%' }}
-                  placeholder="Select Processes"
-                  value={formData.processId}
-                  onChange={(value) => handleSelectChange(value, 'processId')}
-                >
-                  {processOptions.map((option) => (
-                    <Option key={option.id} value={option.id}>
-                      {option.name}
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Group>
-            </Col>
-          </Row>
-
           <div className="d-flex justify-content-end">
             <Button variant="primary" type="submit">
               Update
