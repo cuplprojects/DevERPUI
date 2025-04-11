@@ -6,7 +6,7 @@ import API from '../CustomHooks/MasterApiHooks/api';
 import themeStore from './../store/themeStore';
 import { useStore } from 'zustand';
 import { success, error } from '../CustomHooks/Services/AlertMessageService';
-import { FaSearch } from 'react-icons/fa';
+import { FaSearch, FaEdit } from 'react-icons/fa';
 
 const ABCDMaster = () => {
   const { getCssClasses } = useStore(themeStore);
@@ -30,6 +30,15 @@ const ABCDMaster = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(5);
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Add new state for editing
+  const [editingConfig, setEditingConfig] = useState(null);
+  const [editValues, setEditValues] = useState({
+    A: '',
+    B: '',
+    C: '',
+    D: ''
+  });
 
   // Add function to fetch all configurations
   const fetchAllConfigurations = async () => {
@@ -103,26 +112,46 @@ const ABCDMaster = () => {
       error('Please select all ABCD values before saving');
       return;
     }
+
+    // Only check for existing configuration if we're creating a new one
+    if (!editingConfig) {
+      const existingConfig = allConfigurations.find(
+        config => config.groupId === parseInt(selectedGroupId)
+      );
+
+      if (existingConfig) {
+        const groupName = groups.find(g => g.id === parseInt(selectedGroupId))?.name || `Group ${selectedGroupId}`;
+        error(`Configuration already exists for ${groupName}. Please select a different group.`);
+        return;
+      }
+    }
   
     try {
       const selectedSession = sessions.find(s => s.sessionId === parseInt(selectedSessionId));
       const configData = {
+        ...(editingConfig && { abcdId: editingConfig.abcdId }),
         GroupId: parseInt(selectedGroupId),
         SessionId: parseInt(selectedSessionId),
         A: `${selectedValues.A.split(',')
           .filter(val => !val.startsWith('session:'))
-          .join(' ')}`,  // Removed duplicate session prefix
+          .join(' ')}`,
         B: selectedValues.B,
         C: selectedValues.C,
         D: selectedValues.D
       };
 
-      await API.post('/ABCD', configData);
+      if (editingConfig) {
+        await API.put(`/ABCD/${editingConfig.abcdId}`, configData);
+        success('Configuration updated successfully');
+      } else {
+        await API.post('/ABCD', configData);
+        success('Configuration saved successfully');
+      }
+
       await fetchAllConfigurations();
       handleReset();
-      success('Configuration saved successfully');
     } catch (err) {
-      error(`Failed to save configuration: ${err.message}`);
+      error(`Failed to ${editingConfig ? 'update' : 'save'} configuration: ${err.message}`);
     }
   };
 
@@ -193,6 +222,7 @@ const ABCDMaster = () => {
     setSelectedGroupId('');
     setSelectedSessionId('');
     setShowTable(false);
+    setEditingConfig(null);
   };
 
   const handleValueChange = (label, value) => {
@@ -285,9 +315,9 @@ const ABCDMaster = () => {
       <>
         <Form.Control
           type="text"
-          placeholder="Type custom value and press "
+          placeholder="Type value and press ENTER "
           onKeyPress={handleCustomInput}
-          className="mb-2"
+          className="mb-0"
         />
         <Select
           isMulti
@@ -345,6 +375,27 @@ const ABCDMaster = () => {
     );
   };
 
+  // Add handleEdit function
+  const handleEdit = (config) => {
+    setEditingConfig(config);
+    setSelectedValues({
+      A: config.a || '',
+      B: config.b || '',
+      C: config.c || '',
+      D: config.d || ''
+    });
+    setSelectedGroupId(config.groupId.toString());
+    setSelectedSessionId(config.sessionId.toString());
+  };
+
+  // Add handleEditValueChange function
+  const handleEditValueChange = (label, value) => {
+    setEditValues(prev => ({
+      ...prev,
+      [label]: value
+    }));
+  };
+
   // Modify the ABCD Selection Grid render part
   return (
     <Container className="py-4">
@@ -357,7 +408,7 @@ const ABCDMaster = () => {
             {/* Group and Session Selectors */}
             <Row className="mb-4">
               <Col md={3}>
-                <Form.Label className="fw-bold text-secondary mb-2"> Group </Form.Label>
+                <Form.Label className="fw-bold text-secondary mb-1"> Group <span className="text-danger">*</span></Form.Label>
                 <Form.Select
                   value={selectedGroupId}
                   onChange={(e) => handleGroupChange(e.target.value)}
@@ -373,7 +424,7 @@ const ABCDMaster = () => {
               </Col>
 
               <Col md={3}>
-                <Form.Label className="fw-bold text-secondary mb-2"> Session </Form.Label>
+                <Form.Label className="fw-bold text-secondary mb-1"> Session <span className="text-danger">*</span> </Form.Label>
                 <Form.Select
                   value={selectedSessionId}
                   onChange={handleSessionChange}
@@ -440,7 +491,7 @@ const ABCDMaster = () => {
                 variant={customDark === "dark-dark" ? "outline-light" : "primary"}
                 onClick={handleSaveConfiguration}
               >
-                Save
+                {editingConfig ? 'Update' : 'Save'}
               </Button>
             </div>
           </Form>
@@ -488,6 +539,7 @@ const ABCDMaster = () => {
                   <th className="px-2 py-2 text-center" style={{ width: '15%' }}>
                     <span className="badge rounded-pill bg-success">D</span>
                   </th>
+                  <th className="px-2 py-2 text-center" style={{ width: '5%' }}>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -516,6 +568,15 @@ const ABCDMaster = () => {
                     </td>
                     <td className="px-2 py-2 text-center">
                       <span className="text-secondary fw-medium">{config.d}</span>
+                    </td>
+                    <td className="px-2 py-2 text-center">
+                      <Button
+                        variant="link"
+                        className="p-2" 
+                        onClick={() => handleEdit(config)}
+                      >
+                        <FaEdit className="text-primary" size={25} />
+                      </Button>
                     </td>
                   </tr>
                 ))}

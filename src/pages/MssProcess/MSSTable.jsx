@@ -1,10 +1,16 @@
-import React, { useState, useEffect } from "react";
-import { Table, Input, Button, Space, message, Select } from "antd";
+import React, { useState, useEffect, useRef } from "react";
+import { Input, Button, Space, message, Select, Pagination } from "antd";
 import { CheckCircleOutlined, DeleteOutlined } from "@ant-design/icons";
 import API from "../../CustomHooks/MasterApiHooks/api";
 import Highlighter from "react-highlight-words";
 import themeStore from "../../store/themeStore";
 import { useStore } from "zustand";
+import { HotTable } from '@handsontable/react';
+import 'handsontable/dist/handsontable.full.css';
+import { registerAllModules } from 'handsontable/registry';
+
+// Register all Handsontable modules
+registerAllModules();
 
 const { Option } = Select;
 
@@ -20,6 +26,7 @@ const MSSTable = ({
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
   const { getCssClasses } = useStore(themeStore);
+  const hotTableRef = useRef(null);
   const [
     customDark,
     customMid,
@@ -120,134 +127,165 @@ const MSSTable = ({
       ),
   });
 
+  // Transform data for Handsontable
+  const transformDataForHandsontable = () => {
+    const filteredData = quantitySheetData.filter((record) =>
+      Object.values(record).some((value) =>
+        value
+          ? value.toString().toLowerCase().includes(tableSearchTerm.toLowerCase())
+          : false
+      )
+    );
+    
+    return filteredData.map(record => {
+      const languageNames = Array.isArray(record.languageId) 
+        ? record.languageId.map(id => {
+            const language = languageOptions.find(l => l.languageId === id);
+            return language ? language.languageName : id;
+          }).join(', ') 
+        : record.languageId || '';
+      
+      return [
+        record.catchNo,
+        record.duration,
+        record.courseName,
+        record.subjectName,
+        languageNames,
+        record.maxMarks,
+        record.nepCode,
+        record.uniqueCode,
+        record.mssStatus === 2 ? 'Received' : 'Mark as Received',
+        record.quantitySheetId // Hidden column for ID reference
+      ];
+    });
+  };
+
+  const allHandsontableData = transformDataForHandsontable();
+  
+  // Apply pagination to data
+  const paginatedData = allHandsontableData.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
+  // Calculate total pages
+  const totalItems = allHandsontableData.length;
+
   const columns = [
-    {
-      title: "Catch No",
-      dataIndex: "catchNo",
-      key: "catchNo",
-      sorter: (a, b) => a.catchNo.localeCompare(b.catchNo),
-      ...getColumnSearchProps("catchNo"),
+    { title: 'S.No', data: 'sno', type: 'numeric', readOnly: true, width: 50,
+      renderer: function(instance, td, row, col, prop, value, cellProperties) {
+        td.innerHTML = row + 1;
+        return td;
+      }
     },
-    {
-      title: "Duration",
-      dataIndex: "duration",
-      key: "duration",
-      sorter: (a, b) => a.duration - b.duration,
-      ...getColumnSearchProps("duration"),
+    { title: 'Catch No', data: 0, type: 'text' },
+    { title: 'Duration', data: 1, type: 'numeric' },
+    { title: 'Course', data: 2, type: 'text' },
+    { title: 'Subject', data: 3, type: 'text' },
+    { title: 'Language', data: 4, type: 'text' },
+    { title: 'Max Marks', data: 5, type: 'numeric' },
+    { title: 'NEP Code', data: 6, type: 'text' },
+    { title: 'Private Code', data: 7, type: 'text' },
+    { 
+      title: 'Actions', 
+      data: 8, 
+      type: 'text',
+      readOnly: true,
+      renderer: function(instance, td, row, col, prop, value, cellProperties) {
+        td.innerHTML = value === 'Received' 
+          ? '<span style="color: green;">✓ Received</span>' 
+          : '<button class="action-button">Mark as Received</button>';
+        return td;
+      }
     },
-    {
-      title: "Course",
-      dataIndex: "courseName",
-      key: "courseName",
-      sorter: (a, b) => a.courseName.localeCompare(b.courseName),
-      ...getColumnSearchProps("courseName"),
-    },
-    {
-      title: "Subject",
-      dataIndex: "subjectName",
-      key: "subjectName",
-      sorter: (a, b) => a.subjectName.localeCompare(b.subjectName),
-      ...getColumnSearchProps("subjectName"),
-    },
-    {
-      title: "Language",
-      dataIndex: "languageId",
-      key: "languageId",
-      render: (text) => {
-        if (!text) return "";
-        if (Array.isArray(text)) {
-          return text
-            .map((id) => {
-              const language = languageOptions.find((l) => l.languageId === id);
-              return language ? language.languageName : id;
-            })
-            .join(", ");
-        }
-        return text;
-      },
-      sorter: (a, b) => {
-        const aLanguages = a.languageId.map(
-          (id) => languageOptions.find((l) => l.languageId === id)?.languageName
-        );
-        const bLanguages = b.languageId.map(
-          (id) => languageOptions.find((l) => l.languageId === id)?.languageName
-        );
-        return aLanguages.join(", ").localeCompare(bLanguages.join(", "));
-      },
-    },
-    {
-      title: "Max Marks",
-      dataIndex: "maxMarks",
-      key: "maxMarks",
-      sorter: (a, b) => a.maxMarks - b.maxMarks,
-      ...getColumnSearchProps("maxMarks"),
-    },
-    {
-      title: "NEP Code",
-      dataIndex: "nepCode",
-      key: "nepCode",
-      sorter: (a, b) => a.nepCode.localeCompare(b.nepCode),
-      ...getColumnSearchProps("nepCode"),
-    },
-    {
-      title: "Private Code",
-      dataIndex: "uniqueCode",
-      key: "uniqueCode",
-      sorter: (a, b) => a.uniqueCode.localeCompare(b.uniqueCode),
-      ...getColumnSearchProps("uniqueCode"),
-    },
-    {
-      title: "Actions",
-      key: "actions",
-      render: (_, record) => (
-        <Space size="middle">
-          <Button
-            type="link"
-            onClick={() => handleMarkReceived(record)}
-            disabled={record.mssStatus === 2}
-            title="Mark as Received"
-          >
-            <CheckCircleOutlined />
-          </Button>
-        </Space>
-      ),
-    },
+    
   ];
 
-  const filteredData = quantitySheetData.filter((record) =>
-    Object.values(record).some((value) =>
-      value
-        ? value.toString().toLowerCase().includes(tableSearchTerm.toLowerCase())
-        : false
-    )
-  );
+  // Handle click on action button in the table
+  useEffect(() => {
+    const handleTableClick = (event) => {
+      if (event.target.className === 'action-button') {
+        const hotInstance = hotTableRef.current.hotInstance;
+        const selectedRow = hotInstance.getSelectedLast()[0];
+        if (selectedRow !== undefined) {
+          const quantitySheetId = hotInstance.getDataAtCell(selectedRow, 9); // Get ID from hidden column
+          const record = quantitySheetData.find(item => item.quantitySheetId === quantitySheetId);
+          if (record) {
+            handleMarkReceived(record);
+          }
+        }
+      }
+    };
+
+    document.addEventListener('click', handleTableClick);
+    return () => {
+      document.removeEventListener('click', handleTableClick);
+    };
+  }, [quantitySheetData]);
+
+  // Pagination change handler
+  const onPaginationChange = (page, pageSize) => {
+    handleTableChange({ current: page, pageSize: pageSize });
+  };
 
   return (
     <div className="table-responsive" style={{ overflowX: 'auto', width: '100%' }}>
-      <Table
-        className={`${customDark === "default-dark" ? "thead-default" : ""}
-${customDark === "red-dark" ? "thead-red" : ""}
-${customDark === "green-dark" ? "thead-green" : ""}
-${customDark === "blue-dark" ? "thead-blue" : ""}
-${customDark === "dark-dark" ? "thead-dark" : ""}
-${customDark === "pink-dark" ? "thead-pink" : ""}
-${customDark === "purple-dark" ? "thead-purple" : ""}
-${customDark === "light-dark" ? "thead-light" : ""}
-${customDark === "brown-dark" ? "thead-brown" : ""} `}
-        responsive={true}
+      <HotTable
+        ref={hotTableRef}
+        data={paginatedData}
+        colHeaders={columns.map(col => col.title)}
         columns={columns}
-        dataSource={filteredData}
-        rowKey="quantitySheetId"
-        pagination={{
-          current: currentPage,
-          pageSize: pageSize,
-          total: filteredData.length,
-          onChange: handleTableChange,
+        width="100%"
+        height="auto"
+        licenseKey="non-commercial-and-evaluation"
+        manualColumnResize={true}
+        manualRowResize={true}
+        manualColumnMove={true}
+        manualRowMove={true}
+        contextMenu={true}
+        stretchH="all"
+        filters={true}
+        dropdownMenu={['filter_by_condition', 'filter_by_value', 'filter_action_bar']}
+       
+        beforeOnCellMouseDown={(event, coords) => {
+          if (coords.row >= 0 && coords.col === -1) {
+            return true;
+          }
         }}
-        onChange={(pagination, filters, sorter, extra) => {
-          console.log("params", pagination, filters, sorter, extra);
+       
+        afterRowMove={(movedRows, finalIndex) => {
+          const pageOffset = (currentPage - 1) * pageSize;
+          const actualMovedRows = movedRows.map(row => row + pageOffset);
+          const actualFinalIndex = finalIndex + pageOffset;
+          
+          const newData = [...allHandsontableData];
+          
+          const movingRows = actualMovedRows.map(index => newData[index]);
+          actualMovedRows.sort((a, b) => b - a).forEach(index => {
+            newData.splice(index, 1);
+          });
+          
+          newData.splice(actualFinalIndex, 0, ...movingRows);
+          
+          const hotInstance = hotTableRef.current.hotInstance;
+          hotInstance.loadData(newData.slice(
+            (currentPage - 1) * pageSize,
+            currentPage * pageSize
+          ));
         }}
       />
+      
+      <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end' }}>
+        <Pagination
+          current={currentPage}
+          pageSize={pageSize}
+          total={totalItems}
+          onChange={onPaginationChange}
+          showSizeChanger
+          pageSizeOptions={[5, 10, 20, 50, 100]}
+          showTotal={(total, range) => `${range[0]}-${range[1]} of ${total} items`}
+        />
+      </div>
     </div>
   );
 };
