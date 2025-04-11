@@ -643,7 +643,7 @@ const ProcessTable = () => {
             const quantitySheetData = await quantitySheetService.getCatchByProject(
               selectedProject?.value || id,
             );
-            let formDataGet = quantitySheetData.filter((item) => item.mssStatus == 2).map((item) => ({
+            let formDataGet = quantitySheetData.filter((item) => item.mssStatus == 3).map((item) => ({
               catchNumber: item.catchNo,
               srNo: item.quantitySheetId,
               seriesName: item.seriesName,
