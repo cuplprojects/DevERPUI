@@ -197,8 +197,9 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
 
   const handleUpdateSubmit = async (updatedItem) => {
     try {
+      console.log("Payload Data -",updatedItem)
       // Make an API call to update the item
-      await API.put(`/api/QuantitySheet/update/${updatedItem.quantitySheetId}`, updatedItem);
+      await API.put(`/QuantitySheet/update/${updatedItem.quantitySheetId}`, updatedItem);
       message.success("Item updated successfully");
       // Refresh the data
       fetchQuantitySheetData();

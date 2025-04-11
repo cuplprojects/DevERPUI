@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Modal, Button, Form, Alert, Badge, Row, Col } from "react-bootstrap";
 import { Select } from "antd";
+import API from "../../../CustomHooks/MasterApiHooks/api";
+
 
 const { Option } = Select;
 
@@ -42,8 +44,8 @@ const UpdateRejectedItemModal = ({ show, handleClose, data, onUpdate, languageOp
         structureOfPaper: item.structureOfPaper,
       });
 
-      // Fetch processes
-      fetchProcesses().then(setProcessOptions);
+      // Fetch processes using your API service
+      fetchProcesses();
     }
   }, [data]);
 
@@ -101,12 +103,10 @@ const UpdateRejectedItemModal = ({ show, handleClose, data, onUpdate, languageOp
 
   const fetchProcesses = async () => {
     try {
-      const response = await fetch('/api/Processes');
-      const data = await response.json();
-      return data;
+      const response = await API.get("/api/Processes");
+      setProcessOptions(response.data);
     } catch (error) {
       console.error("Error fetching processes:", error);
-      return [];
     }
   };
 
@@ -476,7 +476,7 @@ const UpdateRejectedItemModal = ({ show, handleClose, data, onUpdate, languageOp
               </Form.Group>
             </Col>
           </Row>
-        
+
           <div className="d-flex justify-content-end">
             <Button variant="primary" type="submit">
               Update
