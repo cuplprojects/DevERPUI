@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Modal, Button, Form, Alert, Badge, Row, Col, ModalFooter } from "react-bootstrap";
+import {
+  Modal,
+  Button,
+  Form,
+  Alert,
+  Badge,
+  Row,
+  Col,
+  ModalFooter,
+} from "react-bootstrap";
 import { Select } from "antd";
 import API from "../../../CustomHooks/MasterApiHooks/api";
 
@@ -11,7 +20,7 @@ const UpdateRejectedItemModal = ({
   data,
   onUpdate,
   languageOptions,
-  cssClasses
+  cssClasses,
 }) => {
   console.log(data);
 
@@ -120,11 +129,13 @@ const UpdateRejectedItemModal = ({
 
   return (
     <Modal show={show} onHide={handleClose} size="lg" className="rounded-5">
-      <Modal.Header closeButton className={`${customDark} `}>
-        <Modal.Title className={`${customLightText}`}>Update Rejected Item</Modal.Title>
-      </Modal.Header>
-      <Modal.Body className={`${customLight} ${customDarkText}`}>
-        <Form onSubmit={handleSubmit}>
+      <Form onSubmit={handleSubmit}>
+        <Modal.Header closeButton className={`${customDark} `}>
+          <Modal.Title className={`${customLightText}`}>
+            Update Rejected Item
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className={`${customLight} ${customDarkText}`}>
           <Row>
             <Col md={3}>
               <Form.Group controlId="formCatchNo" className="mb-3">
@@ -360,15 +371,19 @@ const UpdateRejectedItemModal = ({
               </Form.Group>
             </Col>
           </Row>
-        </Form>
-      </Modal.Body>
-      <ModalFooter className={`${customDark}`}>
+        </Modal.Body>
+        <ModalFooter className={`${customDark}`}>
           <div className="d-flex justify-content-end">
-            <Button variant="primary" type="submit" className={`${customBtn} ${customLightBorder}`}>
+            <Button
+              variant="primary"
+              type="submit"
+              className={`${customBtn} ${customLightBorder}`}
+            >
               Update
             </Button>
           </div>
-      </ModalFooter>
+        </ModalFooter>
+      </Form>
     </Modal>
   );
 };
