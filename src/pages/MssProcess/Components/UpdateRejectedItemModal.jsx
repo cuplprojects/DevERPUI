@@ -1,6 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { Modal, Button, Form, Alert, Badge, Row, Col, ModalFooter } from "react-bootstrap";
-import { Select } from "antd";
+import {
+  Modal,
+  Button,
+  Form,
+  Alert,
+  Badge,
+  Row,
+  Col,
+  ModalFooter,
+} from "react-bootstrap";
+import { Select, Tag } from "antd";
 import API from "../../../CustomHooks/MasterApiHooks/api";
 
 const { Option } = Select;
@@ -11,14 +20,13 @@ const UpdateRejectedItemModal = ({
   data,
   onUpdate,
   languageOptions,
-  cssClasses
+  cssClasses,
 }) => {
-  console.log(data);
-
   const [formData, setFormData] = useState({});
   const [processOptions, setProcessOptions] = useState([]);
   const [courseOptions, setCourseOptions] = useState([]);
   const [subjectOptions, setSubjectOptions] = useState([]);
+  const [rejectionReasons, setRejectionReasons] = useState([]);
   const [
     customDark,
     customMid,
@@ -29,9 +37,10 @@ const UpdateRejectedItemModal = ({
     customLightBorder,
     customDarkBorder,
   ] = cssClasses;
+
   useEffect(() => {
     if (data) {
-      const { item } = data;
+      const { item, filteredData } = data;
       setFormData({
         quantitySheetId: item.quantitySheetId,
         catchNo: item.catchNo,
@@ -62,6 +71,20 @@ const UpdateRejectedItemModal = ({
         ttfStatus: item.ttfStatus,
         structureOfPaper: item.structureOfPaper,
       });
+
+      // Determine rejection reasons
+      const reasons = [];
+      const verifiedItem = filteredData.find(
+        (fd) => fd.quantitysheetId === item.quantitySheetId
+      );
+      if (verifiedItem) {
+        for (const [key, value] of Object.entries(verifiedItem.verified)) {
+          if (!value && key !== "catchNo" && key !== "status") {
+            reasons.push(key);
+          }
+        }
+      }
+      setRejectionReasons(reasons);
 
       // Fetch processes, courses, and subjects using your API service
       fetchProcesses();
@@ -120,11 +143,14 @@ const UpdateRejectedItemModal = ({
 
   return (
     <Modal show={show} onHide={handleClose} size="lg" className="rounded-5">
-      <Modal.Header closeButton className={`${customDark} `}>
-        <Modal.Title className={`${customLightText}`}>Update Rejected Item</Modal.Title>
-      </Modal.Header>
-      <Modal.Body className={`${customLight} ${customDarkText}`}>
-        <Form onSubmit={handleSubmit}>
+      <Form onSubmit={handleSubmit}>
+        <Modal.Header closeButton className={`${customDark} `}>
+          <Modal.Title className={`${customLightText}`}>
+            Update Rejected Item
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className={`${customLight} ${customDarkText}`}>
+          {/* Existing form fields */}
           <Row>
             <Col md={3}>
               <Form.Group controlId="formCatchNo" className="mb-3">
@@ -360,15 +386,35 @@ const UpdateRejectedItemModal = ({
               </Form.Group>
             </Col>
           </Row>
-        </Form>
-      </Modal.Body>
-      <ModalFooter className={`${customDark}`}>
+
+          {/* New Row for Rejection Reasons */}
+          <Row>
+            <Col md={12}>
+              <Form.Group controlId="formRejectionReasons" className="mb-3">
+                <Form.Label>Rejection Reasons</Form.Label>
+                <div>
+                  {rejectionReasons.map((reason) => (
+                    <Tag key={reason} color="red">
+                      {reason.charAt(0).toUpperCase() + reason.slice(1)}
+                    </Tag>
+                  ))}
+                </div>
+              </Form.Group>
+            </Col>
+          </Row>
+        </Modal.Body>
+        <ModalFooter className={`${customDark}`}>
           <div className="d-flex justify-content-end">
-            <Button variant="primary" type="submit" className={`${customBtn} ${customLightBorder}`}>
+            <Button
+              variant="primary"
+              type="submit"
+              className={`${customBtn} ${customLightBorder}`}
+            >
               Update
             </Button>
           </div>
-      </ModalFooter>
+        </ModalFooter>
+      </Form>
     </Modal>
   );
 };
