@@ -637,59 +637,7 @@ const ProcessTable = () => {
         console.log(previousProcess?.processId)
         if (Array.isArray(transactionsData)) {
           // If the previous process is ID 21, fetch from quantitySheet and skip previous transactions mapping
-          if (previousProcess?.processId === 24) {
-            console.log(previousProcess?.processId);
-            // Fetch or use data from quantitySheet here instead of previous transactions
-            const quantitySheetData = await quantitySheetService.getCatchByProject(
-              selectedProject?.value || id,
-            );
-            let formDataGet = quantitySheetData.filter((item) => item.mssStatus == 3).map((item) => ({
-              catchNumber: item.catchNo,
-              srNo: item.quantitySheetId,
-              seriesName: item.seriesName,
-              lotNo: item.lotNo,
-              paper: item.paper,
-              examDate: item.examDate,
-              examTime: item.examTime,
-              course: item.course,
-              subject: item.subject,
-              innerEnvelope: item.innerEnvelope,
-              outerEnvelope: item.outerEnvelope,
-              pages: item.pages,
-              quantity: item.quantity,
-              percentageCatch: item.percentageCatch,
-              projectId: selectedProject?.value || id,
-              processId: processId,
-              ttfStatus:item.ttfStatus,
-              status: item.status || 0,  // Ensure status is properly assigned
-              remarks: item.remarks || "",
-              teamUserNames: item.teamUserNames || ["No Team Assigned"],
-              machinename: item.machinename || "No Machine Assigned",
-              zoneNo: item.zoneNo || "No Zone Assigned",
-              zoneId: item.zoneId || 0,
-              teamId: item.teamId || [],
-              alarmMessage: item.alarmMessage || null,
-              processIds: item.processIds || [],
-            }));
-            if (supervisor) {
-              console.log(supervisor.locationId)
-              formDataGet = formDataGet.filter((item) =>
-                supervisor.locationId === 1
-                  ? item.ttfStatus === 0
-                  : item.ttfStatus === 1
-              );
-            }
-            setTableData(formDataGet);
-console.log(formDataGet)
-            const uniqueLots = [
-              ...new Set(formDataGet.map((item) => item.lotNo)),
-            ].sort((a, b) => a - b);
-            const filteredUniqueLots = uniqueLots.filter(
-              (lotNo) => !dispatchedLots.includes(lotNo)
-            );
-
-            setProjectLots(filteredUniqueLots.map((lotNo) => ({ lotNo })));
-          } else {
+          
             // Continue with your original logic for previous process transactions
             const validTransactions = transactionsData.filter((item) =>
               item.processIds?.includes(Number(processId))
@@ -818,7 +766,7 @@ console.log(formDataGet)
             );
 
             setProjectLots(filteredUniqueLots.map((lotNo) => ({ lotNo })));
-          }
+          
         }
       } catch (error) {
         console.error("Error fetching transactions data:", error);
