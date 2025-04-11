@@ -18,7 +18,7 @@ const MSSTable = ({
   handleTableChange,
   rejectedActive,handleUpdateItem,
 }) => {
-  console.log(languageOptions)
+  // console.log(languageOptions)
 
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");

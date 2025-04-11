@@ -12,8 +12,6 @@ import {
 import { Button, Col, Row } from "react-bootstrap";
 import {
   CloseCircleOutlined,
-  DownloadOutlined,
-  ExclamationCircleOutlined,
 } from "@ant-design/icons";
 import API from "../../CustomHooks/MasterApiHooks/api";
 import MSSTable from "./MSSTable";
@@ -136,7 +134,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
       console.error("Error fetching language options:", error);
     }
   };
-  console.log(languageOptions);
+  // console.log(languageOptions);
   const handleTableChange = (pagination) => {
     setCurrentPage(pagination.current);
     setPageSize(pagination.pageSize);
