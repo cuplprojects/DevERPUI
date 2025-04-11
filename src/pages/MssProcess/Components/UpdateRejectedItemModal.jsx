@@ -3,12 +3,13 @@ import { Modal, Button, Form, Alert, Badge, Row, Col } from "react-bootstrap";
 import { Select } from "antd";
 import API from "../../../CustomHooks/MasterApiHooks/api";
 
-
 const { Option } = Select;
 
 const UpdateRejectedItemModal = ({ show, handleClose, data, onUpdate, languageOptions }) => {
   const [formData, setFormData] = useState({});
   const [processOptions, setProcessOptions] = useState([]);
+  const [courseOptions, setCourseOptions] = useState([]);
+  const [subjectOptions, setSubjectOptions] = useState([]);
 
   useEffect(() => {
     if (data) {
@@ -18,8 +19,8 @@ const UpdateRejectedItemModal = ({ show, handleClose, data, onUpdate, languageOp
         catchNo: item.catchNo,
         examDate: item.examDate,
         examTime: item.examTime,
-        courseId: item.courseId,
-        subjectId: item.subjectId,
+        courseId: item.courseId || null,
+        subjectId: item.subjectId || null,
         innerEnvelope: item.innerEnvelope,
         outerEnvelope: item.outerEnvelope,
         lotNo: item.lotNo,
@@ -44,41 +45,12 @@ const UpdateRejectedItemModal = ({ show, handleClose, data, onUpdate, languageOp
         structureOfPaper: item.structureOfPaper,
       });
 
-      // Fetch processes using your API service
+      // Fetch processes, courses, and subjects using your API service
       fetchProcesses();
+      fetchCourses();
+      fetchSubjects();
     }
   }, [data]);
-
-  if (!data) {
-    return null; // Do not render the modal if data is null
-  }
-
-  const { item, filteredData } = data;
-  const matchedItem = filteredData.find(
-    (dataItem) => dataItem.quantitysheetId === item.quantitySheetId
-  );
-
-  const rejectionReasons = matchedItem?.verified || {};
-
-  const rejectionFields = {
-    catchNo: "Catch No",
-    language: "Language",
-    maxMarks: "Max Marks",
-    duration: "Duration",
-    structure: "Structure",
-    series: "Series",
-  };
-
-  const rejectedEntries = Object.entries(rejectionFields)
-    .filter(([key]) => rejectionReasons[key] === false)
-    .map(([key, label]) => (
-      <li key={key}>
-        <Badge bg="danger" className="me-2">
-          Rejected
-        </Badge>
-        {label}
-      </li>
-    ));
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -110,19 +82,30 @@ const UpdateRejectedItemModal = ({ show, handleClose, data, onUpdate, languageOp
     }
   };
 
+  const fetchCourses = async () => {
+    try {
+      const response = await API.get("/Course");
+      setCourseOptions(response.data);
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+    }
+  };
+
+  const fetchSubjects = async () => {
+    try {
+      const response = await API.get("/Subject");
+      setSubjectOptions(response.data);
+    } catch (error) {
+      console.error("Error fetching subjects:", error);
+    }
+  };
+
   return (
     <Modal show={show} onHide={handleClose} size="lg">
       <Modal.Header closeButton>
         <Modal.Title>Update Rejected Item</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        {rejectedEntries.length > 0 && (
-          <Alert variant="danger">
-            <strong>Rejection Reasons:</strong>
-            <ul className="mb-0 mt-2">{rejectedEntries}</ul>
-          </Alert>
-        )}
-
         <Form onSubmit={handleSubmit}>
           <Row>
             <Col md={6}>
@@ -163,13 +146,19 @@ const UpdateRejectedItemModal = ({ show, handleClose, data, onUpdate, languageOp
             </Col>
             <Col md={6}>
               <Form.Group controlId="formCourseId" className="mb-3">
-                <Form.Label>Course ID</Form.Label>
-                <Form.Control
-                  type="number"
-                  name="courseId"
-                  value={formData.courseId || ""}
-                  onChange={handleChange}
-                />
+                <Form.Label>Course</Form.Label>
+                <Select
+                  style={{ width: '100%' }}
+                  placeholder="Select Course"
+                  value={formData.courseId}
+                  onChange={(value) => handleSelectChange(value, 'courseId')}
+                >
+                  {courseOptions.map((option) => (
+                    <Option key={option.courseId} value={option.courseId}>
+                      {option.courseName}
+                    </Option>
+                  ))}
+                </Select>
               </Form.Group>
             </Col>
           </Row>
@@ -177,13 +166,19 @@ const UpdateRejectedItemModal = ({ show, handleClose, data, onUpdate, languageOp
           <Row>
             <Col md={6}>
               <Form.Group controlId="formSubjectId" className="mb-3">
-                <Form.Label>Subject ID</Form.Label>
-                <Form.Control
-                  type="number"
-                  name="subjectId"
-                  value={formData.subjectId || ""}
-                  onChange={handleChange}
-                />
+                <Form.Label>Subject</Form.Label>
+                <Select
+                  style={{ width: '100%' }}
+                  placeholder="Select Subject"
+                  value={formData.subjectId}
+                  onChange={(value) => handleSelectChange(value, 'subjectId')}
+                >
+                  {subjectOptions.map((option) => (
+                    <Option key={option.subjectId} value={option.subjectId}>
+                      {option.subjectName}
+                    </Option>
+                  ))}
+                </Select>
               </Form.Group>
             </Col>
             <Col md={6}>
