@@ -1,19 +1,34 @@
 import React, { useEffect, useState } from "react";
-import { Modal, Button, Form, Alert, Badge, Row, Col } from "react-bootstrap";
+import { Modal, Button, Form, Alert, Badge, Row, Col, ModalFooter } from "react-bootstrap";
 import { Select } from "antd";
 import API from "../../../CustomHooks/MasterApiHooks/api";
 
 const { Option } = Select;
 
-const UpdateRejectedItemModal = ({ show, handleClose, data, onUpdate, languageOptions }) => {
-
-console.log(data)
+const UpdateRejectedItemModal = ({
+  show,
+  handleClose,
+  data,
+  onUpdate,
+  languageOptions,
+  cssClasses
+}) => {
+  console.log(data);
 
   const [formData, setFormData] = useState({});
   const [processOptions, setProcessOptions] = useState([]);
   const [courseOptions, setCourseOptions] = useState([]);
   const [subjectOptions, setSubjectOptions] = useState([]);
-
+  const [
+    customDark,
+    customMid,
+    customLight,
+    customBtn,
+    customDarkText,
+    customLightText,
+    customLightBorder,
+    customDarkBorder,
+  ] = cssClasses;
   useEffect(() => {
     if (data) {
       const { item } = data;
@@ -104,14 +119,14 @@ console.log(data)
   };
 
   return (
-    <Modal show={show} onHide={handleClose} size="lg">
-      <Modal.Header closeButton>
-        <Modal.Title>Update Rejected Item</Modal.Title>
+    <Modal show={show} onHide={handleClose} size="lg" className="rounded-5">
+      <Modal.Header closeButton className={`${customDark} `}>
+        <Modal.Title className={`${customLightText}`}>Update Rejected Item</Modal.Title>
       </Modal.Header>
-      <Modal.Body>
+      <Modal.Body className={`${customLight} ${customDarkText}`}>
         <Form onSubmit={handleSubmit}>
           <Row>
-            <Col md={6}>
+            <Col md={3}>
               <Form.Group controlId="formCatchNo" className="mb-3">
                 <Form.Label>Catch No</Form.Label>
                 <Form.Control
@@ -122,21 +137,29 @@ console.log(data)
                 />
               </Form.Group>
             </Col>
-            <Col md={6}>
+            <Col md={3}>
+              <Form.Group controlId="formLotNo" className="mb-3">
+                <Form.Label>Lot No</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="lotNo"
+                  value={formData.lotNo || ""}
+                  onChange={handleChange}
+                />
+              </Form.Group>
+            </Col>
+            <Col md={3}>
               <Form.Group controlId="formExamDate" className="mb-3">
                 <Form.Label>Exam Date</Form.Label>
                 <Form.Control
-                  type="text"
+                  type="date"
                   name="examDate"
                   value={formData.examDate || ""}
                   onChange={handleChange}
                 />
               </Form.Group>
             </Col>
-          </Row>
-
-          <Row>
-            <Col md={6}>
+            <Col md={3}>
               <Form.Group controlId="formExamTime" className="mb-3">
                 <Form.Label>Exam Time</Form.Label>
                 <Form.Control
@@ -147,14 +170,17 @@ console.log(data)
                 />
               </Form.Group>
             </Col>
+          </Row>
+
+          <Row>
             <Col md={6}>
               <Form.Group controlId="formCourseId" className="mb-3">
                 <Form.Label>Course</Form.Label>
                 <Select
-                  style={{ width: '100%' }}
+                  style={{ width: "100%" }}
                   placeholder="Select Course"
                   value={formData.courseId}
-                  onChange={(value) => handleSelectChange(value, 'courseId')}
+                  onChange={(value) => handleSelectChange(value, "courseId")}
                 >
                   {courseOptions.map((option) => (
                     <Option key={option.courseId} value={option.courseId}>
@@ -164,17 +190,14 @@ console.log(data)
                 </Select>
               </Form.Group>
             </Col>
-          </Row>
-
-          <Row>
             <Col md={6}>
               <Form.Group controlId="formSubjectId" className="mb-3">
                 <Form.Label>Subject</Form.Label>
                 <Select
-                  style={{ width: '100%' }}
+                  style={{ width: "100%" }}
                   placeholder="Select Subject"
                   value={formData.subjectId}
-                  onChange={(value) => handleSelectChange(value, 'subjectId')}
+                  onChange={(value) => handleSelectChange(value, "subjectId")}
                 >
                   {subjectOptions.map((option) => (
                     <Option key={option.subjectId} value={option.subjectId}>
@@ -184,6 +207,9 @@ console.log(data)
                 </Select>
               </Form.Group>
             </Col>
+          </Row>
+
+          <Row>
             <Col md={6}>
               <Form.Group controlId="formInnerEnvelope" className="mb-3">
                 <Form.Label>Inner Envelope</Form.Label>
@@ -195,9 +221,6 @@ console.log(data)
                 />
               </Form.Group>
             </Col>
-          </Row>
-
-          <Row>
             <Col md={6}>
               <Form.Group controlId="formOuterEnvelope" className="mb-3">
                 <Form.Label>Outer Envelope</Form.Label>
@@ -209,21 +232,10 @@ console.log(data)
                 />
               </Form.Group>
             </Col>
-            <Col md={6}>
-              <Form.Group controlId="formLotNo" className="mb-3">
-                <Form.Label>Lot No</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="lotNo"
-                  value={formData.lotNo || ""}
-                  onChange={handleChange}
-                />
-              </Form.Group>
-            </Col>
           </Row>
 
           <Row>
-            <Col md={6}>
+            <Col md={2}>
               <Form.Group controlId="formQuantity" className="mb-3">
                 <Form.Label>Quantity</Form.Label>
                 <Form.Control
@@ -234,7 +246,7 @@ console.log(data)
                 />
               </Form.Group>
             </Col>
-            <Col md={6}>
+            <Col md={2}>
               <Form.Group controlId="formPages" className="mb-3">
                 <Form.Label>Pages</Form.Label>
                 <Form.Control
@@ -245,10 +257,7 @@ console.log(data)
                 />
               </Form.Group>
             </Col>
-          </Row>
-
-          <Row>
-            <Col md={6}>
+            <Col md={3}>
               <Form.Group controlId="formPaperNumber" className="mb-3">
                 <Form.Label>Paper Number</Form.Label>
                 <Form.Control
@@ -259,7 +268,7 @@ console.log(data)
                 />
               </Form.Group>
             </Col>
-            <Col md={6}>
+            <Col md={5}>
               <Form.Group controlId="formPaperTitle" className="mb-3">
                 <Form.Label>Paper Title</Form.Label>
                 <Form.Control
@@ -273,7 +282,7 @@ console.log(data)
           </Row>
 
           <Row>
-            <Col md={6}>
+            <Col md={3}>
               <Form.Group controlId="formMaxMarks" className="mb-3">
                 <Form.Label>Max Marks</Form.Label>
                 <Form.Control
@@ -284,10 +293,8 @@ console.log(data)
                 />
               </Form.Group>
             </Col>
-          </Row>
 
-          <Row>
-            <Col md={6}>
+            <Col md={3}>
               <Form.Group controlId="formDuration" className="mb-3">
                 <Form.Label>Duration</Form.Label>
                 <Form.Control
@@ -298,28 +305,7 @@ console.log(data)
                 />
               </Form.Group>
             </Col>
-            <Col md={6}>
-              <Form.Group controlId="formLanguageId" className="mb-3">
-                <Form.Label>Language</Form.Label>
-                <Select
-                  mode="multiple"
-                  style={{ width: '100%' }}
-                  placeholder="Select Languages"
-                  value={formData.languageId}
-                  onChange={(value) => handleSelectChange(value, 'languageId')}
-                >
-                  {languageOptions.map((option) => (
-                    <Option key={option.languageId} value={option.languageId}>
-                      {option.languages}
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Group>
-            </Col>
-          </Row>
-
-          <Row>
-            <Col md={6}>
+            <Col md={3}>
               <Form.Group controlId="formExamTypeId" className="mb-3">
                 <Form.Label>Semester</Form.Label>
                 <Form.Control
@@ -330,7 +316,7 @@ console.log(data)
                 />
               </Form.Group>
             </Col>
-            <Col md={6}>
+            <Col md={3}>
               <Form.Group controlId="formNepCode" className="mb-3">
                 <Form.Label>NEP Code</Form.Label>
                 <Form.Control
@@ -344,7 +330,25 @@ console.log(data)
           </Row>
 
           <Row>
-            <Col md={12}>
+            <Col md={6}>
+              <Form.Group controlId="formLanguageId" className="mb-3">
+                <Form.Label>Language</Form.Label>
+                <Select
+                  mode="multiple"
+                  style={{ width: "100%" }}
+                  placeholder="Select Languages"
+                  value={formData.languageId}
+                  onChange={(value) => handleSelectChange(value, "languageId")}
+                >
+                  {languageOptions.map((option) => (
+                    <Option key={option.languageId} value={option.languageId}>
+                      {option.languages}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Group>
+            </Col>
+            <Col md={6}>
               <Form.Group controlId="formStructureOfPaper" className="mb-3">
                 <Form.Label>Structure of Paper</Form.Label>
                 <Form.Control
@@ -356,13 +360,15 @@ console.log(data)
               </Form.Group>
             </Col>
           </Row>
+        </Form>
+      </Modal.Body>
+      <ModalFooter className={`${customDark}`}>
           <div className="d-flex justify-content-end">
-            <Button variant="primary" type="submit">
+            <Button variant="primary" type="submit" className={`${customBtn} ${customLightBorder}`}>
               Update
             </Button>
           </div>
-        </Form>
-      </Modal.Body>
+      </ModalFooter>
     </Modal>
   );
 };
