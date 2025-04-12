@@ -10,8 +10,6 @@ const LotBiphurcationModal = ({
     fetchQuantity,
     dispatchedLots = [],
 }) => {
-    console.log('Module is called');
-
     const [fromDate, setFromDate] = useState('');
     const [toDate, setToDate] = useState('');
     const [lotNo, setLotNo] = useState('');
@@ -32,7 +30,7 @@ const LotBiphurcationModal = ({
     return (
         <Modal show={visible} onHide={onClose}>
             <Modal.Header closeButton>
-                <Modal.Title>Lot Biphurcation</Modal.Title>
+                <Modal.Title>Lot Bifurcation</Modal.Title>
             </Modal.Header>
 
             <Modal.Body>
