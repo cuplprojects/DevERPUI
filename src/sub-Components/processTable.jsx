@@ -634,7 +634,7 @@ const ProcessTable = () => {
           processId
         );
         const transactionsData = response.data;
-        console.log(previousProcess?.processId)
+        // console.log(previousProcess?.processId)
         if (Array.isArray(transactionsData)) {
           // If the previous process is ID 21, fetch from quantitySheet and skip previous transactions mapping
           

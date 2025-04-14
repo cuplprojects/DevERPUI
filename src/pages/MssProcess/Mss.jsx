@@ -10,17 +10,15 @@ import {
   Badge,
 } from "antd";
 import { Button, Col, Row } from "react-bootstrap";
-import {
-  CloseCircleOutlined,
-  DownloadOutlined,
-  ExclamationCircleOutlined,
-} from "@ant-design/icons";
+import { CloseCircleOutlined } from "@ant-design/icons";
 import API from "../../CustomHooks/MasterApiHooks/api";
 import MSSTable from "./MSSTable";
 import PaperDetailModal from "./PaperDetailModal";
 import "./mss.css";
 import themeStore from "../../store/themeStore";
 import { useStore } from "zustand";
+import { HiRefresh } from "react-icons/hi";
+import UpdateRejectedItemModal from "./Components/UpdateRejectedItemModal";
 
 const { Option } = Select;
 
@@ -45,18 +43,24 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
   const [importing, setImporting] = useState(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
-  const [importedData, setImportedData] = useState([]);
   const [quantitySheetData, setQuantitySheetData] = useState([]);
-  const [subjectOptions, setSubjectOptions] = useState([]);
+  const [rejectedQuantitySheetData, setRejectedQuantitySheetData] = useState(
+    []
+  );
   const [languageOptions, setLanguageOptions] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [selectedSemester, setSelectedSemester] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [rejectedCount, setRejectedCount] = useState(0);
+  const [rejectedActive, setRejectedActive] = useState(false);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [selectedRejectedItem, setSelectedRejectedItem] = useState(null);
 
   useEffect(() => {
     setSearchTerm(null);
+    setTableSearchTerm("");
   }, [projectId, processId, lotNo]);
 
   useEffect(() => {
@@ -111,16 +115,6 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
     fetchResults(searchTerm, page + 1, true);
   };
 
-  const fetchQuantitySheetData = async () => {
-    try {
-      const response = await API.get(`/QuantitySheet/CatchByproject?ProjectId=${projectId}`);
-      setQuantitySheetData(response.data);
-      console.log("Quantity Sheet Data -", response.data);
-    } catch (error) {
-      console.error("Error fetching quantity sheet data:", error);
-    }
-  };
-
   const fetchSubjectOptions = async () => {
     try {
       const response = await API.get("/Subject");
@@ -132,16 +126,28 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
 
   const fetchLanguageOptions = async () => {
     try {
-      const response = await API.get("/Languages");
+      const response = await API.get("/Language");
       setLanguageOptions(response.data);
     } catch (error) {
       console.error("Error fetching language options:", error);
     }
   };
-
+  // console.log(languageOptions);
   const handleTableChange = (pagination) => {
     setCurrentPage(pagination.current);
     setPageSize(pagination.pageSize);
+  };
+
+  const fetchQuantitySheetData = async () => {
+    try {
+      const response = await API.get(
+        `/QuantitySheet/CatchByproject?ProjectId=${projectId}`
+      );
+      setQuantitySheetData(response.data);
+      // console.log("Quantity Sheet Data -", response.data);
+    } catch (error) {
+      console.error("Error fetching quantity sheet data:", error);
+    }
   };
 
   useEffect(() => {
@@ -149,7 +155,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
       try {
         const response = await API.get(`/QC/ByProject?projectId=${projectId}`);
         setFilteredData(response.data);
-        console.log("Filtered Data -", response.data);
+        // console.log("Filtered Data -", response.data);
       } catch (error) {
         console.error("Failed to fetch data", error);
       }
@@ -158,14 +164,50 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
   }, []);
 
   const filterDataByStatus = () => {
-    // const status = 0;
-    const rejectedData = quantitySheetData.filter(
-      (item) => item.verified?.status === status
+    const rejectedItems = filteredData.filter(
+      (item) => item.verified?.status === false
     );
-    // setQuantitySheetData(rejectedData);
-    console.log("Rejected Button Clicked", status);
-    console.log("Rejected Data -", rejectedData);
-    console.log("Filtered Data -", filteredData);
+    const rejectedIds = rejectedItems.map((item) => item.quantitysheetId);
+    const matchedData = quantitySheetData.filter((item) =>
+      rejectedIds.includes(item.quantitySheetId)
+    );
+    setRejectedQuantitySheetData(matchedData);
+    setRejectedCount(matchedData.length);
+    // console.log("Rejected QuantitySheet IDs:", rejectedIds);
+    // console.log("Final Filtered Quantity Sheet Data:", matchedData);
+  };
+
+  useEffect(() => {
+    if (filteredData.length && quantitySheetData.length) {
+      filterDataByStatus();
+    }
+  }, [filteredData, quantitySheetData]);
+
+  const handleUpdateItem = (item) => {
+    setSelectedRejectedItem({ item, filteredData });
+    setShowUpdateModal(true);
+  };
+
+  const handleCloseUpdateModal = () => {
+    setShowUpdateModal(false);
+    setSelectedRejectedItem(null);
+  };
+
+  const handleUpdateSubmit = async (updatedItem) => {
+    try {
+      console.log("Payload Data -", updatedItem);
+      // Make an API call to update the item
+      await API.put(
+        `/QuantitySheet/update/${updatedItem.quantitySheetId}`,
+        updatedItem
+      );
+      message.success("Item updated successfully");
+      // Refresh the data
+      fetchQuantitySheetData();
+    } catch (error) {
+      console.error("Failed to update item:", error);
+      message.error("Failed to update item");
+    }
   };
 
   return (
@@ -231,29 +273,29 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
               </Select>
             </div>
           </Collapse>
-          <Tooltip title="View Rejected QCs">
-            <ExclamationCircleOutlined
-              style={{
-                fontSize: "22px",
-                color: "#ff4d4f",
-                cursor: "pointer",
-                marginLeft: "10px",
-              }}
-            />
-          </Tooltip>
-          <Tooltip title="Rejected Items">
-            <Badge
-              color="#ff4d4f"
-              count={
-                data.filter((item) => item.verified?.status === false).length
-              }
-            >
+          <Tooltip title="Rejected Items" className="ms-2">
+            <Badge color="#ff4d4f" count={rejectedCount}>
               <CloseCircleOutlined
-                onClick={filterDataByStatus}
-                className="fs-3"
-                style={{ color: "#ff4d4f" }}
+                onClick={() => {
+                  if (rejectedCount > 0) {
+                    setRejectedActive(true);
+                  }
+                }}
+                className="fs-2"
+                style={{
+                  color: "#ff4d4f",
+                  cursor: rejectedCount > 0 ? "pointer" : "not-allowed",
+                }}
               />
             </Badge>
+          </Tooltip>
+
+          <Tooltip title="Refresh" className="ms-2">
+            <HiRefresh
+              onClick={() => setRejectedActive(false)}
+              className="fs-2"
+              color="blue"
+            />
           </Tooltip>
         </Col>
         <Col
@@ -285,13 +327,25 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
       <Row className="justify-content-center">
         <Col xs={12} md={12} lg={12} className="">
           <MSSTable
-            quantitySheetData={quantitySheetData}
+            quantitySheetData={
+              rejectedActive ? rejectedQuantitySheetData : quantitySheetData
+            }
             fetchQuantitySheetData={fetchQuantitySheetData}
             languageOptions={languageOptions}
             tableSearchTerm={tableSearchTerm}
             currentPage={currentPage}
             pageSize={pageSize}
             handleTableChange={handleTableChange}
+            rejectedActive={rejectedActive}
+            handleUpdateItem={handleUpdateItem}
+          />
+          <UpdateRejectedItemModal
+            cssClasses={cssClasses}
+            languageOptions={languageOptions}
+            show={showUpdateModal}
+            handleClose={handleCloseUpdateModal}
+            data={selectedRejectedItem}
+            onUpdate={handleUpdateSubmit}
           />
         </Col>
       </Row>

@@ -312,8 +312,8 @@ const QcProcess = ({ projectId }) => {
           transition: 'all 0.3s ease'
         }}>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{ fontSize: '14px', color: '#8c8c8c', marginBottom: '4px', fontSize: "1.5rem" }}>{label}</span>
-            <span style={{ fontSize: '16px', fontWeight: '500', color: '#262626', fontSize: "1.5rem" }}>{value}</span>
+            <span style={{  color: '#8c8c8c', marginBottom: '4px', fontSize: "1.5rem" }}>{label}</span>
+            <span style={{  fontWeight: '500', color: '#262626', fontSize: "1.5rem" }}>{value}</span>
           </div>
           {record.action === 'verify' && (
             <Checkbox checked={tempVerification[field] || false} onChange={() => handleVerificationChange(field)} style={{ marginLeft: '20px' }}>
@@ -384,14 +384,15 @@ const QcProcess = ({ projectId }) => {
     <div className={` ${customLight} rounded py-2 shadow-lg ${customDark === "dark-dark" ? 'border' : ''}`}>
       <Card>
         <div className='d-flex align-items-center justify-content-between'>
-          <div>
+          <div className='d-flex align-items-center justify-content-between'>
             {showback && (
-              <Button
-                type="text"
-                className={`${customBtn} ${customLightBorder}`}
-                icon={<ArrowLeftOutlined className='fs-5' />}
-                onClick={resetFilter}
-              />
+              <ArrowLeftOutlined className={`fs-5 p-1 rounded-3 ${customDark} ${customLightText}`}   onClick={resetFilter}/>
+              // <Button
+              //   type="text"
+              //   className={`${customBtn} ${customLightBorder}`}
+              //   icon={<ArrowLeftOutlined className='fs-6' />}
+              //   onClick={resetFilter}
+              // />
             )}
           </div>
           <div>

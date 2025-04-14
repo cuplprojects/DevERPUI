@@ -16,7 +16,10 @@ const MSSTable = ({
   currentPage,
   pageSize,
   handleTableChange,
+  rejectedActive,handleUpdateItem,
 }) => {
+  // console.log(languageOptions)
+
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
   const { getCssClasses } = useStore(themeStore);
@@ -201,17 +204,27 @@ const MSSTable = ({
       key: "actions",
       render: (_, record) => (
         <Space size="middle">
-          <Button
-            type="link"
-            onClick={() => handleMarkReceived(record)}
-            disabled={record.mssStatus === 2}
-            title="Mark as Received"
-          >
-            <CheckCircleOutlined />
-          </Button>
+          {rejectedActive ? (
+            <Button
+              type="link"
+              onClick={() => handleUpdateItem(record)}
+              title="Update Item"
+            >
+              Update
+            </Button>
+          ) : (
+            <Button
+              type="link"
+              onClick={() => handleMarkReceived(record)}
+              disabled={record.mssStatus === 2}
+              title="Mark as Received"
+            >
+              <CheckCircleOutlined />
+            </Button>
+          )}
         </Space>
       ),
-    },
+    }    
   ];
 
   const filteredData = quantitySheetData.filter((record) =>
@@ -223,7 +236,10 @@ const MSSTable = ({
   );
 
   return (
-    <div className="table-responsive" style={{ overflowX: 'auto', width: '100%' }}>
+    <div
+      className="table-responsive"
+      style={{ overflowX: "auto", width: "100%" }}
+    >
       <Table
         className={`${customDark === "default-dark" ? "thead-default" : ""}
 ${customDark === "red-dark" ? "thead-red" : ""}
