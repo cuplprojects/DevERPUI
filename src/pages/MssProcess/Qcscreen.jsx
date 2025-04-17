@@ -19,7 +19,6 @@ const QcProcess = ({ projectId }) => {
   const { getCssClasses } = useStore(themeStore);
   const cssClasses = getCssClasses();
   const [customDark, customMid, customLight, customBtn, customDarkText, customLightText, customLightBorder, customDarkBorder] = cssClasses;
-
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [tempVerification, setTempVerification] = useState({});
   const [data, setData] = useState([]);
@@ -48,10 +47,6 @@ const QcProcess = ({ projectId }) => {
 
   const verificationkeys = [
     {
-      name: 'Catch No',
-      keyname: 'catchNo'
-    },
-    {
       name: 'Language',
       keyname: 'language'
     },
@@ -70,6 +65,22 @@ const QcProcess = ({ projectId }) => {
     {
       name: 'Max Marks',
       keyname: 'maxMarks'
+    },
+    {
+      name: 'A',
+      keyname: 'a'
+    },
+    {
+      name: 'B',
+      keyname: 'b'
+    },
+    {
+      name: 'C',
+      keyname: 'c'
+    },
+    {
+      name: 'D',
+      keyname: 'd'
     },
 
   ]
@@ -132,7 +143,7 @@ const QcProcess = ({ projectId }) => {
       dataIndex: 'catchNo',
       key: 'catchNo',
       align: 'center',
-      render: (text, record) => renderVerificationField(record, 'catchNo', text),
+      render: (text, record) => renderVerificationField(record, 'status', text),
       sorter: (a, b) => {
         if (typeof a.catchNo === 'number' && typeof b.catchNo === 'number') {
           return a.catchNo - b.catchNo;
@@ -171,6 +182,38 @@ const QcProcess = ({ projectId }) => {
       align: 'center',
       render: (text, record) => renderVerificationStatusOnly(record, 'structure'),
       sorter: (a, b) => String(a.structure || '').localeCompare(String(b.structure || '')),
+    },
+    {
+      title: 'A',
+      dataIndex: 'a',
+      key: 'a',
+      align: 'center',
+      render: (text, record) => renderVerificationStatusOnly(record, 'a'),
+      sorter: (a, b) => String(a.a || '').localeCompare(String(b.a || '')),
+    },
+    {
+      title: 'B',
+      dataIndex: 'b',
+      key: 'b',
+      align: 'center',
+      render: (text, record) => renderVerificationStatusOnly(record, 'b'),
+      sorter: (a, b) => String(a.b || '').localeCompare(String(b.b || '')),
+    },
+    {
+      title: 'C',
+      dataIndex: 'c',
+      key: 'c',
+      align: 'center',
+      render: (text, record) => renderVerificationStatusOnly(record, 'c'),
+      sorter: (a, b) => String(a.c || '').localeCompare(String(b.c || '')),
+    },
+    {
+      title: 'D',
+      dataIndex: 'd',
+      key: 'd',
+      align: 'center',
+      render: (text, record) => renderVerificationStatusOnly(record, 'd'),
+      sorter: (a, b) => String(a.d || '').localeCompare(String(b.d || '')),
     },
     {
       title: 'Series',
@@ -234,6 +277,10 @@ const QcProcess = ({ projectId }) => {
       MaxMarks: tempVerification.maxMarks,
       Duration: tempVerification.duration,
       Status: status,
+      A: tempVerification.a,
+      B: tempVerification.b,
+      C: tempVerification.c,
+      D: tempVerification.d,
       StructureOfPaper: tempVerification.structure,
       Series: tempVerification.series,
       ProjectId: projectId
@@ -340,12 +387,15 @@ const QcProcess = ({ projectId }) => {
 
     return (
       <div style={{ padding: '8px' }}>
-        {verificationItem('Catch No', record.catchNo, 'catchNo')}
         {verificationItem('Language', record.language, 'language')}
         {verificationItem('Duration', record.duration, 'duration')}
         {verificationItem('Structure', record.structure, 'structure')}
         {verificationItem('Series', record.series, 'series')}
         {verificationItem('Max Marks', record.maxMarks, 'maxMarks')}
+        {verificationItem('A', record.a, 'a')}
+        {verificationItem('B', record.b, 'b')}
+        {verificationItem('C', record.c, 'c')}
+        {verificationItem('D', record.d, 'd')}
 
         {record.action === 'verify' && (
           <div style={{
@@ -388,12 +438,6 @@ const QcProcess = ({ projectId }) => {
           <div className='d-flex align-items-center justify-content-between'>
             {showback && (
               <ArrowLeftOutlined className={`fs-5 p-1 rounded-3 ${customDark} ${customLightText}`}   onClick={resetFilter}/>
-              // <Button
-              //   type="text"
-              //   className={`${customBtn} ${customLightBorder}`}
-              //   icon={<ArrowLeftOutlined className='fs-6' />}
-              //   onClick={resetFilter}
-              // />
             )}
           </div>
           <div>

@@ -25,6 +25,7 @@ import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { decrypt } from "../Security/Security";
 import CatchTransferModal from "../menus/CatchTransferModal";
+import LotBiphurcationModal from "../menus/LotBiphurcationModal";
 
 const ViewQuantitySheet = ({ selectedLotNo, showBtn, showTable, lots }) => {
   const { t } = useTranslation();
@@ -42,6 +43,7 @@ const ViewQuantitySheet = ({ selectedLotNo, showBtn, showTable, lots }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showStopModal, setShowStopModal] = useState(false);
   const [showTransferModal, setShowTransferModal] = useState(false);
+  const [showLotBiModal, setShowLotBiModal] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [itemToStop, setItemToStop] = useState(null);
   const [showNewRow, setShowNewRow] = useState(false);
@@ -681,6 +683,7 @@ const ViewQuantitySheet = ({ selectedLotNo, showBtn, showTable, lots }) => {
 
   const handleModalClose = () => {
     setShowTransferModal(false);
+    setShowLotBiModal(false);
     setShowDeleteModal(false);
     setItemToDelete(null);
     setEditingRow(null);
@@ -951,6 +954,16 @@ const ViewQuantitySheet = ({ selectedLotNo, showBtn, showTable, lots }) => {
                     {t('transferCatch')}
                   </Button>
                 </>
+              )}
+              {selectedCatches.length > 0 && (
+                  <Button
+                    type="primary"
+                    className={`${customBtn} ${customDark === "dark-dark" ? `border` : `border-0`} me-2`}
+                    onClick={() => setShowLotBiModal(true)}
+                  >
+                    {t('lotbiphurcation')}
+                  </Button>
+             
               )}
 
 
@@ -1400,6 +1413,17 @@ const ViewQuantitySheet = ({ selectedLotNo, showBtn, showTable, lots }) => {
 
       <CatchTransferModal
         visible={showTransferModal}
+        onClose={handleModalClose}
+        catches={selectedCatches}
+        onCatchesChange={handleCatchesChange}
+        projectId={projectId}
+        fetchQuantity={fetchQuantity}
+        lots={lots}
+        selectedLotNo={selectedLotNo}
+        dispatchedLots={dispatchedLots}
+      />
+      <LotBiphurcationModal
+        visible={showLotBiModal}
         onClose={handleModalClose}
         catches={selectedCatches}
         onCatchesChange={handleCatchesChange}
