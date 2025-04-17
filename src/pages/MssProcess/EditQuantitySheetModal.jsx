@@ -41,6 +41,8 @@ const EditQuantitySheetModal = ({
         examDate: record.examDate || '',
         examTime: record.examTime || '',
         structureOfPaper: record.structureOfPaper || '',
+        mssStatus: record.mssStatus, // Include the original mssStatus
+        ttfStatus: record.ttfStatus, // Include the original ttfStatus
       };
 
       setFormData(initialFormData);
@@ -95,6 +97,8 @@ const EditQuantitySheetModal = ({
         examTime: formData.examTime,
         structureOfPaper: formData.structureOfPaper || '',
         examDate: formData.examDate || '',
+        mssStatus: record.mssStatus, // Use the original mssStatus value
+        ttfStatus: record.ttfStatus, // Use the original ttfStatus value
         projectId: record.projectId,
         courseId: record.courseId,
         subjectId: record.subjectId,
@@ -103,7 +107,7 @@ const EditQuantitySheetModal = ({
         percentageCatch: record.percentageCatch,
         qpId: record.qpId
       };
-
+      console.log("Payload Data -", payload);
       // Call the API to update the item
       await API.put('/QuantitySheet/bulk-update', [payload]);
 
