@@ -67,8 +67,6 @@ const UpdateRejectedItemModal = ({
         examTypeId: item.examTypeId,
         nepCode: item.nepCode,
         uniqueCode: item.uniqueCode,
-        mssStatus: item.mssStatus,
-        ttfStatus: item.ttfStatus,
         structureOfPaper: item.structureOfPaper,
       });
 
