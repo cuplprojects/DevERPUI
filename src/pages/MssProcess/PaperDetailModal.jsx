@@ -42,7 +42,7 @@ const PaperDetailModal = ({
   const [examType, setExamType] = useState();
   const [language, setLanguage] = useState();
 
-  console.log(item);
+  // console.log(item);
   // console.log(importing)
 
   useEffect(() => {

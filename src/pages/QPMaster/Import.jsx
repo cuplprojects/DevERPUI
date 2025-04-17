@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import API from "../../CustomHooks/MasterApiHooks/api";
-import { Select, Form, Upload, Button, Row, Col } from "antd";
+import { Select, Form, Upload, Button, Row, Col, message } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
@@ -333,15 +333,13 @@ const Import = () => {
         examTypeId: item.ExamTypeId || 0,
       }));
 
-      // console.log("final payload ->",finalPayload)
-
       const response = await API.post("/QPMasters", finalPayload, {
         headers: {
           "Content-Type": "application/json",
         },
       });
       console.log("Upload Success:", response.data);
-      console.log(t("quantitySheetUploadedSuccessfully"));
+      message.success(t("quantitySheetUploadedSuccessfully"));
       setFileList([]);
       setSelectedFile(null);
       setFieldMappings([]);
@@ -349,6 +347,7 @@ const Import = () => {
       setShowBtn(false);
     } catch (error) {
       console.error(t("failedToUploadQuantitySheet"));
+      message.error(t("failedToUploadQuantitySheet"));
     } finally {
       setIsLoading(false);
     }
