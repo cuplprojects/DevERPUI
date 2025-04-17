@@ -4,13 +4,14 @@ import { Modal, Row, Col, Form as BootstrapForm } from 'react-bootstrap';
 import API from "../../CustomHooks/MasterApiHooks/api";
 import moment from "moment";
 
-const EditQuantitySheetModal = ({ 
-  show, 
-  onHide, 
-  record, 
-  languageOptions, 
+const EditQuantitySheetModal = ({
+  show,
+  onHide,
+  record,
+  languageOptions,
   onSuccess ,
-  cssClasses
+  cssClasses,
+  fetchQuantitySheetData
 }) => {
   const [formData, setFormData] = useState({});
   const [
@@ -41,7 +42,7 @@ const EditQuantitySheetModal = ({
         examTime: record.examTime || '',
         structureOfPaper: record.structureOfPaper || '',
       };
-      
+
       setFormData(initialFormData);
     }
   }, [record]);
@@ -78,7 +79,7 @@ const EditQuantitySheetModal = ({
   const handleSave = async () => {
     try {
       if (!record) return;
-      
+
       // Create a clean payload for the API
       const payload = {
         quantitySheetId: record.quantitySheetId,
@@ -94,8 +95,6 @@ const EditQuantitySheetModal = ({
         examTime: formData.examTime,
         structureOfPaper: formData.structureOfPaper || '',
         examDate: formData.examDate || '',
-        mssStatus: record.mssStatus,
-        ttfStatus: record.ttfStatus,
         projectId: record.projectId,
         courseId: record.courseId,
         subjectId: record.subjectId,
@@ -104,13 +103,17 @@ const EditQuantitySheetModal = ({
         percentageCatch: record.percentageCatch,
         qpId: record.qpId
       };
-      
+
       // Call the API to update the item
       await API.put('/QuantitySheet/bulk-update', [payload]);
-      
+
       message.success('Item updated successfully');
-      onHide();
+
+      // Call onSuccess (fetchQuantitySheetData) immediately to refresh the table data
       if (onSuccess) onSuccess();
+
+      // Close the modal after data is refreshed
+      onHide();
     } catch (error) {
       console.error('Failed to update item:', error);
       message.error('Failed to update item');
@@ -127,16 +130,16 @@ const EditQuantitySheetModal = ({
       <Modal.Header closeButton className={`${customDark}`}>
         <Modal.Title  className={`${customLightText}`}>Edit Quantity Sheet</Modal.Title>
       </Modal.Header>
-      <Modal.Body className={`${customLight}`}>    
+      <Modal.Body className={`${customLight}`}>
         {record && (
           <Row>
             <Col md={6}>
               <BootstrapForm.Group className="mb-3">
                 <BootstrapForm.Label>Catch No</BootstrapForm.Label>
-                <BootstrapForm.Control 
-                  type="text" 
-                  name="catchNo" 
-                  value={formData.catchNo || ''} 
+                <BootstrapForm.Control
+                  type="text"
+                  name="catchNo"
+                  value={formData.catchNo || ''}
                   onChange={handleInputChange}
                   required
                 />
@@ -145,10 +148,10 @@ const EditQuantitySheetModal = ({
             <Col md={6}>
               <BootstrapForm.Group className="mb-3">
                 <BootstrapForm.Label>NEP Code</BootstrapForm.Label>
-                <BootstrapForm.Control 
-                  type="text" 
-                  name="nepCode" 
-                  value={formData.nepCode || ''} 
+                <BootstrapForm.Control
+                  type="text"
+                  name="nepCode"
+                  value={formData.nepCode || ''}
                   onChange={handleInputChange}
                 />
               </BootstrapForm.Group>
@@ -156,10 +159,10 @@ const EditQuantitySheetModal = ({
             <Col md={12}>
               <BootstrapForm.Group className="mb-3">
                 <BootstrapForm.Label>Paper Title</BootstrapForm.Label>
-                <BootstrapForm.Control 
-                  type="text" 
-                  name="paperTitle" 
-                  value={formData.paperTitle || ''} 
+                <BootstrapForm.Control
+                  type="text"
+                  name="paperTitle"
+                  value={formData.paperTitle || ''}
                   onChange={handleInputChange}
                   required
                 />
@@ -168,10 +171,10 @@ const EditQuantitySheetModal = ({
             <Col md={6}>
               <BootstrapForm.Group className="mb-3">
                 <BootstrapForm.Label>Duration</BootstrapForm.Label>
-                <BootstrapForm.Control 
-                  type="text" 
-                  name="duration" 
-                  value={formData.duration || ''} 
+                <BootstrapForm.Control
+                  type="text"
+                  name="duration"
+                  value={formData.duration || ''}
                   onChange={handleInputChange}
                 />
               </BootstrapForm.Group>
@@ -179,7 +182,7 @@ const EditQuantitySheetModal = ({
             <Col md={6}>
               <BootstrapForm.Group className="mb-3">
                 <BootstrapForm.Label>Languages</BootstrapForm.Label>
-                <Select 
+                <Select
                   mode="multiple"
                   style={{ width: '100%' }}
                   placeholder="Select languages"
@@ -197,10 +200,10 @@ const EditQuantitySheetModal = ({
             <Col md={6}>
               <BootstrapForm.Group className="mb-3">
                 <BootstrapForm.Label>Paper Number</BootstrapForm.Label>
-                <BootstrapForm.Control 
-                  type="text" 
-                  name="paperNumber" 
-                  value={formData.paperNumber || ''} 
+                <BootstrapForm.Control
+                  type="text"
+                  name="paperNumber"
+                  value={formData.paperNumber || ''}
                   onChange={handleInputChange}
                 />
               </BootstrapForm.Group>
@@ -208,10 +211,10 @@ const EditQuantitySheetModal = ({
             <Col md={6}>
               <BootstrapForm.Group className="mb-3">
                 <BootstrapForm.Label>Quantity</BootstrapForm.Label>
-                <InputNumber 
+                <InputNumber
                   style={{ width: '100%' }}
                   min={0}
-                  value={formData.quantity} 
+                  value={formData.quantity}
                   onChange={(value) => handleNumberChange('quantity', value)}
                 />
               </BootstrapForm.Group>
@@ -219,10 +222,10 @@ const EditQuantitySheetModal = ({
             <Col md={6}>
               <BootstrapForm.Group className="mb-3">
                 <BootstrapForm.Label>Max Marks</BootstrapForm.Label>
-                <InputNumber 
+                <InputNumber
                   style={{ width: '100%' }}
                   min={0}
-                  value={formData.maxMarks} 
+                  value={formData.maxMarks}
                   onChange={(value) => handleNumberChange('maxMarks', value)}
                 />
               </BootstrapForm.Group>
@@ -230,10 +233,10 @@ const EditQuantitySheetModal = ({
             <Col md={6}>
               <BootstrapForm.Group className="mb-3">
                 <BootstrapForm.Label>Private Code</BootstrapForm.Label>
-                <BootstrapForm.Control 
-                  type="text" 
-                  name="uniqueCode" 
-                  value={formData.uniqueCode || ''} 
+                <BootstrapForm.Control
+                  type="text"
+                  name="uniqueCode"
+                  value={formData.uniqueCode || ''}
                   onChange={handleInputChange}
                 />
               </BootstrapForm.Group>
@@ -241,7 +244,7 @@ const EditQuantitySheetModal = ({
             <Col md={6}>
               <BootstrapForm.Group className="mb-3">
                 <BootstrapForm.Label>Exam Date</BootstrapForm.Label>
-                <DatePicker 
+                <DatePicker
                   style={{ width: '100%' }}
                   format="DD-MM-YYYY"
                   value={formData.examDate ? moment(formData.examDate, 'DD-MM-YYYY') : null}
@@ -252,10 +255,10 @@ const EditQuantitySheetModal = ({
             <Col md={6}>
               <BootstrapForm.Group className="mb-3">
                 <BootstrapForm.Label>Exam Time</BootstrapForm.Label>
-                <BootstrapForm.Control 
-                  type="text" 
-                  name="examTime" 
-                  value={formData.examTime || ''} 
+                <BootstrapForm.Control
+                  type="text"
+                  name="examTime"
+                  value={formData.examTime || ''}
                   onChange={handleInputChange}
                 />
               </BootstrapForm.Group>
@@ -263,11 +266,11 @@ const EditQuantitySheetModal = ({
             <Col md={12}>
               <BootstrapForm.Group className="mb-3">
                 <BootstrapForm.Label>Structure of Paper</BootstrapForm.Label>
-                <BootstrapForm.Control 
-                  as="textarea" 
+                <BootstrapForm.Control
+                  as="textarea"
                   rows={3}
-                  name="structureOfPaper" 
-                  value={formData.structureOfPaper || ''} 
+                  name="structureOfPaper"
+                  value={formData.structureOfPaper || ''}
                   onChange={handleInputChange}
                 />
               </BootstrapForm.Group>

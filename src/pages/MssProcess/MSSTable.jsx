@@ -436,6 +436,7 @@ ${customDark === "brown-dark" ? "thead-brown" : ""} `}
         languageOptions={languageOptions}
         onSuccess={fetchQuantitySheetData}
         cssClasses={cssClasses}
+        fetchQuantitySheetData={fetchQuantitySheetData}
       />
     </div>
   );
