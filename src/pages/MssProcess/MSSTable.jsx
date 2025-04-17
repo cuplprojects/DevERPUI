@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Table, Input, Button, Space, message, Select } from "antd";
+import { Table, Input, Button, Space, message, DatePicker } from "antd";
+import { Modal } from 'react-bootstrap';
 import { CheckCircleOutlined, DeleteOutlined } from "@ant-design/icons";
 import API from "../../CustomHooks/MasterApiHooks/api";
 import Highlighter from "react-highlight-words";
 import themeStore from "../../store/themeStore";
 import { useStore } from "zustand";
-
-const { Option } = Select;
+import moment from "moment";
 
 const MSSTable = ({
   quantitySheetData,
@@ -18,10 +18,13 @@ const MSSTable = ({
   handleTableChange,
   rejectedActive,handleUpdateItem,
 }) => {
-  // console.log(languageOptions)
-
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedTime, setSelectedTime] = useState(null);
+
   const { getCssClasses } = useStore(themeStore);
   const [
     customDark,
@@ -50,6 +53,34 @@ const MSSTable = ({
     }
   };
 
+  const handleBulkUpdate = async () => {
+    try {
+      if (!selectedDate || !selectedTime) {
+        message.error("Please select both date and time");
+        return;
+      }
+  
+      const updatedRows = selectedRows.map(row => {
+        const { courseName, examTypes, languages, subjectName, ...rest } = row;
+        return {
+          ...rest,
+          examDate: selectedDate.format('YYYY-MM-DD'),
+          examTime: selectedTime
+        };
+      });
+  
+      await API.put('/QuantitySheet/bulk-update', updatedRows);
+  
+      message.success("Successfully updated selected items");
+      setIsModalVisible(false);
+      setSelectedRows([]);
+      await fetchQuantitySheetData();
+    } catch (error) {
+      console.error("Failed to update items:", error);
+      message.error("Failed to update items");
+    }
+  };
+
   const handleRemove = async (record) => {
     try {
       await API.delete(`/QuantitySheet/${record.quantitySheetId}`);
@@ -59,6 +90,18 @@ const MSSTable = ({
       console.error("Failed to remove item:", error);
       message.error("Failed to remove item");
     }
+  };
+
+  const showModal = () => {
+    setIsModalVisible(true);
+  };
+
+  const handleModalOk = () => {
+    handleBulkUpdate();
+  };
+
+  const handleModalCancel = () => {
+    setIsModalVisible(false);
   };
 
   const getColumnSearchProps = (dataIndex) => ({
@@ -127,16 +170,16 @@ const MSSTable = ({
     {
       title: "Catch No",
       dataIndex: "catchNo",
-      key: "catchNo",
+      key: "catchNo", 
       sorter: (a, b) => a.catchNo.localeCompare(b.catchNo),
       ...getColumnSearchProps("catchNo"),
     },
     {
-      title: "Duration",
-      dataIndex: "duration",
-      key: "duration",
-      sorter: (a, b) => a.duration - b.duration,
-      ...getColumnSearchProps("duration"),
+      title: "NEP Code",
+      dataIndex: "nepCode",
+      key: "nepCode",
+      sorter: (a, b) => a.nepCode.localeCompare(b.nepCode),
+      ...getColumnSearchProps("nepCode"),
     },
     {
       title: "Course",
@@ -151,6 +194,20 @@ const MSSTable = ({
       key: "subjectName",
       sorter: (a, b) => a.subjectName.localeCompare(b.subjectName),
       ...getColumnSearchProps("subjectName"),
+    },
+    {
+      title: "PaperTitle",
+      dataIndex: "paperTitle",
+      key: "paperTitle",
+      sorter: (a, b) => a.paperTitle.localeCompare(b.paperTitle),
+      ...getColumnSearchProps("paperTitle"),
+    },
+    {
+      title: "Duration",
+      dataIndex: "duration",
+      key: "duration",
+      sorter: (a, b) => a.duration - b.duration,
+      ...getColumnSearchProps("duration"),
     },
     {
       title: "Language",
@@ -179,6 +236,20 @@ const MSSTable = ({
       },
     },
     {
+      title: "Paper#",
+      dataIndex: "paperNo",
+      key: "paperNo",
+      sorter: (a, b) => a.paperNo.localeCompare(b.paperNo),
+      ...getColumnSearchProps("paperNo"),
+    },
+    {
+      title: "Quantity",
+      dataIndex: "quantity",
+      key: "quantity",
+      sorter: (a, b) => a.quantity - b.quantity,
+      ...getColumnSearchProps("quantity"),
+    },
+    {
       title: "Max Marks",
       dataIndex: "maxMarks",
       key: "maxMarks",
@@ -186,18 +257,32 @@ const MSSTable = ({
       ...getColumnSearchProps("maxMarks"),
     },
     {
-      title: "NEP Code",
-      dataIndex: "nepCode",
-      key: "nepCode",
-      sorter: (a, b) => a.nepCode.localeCompare(b.nepCode),
-      ...getColumnSearchProps("nepCode"),
-    },
-    {
       title: "Private Code",
       dataIndex: "uniqueCode",
       key: "uniqueCode",
       sorter: (a, b) => a.uniqueCode.localeCompare(b.uniqueCode),
       ...getColumnSearchProps("uniqueCode"),
+    },
+    {
+      title: "Exam Date",
+      dataIndex: "examDate",
+      key: "examDate",
+      sorter: (a, b) => a.examDate.localeCompare(b.examDate),
+      ...getColumnSearchProps("examDate"),
+    },
+    {
+      title: "Exam Time",
+      dataIndex: "examTime",
+      key: "examTime",
+      sorter: (a, b) => a.examTime.localeCompare(b.examTime),
+      ...getColumnSearchProps("examTime"),
+    },
+    {
+      title: "Structure of Paper",
+      dataIndex: "structureOfPaper",
+      key: "structureOfPaper",
+      sorter: (a, b) => a.structureOfPaper.localeCompare(b.structureOfPaper),
+      ...getColumnSearchProps("structureOfPaper"),
     },
     {
       title: "Actions",
@@ -235,12 +320,66 @@ const MSSTable = ({
     )
   );
 
+  const rowSelection = {
+    onChange: (_, selectedRows) => {
+      setSelectedRows(selectedRows);
+    },
+  };
+
   return (
     <div
       className="table-responsive"
       style={{ overflowX: "auto", width: "100%" }}
     >
+      {selectedRows.length > 0 && (
+        <Button 
+          type="primary" 
+          onClick={showModal}
+          style={{ marginBottom: 16 }}
+        >
+          Assign Date & Time
+        </Button>
+      )}
+
+      <Modal
+        show={isModalVisible}
+        onHide={handleModalCancel}
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Assign Date and Time</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div style={{ marginBottom: 16 }}>
+            <h4>Selected Catches:</h4>
+            {selectedRows.map(row => (
+              <div key={row.catchNo}>{row.catchNo}</div>
+            ))}
+          </div>
+          <Space direction="vertical" size={12} style={{ width: '100%' }}>
+            <DatePicker 
+              onChange={(date) => setSelectedDate(date)} 
+              style={{ width: '100%' }}
+            />
+            <Input
+              placeholder="Enter Exam Time (HH:mm:ss)"
+              onChange={(e) => setSelectedTime(e.target.value)}
+              style={{ width: '100%' }}
+            />
+          </Space>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleModalCancel}>
+            Close
+          </Button>
+          <Button variant="primary" onClick={handleModalOk}>
+            Save Changes
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
       <Table
+        rowSelection={rowSelection}
         className={`${customDark === "default-dark" ? "thead-default" : ""}
 ${customDark === "red-dark" ? "thead-red" : ""}
 ${customDark === "green-dark" ? "thead-green" : ""}
