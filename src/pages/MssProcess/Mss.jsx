@@ -35,6 +35,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
     customLightBorder,
     customDarkBorder,
   ] = cssClasses;
+
   const [searchTerm, setSearchTerm] = useState(null);
   const [tableSearchTerm, setTableSearchTerm] = useState("");
   const [data, setData] = useState([]);

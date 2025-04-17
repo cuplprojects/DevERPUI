@@ -29,7 +29,14 @@ const MSSTable = ({
   const [formData, setFormData] = useState({});
 
   const { getCssClasses } = useStore(themeStore);
-  const [customDark] = getCssClasses();
+  const [customDark,
+    customMid,
+    customLight,
+    customBtn,
+    customDarkText,
+    customLightText,
+    customLightBorder,
+    customDarkBorder] = getCssClasses();
 
   const handleMarkReceived = async (record) => {
     try {
