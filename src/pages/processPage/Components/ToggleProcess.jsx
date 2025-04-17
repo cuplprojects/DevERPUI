@@ -47,7 +47,7 @@ const ToggleProcess = ({
       <div className="text-center fs-5">{t("currentProcess")}</div>
       <div className="d-flex align-items-center">
         <Dropdown
-          overlay={menu}
+          menu={{ items: [{ key: 'menu', label: menu }] }}
           trigger={["click"]}
           open={visible}
           onOpenChange={setVisible}

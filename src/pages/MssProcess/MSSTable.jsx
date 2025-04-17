@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { Table, Input, Button, Space, message, DatePicker, Select, InputNumber } from "antd";
-import { Modal, Row, Col, Form as BootstrapForm } from 'react-bootstrap';
+import React, { useState } from "react";
+import { Table, Input, Button, Space, message, DatePicker } from "antd";
+import { Modal } from 'react-bootstrap';
 import { CheckCircleOutlined, EditOutlined } from "@ant-design/icons";
 import API from "../../CustomHooks/MasterApiHooks/api";
 import Highlighter from "react-highlight-words";
 import themeStore from "../../store/themeStore";
 import { useStore } from "zustand";
-import moment from "moment";
+
+import EditQuantitySheetModal from "./EditQuantitySheetModal";
 
 const MSSTable = ({
   quantitySheetData,
@@ -18,25 +19,17 @@ const MSSTable = ({
   handleTableChange,
   rejectedActive,handleUpdateItem,
 }) => {
-  const [searchText, setSearchText] = useState("");
-  const [searchedColumn, setSearchedColumn] = useState("");
+  const [searchText] = useState("");
+  const [searchedColumn] = useState("");
   const [selectedRows, setSelectedRows] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [currentRecord, setCurrentRecord] = useState(null);
-  const [formData, setFormData] = useState({});
 
   const { getCssClasses } = useStore(themeStore);
-  const [customDark,
-    customMid,
-    customLight,
-    customBtn,
-    customDarkText,
-    customLightText,
-    customLightBorder,
-    customDarkBorder] = getCssClasses();
+  const [customDark] = getCssClasses();
 
   const handleMarkReceived = async (record) => {
     try {
@@ -83,102 +76,12 @@ const MSSTable = ({
 
   const handleEditClick = (record) => {
     setCurrentRecord(record);
-
-    // Initialize form data with current record values
-    const initialFormData = {
-      catchNo: record.catchNo || '',
-      nepCode: record.nepCode || '',
-      paperTitle: record.paperTitle || '',
-      duration: record.duration || '',
-      languageId: record.languageId || [],
-      paperNumber: record.paperNumber || '',
-      quantity: record.quantity || 0,
-      maxMarks: record.maxMarks || 0,
-      uniqueCode: record.uniqueCode || '',
-      examDate: record.examDate || '',
-      examTime: record.examTime || '',
-      structureOfPaper: record.structureOfPaper || '',
-    };
-
-    setFormData(initialFormData);
     setEditModalVisible(true);
   };
 
   const handleModalClose = () => {
     setEditModalVisible(false);
     setCurrentRecord(null);
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleDateChange = (date) => {
-    setFormData(prev => ({
-      ...prev,
-      examDate: date ? moment(date).format('DD-MM-YYYY') : ''
-    }));
-  };
-
-  const handleLanguageChange = (selectedOptions) => {
-    setFormData(prev => ({
-      ...prev,
-      languageId: selectedOptions
-    }));
-  };
-
-  const handleNumberChange = (name, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleSave = async () => {
-    try {
-      if (!currentRecord) return;
-
-      // Create a clean payload for the API
-      const payload = {
-        quantitySheetId: currentRecord.quantitySheetId,
-        catchNo: formData.catchNo,
-        nepCode: formData.nepCode,
-        paperTitle: formData.paperTitle,
-        duration: formData.duration,
-        languageId: formData.languageId,
-        paperNumber: formData.paperNumber,
-        quantity: formData.quantity,
-        maxMarks: formData.maxMarks,
-        uniqueCode: formData.uniqueCode,
-        examTime: formData.examTime,
-        structureOfPaper: formData.structureOfPaper || '',
-        examDate: formData.examDate || '',
-        mssStatus: currentRecord.mssStatus,
-        ttfStatus: currentRecord.ttfStatus,
-        projectId: currentRecord.projectId,
-        courseId: currentRecord.courseId,
-        subjectId: currentRecord.subjectId,
-        processId: currentRecord.processId,
-        lotNo: currentRecord.lotNo,
-        percentageCatch: currentRecord.percentageCatch,
-        qpId: currentRecord.qpId
-      };
-
-      // Call the API to update the item
-      await API.put('/QuantitySheet/bulk-update', [payload]);
-
-      message.success('Item updated successfully');
-      setEditModalVisible(false);
-      setCurrentRecord(null);
-      await fetchQuantitySheetData();
-    } catch (error) {
-      console.error('Failed to update item:', error);
-      message.error('Failed to update item');
-    }
   };
 
   // Removed unused handleRemove function
@@ -395,13 +298,14 @@ const MSSTable = ({
     {
       title: "Actions",
       key: "actions",
+      fixed:'right',
       render: (_, record) => (
         <Space size="middle">
           <Button
             type="link"
             onClick={() => handleEditClick(record)}
           >
-            <EditOutlined /> Edit
+            <EditOutlined />
           </Button>
           {rejectedActive ? (
             <Button
@@ -519,172 +423,13 @@ ${customDark === "brown-dark" ? "thead-brown" : ""} `}
       />
 
       {/* Edit Modal */}
-      <Modal
+      <EditQuantitySheetModal
         show={editModalVisible}
         onHide={handleModalClose}
-        size="lg"
-        centered
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Edit Quantity Sheet</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {currentRecord && (
-            <Row>
-              <Col md={6}>
-                <BootstrapForm.Group className="mb-3">
-                  <BootstrapForm.Label>Catch No</BootstrapForm.Label>
-                  <BootstrapForm.Control
-                    type="text"
-                    name="catchNo"
-                    value={formData.catchNo || ''}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </BootstrapForm.Group>
-              </Col>
-              <Col md={6}>
-                <BootstrapForm.Group className="mb-3">
-                  <BootstrapForm.Label>NEP Code</BootstrapForm.Label>
-                  <BootstrapForm.Control
-                    type="text"
-                    name="nepCode"
-                    value={formData.nepCode || ''}
-                    onChange={handleInputChange}
-                  />
-                </BootstrapForm.Group>
-              </Col>
-              <Col md={12}>
-                <BootstrapForm.Group className="mb-3">
-                  <BootstrapForm.Label>Paper Title</BootstrapForm.Label>
-                  <BootstrapForm.Control
-                    type="text"
-                    name="paperTitle"
-                    value={formData.paperTitle || ''}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </BootstrapForm.Group>
-              </Col>
-              <Col md={6}>
-                <BootstrapForm.Group className="mb-3">
-                  <BootstrapForm.Label>Duration</BootstrapForm.Label>
-                  <BootstrapForm.Control
-                    type="text"
-                    name="duration"
-                    value={formData.duration || ''}
-                    onChange={handleInputChange}
-                  />
-                </BootstrapForm.Group>
-              </Col>
-              <Col md={6}>
-                <BootstrapForm.Group className="mb-3">
-                  <BootstrapForm.Label>Languages</BootstrapForm.Label>
-                  <Select
-                    mode="multiple"
-                    style={{ width: '100%' }}
-                    placeholder="Select languages"
-                    value={formData.languageId}
-                    onChange={handleLanguageChange}
-                  >
-                    {languageOptions.map(option => (
-                      <Select.Option key={option.languageId} value={option.languageId}>
-                        {option.languageName}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </BootstrapForm.Group>
-              </Col>
-              <Col md={6}>
-                <BootstrapForm.Group className="mb-3">
-                  <BootstrapForm.Label>Paper Number</BootstrapForm.Label>
-                  <BootstrapForm.Control
-                    type="text"
-                    name="paperNumber"
-                    value={formData.paperNumber || ''}
-                    onChange={handleInputChange}
-                  />
-                </BootstrapForm.Group>
-              </Col>
-              <Col md={6}>
-                <BootstrapForm.Group className="mb-3">
-                  <BootstrapForm.Label>Quantity</BootstrapForm.Label>
-                  <InputNumber
-                    style={{ width: '100%' }}
-                    min={0}
-                    value={formData.quantity}
-                    onChange={(value) => handleNumberChange('quantity', value)}
-                  />
-                </BootstrapForm.Group>
-              </Col>
-              <Col md={6}>
-                <BootstrapForm.Group className="mb-3">
-                  <BootstrapForm.Label>Max Marks</BootstrapForm.Label>
-                  <InputNumber
-                    style={{ width: '100%' }}
-                    min={0}
-                    value={formData.maxMarks}
-                    onChange={(value) => handleNumberChange('maxMarks', value)}
-                  />
-                </BootstrapForm.Group>
-              </Col>
-              <Col md={6}>
-                <BootstrapForm.Group className="mb-3">
-                  <BootstrapForm.Label>Private Code</BootstrapForm.Label>
-                  <BootstrapForm.Control
-                    type="text"
-                    name="uniqueCode"
-                    value={formData.uniqueCode || ''}
-                    onChange={handleInputChange}
-                  />
-                </BootstrapForm.Group>
-              </Col>
-              <Col md={6}>
-                <BootstrapForm.Group className="mb-3">
-                  <BootstrapForm.Label>Exam Date</BootstrapForm.Label>
-                  <DatePicker
-                    style={{ width: '100%' }}
-                    format="DD-MM-YYYY"
-                    value={formData.examDate ? moment(formData.examDate, 'DD-MM-YYYY') : null}
-                    onChange={handleDateChange}
-                  />
-                </BootstrapForm.Group>
-              </Col>
-              <Col md={6}>
-                <BootstrapForm.Group className="mb-3">
-                  <BootstrapForm.Label>Exam Time</BootstrapForm.Label>
-                  <BootstrapForm.Control
-                    type="text"
-                    name="examTime"
-                    value={formData.examTime || ''}
-                    onChange={handleInputChange}
-                  />
-                </BootstrapForm.Group>
-              </Col>
-              <Col md={12}>
-                <BootstrapForm.Group className="mb-3">
-                  <BootstrapForm.Label>Structure of Paper</BootstrapForm.Label>
-                  <BootstrapForm.Control
-                    as="textarea"
-                    rows={3}
-                    name="structureOfPaper"
-                    value={formData.structureOfPaper || ''}
-                    onChange={handleInputChange}
-                  />
-                </BootstrapForm.Group>
-              </Col>
-            </Row>
-          )}
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleModalClose}>
-            Cancel
-          </Button>
-          <Button variant="primary" onClick={handleSave}>
-            Save Changes
-          </Button>
-        </Modal.Footer>
-      </Modal>
+        record={currentRecord}
+        languageOptions={languageOptions}
+        onSuccess={fetchQuantitySheetData}
+      />
     </div>
   );
 };

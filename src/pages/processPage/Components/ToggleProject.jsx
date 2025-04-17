@@ -36,9 +36,9 @@ const ToggleProject = ({ projectName, selectedLot, onChange }) => {
         const projectData = await API.get(
           `/Project/GetDistinctProjectsForUser/${userData.userId}`
         );
-  
+
         const activeProjects = projectData.data.filter((project) => project.status);
-  
+
         // Fetch project processes for each project and filter
         const filteredProjects = [];
         for (const project of activeProjects) {
@@ -53,17 +53,17 @@ const ToggleProject = ({ projectName, selectedLot, onChange }) => {
             console.error(`Error fetching processes for project ${project.name}:`, err);
           }
         }
-  
+
         setProjects(filteredProjects);
       } catch (error) {
         console.error("Error fetching project data:", error);
       }
     };
-  
+
     fetchProjects();
   }, [userData.userId]);
 
-  
+
   const handleMenuClick = (project) => {
     onChange({
       value: project.projectId,
@@ -79,7 +79,7 @@ const ToggleProject = ({ projectName, selectedLot, onChange }) => {
       maxHeight: "300px",
       overflowY: "auto",
       borderRadius: "4px",
-    }}>   
+    }}>
     <Menu>
       {projects.map((project) => (
         <Menu.Item
@@ -106,7 +106,7 @@ const ToggleProject = ({ projectName, selectedLot, onChange }) => {
     <div className="d-flex flex-column align-items-center">
       <div className="d-flex align-items-center">
         <Dropdown
-          overlay={menu}
+          menu={{ items: [{ key: 'menu', label: menu }] }}
           trigger={["click"]}
           open={visible}
           onOpenChange={setVisible}
