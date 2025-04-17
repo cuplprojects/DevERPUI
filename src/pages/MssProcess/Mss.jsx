@@ -339,6 +339,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
             handleTableChange={handleTableChange}
             rejectedActive={rejectedActive}
             handleUpdateItem={handleUpdateItem}
+            cssClasses={cssClasses}
           />
           <UpdateRejectedItemModal
             cssClasses={cssClasses}

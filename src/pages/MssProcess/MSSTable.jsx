@@ -4,10 +4,8 @@ import { Modal } from 'react-bootstrap';
 import { CheckCircleOutlined, EditOutlined } from "@ant-design/icons";
 import API from "../../CustomHooks/MasterApiHooks/api";
 import Highlighter from "react-highlight-words";
-import themeStore from "../../store/themeStore";
-import { useStore } from "zustand";
-
 import EditQuantitySheetModal from "./EditQuantitySheetModal";
+
 
 const MSSTable = ({
   quantitySheetData,
@@ -17,7 +15,7 @@ const MSSTable = ({
   currentPage,
   pageSize,
   handleTableChange,
-  rejectedActive, handleUpdateItem,
+  rejectedActive, handleUpdateItem, cssClasses
 }) => {
   const [searchText] = useState("");
   const [searchedColumn] = useState("");
@@ -28,8 +26,16 @@ const MSSTable = ({
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [currentRecord, setCurrentRecord] = useState(null);
 
-  const { getCssClasses } = useStore(themeStore);
-  const [customDark] = getCssClasses();
+  const [
+    customDark,
+    customMid,
+    customLight,
+    customBtn,
+    customDarkText,
+    customLightText,
+    customLightBorder,
+    customDarkBorder,
+  ] = cssClasses;
 
   const handleMarkReceived = async (record) => {
     try {
@@ -364,10 +370,10 @@ const MSSTable = ({
         onHide={handleModalCancel}
         centered
       >
-        <Modal.Header closeButton>
-          <Modal.Title>Assign Date and Time</Modal.Title>
+        <Modal.Header closeButton className={`${customDark}`}>
+          <Modal.Title className={`${customLightText}`}>Assign Date and Time</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
+        <Modal.Body className={`${customLight}`}>
           <div style={{ marginBottom: 16 }}>
             <h4>Selected Catches:</h4>
             {selectedRows.map(row => (
@@ -386,7 +392,7 @@ const MSSTable = ({
             />
           </Space>
         </Modal.Body>
-        <Modal.Footer>
+        <Modal.Footer className={`${customDark}`}>
           <Button variant="secondary" onClick={handleModalCancel}>
             Close
           </Button>
@@ -429,6 +435,7 @@ ${customDark === "brown-dark" ? "thead-brown" : ""} `}
         record={currentRecord}
         languageOptions={languageOptions}
         onSuccess={fetchQuantitySheetData}
+        cssClasses={cssClasses}
       />
     </div>
   );

@@ -9,9 +9,20 @@ const EditQuantitySheetModal = ({
   onHide, 
   record, 
   languageOptions, 
-  onSuccess 
+  onSuccess ,
+  cssClasses
 }) => {
   const [formData, setFormData] = useState({});
+  const [
+    customDark,
+    customMid,
+    customLight,
+    customBtn,
+    customDarkText,
+    customLightText,
+    customLightBorder,
+    customDarkBorder,
+  ] = cssClasses;
 
   // Initialize form data when record changes
   useEffect(() => {
@@ -113,10 +124,10 @@ const EditQuantitySheetModal = ({
       size="lg"
       centered
     >
-      <Modal.Header closeButton>
-        <Modal.Title>Edit Quantity Sheet</Modal.Title>
+      <Modal.Header closeButton className={`${customDark}`}>
+        <Modal.Title  className={`${customLightText}`}>Edit Quantity Sheet</Modal.Title>
       </Modal.Header>
-      <Modal.Body>
+      <Modal.Body className={`${customLight}`}>    
         {record && (
           <Row>
             <Col md={6}>
@@ -264,7 +275,7 @@ const EditQuantitySheetModal = ({
           </Row>
         )}
       </Modal.Body>
-      <Modal.Footer>
+      <Modal.Footer className={`${customDark}`}>
         <Button variant="secondary" onClick={onHide}>
           Cancel
         </Button>
