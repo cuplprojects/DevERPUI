@@ -39,7 +39,7 @@ const ColumnToggleModal = ({ show, handleClose, columnVisibility, setColumnVisib
         { key: 'Interim Quantity', label: 'interimQuantity' },
         { key: 'Remarks', label: 'remarks' },
         { key: 'Team Assigned', label: 'teamAssigned' },
-        { key: 'Paper', label: 'paper' },
+        { key: 'PaperTitle', label: 'paperTitle' },
         { key: 'Paper Details', label: 'paperDetails' },
         { key: 'Envelopes', label: 'envelopes' },
         { key: 'Course', label: 'course' },

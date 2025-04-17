@@ -656,12 +656,12 @@ const ProjectDetailsTable = ({
         {
           title: t("course"),
 
-          dataIndex: "course",
+          dataIndex: "courseName",
           // width: '20%',
           align: "center",
-          key: "course",
+          key: "courseName",
 
-          sorter: (a, b) => a.course - b.course,
+          sorter: (a, b) => a.courseName - b.courseName,
         },
       ]
       : []),
@@ -669,24 +669,24 @@ const ProjectDetailsTable = ({
       ? [
         {
           title: t("subject"),
-          dataIndex: "subject",
+          dataIndex: "subjectName",
           width: "20%",
           align: "center",
-          key: "subject",
+          key: "subjectName",
 
-          sorter: (a, b) => a.subject - b.subject,
+          sorter: (a, b) => a.subjectName - b.subjectName,
         },
       ]
       : []),
-    ...(columnVisibility["Paper"]
+    ...(columnVisibility["PaperTitle"]
       ? [
         {
           title: t("questionPaper"),
-          dataIndex: "paper",
+          dataIndex: "paperTitle",
           width: "20%",
           align: "center",
-          key: "paper",
-          sorter: (a, b) => a.paper - b.paper,
+          key: "paperTitle",
+          sorter: (a, b) => a.paperTitle - b.paperTitle,
         },
       ]
       : []),
@@ -702,9 +702,13 @@ const ProjectDetailsTable = ({
             <div className="d-flex flex-column">
               <span className="fw-bold">{`Catch: ${record.catchNumber || "N/A"
                 }`}</span>
-              <span className="fw-bold">{`Course: ${record.course || "N/A"
+              <span className="fw-bold">{`A: ${record.a || "N/A"
                 }`}</span>
-              <span className="fw-bold">{`Paper: ${record.paper || "N/A"
+              <span className="fw-bold">{`B: ${record.b || "N/A"
+                }`}</span>
+              <span className="fw-bold">{`C: ${record.c || "N/A"
+                }`}</span>
+              <span className="fw-bold">{`D: ${record.d || "N/A"
                 }`}</span>
               <span className="fw-bold">{`Exam Date: ${formatDate(record.examDate) || "N/A"
                 }`}</span>
