@@ -17,7 +17,7 @@ const MSSTable = ({
   currentPage,
   pageSize,
   handleTableChange,
-  rejectedActive,handleUpdateItem,
+  rejectedActive, handleUpdateItem,
 }) => {
   const [searchText] = useState("");
   const [searchedColumn] = useState("");
@@ -143,9 +143,9 @@ const MSSTable = ({
     onFilter: (value, record) =>
       record[dataIndex]
         ? record[dataIndex]
-            .toString()
-            .toLowerCase()
-            .includes(value.toLowerCase())
+          .toString()
+          .toLowerCase()
+          .includes(value.toLowerCase())
         : "",
     render: (text) =>
       searchedColumn === dataIndex ? (
@@ -298,7 +298,7 @@ const MSSTable = ({
     {
       title: "Actions",
       key: "actions",
-      fixed:'right',
+      fixed: 'right',
       render: (_, record) => (
         <Space size="middle">
           <Button
