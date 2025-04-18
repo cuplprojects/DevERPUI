@@ -120,6 +120,7 @@ const Cards = ({ item, onclick, disableProject, activeCardStyle }) => {
   // Navigate to the dashboard and send projectId as a route parameter
   const handleCardClick = async () => {
     if (await checkMSS(item.projectId)) {
+      console.log()
       console.log(item.projectId)
       navigate(`/project-details/${encrypt(item.projectId)}`);
     
@@ -133,8 +134,11 @@ const Cards = ({ item, onclick, disableProject, activeCardStyle }) => {
     return;
   }
   if (supervisor) {
-    setLotInLocal(1);
-    navigate(`/project-details/${encrypt(item.projectId)}/${encrypt(1)}`);
+    console.log(supervisor)
+    //setLotInLocal(1);
+    navigate(`/dashboard/${encrypt(item.projectId)}`);
+    //navigate(`/project-details/${encrypt(item.projectId)}/${encrypt(1)}`);
+    
   } else {
     navigate(`/dashboard/${encrypt(item.projectId)}`);
   }
