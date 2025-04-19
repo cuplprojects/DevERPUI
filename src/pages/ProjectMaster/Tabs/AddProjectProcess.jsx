@@ -467,9 +467,19 @@ const AddProjectProcess = ({ selectedProject, setIsProcessSubmitted }) => {
 
       <Button
         type="primary"
-        className={`${customBtn}`}
+        className={`${customBtn} hover:shadow-lg`}
         onClick={handleSubmit}
-        style={{ marginTop: '16px' }}
+        style={{
+          marginTop: '25px',
+          float: 'left',
+          padding: '0 32px',
+          height: '40px', 
+          borderRadius: '6px',
+          fontSize: '16px',
+          fontWeight: '400',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+          transition: 'all 0.3s ease'
+        }}
         disabled={isQuantitySheetExists || isSubmitting}
       >
         {isSubmitting ? t("submitting") : t("submitProcesses")}

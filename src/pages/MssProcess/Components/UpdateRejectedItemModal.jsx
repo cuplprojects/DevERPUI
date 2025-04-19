@@ -147,6 +147,33 @@ const UpdateRejectedItemModal = ({
             Update Rejected Item
           </Modal.Title>
         </Modal.Header>
+
+        <Row>
+            <Col md={12}>
+              <Form.Group controlId="formRejectionReasons" className="mb-3">
+                <Form.Label className={`${customDarkText} fw-bold fs-5 text-center w-100 mb-3`}>
+                  Rejection Reasons
+                </Form.Label>
+                <div className="d-flex flex-wrap justify-content-center gap-3 mt-3 p-4 mb-4 bg-light rounded-3 shadow-sm">
+                  {rejectionReasons.map((reason) => (
+                    <Tag 
+                      key={reason}
+                      color="#ff6b6b"
+                      className="px-4 py-2 rounded-pill shadow-sm m-1 transition-all hover:shadow-md"
+                      style={{
+                        fontSize: '1.1rem',
+                        fontWeight: '500',
+                        border: 'none',
+                        cursor: 'default'
+                      }}
+                    >
+                      {reason.charAt(0).toUpperCase() + reason.slice(1)}
+                    </Tag>
+                  ))}
+                </div>
+              </Form.Group>
+            </Col>
+          </Row>
         <Modal.Body className={`${customLight} ${customDarkText}`}>
           {/* Existing form fields */}
           <Row>
@@ -386,20 +413,7 @@ const UpdateRejectedItemModal = ({
           </Row>
 
           {/* New Row for Rejection Reasons */}
-          <Row>
-            <Col md={12}>
-              <Form.Group controlId="formRejectionReasons" className="mb-3">
-                <Form.Label>Rejection Reasons</Form.Label>
-                <div>
-                  {rejectionReasons.map((reason) => (
-                    <Tag key={reason} color="red">
-                      {reason.charAt(0).toUpperCase() + reason.slice(1)}
-                    </Tag>
-                  ))}
-                </div>
-              </Form.Group>
-            </Col>
-          </Row>
+        
         </Modal.Body>
         <ModalFooter className={`${customDark}`}>
           <div className="d-flex justify-content-end">

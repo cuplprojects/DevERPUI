@@ -153,7 +153,7 @@ const ExamType = () => {
       width: '10%',
     },
     {
-      title: t('examTypeName'),
+      title: t('Semester'),
       dataIndex: 'typeName',
       key: 'typeName',
       width: '40%',
@@ -171,26 +171,7 @@ const ExamType = () => {
         )
       ),
     },
-    {
-      align: 'center',
-      title: t('type'),
-      dataIndex: 'type',
-      key: 'type',
-      width: '25%',
-      sorter: (a, b) => a.type.localeCompare(b.type),
-      render: (type, record, index) => (
-        editingIndex === index ? (
-          <Input
-            value={editingType}
-            onChange={(e) => setEditingType(e.target.value)}
-            onPressEnter={() => handleEditSave(record)}
-            style={{ width: '100%' }}
-          />
-        ) : (
-          <span>{type}</span>
-        )
-      ),
-    },
+  
     {
       align: 'left',
       title: t('action'),
@@ -250,7 +231,7 @@ const ExamType = () => {
     }}
       className={`rounded-2 ${customDark === "dark-dark" ? `${customDark} border text-white` : `${customDarkText}`}`}>
       <Divider className={`fs-3 mt-0 ${customDarkText}`}>
-        {t("existingExamTypes")}
+        {t("Existing Semester")}
       </Divider>
       <div style={{
         display: 'flex',
@@ -261,7 +242,7 @@ const ExamType = () => {
       }}
       >
         <Button type="" className={`mb-2 rounded-2 ${customBtn} ${customDark === "dark-dark" ? `border-white` : `border-0`} custom-zoom-btn `} onClick={showModal}>
-          {t('addExamType')}
+          {t('Add Semester')}
         </Button>
         <div className="d-flex align-items-center">
           <Input
@@ -325,7 +306,7 @@ const ExamType = () => {
         className={`rounded-2 ${customDark === "" ? `${customDark}` : ''}  `}
       >
         <Modal.Header closeButton={false} className={`rounded-top-2 ${customDark} ${customLightText} ${customDark === "dark-dark" ? `border ` : `border-0`} border d-flex justify-content-between `}>
-          <Modal.Title>{t('addExamType')}</Modal.Title>
+          <Modal.Title>{t('Semester')}</Modal.Title>
           <AiFillCloseSquare
             size={35}
             onClick={handleCancel}
@@ -344,20 +325,14 @@ const ExamType = () => {
             <div className="d-flex justify-content-between align-items-center">
               <Form.Item
                 name="typeName"
-                label={<span className={`${customDark === "dark-dark" || customDark === "blue-dark" ? `text-white` : `${customDarkText}`} fs-5 `}>{t('examTypeName')}</span>}
-                rules={[{ required: true, message: t('pleaseInputExamTypeName') }]}
+                label={<span className={`${customDark === "dark-dark" || customDark === "blue-dark" ? `text-white` : `${customDarkText}`} fs-6 `}>{t('Semester')}</span>}
+                rules={[{ required: true, message: t('pleaseInput Semester') }]}
                 className="flex-grow-1 me-3"
               >
-                <Input placeholder={t('examTypeName')} className="rounded-2" />
+                <Input placeholder={t('Semester')} className="rounded-2" />
               </Form.Item>
 
-              <Form.Item
-                name="type"
-                label={<span className={`${customDark === "dark-dark" || customDark === "blue-dark" ? `text-white` : `${customDarkText}`} fs-5 `}>{t('type')}</span>}
-                rules={[{ required: true, message: t('pleaseInputType') }]}
-              >
-                <Input placeholder={t('type')} className="rounded-2" />
-              </Form.Item>
+              
             </div>
 
             <Form.Item>

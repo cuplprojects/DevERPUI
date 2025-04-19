@@ -149,7 +149,24 @@ const ProjectUserAllocation = ({ selectedProject, activeKey }) => {
         rowKey="processId" // Ensure this matches your data structure
         pagination={false}
       />
-      <Button type="primary" onClick={handleSubmit} style={{ marginTop: '20px' }}>
+      <Button 
+        type="primary"
+        size="large"
+        onClick={handleSubmit}
+        style={{
+          marginTop: '24px',
+          display: 'block',
+          margin: '20px auto',
+          padding: '0 32px',
+          height: '40px',
+          borderRadius: '6px',
+          fontSize: '16px',
+          fontWeight: '500',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+          transition: 'all 0.3s ease'
+        }}
+        className={`${customBtn} hover:shadow-lg`}
+      >
         {t("submitUserAssignments")}
       </Button>
     </div>

@@ -145,7 +145,7 @@ const Sidebar = () => {
     { key: 'teams', icon: <RiTeamFill />, label: t('teams'), permission: '2.9' },
     { key: 'alarm', icon: <FaBell />, label: t('alarm'), permission: '2.8' },
     { key: 'session', icon: <FaCalendarAlt  />, label: t('session'), permission: '2.8' },
-    { key: 'examType', icon: <PiExamFill  />, label: t('examType'), permission: '2.8' },
+    { key: 'examType', icon: <PiExamFill  />, label: t('Semester'), permission: '2.8' },
     { key: 'language', icon: <TbLanguage />, label: t('language'), permission: '2.8' },
     { key: 'subject', icon: <MdSubject />, label: t('subject'), permission: '2.8' },
     { key: 'course', icon: <SiCoursera />, label: t('course'), permission: '2.8' },
