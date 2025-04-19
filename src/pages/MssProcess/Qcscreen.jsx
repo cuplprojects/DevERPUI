@@ -315,13 +315,13 @@ const QcProcess = ({ projectId }) => {
       setFilteredData(data.filter((item) => item.verified?.status === true));
       setShowback(true)
     } else if (status === 'rejected') {
-      setFilteredData(data.filter((item) => item.verified?.status === false));
+      setFilteredData(data.filter((item) => item.verified?.status === false && item.mssStatus!==5));
       setShowback(true)
     } else if (status === 'pending') {
       setFilteredData(data.filter((item) => Object.keys(item.verified).length === 0));
       setShowback(true)
     } else if (status === 'reverify') {
-      setFilteredData(data.filter((item) => item.verified?.status === false && Object.values(item.verified).some(value => value === true)));
+      setFilteredData(data.filter((item) => item.mssStatus==5 && Object.values(item.verified).some(value => value === true)));
       setShowback(true)
     }
     else {
@@ -465,7 +465,7 @@ const QcProcess = ({ projectId }) => {
                   </Badge>
                 </Tooltip>
                 <Tooltip title="Rejected Items">
-                  <Badge color='#ff4d4f' count={data.filter((item) => item.verified?.status === false).length}>
+                  <Badge color='#ff4d4f' count={data.filter((item) => item.verified?.status === false && item.mssStatus !==5).length}>
                     <CloseCircleOutlined 
                       onClick={() => filterDataByStatus('rejected')} 
                       className='fs-3' 
