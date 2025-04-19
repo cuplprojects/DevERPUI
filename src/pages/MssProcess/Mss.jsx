@@ -35,6 +35,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
     customLightBorder,
     customDarkBorder,
   ] = cssClasses;
+
   const [searchTerm, setSearchTerm] = useState(null);
   const [tableSearchTerm, setTableSearchTerm] = useState("");
   const [data, setData] = useState([]);
@@ -216,7 +217,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
         <Col xs={12} md={6} lg={6} className="d-flex align-items-center">
           <Collapse
             defaultActiveKey={["1"]}
-            expandIconPosition="right"
+            expandIconPosition="end"
             className="flex-grow-1 border-0"
           >
             <div className="w-100 mb-2 border-0">
@@ -338,6 +339,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
             handleTableChange={handleTableChange}
             rejectedActive={rejectedActive}
             handleUpdateItem={handleUpdateItem}
+            cssClasses={cssClasses}
           />
           <UpdateRejectedItemModal
             cssClasses={cssClasses}

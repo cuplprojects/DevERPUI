@@ -1,12 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Table, Input, Button, Space, message, DatePicker } from "antd";
 import { Modal } from 'react-bootstrap';
-import { CheckCircleOutlined, DeleteOutlined } from "@ant-design/icons";
+import { CheckCircleOutlined, EditOutlined } from "@ant-design/icons";
 import API from "../../CustomHooks/MasterApiHooks/api";
 import Highlighter from "react-highlight-words";
-import themeStore from "../../store/themeStore";
-import { useStore } from "zustand";
-import moment from "moment";
+import EditQuantitySheetModal from "./EditQuantitySheetModal";
+
 
 const MSSTable = ({
   quantitySheetData,
@@ -16,16 +15,17 @@ const MSSTable = ({
   currentPage,
   pageSize,
   handleTableChange,
-  rejectedActive,handleUpdateItem,
+  rejectedActive, handleUpdateItem, cssClasses
 }) => {
-  const [searchText, setSearchText] = useState("");
-  const [searchedColumn, setSearchedColumn] = useState("");
+  const [searchText] = useState("");
+  const [searchedColumn] = useState("");
   const [selectedRows, setSelectedRows] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [currentRecord, setCurrentRecord] = useState(null);
 
-  const { getCssClasses } = useStore(themeStore);
   const [
     customDark,
     customMid,
@@ -35,8 +35,7 @@ const MSSTable = ({
     customLightText,
     customLightBorder,
     customDarkBorder,
-    customThead,
-  ] = getCssClasses();
+  ] = cssClasses;
 
   const handleMarkReceived = async (record) => {
     try {
@@ -59,7 +58,7 @@ const MSSTable = ({
         message.error("Please select both date and time");
         return;
       }
-  
+
       const updatedRows = selectedRows.map(row => {
         const { courseName, examTypes, languages, subjectName, ...rest } = row;
         return {
@@ -68,9 +67,9 @@ const MSSTable = ({
           examTime: selectedTime
         };
       });
-  
+
       await API.put('/QuantitySheet/bulk-update', updatedRows);
-  
+
       message.success("Successfully updated selected items");
       setIsModalVisible(false);
       setSelectedRows([]);
@@ -81,16 +80,17 @@ const MSSTable = ({
     }
   };
 
-  const handleRemove = async (record) => {
-    try {
-      await API.delete(`/QuantitySheet/${record.quantitySheetId}`);
-      message.success("Item removed successfully");
-      await fetchQuantitySheetData();
-    } catch (error) {
-      console.error("Failed to remove item:", error);
-      message.error("Failed to remove item");
-    }
+  const handleEditClick = (record) => {
+    setCurrentRecord(record);
+    setEditModalVisible(true);
   };
+
+  const handleModalClose = () => {
+    setEditModalVisible(false);
+    setCurrentRecord(null);
+  };
+
+  // Removed unused handleRemove function
 
   const showModal = () => {
     setIsModalVisible(true);
@@ -149,9 +149,9 @@ const MSSTable = ({
     onFilter: (value, record) =>
       record[dataIndex]
         ? record[dataIndex]
-            .toString()
-            .toLowerCase()
-            .includes(value.toLowerCase())
+          .toString()
+          .toLowerCase()
+          .includes(value.toLowerCase())
         : "",
     render: (text) =>
       searchedColumn === dataIndex ? (
@@ -166,13 +166,16 @@ const MSSTable = ({
       ),
   });
 
+
+
   const columns = [
     {
       title: "Catch No",
       dataIndex: "catchNo",
-      key: "catchNo", 
+      key: "catchNo",
       sorter: (a, b) => a.catchNo.localeCompare(b.catchNo),
       ...getColumnSearchProps("catchNo"),
+      editable: true,
     },
     {
       title: "NEP Code",
@@ -180,6 +183,7 @@ const MSSTable = ({
       key: "nepCode",
       sorter: (a, b) => a.nepCode.localeCompare(b.nepCode),
       ...getColumnSearchProps("nepCode"),
+      editable: true,
     },
     {
       title: "Course",
@@ -187,6 +191,7 @@ const MSSTable = ({
       key: "courseName",
       sorter: (a, b) => a.courseName.localeCompare(b.courseName),
       ...getColumnSearchProps("courseName"),
+
     },
     {
       title: "Subject",
@@ -194,20 +199,23 @@ const MSSTable = ({
       key: "subjectName",
       sorter: (a, b) => a.subjectName.localeCompare(b.subjectName),
       ...getColumnSearchProps("subjectName"),
+
     },
     {
-      title: "PaperTitle",
+      title: "Paper Title",
       dataIndex: "paperTitle",
       key: "paperTitle",
       sorter: (a, b) => a.paperTitle.localeCompare(b.paperTitle),
       ...getColumnSearchProps("paperTitle"),
+      editable: true,
     },
     {
       title: "Duration",
       dataIndex: "duration",
       key: "duration",
-      sorter: (a, b) => a.duration - b.duration,
+      sorter: (a, b) => a.duration.localeCompare(b.duration),
       ...getColumnSearchProps("duration"),
+      editable: true,
     },
     {
       title: "Language",
@@ -234,13 +242,15 @@ const MSSTable = ({
         );
         return aLanguages.join(", ").localeCompare(bLanguages.join(", "));
       },
+
     },
     {
       title: "Paper#",
-      dataIndex: "paperNo",
-      key: "paperNo",
-      sorter: (a, b) => a.paperNo.localeCompare(b.paperNo),
-      ...getColumnSearchProps("paperNo"),
+      dataIndex: "paperNumber", // Changed from paperNo to paperNumber to match API
+      key: "paperNumber",
+      sorter: (a, b) => (a.paperNumber || '').localeCompare(b.paperNumber || ''),
+      ...getColumnSearchProps("paperNumber"),
+
     },
     {
       title: "Quantity",
@@ -248,6 +258,7 @@ const MSSTable = ({
       key: "quantity",
       sorter: (a, b) => a.quantity - b.quantity,
       ...getColumnSearchProps("quantity"),
+
     },
     {
       title: "Max Marks",
@@ -255,40 +266,53 @@ const MSSTable = ({
       key: "maxMarks",
       sorter: (a, b) => a.maxMarks - b.maxMarks,
       ...getColumnSearchProps("maxMarks"),
+
+
     },
     {
       title: "Private Code",
       dataIndex: "uniqueCode",
       key: "uniqueCode",
-      sorter: (a, b) => a.uniqueCode.localeCompare(b.uniqueCode),
+      sorter: (a, b) => (a.uniqueCode || '').localeCompare(b.uniqueCode || ''),
       ...getColumnSearchProps("uniqueCode"),
+      editable: true,
     },
     {
       title: "Exam Date",
       dataIndex: "examDate",
       key: "examDate",
-      sorter: (a, b) => a.examDate.localeCompare(b.examDate),
+      sorter: (a, b) => (a.examDate || '').localeCompare(b.examDate || ''),
       ...getColumnSearchProps("examDate"),
+
     },
     {
       title: "Exam Time",
       dataIndex: "examTime",
       key: "examTime",
-      sorter: (a, b) => a.examTime.localeCompare(b.examTime),
+      sorter: (a, b) => (a.examTime || '').localeCompare(b.examTime || ''),
       ...getColumnSearchProps("examTime"),
+      editable: true,
     },
     {
       title: "Structure of Paper",
       dataIndex: "structureOfPaper",
       key: "structureOfPaper",
-      sorter: (a, b) => a.structureOfPaper.localeCompare(b.structureOfPaper),
+      sorter: (a, b) => (a.structureOfPaper || '').localeCompare(b.structureOfPaper || ''),
       ...getColumnSearchProps("structureOfPaper"),
+      editable: true,
     },
     {
       title: "Actions",
       key: "actions",
+      fixed: 'right',
       render: (_, record) => (
         <Space size="middle">
+          <Button
+            type="link"
+            onClick={() => handleEditClick(record)}
+          >
+            <EditOutlined />
+          </Button>
           {rejectedActive ? (
             <Button
               type="link"
@@ -309,7 +333,7 @@ const MSSTable = ({
           )}
         </Space>
       ),
-    }    
+    }
   ];
 
   const filteredData = quantitySheetData.filter((record) =>
@@ -332,8 +356,8 @@ const MSSTable = ({
       style={{ overflowX: "auto", width: "100%" }}
     >
       {selectedRows.length > 0 && (
-        <Button 
-          type="primary" 
+        <Button
+          type="primary"
           onClick={showModal}
           style={{ marginBottom: 16 }}
         >
@@ -346,10 +370,10 @@ const MSSTable = ({
         onHide={handleModalCancel}
         centered
       >
-        <Modal.Header closeButton>
-          <Modal.Title>Assign Date and Time</Modal.Title>
+        <Modal.Header closeButton className={`${customDark}`}>
+          <Modal.Title className={`${customLightText}`}>Assign Date and Time</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
+        <Modal.Body className={`${customLight}`}>
           <div style={{ marginBottom: 16 }}>
             <h4>Selected Catches:</h4>
             {selectedRows.map(row => (
@@ -357,8 +381,8 @@ const MSSTable = ({
             ))}
           </div>
           <Space direction="vertical" size={12} style={{ width: '100%' }}>
-            <DatePicker 
-              onChange={(date) => setSelectedDate(date)} 
+            <DatePicker
+              onChange={(date) => setSelectedDate(date)}
               style={{ width: '100%' }}
             />
             <Input
@@ -368,7 +392,7 @@ const MSSTable = ({
             />
           </Space>
         </Modal.Body>
-        <Modal.Footer>
+        <Modal.Footer className={`${customDark}`}>
           <Button variant="secondary" onClick={handleModalCancel}>
             Close
           </Button>
@@ -402,6 +426,17 @@ ${customDark === "brown-dark" ? "thead-brown" : ""} `}
         onChange={(pagination, filters, sorter, extra) => {
           console.log("params", pagination, filters, sorter, extra);
         }}
+      />
+
+      {/* Edit Modal */}
+      <EditQuantitySheetModal
+        show={editModalVisible}
+        onHide={handleModalClose}
+        record={currentRecord}
+        languageOptions={languageOptions}
+        onSuccess={fetchQuantitySheetData}
+        cssClasses={cssClasses}
+        fetchQuantitySheetData={fetchQuantitySheetData}
       />
     </div>
   );
