@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import API from "../../CustomHooks/MasterApiHooks/api";
-import { Select, Form, Upload, Button, Row, Col } from "antd";
+import { Select, Form, Upload, Button, Row, Col, message } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
@@ -42,11 +42,10 @@ const Import = () => {
 
   useEffect(() => {
     const decryptGroupId = decrypt(encryptedGroupId);
-    // console.log(decryptGroupId);
     const decryptGroupName = decrypt(encryptedGroupName);
     setGroupId(decryptGroupId);
     setGroupName(decryptGroupName);
-  }, [])
+  }, []);
 
   useEffect(() => {
     const getColumns = async () => {
@@ -266,7 +265,6 @@ const Import = () => {
     }
   };
 
-
   const getLanguageIdByName = async (language) => {
     try {
       const encodedLanguage = encodeURIComponent(language);
@@ -333,8 +331,6 @@ const Import = () => {
         examTypeId: item.ExamTypeId || 0,
       }));
 
-      // console.log("final payload ->",finalPayload)
-
       const response = await API.post("/QPMasters", finalPayload, {
         headers: {
           "Content-Type": "application/json",
@@ -342,6 +338,7 @@ const Import = () => {
       });
       console.log("Upload Success:", response.data);
       console.log(t("quantitySheetUploadedSuccessfully"));
+      message.success(t("quantitySheetUploadedSuccessfully"));  
       setFileList([]);
       setSelectedFile(null);
       setFieldMappings([]);
@@ -349,13 +346,16 @@ const Import = () => {
       setShowBtn(false);
     } catch (error) {
       console.error(t("failedToUploadQuantitySheet"));
+      message.error(t("failedToUploadQuantitySheet"));
     } finally {
       setIsLoading(false);
     }
   };
+
   const handleHomeClick = () => {
     navigate("/QP-Masters");
   };
+
   const handleMappingChange = (property, value) => {
     setFieldMappings((prevMappings) => {
       return {
@@ -365,13 +365,18 @@ const Import = () => {
     });
   };
 
+  // Function to process field names
+  const processFieldName = (name) => {
+    return name.endsWith("Id") ? name.slice(0, -2) : name;
+  };
+
   return (
     <Container className="">
       <Card>
         <Card.Body>
           <div className="d-flex justify-content-between align-items-center">
             <div className="flex-grow-1 text-center">
-              <h1 className={`fw-bold ${customDarkText} m-0`}>Import Excel</h1> 
+              <h1 className={`fw-bold ${customDarkText} m-0`}>Import Excel</h1>
               <p className="text-muted m-0">For <span className="fw-bold">{groupName}</span> group</p>
             </div>
             <FaHome
@@ -423,7 +428,6 @@ const Import = () => {
                 )}
               </div>
             </Form.Item>
-            {/* {showMappingFields && headers.length > 0 && ( */}
             <Row className="mt-4 justify-content-center">
               <div className="table-responsive w-100">
                 <table className="table table-bordered table-striped w-100">
@@ -436,7 +440,7 @@ const Import = () => {
                   <tbody>
                     {Object.keys(fieldMappings).map((property) => (
                       <tr key={property}>
-                        <td>{property} </td>
+                        <td>{processFieldName(property)} </td>
                         <td>
                           <Select
                             allowClear
@@ -455,7 +459,6 @@ const Import = () => {
                 </table>
               </div>
             </Row>
-            {/* )} */}
           </Form>
         </Card.Body>
       </Card>
