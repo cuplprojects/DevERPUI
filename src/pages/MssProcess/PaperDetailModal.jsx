@@ -70,7 +70,7 @@ const PaperDetailModal = ({
         setExamType(response.data);
         // console.log(examType)
       } catch (error) {
-        console.error("Error fetching courses:", error);
+        console.error("Error fetching examtype:", error);
       }
     };
 
@@ -90,8 +90,7 @@ const PaperDetailModal = ({
     fetchLanguage();
 
     if (item) {
-      // console.log(item);
-      // Set the form fields with the values from the item
+       console.log(item);
       form.setFieldsValue({
         QPId: item.qpMasterId,
         Quantity: item.quantity ?? 0.0,
@@ -118,7 +117,7 @@ const PaperDetailModal = ({
   const handleUpdate = async () => {
     try {
       const values = await form.validateFields();
-
+console.log(values)
       const selectedCourse = courses.find(
         (course) => course.courseName === values.CourseId
       );
@@ -158,7 +157,7 @@ const PaperDetailModal = ({
           stopCatch: 0,
           mssStatus: 1,
           ttfStatus: 0,
-          structureOfPaper: values.StructureOfPaper || null,
+          structureOfPaper: values.StructureOfPaper || "",
         },
       ];
 

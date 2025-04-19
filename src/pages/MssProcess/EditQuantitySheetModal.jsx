@@ -28,6 +28,7 @@ const EditQuantitySheetModal = ({
   // Initialize form data when record changes
   useEffect(() => {
     if (record) {
+      console.log(record)
       const initialFormData = {
         catchNo: record.catchNo || '',
         nepCode: record.nepCode || '',
@@ -43,6 +44,7 @@ const EditQuantitySheetModal = ({
         structureOfPaper: record.structureOfPaper || '',
         mssStatus: record.mssStatus, // Include the original mssStatus
         ttfStatus: record.ttfStatus, // Include the original ttfStatus
+        status : record.status,
       };
 
       setFormData(initialFormData);
@@ -106,7 +108,12 @@ const EditQuantitySheetModal = ({
         processId: record.processId,
         lotNo: record.lotNo,
         percentageCatch: record.percentageCatch,
-        qpId: record.qpId
+        qpId: record.qpId,
+        pages: record.pages,
+        innerEnvelope: record.innerEnvelope,
+        outerEnvelope : record.outerEnvelope,
+        status : record.status,
+        stopCatch : record.stopCatch,
       };
       console.log("Payload Data -", payload);
       // Call the API to update the item

@@ -293,6 +293,8 @@ const ABCDMaster = () => {
                     }
                   >
                     <option value="2022-2023">2022-2023</option>
+                    <option value="2022">2022</option>
+                    <option value="2023">2023</option>
                     <option value="2022-23">2022-23</option>
                     <option value="22-23">22-23</option>
                     <option value="22-2023">22-2023</option>

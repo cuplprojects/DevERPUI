@@ -144,6 +144,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
       const response = await API.get(
         `/QuantitySheet/CatchByproject?ProjectId=${projectId}`
       );
+      console.log(response.data)
       setQuantitySheetData(response.data);
       // console.log("Quantity Sheet Data -", response.data);
     } catch (error) {
