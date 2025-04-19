@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Input, Button, Switch, Form, Pagination, Divider } from 'antd';
+import { Table, Input, Button, Switch, Form, Pagination, Divider, DatePicker } from 'antd';
 import { Modal } from 'react-bootstrap';
 import API from '../CustomHooks/MasterApiHooks/api';
 import { useMediaQuery } from 'react-responsive';
@@ -11,6 +11,7 @@ import { Col, Row } from 'react-bootstrap';
 import { FaSearch } from "react-icons/fa";
 import { useTranslation } from 'react-i18next';
 import { success, error } from '../CustomHooks/Services/AlertMessageService';
+import moment from 'moment';
 
 const Session = () => {
   const { t } = useTranslation();
@@ -57,16 +58,17 @@ const Session = () => {
   }, [searchText, sessions]);
 
   const handleAddSession = async (values) => {
-    const { session, status } = values;
+    const { startYear, endYear, status } = values;
+    const sessionName = `${startYear.year()}-${endYear.year().toString().slice(2)}`;
 
-    const existingSession = sessions.find(s => s.session.toLowerCase() === session.toLowerCase());
+    const existingSession = sessions.find(s => s.session.toLowerCase() === sessionName.toLowerCase());
     if (existingSession) {
       error(t('sessionNameAlreadyExists'));
       return;
     }
 
     try {
-      const newSession = { session, status };
+      const newSession = { session: sessionName, status };
       await API.post('/Session', newSession);
       setSessions([...sessions, newSession]);
       setFilteredSessions([...filteredSessions, newSession]);
@@ -349,12 +351,31 @@ const Session = () => {
           >
             <div className="d-flex justify-content-between align-items-center">
               <Form.Item
-                name="session"
-                label={<span className={`${customDark === "dark-dark" || customDark === "blue-dark" ? `text-white` : `${customDarkText}`} fs-5 `}>{t('sessionName')}</span>}
-                rules={[{ required: true, message: t('pleaseInputSessionName') }]}
+                name="startYear"
+                label={<span className={`${customDark === "dark-dark" || customDark === "blue-dark" ? `text-white` : `${customDarkText}`} fs-5 `}>{t('startYear')}</span>}
+                rules={[{ required: true, message: t('pleaseSelectStartYear') }]}
                 className="flex-grow-1 me-3"
               >
-                <Input placeholder={t('sessionName')} className="rounded-2" />
+                <DatePicker picker="year" placeholder={t('selectStartYear')} className="rounded-2" />
+              </Form.Item>
+
+              <Form.Item
+                name="endYear"
+                label={<span className={`${customDark === "dark-dark" || customDark === "blue-dark" ? `text-white` : `${customDarkText}`} fs-5 `}>{t('endYear')}</span>}
+                rules={[
+                  { required: true, message: t('pleaseSelectEndYear') },
+                  ({ getFieldValue }) => ({
+                    validator(_, value) {
+                      if (!value || getFieldValue('startYear').year() < value.year()) {
+                        return Promise.resolve();
+                      }
+                      return Promise.reject(new Error(t('endYearMustBeAfterStartYear')));
+                    },
+                  }),
+                ]}
+                className="flex-grow-1 me-3"
+              >
+                <DatePicker picker="year" placeholder={t('selectEndYear')} className="rounded-2" />
               </Form.Item>
 
               <Form.Item
