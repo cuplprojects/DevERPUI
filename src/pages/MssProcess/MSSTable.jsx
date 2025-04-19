@@ -227,7 +227,7 @@ const MSSTable = ({
           return text
             .map((id) => {
               const language = languageOptions.find((l) => l.languageId === id);
-              return language ? language.languageName : id;
+              return language ? language.languages : id;
             })
             .join(", ");
         }
@@ -235,10 +235,10 @@ const MSSTable = ({
       },
       sorter: (a, b) => {
         const aLanguages = a.languageId.map(
-          (id) => languageOptions.find((l) => l.languageId === id)?.languageName
+          (id) => languageOptions.find((l) => l.languageId === id)?.languages
         );
         const bLanguages = b.languageId.map(
-          (id) => languageOptions.find((l) => l.languageId === id)?.languageName
+          (id) => languageOptions.find((l) => l.languageId === id)?.languages
         );
         return aLanguages.join(", ").localeCompare(bLanguages.join(", "));
       },
@@ -270,7 +270,7 @@ const MSSTable = ({
 
     },
     {
-      title: "Private Code",
+      title: "Unique Code",
       dataIndex: "uniqueCode",
       key: "uniqueCode",
       sorter: (a, b) => (a.uniqueCode || '').localeCompare(b.uniqueCode || ''),

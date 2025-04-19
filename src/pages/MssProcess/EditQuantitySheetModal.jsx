@@ -49,6 +49,7 @@ const EditQuantitySheetModal = ({
     }
   }, [record]);
 
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -195,7 +196,7 @@ const EditQuantitySheetModal = ({
                 >
                   {languageOptions.map(option => (
                     <Select.Option key={option.languageId} value={option.languageId}>
-                      {option.languageName}
+                      {option.languages}
                     </Select.Option>
                   ))}
                 </Select>
@@ -236,7 +237,7 @@ const EditQuantitySheetModal = ({
             </Col>
             <Col md={6}>
               <BootstrapForm.Group className="mb-3">
-                <BootstrapForm.Label>Private Code</BootstrapForm.Label>
+                <BootstrapForm.Label>Unique Code</BootstrapForm.Label>
                 <BootstrapForm.Control
                   type="text"
                   name="uniqueCode"
