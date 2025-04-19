@@ -132,8 +132,8 @@ const QPMiddleArea = () => {
       selectedTypeName: selectedTypeName,
       selectedCourse: selectedCourseId,
       selectedCourseName: selectedCourseName,
-      selectedExamTypeId: selectedExamTypeIds, // Array of IDs
-      selectedExamTypeName: selectedExamTypeName, // Type Name
+      selectedExamTypeId: selectedExamTypeIds,
+      selectedExamTypeName: selectedExamTypeName,
     };
     setFilters(filtersObj);
 
@@ -175,17 +175,16 @@ const QPMiddleArea = () => {
 
       if (response.status === 200) {
         setQpData(response.data);
-        if (response.data.length > 0) {
-          setShowTable(true);
-        } else {
-          setError("No data found for the selected filters.");
-        }
+        // Always set showTable to true regardless of data
+        setShowTable(true);
       } else {
         throw new Error("Failed to fetch data");
       }
     } catch (err) {
       console.error("Error fetching QP data:", err);
       setError("Failed to load data. Please try again later.");
+      setQpData([]); // Set empty data array
+      setShowTable(true); // Still show the table view
     } finally {
       setLoading(false);
     }
@@ -312,31 +311,6 @@ const QPMiddleArea = () => {
               </Button>
             </Col>
           </Row>
-          {/* <Row>
-            <Col
-              xs={12}
-              className={`text-center fw-bold fs-4 ${customDarkText}`}
-            >
-              OR
-            </Col>
-          </Row>
-          <Row className="mb-4">
-            <Col xs={12} className="text-center">
-              <Tooltip title={!selectedGroupId ? "Select a group first" : ""}>
-                <span>
-                  <Button
-                    variant="success"
-                    className="ms-2"
-                    onClick={handleAddClick}
-                    disabled={!selectedGroupId}
-                  >
-                    Add Paper
-                  </Button>
-                </span>
-              </Tooltip>
-            </Col>
-          </Row> */}
-
           {error && (
             <Row>
               <Col xs={12} className="text-center text-danger">
