@@ -159,10 +159,10 @@ const EditProjectModal = ({
             <Col xs={24} sm={24}>
               <Form.Item
                 name="examType"
-                label={t('examType')}
+                label={t('Semester')}
                 rules={[{ required: true, message: t('pleaseSelectExamType') }]}
               >
-                <Select placeholder={t('selectExamType')}  mode="multiple" onChange={handleExamTypeChange}>
+                <Select placeholder={t('Semester')}  mode="multiple" onChange={handleExamTypeChange}>
                   {examTypes.map((examType) => (
                     <Option key={examType.examTypeId} value={examType.examTypeId}>
                       {examType.typeName}

@@ -609,13 +609,13 @@ console.log(showSeriesFields)
             <Col xs={6}>
               <Form.Group controlId="examType">
                 <Form.Label className={customDarkText}>
-                  {t('examType')}
+                  {t('Semester')}
                   <span className='text-danger ms-2 fs-6'>*</span>
                 </Form.Label>
                 <Select
                   mode="multiple"
                   style={{ width: '100%' }}
-                  placeholder={t('selectExamType')}
+                  placeholder={t('Semester')}
                   onChange={handleExamTypeChange}
                   disabled={!selectedType || !selectedGroup}
                   optionFilterProp="children"

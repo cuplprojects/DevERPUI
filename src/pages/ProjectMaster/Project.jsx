@@ -51,10 +51,21 @@ const Project = () => {
         <div className="responsive-container">
           <AddProjectProcess selectedProject={selectedProject} setIsProcessSubmitted={setIsProcessSubmitted} />
           <Button 
-            type="primary" 
-            onClick={() => {setActiveTabKey("3"); setActiveTab3(true);}} 
-            style={{ marginTop: '20px' }}
-            disabled={!isProcessSubmitted} // Disable if process is not submitted
+            type="primary"
+            className={`${customBtn} hover:shadow-lg`}
+            onClick={() => {setActiveTabKey("3"); setActiveTab3(true);}}
+            style={{
+              marginTop: '35px',
+              float: 'right',
+              padding: '0 24px',
+              height: '36px',
+              borderRadius: '6px',
+              fontSize: '14px',
+              fontWeight: '500',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+              transition: 'all 0.3s ease'
+            }}
+            disabled={!isProcessSubmitted}
           >
             {t('next')}
           </Button>

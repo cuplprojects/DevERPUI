@@ -21,6 +21,42 @@ const quantitySheetService = {
     }
   },
 
+  // Update a specific field in a quantity sheet
+  updateQuantitySheetField: async (id, record, fieldName, newValue) => {
+    try {
+      // Create a copy of the record
+      const updatedRecord = { ...record };
+      
+      // Update the specific field
+      switch (fieldName) {
+        case 'maxMarks':
+          updatedRecord.maxMarks = parseFloat(newValue) || 0;
+          break;
+        case 'duration':
+          updatedRecord.duration = newValue;
+          break;
+        case 'catchNo':
+          updatedRecord.catchNo = newValue;
+          break;
+        case 'nepCode':
+          updatedRecord.nepCode = newValue;
+          break;
+        case 'uniqueCode':
+          updatedRecord.uniqueCode = newValue;
+          break;
+        default:
+          // If the field is not explicitly handled, set it directly
+          updatedRecord[fieldName] = newValue;
+      }
+      
+      // Send the update request
+      const response = await API.put(`/QuantitySheet/${id}`, updatedRecord);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
   // Delete quantity sheet
   deleteQuantitySheet: async (id) => {
     try {

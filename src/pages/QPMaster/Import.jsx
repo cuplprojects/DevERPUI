@@ -337,8 +337,7 @@ const Import = () => {
         },
       });
       console.log("Upload Success:", response.data);
-      console.log(t("quantitySheetUploadedSuccessfully"));
-      message.success(t("quantitySheetUploadedSuccessfully"));  
+      message.success(t("quantitySheetUploadedSuccessfully"));
       setFileList([]);
       setSelectedFile(null);
       setFieldMappings([]);
