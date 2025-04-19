@@ -150,6 +150,24 @@ const QPTable = ({
     },
   ];
 
+  const renderNoDataMessage = () => {
+    const selectedGroup = groups.find(group => group.id === selectedGroupId);
+    const groupName = selectedGroup ? selectedGroup.name : '';
+    
+    return (
+      <div className="text-center mt-4">
+        <h4 className={customDarkText}>
+          {selectedGroupId 
+            ? `No data available for ${groupName}${selectedTypeId ? ' with the selected filters' : ''}`
+            : 'Please select filters to view data'}
+        </h4>
+        <p className={customDarkText}>
+          You can use the filters above to search for specific records or add new papers using the buttons below.
+        </p>
+      </div>
+    );
+  };
+
   return (
     <div className="w-100">
       <Row className="">
@@ -274,7 +292,7 @@ const QPTable = ({
         </div>
       )}
 
-      {qpData.length > 0 && (
+      {qpData.length > 0 ? (
         <>
           <Row className="mb-3">
             <Col xs={12} md={6} lg={4} className="mx-auto">
@@ -313,8 +331,9 @@ const QPTable = ({
             />
           </div>
         </>
+      ) : (
+        renderNoDataMessage()
       )}
-      {qpData.length === 0 && <p className="text-center">No data found for the selected filters.</p>}
     </div>
   );
 };

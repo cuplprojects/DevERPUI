@@ -153,7 +153,7 @@ const ExamType = () => {
       width: '10%',
     },
     {
-      title: t('examTypeName'),
+      title: t('semesterNames'),
       dataIndex: 'typeName',
       key: 'typeName',
       width: '40%',
@@ -171,26 +171,26 @@ const ExamType = () => {
         )
       ),
     },
-    {
-      align: 'center',
-      title: t('type'),
-      dataIndex: 'type',
-      key: 'type',
-      width: '25%',
-      sorter: (a, b) => a.type.localeCompare(b.type),
-      render: (type, record, index) => (
-        editingIndex === index ? (
-          <Input
-            value={editingType}
-            onChange={(e) => setEditingType(e.target.value)}
-            onPressEnter={() => handleEditSave(record)}
-            style={{ width: '100%' }}
-          />
-        ) : (
-          <span>{type}</span>
-        )
-      ),
-    },
+    // {
+    //   align: 'center',
+    //   title: t('type'),
+    //   dataIndex: 'type',
+    //   key: 'type',
+    //   width: '25%',
+    //   sorter: (a, b) => a.type.localeCompare(b.type),
+    //   render: (type, record, index) => (
+    //     editingIndex === index ? (
+    //       <Input
+    //         value={editingType}
+    //         onChange={(e) => setEditingType(e.target.value)}
+    //         onPressEnter={() => handleEditSave(record)}
+    //         style={{ width: '100%' }}
+    //       />
+    //     ) : (
+    //       <span>{type}</span>
+    //     )
+    //   ),
+    // },
     {
       align: 'left',
       title: t('action'),
@@ -250,7 +250,7 @@ const ExamType = () => {
     }}
       className={`rounded-2 ${customDark === "dark-dark" ? `${customDark} border text-white` : `${customDarkText}`}`}>
       <Divider className={`fs-3 mt-0 ${customDarkText}`}>
-        {t("existingExamTypes")}
+        {t("existingSemesters")}
       </Divider>
       <div style={{
         display: 'flex',
@@ -351,13 +351,13 @@ const ExamType = () => {
                 <Input placeholder={t('examTypeName')} className="rounded-2" />
               </Form.Item>
 
-              <Form.Item
+              {/* <Form.Item
                 name="type"
                 label={<span className={`${customDark === "dark-dark" || customDark === "blue-dark" ? `text-white` : `${customDarkText}`} fs-5 `}>{t('type')}</span>}
                 rules={[{ required: true, message: t('pleaseInputType') }]}
               >
                 <Input placeholder={t('type')} className="rounded-2" />
-              </Form.Item>
+              </Form.Item> */}
             </div>
 
             <Form.Item>
