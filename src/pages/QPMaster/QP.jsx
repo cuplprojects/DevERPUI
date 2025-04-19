@@ -191,12 +191,6 @@ const QPMiddleArea = () => {
     }
   };
 
-  const handleAddClick = () => {
-    const encryptedGroupId = encrypt(selectedGroupId);
-    const encryptedGroupName = encrypt(selectedGroupName);
-    navigate(`/Add-Paper/${encryptedGroupId}/${encryptedGroupName}`);
-  };
-
   const handleClearClick = () => {
     setSelectedGroupId(null);
     setSelectedGroupName("");
@@ -209,6 +203,8 @@ const QPMiddleArea = () => {
     setSelectedExamTypeName("");
     setFilters({});
     setShowTable(false);
+    setError(null); // Add this line to clear the error message
+    setQpData([]); // Optional: clear the data as well
   };
 
   return (
