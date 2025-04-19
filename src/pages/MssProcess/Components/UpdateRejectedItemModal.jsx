@@ -68,6 +68,8 @@ const UpdateRejectedItemModal = ({
         nepCode: item.nepCode,
         uniqueCode: item.uniqueCode,
         structureOfPaper: item.structureOfPaper,
+        mssStatus: 5,
+        ttfStatus: item.ttfStatus,
       });
 
       // Determine rejection reasons

@@ -166,8 +166,9 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
   }, []);
 
   const filterDataByStatus = () => {
+console.log(filteredData)
     const rejectedItems = filteredData.filter(
-      (item) => item.verified?.status === false
+      (item) => item.mssStatus === 4
     );
     const rejectedIds = rejectedItems.map((item) => item.quantitysheetId);
     const matchedData = quantitySheetData.filter((item) =>
@@ -175,8 +176,6 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
     );
     setRejectedQuantitySheetData(matchedData);
     setRejectedCount(matchedData.length);
-    // console.log("Rejected QuantitySheet IDs:", rejectedIds);
-    // console.log("Final Filtered Quantity Sheet Data:", matchedData);
   };
 
   useEffect(() => {
