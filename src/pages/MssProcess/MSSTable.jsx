@@ -325,7 +325,7 @@ const MSSTable = ({
             <Button
               type="link"
               onClick={() => handleMarkReceived(record)}
-              disabled={record.mssStatus === 2}
+              disabled={record.mssStatus >= 2}
               title="Mark as Received"
             >
               <CheckCircleOutlined />

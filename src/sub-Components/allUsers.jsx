@@ -26,7 +26,7 @@ const AllUsers = () => {
   const [customDark, customMid, customLight, customBtn, customDarkText, customLightText, customLightBorder, customDarkBorder] = cssClasses;
   const userData = useUserData()
   const userRole = userData?.role
-  
+
   // console.log(userRole.priorityOrder)
 
   const [users, setUsers] = useState([]);
@@ -69,9 +69,9 @@ const AllUsers = () => {
       }
     };
     getRoles();
- 
 
-  
+
+
     const getLocation = async () => {
       try {
         const response = await API.get('/Location');
@@ -135,17 +135,17 @@ const AllUsers = () => {
 
   const isEditDisabled = (record) => {
     const roledata = roles.find(r => r.roleId === record.roleId);
-  
+
     // User can always edit their own role, but no one else’s role
     if (record.userId === userData?.userId) {
       return false; // Allow user to edit their own role
     }
-  
+
     // User cannot edit if the target user's role is higher or equal to their own
     const res = userRole?.priorityOrder >= roledata?.priorityOrder;
     return res;
   }
-  
+
 
   const handleSave = useCallback(async (record) => {
     try {
@@ -160,7 +160,8 @@ const AllUsers = () => {
         status: currentUserData.status,
         gender: currentUserData.gender,
         address: currentUserData.address,
-        profilePicturePath: currentUserData.profilePicturePath
+        profilePicturePath: currentUserData.profilePicturePath,
+        locationId: currentUserData.locationId,
       };
 
       const response = await API.put(`/User/edit/${record.userId}`, updatedUser);
@@ -207,7 +208,7 @@ const AllUsers = () => {
       render: (text, record) => {
         const editable = record.userId === editingUserId;
         const currentRole = roles.find(role => role.roleId === text);
-        
+
         return editable ? (
           <Select
             value={currentUserData.roleId}
@@ -218,8 +219,8 @@ const AllUsers = () => {
               {currentRole?.roleName}
             </Option>
             {roles
-              .filter(role => 
-                role.priorityOrder > userRole?.priorityOrder && 
+              .filter(role =>
+                role.priorityOrder > userRole?.priorityOrder &&
                 role.roleId !== currentRole?.roleId
               )
               .map(role => (
@@ -292,23 +293,23 @@ const AllUsers = () => {
         const editable = record.userId === editingUserId;
         const currentLocation = locations.find(l => l.locationId === text);
         console.log(currentLocation)
-      
+
         return editable ? (
           <Select
-          value={currentUserData.locationId}
-          onChange={(value) => setCurrentUserData(prev => ({ ...prev, locationId: value }))}
-          style={{ width: '200px' }}
-        >
-          <Option key={currentLocation?.locationId} value={currentLocation?.locationId}>
-            {currentLocation?.locationName}
-          </Option>
-          {locations
-            .map(l => (
-              <Option key={l.locationId} value={l.locationId}>
-                {l.locationName}
-              </Option>
-            ))}
-        </Select>
+            value={currentUserData.locationId}
+            onChange={(value) => setCurrentUserData(prev => ({ ...prev, locationId: value }))}
+            style={{ width: '200px' }}
+          >
+            {/* <Option key={currentLocation?.locationId} value={currentLocation?.locationId}>
+              {currentLocation?.locationName}
+            </Option> */}
+            {locations
+              .map(l => (
+                <Option key={l.locationId} value={l.locationId}>
+                  {l.locationName}
+                </Option>
+              ))}
+          </Select>
         ) : (
           currentLocation?.locationName || text
         );
@@ -369,7 +370,7 @@ const AllUsers = () => {
         );
       },
     },
-  ].filter(Boolean), [visibleColumns, isValidImageUrl, editingUserId, currentUserData, handleSave, handleCancel, customBtn, roles, t,locations]);
+  ].filter(Boolean), [visibleColumns, isValidImageUrl, editingUserId, currentUserData, handleSave, handleCancel, customBtn, roles, t, locations]);
 
   const showUserDetails = useCallback((user) => {
     setCurrentUser(user);
@@ -441,7 +442,7 @@ const AllUsers = () => {
         </Col>
         <Col lg={12} md={12} xs={12}>
           <div className={`d-flex ${window.innerWidth >= 992 ? 'flex-row' : 'flex-column'} justify-content-lg-end justify-content-md-end justify-content-center align-items-center h-100 gap-3`}>
-            {['profilePicture', 'address', 'mobileNo','location'].map((column) => (
+            {['profilePicture', 'address', 'mobileNo', 'location'].map((column) => (
               <Checkbox
                 key={column}
                 checked={visibleColumns[column]}
@@ -521,12 +522,22 @@ const AllUsers = () => {
                   Object.entries(currentUser).map(([key, value]) => {
                     if (key !== 'profilePicturePath' && key !== 'userId' && value !== null && value !== undefined && value !== '') {
                       if (key === 'roleId') {
+                        console.log("Reached")
                         const role = roles.find(r => r.roleId === value);
                         return (
                           <div key={key} className="mb-2">
                             <strong>{t('role')}:</strong> {role ? role.roleName : value}
                           </div>
                         );
+                      }
+                      if(key === 'locationId'){
+                        console.log("Reached")
+                        const location = locations.find(l=>l.locationId === value);
+                        return(
+                          <div key={key} className="mb-2">
+                            <strong>{t('location')}:</strong> {location ? location.locationName : value}
+                          </div> 
+                        )
                       }
                       return (
                         <div key={key} className="mb-2">
@@ -546,6 +557,15 @@ const AllUsers = () => {
                             <React.Fragment key={key}>
                               <dt className="col-sm-5">{t('role')}</dt>
                               <dd className="col-sm-7">{role ? role.roleName : value}</dd>
+                            </React.Fragment>
+                          );
+                        }
+                        if (key === 'locationId') {
+                          const location = locations.find(r => r.locationId === value);
+                          return (
+                            <React.Fragment key={key}>
+                              <dt className="col-sm-5">{t('location')}</dt>
+                              <dd className="col-sm-7">{location ? location.locationName : value}</dd>
                             </React.Fragment>
                           );
                         }

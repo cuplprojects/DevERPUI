@@ -362,8 +362,8 @@ const QcProcess = ({ projectId }) => {
             <span style={{  color: '#8c8c8c', marginBottom: '4px', fontSize: "1.5rem" }}>{label}</span>
             <span style={{  fontWeight: '500', color: '#262626', fontSize: "1.5rem" }}>{value}</span>
           </div>
-          {record.action === 'verify' && (
-            <Checkbox checked={tempVerification[field] || false} onChange={() => handleVerificationChange(field)} style={{ marginLeft: '20px' }}>
+          {record.action === 'verify'  && !tempVerification[field] &&  (
+            <Checkbox  onChange={() => handleVerificationChange(field)} style={{ marginLeft: '20px' }}>
               <span style={{
                 color: tempVerification[field] ? '#52c41a' : '#ff4d4f',
                 fontWeight: '500', fontSize: "1.5rem"
@@ -379,11 +379,14 @@ const QcProcess = ({ projectId }) => {
 
     const handleVerificationChange = (field) => {
       setTempVerification((prev) => {
-        const updatedFieldStatus = !prev[field];
-        return { ...prev, [field]: updatedFieldStatus };
+        // Only allow checking (verifying) a field, not unchecking it
+        if (!prev[field]) {
+          return { ...prev, [field]: true };
+        }
+        return prev;
       });
     };
-
+    
     return (
       <div style={{ padding: '8px' }}>
         {verificationItem('Language', record.language, 'language')}

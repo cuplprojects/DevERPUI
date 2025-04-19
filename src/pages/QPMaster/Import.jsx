@@ -257,7 +257,7 @@ const Import = () => {
       const typeResponse = await API.get(`PaperTypes/Type?type=${type}`);
       let typeId = typeResponse.data;
       if (!typeId) {
-       console.error("Type does not exist",type)
+        console.error("Type does not exist", type)
       }
       return typeId;
     } catch (err) {
@@ -295,7 +295,7 @@ const Import = () => {
       );
       let examtypeId = examtypeResponse.data;
       if (!examtypeId) {
-       console.error("ExamType does not exist",examtype)
+        console.error("ExamType does not exist", examtype)
       }
       return examtypeId;
     } catch (err) {
@@ -325,7 +325,7 @@ const Import = () => {
         paperTitle: item.PaperTitle || "",
         maxMarks: item.MaxMarks || 0,
         duration: item.Duration || "",
-        languageId: item.LanguageId|| [],
+        languageId: item.LanguageId || [],
         customizedField1: item.customizedField1 || "",
         customizedField2: item.customizedField2 || "",
         customizedField3: item.customizedField3 || "",
@@ -348,7 +348,9 @@ const Import = () => {
       setHeaders([]);
       setShowBtn(false);
     } catch (error) {
-      console.error(t("failedToUploadQuantitySheet"));
+      console.error('Error adding QPMaster:', error);
+      const errorMessage = err.response?.data || t('errorAddingQPMaster');
+      error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -371,7 +373,7 @@ const Import = () => {
         <Card.Body>
           <div className="d-flex justify-content-between align-items-center">
             <div className="flex-grow-1 text-center">
-              <h1 className={`fw-bold ${customDarkText} m-0`}>Import Excel</h1> 
+              <h1 className={`fw-bold ${customDarkText} m-0`}>Import Excel</h1>
               <p className="text-muted m-0">For <span className="fw-bold">{groupName}</span> group</p>
             </div>
             <FaHome

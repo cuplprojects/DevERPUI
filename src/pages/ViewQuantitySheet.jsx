@@ -955,7 +955,6 @@ const ViewQuantitySheet = ({ selectedLotNo, showBtn, showTable, lots }) => {
                   </Button>
                 </>
               )}
-              {selectedCatches.length > 0 && (
                   <Button
                     type="primary"
                     className={`${customBtn} ${customDark === "dark-dark" ? `border` : `border-0`} me-2`}
@@ -963,10 +962,6 @@ const ViewQuantitySheet = ({ selectedLotNo, showBtn, showTable, lots }) => {
                   >
                     {t('lotbiphurcation')}
                   </Button>
-             
-              )}
-
-
               <Button
                 onClick={() => setShowNewRow(prev => !prev)}
                 type="primary"
