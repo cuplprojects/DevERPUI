@@ -239,7 +239,7 @@ const QtySheetUpload = () => {
           processId: [0],
           status: 0,
           qpId: 0,
-          mssStatus: 0,
+          mssStatus: 1,
           ttfStatus: 0,
           pages: item.Pages || 0,
           stopCatch: 0,
@@ -247,6 +247,7 @@ const QtySheetUpload = () => {
           examtypeId: item.ExamTypeId || 0,
           nepCode: item.NEPCode || "",
           uniqueCode: item.UniqueCode || "",
+          structureOfPaper : item.StructureOfPaper || "",
         };
       });
 

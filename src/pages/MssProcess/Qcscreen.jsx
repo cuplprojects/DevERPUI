@@ -282,7 +282,7 @@ const QcProcess = ({ projectId }) => {
       B: tempVerification.b,
       C: tempVerification.c,
       D: tempVerification.d,
-      StructureOfPaper: tempVerification.structure,
+      StructureOfPaper: tempVerification.structureOfPaper,
       Series: tempVerification.series,
       ProjectId: projectId
     };
@@ -393,7 +393,7 @@ const QcProcess = ({ projectId }) => {
       <div style={{ padding: '8px' }}>
         {verificationItem('Language', record.language, 'language')}
         {verificationItem('Duration', record.duration, 'duration')}
-        {verificationItem('Structure', record.structure, 'structure')}
+        {verificationItem('Structure', record.structureOfPaper, 'structure')}
         {verificationItem('Series', record.series, 'series')}
         {verificationItem('Max Marks', record.maxMarks, 'maxMarks')}
         {verificationItem('A', record.a, 'a')}
@@ -499,7 +499,7 @@ const QcProcess = ({ projectId }) => {
                   </Badge>
                 </Tooltip>
                 <Tooltip title="Re-verify Items">
-                  <Badge color='#1890ff' count={data.filter((item) => item.verified?.status === false && Object.values(item.verified).some(value => value === true)).length}>
+                  <Badge color='#1890ff' count={data.filter((item) => item.mssStatus ==5 && Object.values(item.verified).some(value => value === true)).length}>
                     <div style={{ position: 'relative', display: 'inline-block' }}>
                       <SyncOutlined 
                         onClick={() => filterDataByStatus('reverify')} 
