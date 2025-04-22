@@ -27,6 +27,22 @@ const QcProcess = ({ projectId }) => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [showback, setShowback] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [projectType , setProjectType] = useState('')
+
+  useEffect(() => {
+    const fetchProjectType = async () => {
+      try {
+        const response = await API.get(`/Project/${projectId}`);
+        setProjectType(response.data.typeId);
+      } catch (error) {
+        console.error('Failed to fetch project type', error);
+      }
+    };
+    fetchProjectType();
+
+  })
+
+  console.log(projectType)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -44,6 +60,7 @@ const QcProcess = ({ projectId }) => {
     };
     fetchData();
   }, []);
+
 
 
   const verificationkeys = [
