@@ -84,12 +84,12 @@ const ABCDMaster = () => {
     try {
       const configData = {
         ...(editingConfig && { abcdId: editingConfig.abcdId }),
-        GroupId: parseInt(selectedGroupId),
-        A: selectedValues.A,
-        B: selectedValues.B,
-        C: selectedValues.C,
-        D: selectedValues.D,
-        SessionFormat: selectedValues.sessionFormat
+        groupId: parseInt(selectedGroupId),
+        a: selectedValues.A,
+        b: selectedValues.B,
+        c: selectedValues.C,
+        d: selectedValues.D,
+        sessionFormat: selectedValues.sessionFormat
       };
 
       if (editingConfig) {
