@@ -166,7 +166,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
   }, []);
 
   const filterDataByStatus = () => {
-console.log(filteredData)
+  // console.log(filteredData)
     const rejectedItems = filteredData.filter(
       (item) => item.mssStatus === 4
     );
@@ -196,7 +196,7 @@ console.log(filteredData)
 
   const handleUpdateSubmit = async (updatedItem) => {
     try {
-      console.log("Payload Data -", updatedItem);
+      // console.log("Payload Data -", updatedItem);
       // Make an API call to update the item
       await API.put(
         `/QuantitySheet/update/${updatedItem.quantitySheetId}`,

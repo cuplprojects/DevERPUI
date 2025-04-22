@@ -426,9 +426,9 @@ ${customDark === "brown-dark" ? "thead-brown" : ""} `}
           total: filteredData.length,
           onChange: handleTableChange,
         }}
-        onChange={(pagination, filters, sorter, extra) => {
-          console.log("params", pagination, filters, sorter, extra);
-        }}
+        // onChange={(pagination, filters, sorter, extra) => {
+        //   console.log("params", pagination, filters, sorter, extra);
+        // }}
       />
 
       {/* Edit Modal */}

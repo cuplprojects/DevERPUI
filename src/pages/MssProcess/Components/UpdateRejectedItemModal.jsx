@@ -38,7 +38,7 @@ const UpdateRejectedItemModal = ({
     customLightBorder,
     customDarkBorder,
   ] = cssClasses;
-
+  
   useEffect(() => {
     if (data) {
       const { item, filteredData } = data;
