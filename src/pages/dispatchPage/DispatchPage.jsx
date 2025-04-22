@@ -38,7 +38,7 @@ const DispatchPage = ({ projectId, processId, lotNo, fetchTransactions , project
         .map(process => ({
           id: process.id,
           name: process.name,
-          weightage: process.weightage,
+          weightage: proprojectIdcess.weightage,
           status: process.status,
           installedFeatures: process.installedFeatures,
           featureNames: process.featureNames,
@@ -131,11 +131,11 @@ const DispatchPage = ({ projectId, processId, lotNo, fetchTransactions , project
           <p>{t("confirmDispatchComplete")}</p>
           <Table
             dataSource={[
+              { label: t("projectName"), value: projectName || "N/A" },
               { label: t("messengerName"), value: dispatch.messengerName },
-              { label: t("driverName"), value: dispatch.driverName },
+              { label: t("driverName"), value: dispatch.driverName || "N/A"},
               { label: t("lotNo"), value: dispatch.lotNo },
-              { label: t("projectId"), value: dispatch.projectId },
-              { label: t("dispatchId"), value: dispatch.id },
+             // { label: t("dispatchId"), value: dispatch.id },
               { label: t("boxCount"), value: dispatch.boxCount }
             ]}
             columns={[
@@ -181,15 +181,27 @@ const DispatchPage = ({ projectId, processId, lotNo, fetchTransactions , project
     { title: t("percentage"), dataIndex: "percentage", key: "percentage", align: "center" }
   ];
 
+  const isCreateDispatchDisabled = lotNo === "51"
+  const toolTipMessage = "Bifurcate Lots before creating dispatch";
+ 
   return (
     <Row className="mt-4 mb-4 justify-content-center">
       <Col xs={12} className="mb-3">
         <div className="d-flex justify-content-between align-items-center">
           <h4 className={`${customDarkText}`}>{t("dispatchDetails")}</h4>
           {dispatchData.length === 0 && (
-            <Button type="primary" className={`${customDark} text-white ${customDark==='dark-dark'? "border":""}`} onClick={handleDispatchForm}>
+            <Tooltip
+            title = {lotNo === "51"? toolTipMessage: ""}
+            placement="top"
+            color="ff4d4f"
+            >
+            <Button type="primary"
+             className={`${customDark} text-white ${customDark==='dark-dark'? "border":""}`} 
+             onClick={handleDispatchForm}
+             disabled={isCreateDispatchDisabled}>
+              
               {t("createDispatch")}
-            </Button>
+            </Button></Tooltip>
           )}
         </div>
       </Col>
@@ -237,15 +249,7 @@ const DispatchPage = ({ projectId, processId, lotNo, fetchTransactions , project
                 )?.percentage === 100
               ) && (
                   <div className="text-center mt-3">
-                    <Tooltip 
-    title={
-
-      <span style={{ color: "#ff4d4f" }}>
-      {String(dispatch.lotNo) === "51" ? "Bifurcate lots before marking it as complete" : ""}
-    </span>}
-    placement="top"
-  color="#ffffff"
-  >
+                  
                     <Button
                       type="primary"
                       size="small"
@@ -253,7 +257,7 @@ const DispatchPage = ({ projectId, processId, lotNo, fetchTransactions , project
                       disabled={String(dispatch.lotNo) === "51"}
                     >
                       {t("markAsComplete")}
-                    </Button></Tooltip>
+                    </Button>
                   </div>
                 )}
             </Card>
