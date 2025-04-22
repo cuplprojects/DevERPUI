@@ -307,12 +307,7 @@ const MSSTable = ({
       fixed: 'right',
       render: (_, record) => (
         <Space size="middle">
-          <Button
-            type="link"
-            onClick={() => handleEditClick(record)}
-          >
-            <EditOutlined />
-          </Button>
+
           {rejectedActive ? (
             <Button
               type="link"
@@ -322,14 +317,22 @@ const MSSTable = ({
               Update
             </Button>
           ) : (
-            <Button
-              type="link"
-              onClick={() => handleMarkReceived(record)}
-              disabled={record.mssStatus >= 2}
-              title="Mark as Received"
-            >
-              <CheckCircleOutlined />
-            </Button>
+            <>
+              <Button
+                type="link"
+                onClick={() => handleEditClick(record)}
+              >
+                <EditOutlined />
+              </Button>
+              <Button
+                type="link"
+                onClick={() => handleMarkReceived(record)}
+                disabled={record.mssStatus >= 2}
+                title="Mark as Received"
+              >
+                <CheckCircleOutlined />
+              </Button>
+            </>
           )}
         </Space>
       ),
