@@ -253,6 +253,11 @@ const UpdateRejectedItemModal = ({
                   placeholder="Select Subject"
                   value={formData.subjectId}
                   onChange={(value) => handleSelectChange(Number(value), "subjectId")}
+                  showSearch
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }
+                  optionFilterProp="children"
                 >
                   {subjectOptions.map((option) => (
                     <Option key={option.subjectId} value={option.subjectId}>
