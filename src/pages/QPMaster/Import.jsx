@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import API from "../../CustomHooks/MasterApiHooks/api";
-import { Select, Form, Upload, Button, Row, Col, message } from "antd";
+import { Select, Form, Upload, Button, Row, Col } from "antd";
+import { success, error } from "../../CustomHooks/Services/AlertMessageService";
 import { UploadOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
@@ -91,7 +92,7 @@ const Import = () => {
 
         if (filteredData.length === 0) {
           console.error(t("noValidDataFoundInFile"));
-          alert(t("noValidDataFoundInFile"));
+          error(t("noValidDataFoundInFile"), false);
           setIsProcessingFile(false);
           return;
         }
@@ -111,6 +112,7 @@ const Import = () => {
         setFieldMappings(autoMappings);
       } catch (err) {
         console.error("File processing error:", err);
+        error(t("fileProcessingError"), false);
       } finally {
         setIsProcessingFile(false);
       }
@@ -256,7 +258,8 @@ const Import = () => {
       const typeResponse = await API.get(`PaperTypes/Type?type=${type}`);
       let typeId = typeResponse.data;
       if (!typeId) {
-        console.error("Type does not exist", type)
+        console.error("Type does not exist", type);
+        error(t("typeDoesNotExist") + ": " + type, true);
       }
       return typeId;
     } catch (err) {
@@ -293,7 +296,8 @@ const Import = () => {
       );
       let examtypeId = examtypeResponse.data;
       if (!examtypeId) {
-        console.error("ExamType does not exist", examtype)
+        console.error("ExamType does not exist", examtype);
+        error(t("examTypeDoesNotExist") + ": " + examtype, true);
       }
       return examtypeId;
     } catch (err) {
@@ -310,6 +314,7 @@ const Import = () => {
       mappedData = await createMappedData();
       if (!mappedData || mappedData.length === 0) {
         console.error(t("mappedDataInvalidOrEmpty"));
+        error(t("mappedDataInvalidOrEmpty"), false);
         setIsLoading(false);
         return;
       }
@@ -337,16 +342,16 @@ const Import = () => {
         },
       });
       console.log("Upload Success:", response.data);
-      message.success(t("quantitySheetUploadedSuccessfully"));
+      success(t("quantitySheetUploadedSuccessfully"), true);
       setFileList([]);
       setSelectedFile(null);
       setFieldMappings([]);
       setHeaders([]);
       setShowBtn(false);
-    } catch (error) {
-      console.error('Error adding QPMaster:', error);
+    } catch (err) {
+      console.error('Error adding QPMaster:', err);
       const errorMessage = err.response?.data || t('errorAddingQPMaster');
-      error(errorMessage);
+      error(errorMessage, false);
     } finally {
       setIsLoading(false);
     }
