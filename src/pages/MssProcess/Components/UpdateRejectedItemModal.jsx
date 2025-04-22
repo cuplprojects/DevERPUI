@@ -27,6 +27,7 @@ const UpdateRejectedItemModal = ({
   const [courseOptions, setCourseOptions] = useState([]);
   const [subjectOptions, setSubjectOptions] = useState([]);
   const [rejectionReasons, setRejectionReasons] = useState([]);
+  const [examTypeOptions, setExamTypeOptions] = useState([]);
   const [
     customDark,
     customMid,
@@ -86,10 +87,11 @@ const UpdateRejectedItemModal = ({
       }
       setRejectionReasons(reasons);
 
-      // Fetch processes, courses, and subjects using your API service
+      // Fetch processes, courses, subjects, and exam types
       fetchProcesses();
       fetchCourses();
       fetchSubjects();
+      fetchExamTypes();
     }
   }, [data]);
 
@@ -140,8 +142,17 @@ const UpdateRejectedItemModal = ({
       console.error("Error fetching subjects:", error);
     }
   };
-  console.log("Form Data:", formData);
-  console.log("Subjects Options:", subjectOptions);
+
+  const fetchExamTypes = async () => {
+    try {
+      const response = await API.get("/ExamType");
+      setExamTypeOptions(response.data);
+    } catch (error) {
+      console.error("Error fetching exam types:", error);
+    }
+  };
+  // console.log("Form Data:", formData);
+  // console.log("Subjects Options:", subjectOptions);
 
   return (
     <Modal show={show} onHide={handleClose} size="lg" className="rounded-5">
@@ -368,12 +379,23 @@ const UpdateRejectedItemModal = ({
             <Col md={3}>
               <Form.Group controlId="formExamTypeId" className="mb-3">
                 <Form.Label>Semester</Form.Label>
-                <Form.Control
-                  type="number"
-                  name="examTypeId"
-                  value={formData.examTypeId || ""}
-                  onChange={handleChange}
-                />
+                <Select
+                  style={{ width: "100%" }}
+                  placeholder="Select Semester"
+                  value={formData.examTypeId}
+                  onChange={(value) => handleSelectChange(Number(value), "examTypeId")}
+                  showSearch
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }
+                  optionFilterProp="children"
+                >
+                  {examTypeOptions.map((option) => (
+                    <Option key={option.examTypeId} value={option.examTypeId}>
+                      {option.typeName}
+                    </Option>
+                  ))}
+                </Select>
               </Form.Group>
             </Col>
             <Col md={3}>
