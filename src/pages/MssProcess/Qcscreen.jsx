@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, Button, Space, Checkbox, Row, Col, Table, Badge, Tooltip, Modal } from 'antd';
 import {
@@ -399,11 +398,7 @@ const QcProcess = ({ projectId }) => {
 
     const handleVerificationChange = (field) => {
       setTempVerification((prev) => {
-        // Only allow checking (verifying) a field, not unchecking it
-        if (!prev[field]) {
-          return { ...prev, [field]: true };
-        }
-        return prev;
+        return { ...prev, [field]: !prev[field] };
       });
     };
 
@@ -441,6 +436,7 @@ const QcProcess = ({ projectId }) => {
                 <Button
                   className={`${customBtn} ${customLightBorder}`}
                   onClick={handleRejectVerification}
+                  disabled={allFieldsVerified()}
                 >
                   <span className="d-none d-lg-inline">Mark Rejected</span>
                   <CloseCircleOutlined style={{ marginLeft: 8 }} />
