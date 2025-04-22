@@ -15,8 +15,11 @@ const MSSTable = ({
   currentPage,
   pageSize,
   handleTableChange,
+  totalRecords,
   rejectedActive, handleUpdateItem, cssClasses
 }) => {
+  console.log(quantitySheetData)
+  console.log(totalRecords)
   const [searchText] = useState("");
   const [searchedColumn] = useState("");
   const [selectedRows, setSelectedRows] = useState([]);
@@ -25,7 +28,6 @@ const MSSTable = ({
   const [selectedTime, setSelectedTime] = useState(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [currentRecord, setCurrentRecord] = useState(null);
-
   const [
     customDark,
     customMid,
@@ -420,11 +422,11 @@ ${customDark === "brown-dark" ? "thead-brown" : ""} `}
         pagination={{
           current: currentPage,
           pageSize: pageSize,
-          total: filteredData.length,
-          onChange: handleTableChange,
+          total: totalRecords,
         }}
         onChange={(pagination, filters, sorter, extra) => {
           console.log("params", pagination, filters, sorter, extra);
+          handleTableChange(pagination);
         }}
       />
 

@@ -53,16 +53,24 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [selectedSemester, setSelectedSemester] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(5);
   const [rejectedCount, setRejectedCount] = useState(0);
   const [rejectedActive, setRejectedActive] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [selectedRejectedItem, setSelectedRejectedItem] = useState(null);
+  const [totalRecords, setTotalRecords] = useState(0);
 
   useEffect(() => {
     setSearchTerm(null);
     setTableSearchTerm("");
   }, [projectId, processId, lotNo]);
+
+  useEffect(() => {
+    if (projectId) {
+      fetchQuantitySheetData();
+    }
+  }, [currentPage, pageSize]);
+  
 
   useEffect(() => {
     fetchQuantitySheetData();
@@ -142,10 +150,11 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
   const fetchQuantitySheetData = async () => {
     try {
       const response = await API.get(
-        `/QuantitySheet/CatchByproject?ProjectId=${projectId}`
+        `/QuantitySheet/CatchByproject?ProjectId=${projectId}&pageSize=${pageSize}&currentpage=${currentPage}`
       );
       console.log(response.data)
-      setQuantitySheetData(response.data);
+      setQuantitySheetData(response.data.data);
+      setTotalRecords(response.data.totalrecords);
       // console.log("Quantity Sheet Data -", response.data);
     } catch (error) {
       console.error("Error fetching quantity sheet data:", error);
@@ -340,6 +349,7 @@ console.log(filteredData)
             rejectedActive={rejectedActive}
             handleUpdateItem={handleUpdateItem}
             cssClasses={cssClasses}
+            totalRecords = {totalRecords}
           />
           <UpdateRejectedItemModal
             cssClasses={cssClasses}

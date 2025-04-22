@@ -235,7 +235,7 @@ const QcProcess = ({ projectId }) => {
           size="large"
           onClick={(e) => handlePreview(record, 'verify')}
         >
-          {record.verified?.status === true ? 'Verified' : record.verified?.status === false ? 'Rejected' : 'Verify'}
+          {record.verified?.status === true ? 'Verified' : record.verified?.status === false ?  'Rejected' : record.mssStatus==5 ? 'Re-Verify' : 'Verify'}
         </Button>
       ),
     },
