@@ -27,6 +27,22 @@ const QcProcess = ({ projectId }) => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [showback, setShowback] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [projectType, setProjectType] = useState('')
+
+  useEffect(() => {
+    const fetchProjectType = async () => {
+      try {
+        const response = await API.get(`/Project/${projectId}`);
+        setProjectType(response.data.typeId);
+      } catch (error) {
+        console.error('Failed to fetch project type', error);
+      }
+    };
+    fetchProjectType();
+
+  })
+
+  console.log(projectType)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -46,6 +62,7 @@ const QcProcess = ({ projectId }) => {
   }, []);
 
 
+
   const verificationkeys = [
     {
       name: 'Language',
@@ -59,10 +76,10 @@ const QcProcess = ({ projectId }) => {
       name: 'Structure',
       keyname: 'structure'
     },
-    {
+    ...(projectType === 1 ? [{
       name: 'Series',
       keyname: 'series'
-    },
+    }] : []),
     {
       name: 'Max Marks',
       keyname: 'maxMarks'
@@ -135,7 +152,7 @@ const QcProcess = ({ projectId }) => {
       dataIndex: 'srNo',
       key: 'srNo',
       align: 'center',
-      width:80,
+      width: 80,
       render: (_, record, index) => index + 1,
       sorter: (a, b) => a.srNo - b.srNo,
     },
@@ -216,14 +233,14 @@ const QcProcess = ({ projectId }) => {
       render: (text, record) => renderVerificationStatusOnly(record, 'd'),
       sorter: (a, b) => String(a.d || '').localeCompare(String(b.d || '')),
     },
-    {
+    ...(projectType === 1 ? [{
       title: 'Series',
       dataIndex: 'series',
       key: 'series',
       align: 'center',
       render: (text, record) => renderVerificationStatusOnly(record, 'series'),
       sorter: (a, b) => String(a.series || '').localeCompare(String(b.series || '')),
-    },
+    }] : []),
     {
       title: 'Action',
       key: 'action',
@@ -272,7 +289,7 @@ const QcProcess = ({ projectId }) => {
   };
 
   const prepareQcData = (status) => {
-    return {
+    const baseData = {
       QuantitySheetId: selectedRecord.quantitysheetId,
       Language: tempVerification.language,
       MaxMarks: tempVerification.maxMarks,
@@ -283,9 +300,10 @@ const QcProcess = ({ projectId }) => {
       C: tempVerification.c,
       D: tempVerification.d,
       StructureOfPaper: tempVerification.structureOfPaper,
-      Series: tempVerification.series,
       ProjectId: projectId
     };
+
+    return projectType === 1 ? { ...baseData, Series: tempVerification.series } : baseData;
   };
 
   const postQcData = async (qcData) => {
@@ -315,13 +333,13 @@ const QcProcess = ({ projectId }) => {
       setFilteredData(data.filter((item) => item.verified?.status === true));
       setShowback(true)
     } else if (status === 'rejected') {
-      setFilteredData(data.filter((item) => item.verified?.status === false && item.mssStatus!==5));
+      setFilteredData(data.filter((item) => item.verified?.status === false && item.mssStatus !== 5));
       setShowback(true)
     } else if (status === 'pending') {
       setFilteredData(data.filter((item) => Object.keys(item.verified).length === 0));
       setShowback(true)
     } else if (status === 'reverify') {
-      setFilteredData(data.filter((item) => item.mssStatus==5 && Object.values(item.verified).some(value => value === true)));
+      setFilteredData(data.filter((item) => item.mssStatus == 5 && Object.values(item.verified).some(value => value === true)));
       setShowback(true)
     }
     else {
@@ -361,11 +379,11 @@ const QcProcess = ({ projectId }) => {
           transition: 'all 0.3s ease'
         }}>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{  color: '#8c8c8c', marginBottom: '4px', fontSize: "1.5rem" }}>{label}</span>
-            <span style={{  fontWeight: '500', color: '#262626', fontSize: "1.5rem" }}>{value}</span>
+            <span style={{ color: '#8c8c8c', marginBottom: '4px', fontSize: "1.5rem" }}>{label}</span>
+            <span style={{ fontWeight: '500', color: '#262626', fontSize: "1.5rem" }}>{value}</span>
           </div>
-          {record.action === 'verify'  && !tempVerification[field] &&  (
-            <Checkbox  onChange={() => handleVerificationChange(field)} style={{ marginLeft: '20px' }}>
+          {record.action === 'verify' && !tempVerification[field] && (
+            <Checkbox onChange={() => handleVerificationChange(field)} style={{ marginLeft: '20px' }}>
               <span style={{
                 color: tempVerification[field] ? '#52c41a' : '#ff4d4f',
                 fontWeight: '500', fontSize: "1.5rem"
@@ -388,13 +406,13 @@ const QcProcess = ({ projectId }) => {
         return prev;
       });
     };
-    
+
     return (
       <div style={{ padding: '8px' }}>
         {verificationItem('Language', record.language, 'language')}
         {verificationItem('Duration', record.duration, 'duration')}
         {verificationItem('Structure', record.structureOfPaper, 'structure')}
-        {verificationItem('Series', record.series, 'series')}
+        {projectType === 1 && verificationItem('Series', record.series, 'series')}
         {verificationItem('Max Marks', record.maxMarks, 'maxMarks')}
         {verificationItem('A', record.a, 'a')}
         {verificationItem('B', record.b, 'b')}
@@ -441,7 +459,7 @@ const QcProcess = ({ projectId }) => {
         <div className='d-flex align-items-center justify-content-between'>
           <div className='d-flex align-items-center justify-content-between'>
             {showback && (
-              <ArrowLeftOutlined className={`fs-5 p-1 rounded-3 ${customDark} ${customLightText}`}   onClick={resetFilter}/>
+              <ArrowLeftOutlined className={`fs-5 p-1 rounded-3 ${customDark} ${customLightText}`} onClick={resetFilter} />
             )}
           </div>
           <div>
@@ -449,10 +467,10 @@ const QcProcess = ({ projectId }) => {
               <Space size="large">
                 <Tooltip title="Verified Items">
                   <Badge color='#52c41a' count={data.filter((item) => item.verified?.status === true).length}>
-                    <CheckCircleOutlined 
-                      onClick={() => filterDataByStatus('verified')} 
-                      className='fs-3' 
-                      style={{ 
+                    <CheckCircleOutlined
+                      onClick={() => filterDataByStatus('verified')}
+                      className='fs-3'
+                      style={{
                         color: '#52c41a',
                         padding: '8px',
                         borderRadius: '50%',
@@ -460,16 +478,16 @@ const QcProcess = ({ projectId }) => {
                         cursor: 'pointer',
                         transition: 'all 0.3s ease',
                         boxShadow: statusFilter === 'verified' ? '0 0 8px rgba(82, 196, 26, 0.5)' : 'none'
-                      }} 
+                      }}
                     />
                   </Badge>
                 </Tooltip>
                 <Tooltip title="Rejected Items">
-                  <Badge color='#ff4d4f' count={data.filter((item) => item.verified?.status === false && item.mssStatus !==5).length}>
-                    <CloseCircleOutlined 
-                      onClick={() => filterDataByStatus('rejected')} 
-                      className='fs-3' 
-                      style={{ 
+                  <Badge color='#ff4d4f' count={data.filter((item) => item.verified?.status === false && item.mssStatus !== 5).length}>
+                    <CloseCircleOutlined
+                      onClick={() => filterDataByStatus('rejected')}
+                      className='fs-3'
+                      style={{
                         color: '#ff4d4f',
                         padding: '8px',
                         borderRadius: '50%',
@@ -477,16 +495,16 @@ const QcProcess = ({ projectId }) => {
                         cursor: 'pointer',
                         transition: 'all 0.3s ease',
                         boxShadow: statusFilter === 'rejected' ? '0 0 8px rgba(255, 77, 79, 0.5)' : 'none'
-                      }} 
+                      }}
                     />
                   </Badge>
                 </Tooltip>
                 <Tooltip title="Pending Items">
                   <Badge color='#ffc107' count={data.filter((item) => Object.keys(item.verified).length === 0).length}>
-                    <FileTextOutlined 
-                      onClick={() => filterDataByStatus('pending')} 
-                      className='fs-3' 
-                      style={{ 
+                    <FileTextOutlined
+                      onClick={() => filterDataByStatus('pending')}
+                      className='fs-3'
+                      style={{
                         color: '#8c8c8c',
                         padding: '8px',
                         borderRadius: '50%',
@@ -494,34 +512,34 @@ const QcProcess = ({ projectId }) => {
                         cursor: 'pointer',
                         transition: 'all 0.3s ease',
                         boxShadow: statusFilter === 'pending' ? '0 0 8px rgba(140, 140, 140, 0.5)' : 'none'
-                      }} 
+                      }}
                     />
                   </Badge>
                 </Tooltip>
                 <Tooltip title="Re-verify Items">
-                  <Badge color='#1890ff' count={data.filter((item) => item.mssStatus ==5 && Object.values(item.verified).some(value => value === true)).length}>
+                  <Badge color='#1890ff' count={data.filter((item) => item.mssStatus == 5 && Object.values(item.verified).some(value => value === true)).length}>
                     <div style={{ position: 'relative', display: 'inline-block' }}>
-                      <SyncOutlined 
-                        onClick={() => filterDataByStatus('reverify')} 
-                        className='fs-2' 
-                        style={{ 
+                      <SyncOutlined
+                        onClick={() => filterDataByStatus('reverify')}
+                        className='fs-2'
+                        style={{
                           color: '#1890ff',
                           padding: '8px',
                           borderRadius: '50%',
                           backgroundColor: statusFilter === 'reverify' ? 'rgba(24, 144, 255, 0.1)' : 'transparent',
                           cursor: 'pointer',
                           transition: 'all 0.3s ease'
-                        }} 
+                        }}
                       />
-                      <CheckOutlined 
-                        style={{ 
-                          position: 'absolute', 
-                          top: '50%', 
-                          left: '50%', 
-                          transform: 'translate(-50%, -50%)', 
-                          fontSize: '12px', 
-                          color: '#1890ff' 
-                        }} 
+                      <CheckOutlined
+                        style={{
+                          position: 'absolute',
+                          top: '50%',
+                          left: '50%',
+                          transform: 'translate(-50%, -50%)',
+                          fontSize: '12px',
+                          color: '#1890ff'
+                        }}
                       />
                     </div>
                   </Badge>
