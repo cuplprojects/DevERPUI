@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, Button, Space, Checkbox, Row, Col, Table, Badge, Tooltip, Modal } from 'antd';
 import {
@@ -235,7 +234,7 @@ const QcProcess = ({ projectId }) => {
           size="large"
           onClick={(e) => handlePreview(record, 'verify')}
         >
-          {record.verified?.status === true ? 'Verified' : record.verified?.status === false ? 'Rejected' : 'Verify'}
+          {record.verified?.status === true ? 'Verified' : record.verified?.status === false ? 'ReVerify' : 'Verify'}
         </Button>
       ),
     },
@@ -364,8 +363,8 @@ const QcProcess = ({ projectId }) => {
             <span style={{  color: '#8c8c8c', marginBottom: '4px', fontSize: "1.5rem" }}>{label}</span>
             <span style={{  fontWeight: '500', color: '#262626', fontSize: "1.5rem" }}>{value}</span>
           </div>
-          {record.action === 'verify'  && !tempVerification[field] &&  (
-            <Checkbox  onChange={() => handleVerificationChange(field)} style={{ marginLeft: '20px' }}>
+          {record.action === 'verify' && (
+            <Checkbox onChange={() => handleVerificationChange(field)} checked={tempVerification[field]} style={{ marginLeft: '20px' }}>
               <span style={{
                 color: tempVerification[field] ? '#52c41a' : '#ff4d4f',
                 fontWeight: '500', fontSize: "1.5rem"
@@ -381,11 +380,7 @@ const QcProcess = ({ projectId }) => {
 
     const handleVerificationChange = (field) => {
       setTempVerification((prev) => {
-        // Only allow checking (verifying) a field, not unchecking it
-        if (!prev[field]) {
-          return { ...prev, [field]: true };
-        }
-        return prev;
+        return { ...prev, [field]: !prev[field] };
       });
     };
     
@@ -423,6 +418,7 @@ const QcProcess = ({ projectId }) => {
                 <Button
                   className={`${customBtn} ${customLightBorder}`}
                   onClick={handleRejectVerification}
+                  disabled={allFieldsVerified()}
                 >
                   <span className="d-none d-lg-inline">Mark Rejected</span>
                   <CloseCircleOutlined style={{ marginLeft: 8 }} />
