@@ -47,7 +47,7 @@ const UpdateRejectedItemModal = ({
         examDate: item.examDate,
         examTime: item.examTime,
         courseId: item.courseId || null,
-        subjectId: item.subjectId || null,
+        subjectId: item.subjectId ? Number(item.subjectId) : undefined,
         innerEnvelope: item.innerEnvelope,
         outerEnvelope: item.outerEnvelope,
         lotNo: item.lotNo,
@@ -140,6 +140,8 @@ const UpdateRejectedItemModal = ({
       console.error("Error fetching subjects:", error);
     }
   };
+  console.log("Form Data:", formData);
+  console.log("Subjects Options:", subjectOptions);
 
   return (
     <Modal show={show} onHide={handleClose} size="lg" className="rounded-5">
@@ -151,31 +153,31 @@ const UpdateRejectedItemModal = ({
         </Modal.Header>
 
         <Row>
-            <Col md={12}>
-              <Form.Group controlId="formRejectionReasons" className="mb-3">
-                <Form.Label className={`${customDarkText} fw-bold fs-5 text-center w-100 mb-3`}>
-                  Rejection Reasons
-                </Form.Label>
-                <div className="d-flex flex-wrap justify-content-center gap-3 mt-3 p-4 mb-4 bg-light rounded-3 shadow-sm">
-                  {rejectionReasons.map((reason) => (
-                    <Tag 
-                      key={reason}
-                      color="#ff6b6b"
-                      className="px-4 py-2 rounded-pill shadow-sm m-1 transition-all hover:shadow-md"
-                      style={{
-                        fontSize: '1.1rem',
-                        fontWeight: '500',
-                        border: 'none',
-                        cursor: 'default'
-                      }}
-                    >
-                      {reason.charAt(0).toUpperCase() + reason.slice(1)}
-                    </Tag>
-                  ))}
-                </div>
-              </Form.Group>
-            </Col>
-          </Row>
+          <Col md={12}>
+            <Form.Group controlId="formRejectionReasons" className="mb-3">
+              <Form.Label className={`${customDarkText} fw-bold fs-5 text-center w-100 mb-3`}>
+                Rejection Reasons
+              </Form.Label>
+              <div className="d-flex flex-wrap justify-content-center gap-3 mt-3 p-4 mb-4 bg-light rounded-3 shadow-sm">
+                {rejectionReasons.map((reason) => (
+                  <Tag
+                    key={reason}
+                    color="#ff6b6b"
+                    className="px-4 py-2 rounded-pill shadow-sm m-1 transition-all hover:shadow-md"
+                    style={{
+                      fontSize: '1.1rem',
+                      fontWeight: '500',
+                      border: 'none',
+                      cursor: 'default'
+                    }}
+                  >
+                    {reason.charAt(0).toUpperCase() + reason.slice(1)}
+                  </Tag>
+                ))}
+              </div>
+            </Form.Group>
+          </Col>
+        </Row>
         <Modal.Body className={`${customLight} ${customDarkText}`}>
           {/* Existing form fields */}
           <Row>
@@ -250,7 +252,7 @@ const UpdateRejectedItemModal = ({
                   style={{ width: "100%" }}
                   placeholder="Select Subject"
                   value={formData.subjectId}
-                  onChange={(value) => handleSelectChange(value, "subjectId")}
+                  onChange={(value) => handleSelectChange(Number(value), "subjectId")}
                 >
                   {subjectOptions.map((option) => (
                     <Option key={option.subjectId} value={option.subjectId}>
@@ -415,7 +417,7 @@ const UpdateRejectedItemModal = ({
           </Row>
 
           {/* New Row for Rejection Reasons */}
-        
+
         </Modal.Body>
         <ModalFooter className={`${customDark}`}>
           <div className="d-flex justify-content-end">
