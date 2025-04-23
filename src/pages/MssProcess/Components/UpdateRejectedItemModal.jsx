@@ -21,6 +21,7 @@ const UpdateRejectedItemModal = ({
   onUpdate,
   languageOptions,
   cssClasses,
+  projectId
 }) => {
   const [formData, setFormData] = useState({});
   const [processOptions, setProcessOptions] = useState([]);
@@ -28,6 +29,7 @@ const UpdateRejectedItemModal = ({
   const [subjectOptions, setSubjectOptions] = useState([]);
   const [rejectionReasons, setRejectionReasons] = useState([]);
   const [examTypeOptions, setExamTypeOptions] = useState([]);
+  const [projectType, setProjectType] = useState('')
   const [
     customDark,
     customMid,
@@ -38,7 +40,22 @@ const UpdateRejectedItemModal = ({
     customLightBorder,
     customDarkBorder,
   ] = cssClasses;
-  
+
+
+  useEffect(() => {
+    const fetchProjectType = async () => {
+      try {
+        const response = await API.get(`/Project/${projectId}`);
+        setProjectType(response.data.typeId);
+      } catch (error) {
+        console.error('Failed to fetch project type', error);
+      }
+    };
+    fetchProjectType();
+
+  })
+
+
   useEffect(() => {
     if (data) {
       const { item, filteredData } = data;
@@ -94,7 +111,7 @@ const UpdateRejectedItemModal = ({
       fetchExamTypes();
     }
   }, [data]);
-
+  console.log(rejectionReasons)
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
@@ -165,26 +182,34 @@ const UpdateRejectedItemModal = ({
 
         <Row>
           <Col md={12}>
-            <Form.Group controlId="formRejectionReasons" className="mb-3">
-              <Form.Label className={`${customDarkText} fw-bold fs-5 text-center w-100 mb-3`}>
+            <Form.Group controlId="formRejectionReasons" className={`${customLight}`}>
+              <Form.Label className={`${customDarkText} fw-bold fs-4 text-center w-100 mb-0`}>
                 Rejection Reasons
               </Form.Label>
-              <div className="d-flex flex-wrap justify-content-center gap-3 mt-3 p-4 mb-4 bg-light rounded-3 shadow-sm">
-                {rejectionReasons.map((reason) => (
-                  <Tag
-                    key={reason}
-                    color="#ff6b6b"
-                    className="px-4 py-2 rounded-pill shadow-sm m-1 transition-all hover:shadow-md"
-                    style={{
-                      fontSize: '1.1rem',
-                      fontWeight: '500',
-                      border: 'none',
-                      cursor: 'default'
-                    }}
-                  >
-                    {reason.charAt(0).toUpperCase() + reason.slice(1)}
-                  </Tag>
-                ))}
+              <div className="d-flex justify-content-center">
+                {rejectionReasons
+                  .filter(reason => !(projectType === 2 && reason.toLowerCase() === 'series'))
+                  .map((reason) => (
+                    <Tag
+                      key={reason}
+                      color="#ff6b6b"
+                      className=""
+                      style={{
+                        fontSize: '0.85rem',
+                        padding: '2px 12px',
+                        margin: '2px',
+                        border: 'none',
+                        cursor: 'default',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        backgroundColor: '#ffefef',
+                        color: '#e63946'
+                      }}
+                    >
+                      {reason.charAt(0).toUpperCase() + reason.slice(1)}
+                    </Tag>
+                  ))}
               </div>
             </Form.Group>
           </Col>
@@ -442,8 +467,6 @@ const UpdateRejectedItemModal = ({
               </Form.Group>
             </Col>
           </Row>
-
-          {/* New Row for Rejection Reasons */}
 
         </Modal.Body>
         <ModalFooter className={`${customDark}`}>

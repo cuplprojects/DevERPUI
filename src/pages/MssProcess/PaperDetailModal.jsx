@@ -257,7 +257,7 @@ console.log(values)
               </Form.Item>
             </Col>
             <Col md={2}>
-              <Form.Item name="UniqueCode" label="Private Code">
+              <Form.Item name="UniqueCode" label="Unique Code">
                 <Input allowClear />
               </Form.Item>
             </Col>
