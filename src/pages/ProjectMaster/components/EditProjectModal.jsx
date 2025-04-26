@@ -33,41 +33,47 @@ const EditProjectModal = ({
   selectedSession,
   selectedExamType,
   handleExamTypeChange,
-  selectedType
+  selectedType,
+  selectedProject
 }) => {
   const [pageQuantities, setPageQuantities] = useState([{ pages: '', quantity: '' }]);
+  const [requiredFields, setRequiredFields] = useState([]);
 
   useEffect(() => {
-    const quantityThresholdValue = form.getFieldValue('quantityThreshold');
+    if (selectedProject) {
+      const quantityThresholdValue = form.getFieldValue('quantityThreshold');
 
-    if (quantityThresholdValue) {
-      try {
-        // First, replace single quotes with double quotes to make it a valid JSON string
-        const jsonString = quantityThresholdValue.replace(/'/g, '"');
+      if (quantityThresholdValue) {
+        try {
+          // First, replace single quotes with double quotes to make it a valid JSON string
+          const jsonString = quantityThresholdValue.replace(/'/g, '"');
 
-        // Parse the JSON string
-        const parsedData = JSON.parse(jsonString);
+          // Parse the JSON string
+          const parsedData = JSON.parse(jsonString);
 
-        // Ensure it's an array and has entries
-        if (Array.isArray(parsedData) && parsedData.length > 0) {
-          // Ensure each entry has pages and quantity
-          const validatedData = parsedData.map(entry => ({
-            pages: entry.pages || '',
-            quantity: entry.quantity || ''
-          }));
+          // Ensure it's an array and has entries
+          if (Array.isArray(parsedData) && parsedData.length > 0) {
+            // Ensure each entry has pages and quantity
+            const validatedData = parsedData.map(entry => ({
+              pages: entry.pages || '',
+              quantity: entry.quantity || ''
+            }));
 
-          setPageQuantities(validatedData);
-        } else {
-          // Fallback to default state if no valid entries
+            setPageQuantities(validatedData);
+          } else {
+            // Fallback to default state if no valid entries
+            setPageQuantities([{ pages: '', quantity: '' }]);
+          }
+        } catch (error) {
+          console.error('Error parsing quantity threshold:', error);
+          // Fallback to default state if parsing fails
           setPageQuantities([{ pages: '', quantity: '' }]);
         }
-      } catch (error) {
-        console.error('Error parsing quantity threshold:', error);
-        // Fallback to default state if parsing fails
-        setPageQuantities([{ pages: '', quantity: '' }]);
       }
+
+      setRequiredFields(selectedProject.requiredField || []);
     }
-  }, [form, visible]);
+  }, [form, visible, selectedProject]);
 
   const handleAddRow = () => {
     setPageQuantities([...pageQuantities, { pages: '', quantity: '' }]);
@@ -88,11 +94,11 @@ const EditProjectModal = ({
 
   // Format and submit data
   const handleFormSubmit = async (values) => {
-
     const formattedValues = {
       ...values,
       quantityThreshold: JSON.stringify(pageQuantities.filter(entry => entry.pages && entry.quantity))
         .replace(/"/g, "'"), // Use single quotes for backend consistency
+      requiredField: requiredFields
     };
 
     await onFinish(formattedValues);
@@ -113,7 +119,7 @@ const EditProjectModal = ({
       <Modal.Body className={`${customLight} `}>
         <Form form={form} onFinish={handleFormSubmit} layout="vertical">
           <Row gutter={[16, 0]}>
-            <Col xs={24} sm={24}>
+            <Col xs={24} sm={24} md={6}>
               <Form.Item
                 name="group"
                 label={t('group')}
@@ -123,12 +129,10 @@ const EditProjectModal = ({
                   {groups.map((group) => (
                     <Option key={group.id} value={group.id}>{group.name}</Option>
                   ))}
-                  
                 </Select>
-                
               </Form.Item>
             </Col>
-            <Col xs={24} sm={24}>
+            <Col xs={24} sm={24} md={6}>
               <Form.Item
                 name="type"
                 label={<span className={customDarkText}>{t('type')}</span>}
@@ -141,9 +145,8 @@ const EditProjectModal = ({
                 </Select>
               </Form.Item>
             </Col>
-          </Row>
-          <Row>
-            <Col xs={24} sm={24}>
+                  
+            <Col xs={24} sm={24} md={6}>
               <Form.Item
                 name="session"
                 label={t('session')}
@@ -156,13 +159,13 @@ const EditProjectModal = ({
                 </Select>
               </Form.Item>
             </Col>
-            <Col xs={24} sm={24}>
+            <Col xs={24} sm={24} md={6}>
               <Form.Item
                 name="examType"
                 label={t('Semester')}
                 rules={[{ required: true, message: t('pleaseSelectExamType') }]}
               >
-                <Select placeholder={t('Semester')}  mode="multiple" onChange={handleExamTypeChange}>
+                <Select placeholder={t('Semester')} mode="multiple" onChange={handleExamTypeChange}>
                   {examTypes.map((examType) => (
                     <Option key={examType.examTypeId} value={examType.examTypeId}>
                       {examType.typeName}
@@ -295,6 +298,37 @@ const EditProjectModal = ({
                 valuePropName="checked"
               >
                 <Switch />
+              </Form.Item>
+            </Col>
+            <Col xs={24}>
+              <Form.Item
+                name="requiredFields"
+                label={<span className={customDarkText}>Select Required Fields</span>}
+              >
+                <Select
+                  mode="multiple"
+                  style={{ width: '100%' }}
+                  placeholder="Select Required Fields"
+                  value={requiredFields}
+                  onChange={setRequiredFields}
+                >
+                  <Select.Option value="Catch No">Catch No</Select.Option>
+                  <Select.Option value="Course">Course</Select.Option>
+                  <Select.Option value="Semester">Semester</Select.Option>
+                  <Select.Option value="Paper Title">Paper Title</Select.Option>
+                  <Select.Option value="Paper #">Paper #</Select.Option>
+                  <Select.Option value="Subject">Subject</Select.Option>
+                  <Select.Option value="NEP Code">NEP Code</Select.Option>
+                  <Select.Option value="Private Code">Private Code</Select.Option>
+                  <Select.Option value="Duration">Duration</Select.Option>
+                  <Select.Option value="Max Marks">Max Marks</Select.Option>
+                  <Select.Option value="Exam Date">Exam Date</Select.Option>
+                  <Select.Option value="Exam Time">Exam Time</Select.Option>
+                  <Select.Option value="Language">Language</Select.Option>
+                  <Select.Option value="Inner Envelope">Inner Envelope</Select.Option>
+                  <Select.Option value="Outer Envelope">Outer Envelope</Select.Option>
+                  <Select.Option value="Previous Year Quantity">Previous Year Quantity</Select.Option>
+                </Select>
               </Form.Item>
             </Col>
           </Row>

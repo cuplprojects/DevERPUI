@@ -121,7 +121,9 @@ const ProjectTab = ({ setActiveTabKey, setSelectedProject }) => {
       sessionId: selectedSession.sessionId,
       noOfSeries: numberOfSeries || 0,
       seriesName: seriesNames,
-      quantityThreshold: values.quantityThreshold
+      quantityThreshold: values.quantityThreshold,
+      requiredField: values.requiredField || []
+      
     };
 
     try {
@@ -163,7 +165,8 @@ const ProjectTab = ({ setActiveTabKey, setSelectedProject }) => {
         sessionId: values.session,
         examTypeId: values.examType,
         noOfSeries: numberOfSeries, // Use the state value directly
-        seriesName: values.seriesNames
+        seriesName: values.seriesNames,
+        requiredField: values.requiredField || []
       };
       console.log(updatedProject)
 

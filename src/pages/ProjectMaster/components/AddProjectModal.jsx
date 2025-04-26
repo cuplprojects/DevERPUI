@@ -462,13 +462,14 @@ const AddProjectModal = ({
   const [pageQuantities, setPageQuantities] = useState([{ pages: '', quantity: '' }]);
   const [descriptionValue, setDescriptionValue] = useState(selectedProject?.description || '');
   const [projectNameSuffix, setProjectNameSuffix] = useState('');
-  const [requiredFields, setRequiredFields] = useState([]);
+  const [requiredFields, setRequiredFields] = useState(selectedProject?.requiredField || []);
 
   useEffect(() => {
     if (selectedProject) {
       setNumberOfSeries(selectedProject.numberOfSeries);
       setSeriesNames(selectedProject.seriesNames);
       setDescriptionValue(selectedProject.description);
+      setRequiredFields(selectedProject.requiredField || []);
       if (selectedProject.pageQuantities) {
         setPageQuantities(selectedProject.pageQuantities);
       }
@@ -480,11 +481,11 @@ const AddProjectModal = ({
       const selectedGroupName = groups.find(g => g.id === selectedGroup.id)?.name || '';
       const selectedTypeName = types.find(t => t.typeId === selectedType.typeId)?.types || '';
       const selectedSessionName = sessions.find(s => s.sessionId === selectedSession.sessionId)?.session || '';
-      
+
       const selectedExamTypeNames = selectedExamType
         .map(e => examTypes.find(exam => exam.examTypeId === e.examTypeId)?.typeName)
         .join(', ');
-      
+
       const baseName = `${selectedGroupName}-${selectedTypeName} - ${selectedSessionName} - ${selectedExamTypeNames}`;
       setProjectName(baseName + (projectNameSuffix ? `-${projectNameSuffix}` : ''));
     }
@@ -511,7 +512,7 @@ const AddProjectModal = ({
       .map(e => e.typeName)
       .join(', ');
     const baseProjectName = `${selectedGroup?.name || ''}-${selectedType?.types || ''} - ${selectedSession?.session || ''} - ${selectedExamTypeNames || ''}`;
-    
+
     if (value.startsWith(baseProjectName)) {
       const suffix = value.slice(baseProjectName.length).replace(/^-/, '');
       setProjectNameSuffix(suffix);
@@ -520,6 +521,7 @@ const AddProjectModal = ({
   };
 
   const handleSubmit = async (event) => {
+    console.log(requiredFields)
     event.preventDefault();
     const selectedExamTypeIds = selectedExamType.map(exam => exam.examTypeId);
     const projectData = {
@@ -533,7 +535,8 @@ const AddProjectModal = ({
       noOfSeries: parseInt(numberOfSeries) || 0,
       seriesName: seriesNames || null,
       quantityThreshold: JSON.stringify(pageQuantities.filter(entry => entry.pages && entry.quantity))
-        .replace(/\"/g, "'")
+        .replace(/\"/g, "'"),
+      requiredField: requiredFields // Include requiredFields in the projectData
     };
 
     setLoading(true);
@@ -548,11 +551,11 @@ const AddProjectModal = ({
   };
 
   return (
-    <Modal 
-      show={visible} 
-      onHide={onCancel} 
-      size="lg" 
-      centered 
+    <Modal
+      show={visible}
+      onHide={onCancel}
+      size="lg"
+      centered
       className='rounded'
       backdrop="static"
       keyboard={false}
@@ -562,14 +565,14 @@ const AddProjectModal = ({
       </Modal.Header>
       <Modal.Body className={`${customLight}`}>
         <Form id="addProjectForm" onSubmit={handleSubmit} form={form}>
-        <Row className="mb-3">
-             <Col xs={6}>
-               <Form.Group controlId="group">
-                 <Form.Label className={customDarkText}>{t('group')}
-                   <span className='text-danger ms-2 fs-6'>*</span>
-                 </Form.Label>
+          <Row className="mb-3">
+            <Col xs={6}>
+              <Form.Group controlId="group">
+                <Form.Label className={customDarkText}>{t('group')}
+                  <span className='text-danger ms-2 fs-6'>*</span>
+                </Form.Label>
                 <Form.Select onChange={handleGroupChange} required>
-                   <option value="">{t('selectGroup')}</option>
+                  <option value="">{t('selectGroup')}</option>
                   {groups.map((group) => (
                     <option key={group.id} value={group.id}>
                       {group.name}
@@ -639,8 +642,8 @@ const AddProjectModal = ({
                   menuItemSelectedIcon={<span className="ant-select-item-option-state">✓</span>}
                 >
                   {examTypes.map((examType) => (
-                    <Select.Option 
-                      key={examType.examTypeId} 
+                    <Select.Option
+                      key={examType.examTypeId}
                       value={examType.examTypeId}
                     >
                       {examType.typeName}
@@ -706,7 +709,7 @@ const AddProjectModal = ({
                   type="text"
                   value={projectName}
                   onChange={handleProjectNameChange}
-                  disabled={!selectedGroup || !selectedType ||!selectedSession || !selectedExamType}
+                  disabled={!selectedGroup || !selectedType || !selectedSession || !selectedExamType}
                   placeholder="Enter Project Name"
                 />
                 <Form.Text className="text-muted">
@@ -763,13 +766,10 @@ const AddProjectModal = ({
                   <Select.Option value="Inner Envelope">Inner Envelope</Select.Option>
                   <Select.Option value="Outer Envelope">Outer Envelope</Select.Option>
                   <Select.Option value="Previous Year Quantity">Previous Year Quantity</Select.Option>
-                  
                 </Select>
               </Form.Group>
             </Col>
           </Row>
-
-        
 
           <Row className="mb-3 d-flex align-items-center">
             <Col xs={12}>
@@ -824,10 +824,10 @@ const AddProjectModal = ({
             </Col>
             <Col xs={3} className="mt-3 d-flex align-items-center">
               <Form.Group controlId="status" className={customDarkText}>
-                <Form.Check 
+                <Form.Check
                   disabled
-                  type="switch" 
-                  label={t('status')} 
+                  type="switch"
+                  label={t('status')}
                   checked={status}
                   className='fs-4'
                   onChange={(e) => {
@@ -841,18 +841,18 @@ const AddProjectModal = ({
         </Form>
       </Modal.Body>
       <Modal.Footer className={`${customDark}`}>
-        <Button 
-          variant="secondary" 
-          onClick={onCancel} 
+        <Button
+          variant="secondary"
+          onClick={onCancel}
           className='custom-zoom-btn text-white'
           disabled={loading}
         >
           {t('cancel')}
         </Button>
-        <Button 
-          variant="primary" 
-          type="submit" 
-          form="addProjectForm" 
+        <Button
+          variant="primary"
+          type="submit"
+          form="addProjectForm"
           className={`${customLight} border-white ${customDarkText} custom-zoom-btn`}
           disabled={loading}
         >
@@ -864,3 +864,5 @@ const AddProjectModal = ({
 };
 
 export default AddProjectModal;
+
+  
