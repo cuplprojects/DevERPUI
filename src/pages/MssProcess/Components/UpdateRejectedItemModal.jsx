@@ -456,16 +456,18 @@ const UpdateRejectedItemModal = ({
               </Form.Group>
             </Col>
             <Col md={6}>
-              <Form.Group controlId="formStructureOfPaper" className="mb-3">
-                <Form.Label>Structure of Paper</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="structureOfPaper"
-                  value={formData.structureOfPaper || ""}
-                  onChange={handleChange}
-                />
-              </Form.Group>
-            </Col>
+  <Form.Group controlId="formStructureOfPaper" className="mb-3">
+    <Form.Label>Structure of Paper</Form.Label>
+    <Form.Control
+      as="textarea"
+      rows={4} // You can adjust the number of rows as needed
+      name="structureOfPaper"
+      value={formData.structureOfPaper || ""}
+      onChange={handleChange}
+    />
+  </Form.Group>
+</Col>
+
           </Row>
 
         </Modal.Body>
