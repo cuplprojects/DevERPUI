@@ -21,7 +21,10 @@ const Session = () => {
   const [sessions, setSessions] = useState([]);
   const [filteredSessions, setFilteredSessions] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [editForm] = Form.useForm();
   const [form] = Form.useForm();
+  const [editingSession, setEditingSession] = useState(null);
   const [editingIndex, setEditingIndex] = useState(null);
   const [editingValue, setEditingValue] = useState('');
   const [editingStatus, setEditingStatus] = useState(true);
@@ -59,7 +62,7 @@ const Session = () => {
 
   const handleAddSession = async (values) => {
     const { startYear, endYear, status } = values;
-    const sessionName = `${startYear.year()}-${endYear.year().toString().slice(2)}`;
+    const sessionName = `${startYear.year()}-${endYear.year()}`;
 
     const existingSession = sessions.find(s => s.session.toLowerCase() === sessionName.toLowerCase());
     if (existingSession) {
@@ -81,17 +84,15 @@ const Session = () => {
     }
   };
 
-  const handleEditSave = async (record) => {
-    if (!editingValue.trim()) {
+  const handleEditSave = async (values) => {
+    const { session, status } = values;
+    if (!session.trim()) {
       error(t('sessionNameCannotBeEmpty'));
       return;
     }
 
-    const sessionToEdit = record;
-    const updatedSession = { ...sessionToEdit, session: editingValue, status: editingStatus };
-
     const existingSession = sessions.find(s =>
-      s.session.toLowerCase() === editingValue.toLowerCase() && s.sessionId !== sessionToEdit.sessionId
+      s.session.toLowerCase() === session.toLowerCase() && s.sessionId !== editingSession.sessionId
     );
 
     if (existingSession) {
@@ -100,30 +101,38 @@ const Session = () => {
     }
 
     try {
-      await API.put(`/Session/${sessionToEdit.sessionId}`, updatedSession);
+      const updatedSession = { ...editingSession, session, status };
+      await API.put(`/Session/${editingSession.sessionId}`, updatedSession);
       const updatedSessions = sessions.map(s =>
-        s.sessionId === sessionToEdit.sessionId ? updatedSession : s
+        s.sessionId === editingSession.sessionId ? updatedSession : s
       );
       setSessions(updatedSessions);
       setFilteredSessions(updatedSessions.filter(s =>
         s.session.toLowerCase().includes(searchText.toLowerCase())
       ));
       fetchSessions();
-      setEditingIndex(null);
-      setEditingValue('');
-      setEditingStatus(true);
+      setIsEditModalVisible(false);
+      setEditingSession(null);
       success(t('sessionUpdatedSuccessfully'));
     } catch (err) {
       error(t('failedToUpdateSession'));
-      setEditingValue(originalData.session);
-      setEditingStatus(originalData.status);
     }
   };
 
-  const handleCancelEdit = () => {
-    setEditingIndex(null);
-    setEditingValue(originalData.session);
-    setEditingStatus(originalData.status);
+  const showEditModal = (record, index) => {
+    setEditingSession(record);
+    setEditingIndex(index);
+    editForm.setFieldsValue({
+      session: record.session,
+      status: record.status
+    });
+    setIsEditModalVisible(true);
+  };
+
+  const handleEditCancel = () => {
+    setIsEditModalVisible(false);
+    setEditingSession(null);
+    editForm.resetFields();
   };
 
   const handleSort = (field) => {
@@ -161,18 +170,6 @@ const Session = () => {
       key: 'session',
       width: '40%',
       sorter: (a, b) => a.session.localeCompare(b.session),
-      render: (text, record, index) => (
-        editingIndex === index ? (
-          <Input
-            value={editingValue}
-            onChange={(e) => setEditingValue(e.target.value)}
-            onPressEnter={() => handleEditSave(record)}
-            style={{ width: '100%' }}
-          />
-        ) : (
-          <span>{text}</span>
-        )
-      ),
     },
     {
       align: 'center',
@@ -181,22 +178,13 @@ const Session = () => {
       key: 'status',
       width: '25%',
       sorter: (a, b) => a.status - b.status,
-      render: (status, record, index) => (
-        editingIndex === index ? (
-          <Switch
-            checked={editingStatus}
-            onChange={(checked) => setEditingStatus(checked)}
-            checkedChildren={t('active')}
-            unCheckedChildren={t('inactive')}
-          />
-        ) : (
-          <Switch
-            checked={status}
-            disabled
-            checkedChildren={t('active')}
-            unCheckedChildren={t('inactive')}
-          />
-        )
+      render: (status) => (
+        <Switch
+          checked={status}
+          disabled
+          checkedChildren={t('active')}
+          unCheckedChildren={t('inactive')}
+        />
       ),
     },
     {
@@ -205,32 +193,14 @@ const Session = () => {
       key: 'action',
       width: '25%',
       render: (_, record, index) => (
-        editingIndex === index ? (
-          <div style={{ display: 'flex', justifyContent: '' }}>
-            <Button type="link" onClick={() => handleEditSave(record)} className={`${customDark === "dark-dark" ? `${customMid} border` : `${customLight} ${customDarkBorder}`} text-white d-flex align-items-center`}>
-              <SaveOutlined className={`${customDark === "dark-dark" ? `` : `${customDarkText}` } `}/>
-              <span className={`${customDark === "dark-dark" ? `` : `${customDarkText}` } ms-1`}>{t('save')}</span>
-            </Button>
-            <Button type="link" onClick={handleCancelEdit} className={`${customDark === "dark-dark" ? `${customMid} border` : `${customLight} ${customDarkBorder}`} text-white ms-3 d-flex align-items-center`}>
-              <CloseOutlined className={`${customDark === "dark-dark" ? `` : `${customDarkText}` } `}/>
-              <span className={`${customDark === "dark-dark" ? `` : `${customDarkText}` } ms-1`}>{t('cancel')}</span>
-            </Button>
-          </div>
-        ) : (
-          <Button
-            type="link"
-            onClick={() => {
-              setEditingIndex(index);
-              setEditingValue(record.session);
-              setEditingStatus(record.status);
-              setOriginalData(record);
-            }}
-            className={`${customBtn} d-flex align-items-center`}
-          >
-            <EditOutlined className={`${customBtn} text-white`} />
-            <span className="ms-1">{t('edit')}</span>
-          </Button>
-        )
+        <Button
+          type="link"
+          onClick={() => showEditModal(record, index)}
+          className={`${customBtn} d-flex align-items-center`}
+        >
+          <EditOutlined className={`${customBtn} text-white`} />
+          <span className="ms-1">{t('edit')}</span>
+        </Button>
       ),
     },
   ];
@@ -391,6 +361,55 @@ const Session = () => {
             <Form.Item>
               <Button type="" htmlType="submit" className={`rounded-2 ${customBtn} ${customDark === "dark-dark" ? `` : `border-0`} custom-zoom-btn`}>
                 {t('submit')}
+              </Button>
+            </Form.Item>
+          </Form>
+        </Modal.Body>
+      </Modal>
+
+      <Modal
+        show={isEditModalVisible}
+        onHide={handleEditCancel}
+        centered
+        size={isMobile ? 'sm' : 'md'}
+        className={`rounded-2 ${customDark === "" ? `${customDark}` : ''}  `}
+      >
+        <Modal.Header closeButton={false} className={`rounded-top-2 ${customDark} ${customLightText} ${customDark === "dark-dark" ? `border ` : `border-0`} border d-flex justify-content-between `}>
+          <Modal.Title>{t('editSession')}</Modal.Title>
+          <AiFillCloseSquare
+            size={35}
+            onClick={handleEditCancel}
+            className={`rounded-2 ${customDark === "dark-dark" ? "text-dark bg-white " : `${customDark} custom-zoom-btn text-white  ${customDarkBorder}`}`}
+            aria-label={t('close')}
+            style={{ cursor: 'pointer', fontSize: '1.5rem' }}
+          />
+        </Modal.Header>
+        <Modal.Body className={`rounded-bottom-2 ${customMid} ${customDark === "dark-dark" ? `border border-top-0` : `border-0`}`}>
+          <Form
+            form={editForm}
+            onFinish={handleEditSave}
+            layout="vertical"
+            className={`${customDark === "dark" ? `${customDark}` : ''}`}
+          >
+            <Form.Item
+              name="session"
+              label={<span className={`${customDark === "dark-dark" || customDark === "blue-dark" ? `text-white` : `${customDarkText}`} fs-5 `}>{t('sessionName')}</span>}
+              rules={[{ required: true, message: t('pleaseEnterSessionName') }]}
+            >
+              <Input className="rounded-2" />
+            </Form.Item>
+
+            <Form.Item
+              name="status"
+              label={<span className={`${customDark === "dark-dark" || customDark === "blue-dark" ? `text-white` : `${customDarkText}`} fs-5 `}>{t('status')}</span>}
+              valuePropName="checked"
+            >
+              <Switch checkedChildren={t('active')} unCheckedChildren={t('inactive')} />
+            </Form.Item>
+
+            <Form.Item>
+              <Button type="" htmlType="submit" className={`rounded-2 ${customBtn} ${customDark === "dark-dark" ? `` : `border-0`} custom-zoom-btn`}>
+                {t('update')}
               </Button>
             </Form.Item>
           </Form>
