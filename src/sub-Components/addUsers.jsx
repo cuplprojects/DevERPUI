@@ -86,18 +86,27 @@ const AddUsers = () => {
       const { success } = validateFormData(formData); // Validate the form data
       if (success) {
         try {
-          const response = await API.post('/User/create', formData); // API call to add user
+          // Create a payload with the user field required by the API
+          const payload = {
+            user: formData.username,
+            ...formData,
+            // Ensure locationId is an integer
+            locationId: parseInt(formData.locationId, 10)
+          };
+
+          const response = await API.post('/User/create', payload); // API call to add user
           const { userName, password } = response.data;
-          
+
           // Only show modal if password is returned
           if (password) {
             setUserDetails({ userName, password });
             setShowModal(true);
           }
-          
+
           toast.success(t('userAddedSuccessfully'));
         } catch (error) {
-          toast.error(t('failedToAddUser') + error.response.data.message);
+          console.error('Error details:', error.response?.data);
+          toast.error(t('failedToAddUser') + (error.response?.data?.message || error.message));
         }
       }
     }
@@ -351,7 +360,7 @@ const AddUsers = () => {
                 required
               >
                 <option value="">{t('selectALocation')}</option>
-                {location.map(l=>(<option key={l.locationId} value={l.locationName}>{l.locationName}</option>))}</Form.Select>
+                {location.map(l=>(<option key={l.locationId} value={l.locationId}>{l.locationName}</option>))}</Form.Select>
             </Form.Group>
           </Col>
         </Row>
@@ -361,9 +370,9 @@ const AddUsers = () => {
           <Button variant="secondary" onClick={handleReset} className='custom-zoom-btn' style={{ width: '100px' }}>
             {t('reset')}
           </Button>
-          <Button 
-            type="submit" 
-            className={`ms-2 ${customBtn === "dark-dark" ? `${customBtn}  custom-zoom-btn ` : `${customBtn}  custom-zoom-btn`} ${areRequiredFieldsFilled() ? `border border-white` : `border-0`} text-white`} 
+          <Button
+            type="submit"
+            className={`ms-2 ${customBtn === "dark-dark" ? `${customBtn}  custom-zoom-btn ` : `${customBtn}  custom-zoom-btn`} ${areRequiredFieldsFilled() ? `border border-white` : `border-0`} text-white`}
 
             disabled={!areRequiredFieldsFilled()}
             style={{ width: '100px' }}

@@ -9,20 +9,19 @@ const EditQuantitySheetModal = ({
   onHide,
   record,
   languageOptions,
-  onSuccess ,
-  cssClasses,
-  fetchQuantitySheetData
+  onSuccess,
+  cssClasses
 }) => {
   const [formData, setFormData] = useState({});
   const [
     customDark,
-    customMid,
+    ,
     customLight,
-    customBtn,
-    customDarkText,
+    ,
+    ,
     customLightText,
-    customLightBorder,
-    customDarkBorder,
+    ,
+    ,
   ] = cssClasses;
 
   // Initialize form data when record changes
@@ -116,7 +115,7 @@ const EditQuantitySheetModal = ({
         stopCatch : record.stopCatch,
       };
       console.log("Payload Data -", payload);
-      // Call the API to update the item
+      // Call the API to update the item - using PUT method instead of POST
       await API.put('/QuantitySheet/bulk-update', [payload]);
 
       message.success('Item updated successfully');

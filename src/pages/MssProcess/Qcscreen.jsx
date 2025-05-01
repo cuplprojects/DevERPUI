@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Button, Space, Checkbox, Row, Col, Table, Badge, Tooltip, Modal as AntModal } from 'antd';
+import { Card, Button, Space, Checkbox, Row, Col, Table, Badge, Tooltip, Modal as AntModal, Input, InputNumber, Form, Select } from 'antd';
 import { Modal } from 'react-bootstrap';
 import {
   CheckCircleOutlined,
@@ -9,6 +9,9 @@ import {
   CheckOutlined,
   SyncOutlined,
   ArrowRightOutlined,
+  EditOutlined,
+  SaveOutlined,
+  CloseOutlined,
 } from '@ant-design/icons';
 import API from '../../CustomHooks/MasterApiHooks/api';
 import { success, error } from '../../CustomHooks/Services/AlertMessageService';
@@ -42,8 +45,11 @@ const QcProcess = ({ projectId }) => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [showback, setShowback] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [projectType, setProjectType] = useState('')
+  const [projectType, setProjectType] = useState('');
   const [selectedRecordIndex, setSelectedRecordIndex] = useState(0);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editFormData, setEditFormData] = useState({});
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     const fetchProjectType = async () => {
@@ -334,6 +340,104 @@ const QcProcess = ({ projectId }) => {
     await postQcData(qcData);
   };
 
+  const handleEditClick = () => {
+    if (selectedRecord) {
+      // Initialize edit form data with current record values
+      setEditFormData({
+        catchNo: selectedRecord.catchNo || '',
+        paperNumber: selectedRecord.paperNumber || '',
+        paperTitle: selectedRecord.paperTitle || '',
+        nepCode: selectedRecord.nepCode || '',
+        uniqueCode: selectedRecord.uniqueCode || '',
+        maxMarks: selectedRecord.maxMarks || 0,
+        duration: selectedRecord.duration || '',
+        structureOfPaper: selectedRecord.structureOfPaper || '',
+        quantity: selectedRecord.quantity || 0,
+        languageId: selectedRecord.languageId || []
+      });
+      setIsEditMode(true);
+    }
+  };
+
+  const handleEditCancel = () => {
+    setIsEditMode(false);
+    setEditFormData({});
+  };
+
+  const handleInputChange = (field, value) => {
+    setEditFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSaveChanges = async () => {
+    try {
+      setIsSaving(true);
+
+      // Create payload for the API
+      const payload = [{
+        quantitySheetId: selectedRecord.quantitysheetId,
+        catchNo: editFormData.catchNo,
+        nepCode: editFormData.nepCode,
+        paperTitle: editFormData.paperTitle,
+        duration: editFormData.duration,
+        languageId: editFormData.languageId,
+        paperNumber: editFormData.paperNumber,
+        quantity: parseInt(editFormData.quantity, 10),
+        maxMarks: parseInt(editFormData.maxMarks, 10),
+        uniqueCode: editFormData.uniqueCode,
+        examTime: selectedRecord.examTime || '',
+        structureOfPaper: editFormData.structureOfPaper || '',
+        examDate: selectedRecord.examDate || '',
+        mssStatus: selectedRecord.mssStatus, // Use the original mssStatus value
+        ttfStatus: selectedRecord.ttfStatus, // Use the original ttfStatus value
+        projectId: selectedRecord.projectId,
+        courseId: selectedRecord.courseId,
+        subjectId: selectedRecord.subjectId,
+        processId: selectedRecord.processId || [0],
+        lotNo: selectedRecord.lotNo,
+        percentageCatch: selectedRecord.percentageCatch || 0,
+        qpId: selectedRecord.qpId || 0,
+        pages: selectedRecord.pages || 0,
+        innerEnvelope: selectedRecord.innerEnvelope || '',
+        outerEnvelope: selectedRecord.outerEnvelope || 0,
+        status: selectedRecord.status || 0,
+        stopCatch: selectedRecord.stopCatch || 0,
+        examTypeId: selectedRecord.examTypeId || 0
+      }];
+
+      // Call the API to update the item - using PUT method instead of POST
+      await API.put('/QuantitySheet/bulk-update', payload);
+
+      // Refresh the data
+      const response = await API.get(`/QC/ByProject?projectId=${projectId}`);
+      const transformedData = response.data.map(item => ({
+        ...item,
+        verified: item.verified || {},
+      }));
+      setData(transformedData);
+      setFilteredData(transformedData);
+
+      // Update the selected record with new data
+      const updatedRecord = transformedData.find(item => item.quantitysheetId === selectedRecord.quantitysheetId);
+      if (updatedRecord) {
+        setSelectedRecord({...updatedRecord, action: selectedRecord.action});
+      }
+
+      // Exit edit mode
+      setIsEditMode(false);
+      setEditFormData({});
+
+      success(t('recordUpdated'));
+    } catch (err) {
+      console.error('Failed to update record', err);
+      error(t('failedToUpdateRecord'));
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const prepareQcData = (status) => {
     const baseData = {
       QuantitySheetId: selectedRecord.quantitysheetId,
@@ -421,10 +525,13 @@ const QcProcess = ({ projectId }) => {
       const isValueEmpty = !value || (typeof value === 'string' && value.trim() === '') ||
         (Array.isArray(value) && value.length === 0);
 
+      // Determine if this field is editable
+      const isEditable = ['catchNo', 'paperNumber', 'paperTitle', 'nepCode', 'uniqueCode', 'maxMarks', 'duration', 'structureOfPaper', 'quantity'].includes(field);
+
       return (
         <div className="verification-item p-4 border-bottom hover-highlight">
           <div className="d-flex align-items-center">
-            {record.action === 'verify' && (
+            {record.action === 'verify' && !isEditMode && (
               <div className="me-4">
                 <Checkbox
                   checked={tempVerification[field] || record.verified?.[field]}
@@ -450,45 +557,63 @@ const QcProcess = ({ projectId }) => {
                 </span>
               </div>
               <div className="verification-value flex-grow-1 ps-4 border-start">
-                <span className={`${isValueEmpty ? 'text-muted fst-italic' : 'fw-medium'}`}>
-                  {value}
-                </span>
-              </div>
-              <div className={`verification-status ms-3 d-flex align-items-center ${record.action === 'verify'
-                  ? (isValueEmpty ? 'text-muted' : (tempVerification[field] || record.verified?.[field]) ? 'text-success' : 'text-secondary')
-                  : record.verified[field] ? 'text-success' : 'text-danger'
-                }`}>
-                {record.action === 'verify' ? (
-                  isValueEmpty ? (
-                    <Badge bg="light" text="dark" className="d-flex align-items-center gap-2 py-2 px-3">
-
-
-                    </Badge>
+                {isEditMode && isEditable ? (
+                  field === 'maxMarks' || field === 'quantity' ? (
+                    <InputNumber
+                      value={editFormData[field]}
+                      onChange={(value) => handleInputChange(field, value)}
+                      style={{ width: '100%' }}
+                      min={0}
+                    />
+                  ) : field === 'structureOfPaper' ? (
+                    <Input.TextArea
+                      value={editFormData[field]}
+                      onChange={(e) => handleInputChange(field, e.target.value)}
+                      rows={3}
+                    />
                   ) : (
-                    (tempVerification[field] || record.verified?.[field]) && (
-                      <Badge bg="success" className="d-flex align-items-center gap-2 py-2 px-3">
-
-
-                      </Badge>
-                    )
+                    <Input
+                      value={editFormData[field]}
+                      onChange={(e) => handleInputChange(field, e.target.value)}
+                    />
                   )
                 ) : (
-                  <Badge
-                    bg={record.verified[field] ? 'success' : 'danger'}
-                    className="d-flex align-items-center gap-2 py-2 px-3"
-                  >
-                    {record.verified[field] ? (
-                      <>
-
-                      </>
-                    ) : (
-                      <>
-
-                      </>
-                    )}
-                  </Badge>
+                  <span className={`${isValueEmpty ? 'text-muted fst-italic' : 'fw-medium'}`}>
+                    {value}
+                  </span>
                 )}
               </div>
+              {!isEditMode && (
+                <div className={`verification-status ms-3 d-flex align-items-center ${record.action === 'verify'
+                    ? (isValueEmpty ? 'text-muted' : (tempVerification[field] || record.verified?.[field]) ? 'text-success' : 'text-secondary')
+                    : record.verified[field] ? 'text-success' : 'text-danger'
+                  }`}>
+                  {record.action === 'verify' ? (
+                    isValueEmpty ? (
+                      <Badge bg="light" text="dark" className="d-flex align-items-center gap-2 py-2 px-3">
+                      </Badge>
+                    ) : (
+                      (tempVerification[field] || record.verified?.[field]) && (
+                        <Badge bg="success" className="d-flex align-items-center gap-2 py-2 px-3">
+                        </Badge>
+                      )
+                    )
+                  ) : (
+                    <Badge
+                      bg={record.verified[field] ? 'success' : 'danger'}
+                      className="d-flex align-items-center gap-2 py-2 px-3"
+                    >
+                      {record.verified[field] ? (
+                        <>
+                        </>
+                      ) : (
+                        <>
+                        </>
+                      )}
+                    </Badge>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -516,46 +641,95 @@ const QcProcess = ({ projectId }) => {
           {verificationItem('Max Marks', record.maxMarks, 'maxMarks')}
         </div>
 
-        {record.action === 'verify' && (
-          <div className="action-buttons d-flex justify-content-center gap-4 p-4 mt-2 bg-light rounded-bottom">
-            <Button
-              variant="success"
-              disabled={!allFieldsVerified() || record.verified?.status === true}
-              onClick={handleFinalVerification}
-              className="d-flex align-items-center gap-2 px-4 py-2 fw-medium"
-              style={{ minWidth: '180px' }}
-            >
-              <CheckCircleOutlined />
-              {record.verified?.status === true ? 'Already Verified' : 'Mark Verified'}
-            </Button>
-            <Button
-              variant="danger"
-              onClick={handleRejectVerification}
-              disabled={allFieldsVerified() || record.verified?.status === true}
-              className="d-flex align-items-center gap-2 px-4 py-2 fw-medium"
-              style={{ minWidth: '180px' }}
-            >
-              <CloseCircleOutlined />
-              {record.verified?.status === true ? 'Cannot Reject' : 'Mark Rejected'}
-            </Button>
-            <Button
-              className={`${customBtn} ${customLightBorder}`}
-              onClick={handlePreviousRecord}
-              disabled={selectedRecordIndex === 0}
-              size="sm"
-            >
-              <ArrowLeftOutlined /> Previous
-            </Button>
-            <Button
-              className={`${customBtn} ${customLightBorder}`}
-              onClick={handleNextRecord}
-              disabled={selectedRecordIndex === filteredData.length - 1}
-              size="sm"
-            >
-              Next <ArrowRightOutlined />
-            </Button>
+        <div className="action-buttons p-4 mt-2 bg-light rounded-bottom">
+          <div className="container-fluid p-0">
+            {isEditMode ? (
+              <div className="row g-3 justify-content-center">
+                <div className="col-12 col-md-6 col-lg-4 d-flex justify-content-center">
+                  <Button
+                    variant="success"
+                    onClick={handleSaveChanges}
+                    className="d-flex align-items-center gap-2 px-3 py-2 fw-medium w-100"
+                    disabled={isSaving}
+                  >
+                    <SaveOutlined />
+                    {isSaving ? 'Saving...' : 'Save Changes'}
+                  </Button>
+                </div>
+                <div className="col-12 col-md-6 col-lg-4 d-flex justify-content-center">
+                  <Button
+                    variant="secondary"
+                    onClick={handleEditCancel}
+                    className="d-flex align-items-center gap-2 px-3 py-2 fw-medium w-100"
+                    disabled={isSaving}
+                  >
+                    <CloseOutlined />
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="row g-3 justify-content-center">
+                {record.action === 'verify' && (
+                  <>
+                    <div className="col-12 col-md-6 col-lg-3 d-flex justify-content-center">
+                      <Button
+                        variant="success"
+                        disabled={!allFieldsVerified() || record.verified?.status === true}
+                        onClick={handleFinalVerification}
+                        className="d-flex align-items-center gap-2 px-3 py-2 fw-medium w-100"
+                      >
+                        <CheckCircleOutlined />
+                        {record.verified?.status === true ? 'Already Verified' : 'Mark Verified'}
+                      </Button>
+                    </div>
+                    <div className="col-12 col-md-6 col-lg-3 d-flex justify-content-center">
+                      <Button
+                        variant="danger"
+                        onClick={handleRejectVerification}
+                        disabled={allFieldsVerified() || record.verified?.status === true}
+                        className="d-flex align-items-center gap-2 px-3 py-2 fw-medium w-100"
+                      >
+                        <CloseCircleOutlined />
+                        {record.verified?.status === true ? 'Cannot Reject' : 'Mark Rejected'}
+                      </Button>
+                    </div>
+                  </>
+                )}
+
+                <div className="col-12 col-md-6 col-lg-3 d-flex justify-content-center">
+                  <Button
+                    variant="primary"
+                    onClick={handleEditClick}
+                    className="d-flex align-items-center gap-2 px-3 py-2 fw-medium w-100"
+                  >
+                    <EditOutlined />
+                    Edit Details
+                  </Button>
+                </div>
+
+                <div className="col-12 col-md-6 col-lg-3 d-flex justify-content-center">
+                  <div className="d-flex gap-2 w-100">
+                    <Button
+                      className={`${customBtn} ${customLightBorder} flex-grow-1 p-0`}
+                      onClick={handlePreviousRecord}
+                      disabled={selectedRecordIndex === 0}
+                    >
+                      <ArrowLeftOutlined />
+                    </Button>
+                    <Button
+                      className={`${customBtn} ${customLightBorder} flex-grow-1 p-0`}
+                      onClick={handleNextRecord}
+                      disabled={selectedRecordIndex === filteredData.length - 1}
+                    >
+                      <ArrowRightOutlined />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
     );
   };
