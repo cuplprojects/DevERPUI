@@ -278,7 +278,7 @@ const QcProcess = ({ projectId }) => {
           size="large"
           onClick={(e) => handlePreview(record, 'verify')}
         >
-          {record.verified?.status === true ? 'Verified' : record.verified?.status === false ?  'Rejected' : record.mssStatus==5 ? 'Re-Verify' : 'Verify'}
+          {record.verified?.status === true ? 'Verified' : record.verified?.status === false ? 'Rejected' : record.mssStatus == 5 ? 'Re-Verify' : 'Verify'}
         </Button>
       ),
     },
@@ -418,15 +418,15 @@ const QcProcess = ({ projectId }) => {
     const verificationItem = (label, value, field) => {
       if (!shouldShowItem(field)) return null;
 
-      const isValueEmpty = !value || (typeof value === 'string' && value.trim() === '') || 
-                          (Array.isArray(value) && value.length === 0);
+      const isValueEmpty = !value || (typeof value === 'string' && value.trim() === '') ||
+        (Array.isArray(value) && value.length === 0);
 
       return (
         <div className="verification-item p-4 border-bottom hover-highlight">
           <div className="d-flex align-items-center">
             {record.action === 'verify' && (
               <div className="me-4">
-                <Checkbox 
+                <Checkbox
                   checked={tempVerification[field] || record.verified?.[field]}
                   onChange={() => handleVerificationChange(field)}
                   disabled={isValueEmpty || (record.verified?.status === true && record.mssStatus !== 5)}
@@ -454,37 +454,36 @@ const QcProcess = ({ projectId }) => {
                   {value}
                 </span>
               </div>
-              <div className={`verification-status ms-3 d-flex align-items-center ${
-                record.action === 'verify' 
+              <div className={`verification-status ms-3 d-flex align-items-center ${record.action === 'verify'
                   ? (isValueEmpty ? 'text-muted' : (tempVerification[field] || record.verified?.[field]) ? 'text-success' : 'text-secondary')
                   : record.verified[field] ? 'text-success' : 'text-danger'
-              }`}>
+                }`}>
                 {record.action === 'verify' ? (
                   isValueEmpty ? (
                     <Badge bg="light" text="dark" className="d-flex align-items-center gap-2 py-2 px-3">
-                      
-                     
+
+
                     </Badge>
                   ) : (
                     (tempVerification[field] || record.verified?.[field]) && (
                       <Badge bg="success" className="d-flex align-items-center gap-2 py-2 px-3">
-                        
-                        
+
+
                       </Badge>
                     )
                   )
                 ) : (
-                  <Badge 
-                    bg={record.verified[field] ? 'success' : 'danger'} 
+                  <Badge
+                    bg={record.verified[field] ? 'success' : 'danger'}
                     className="d-flex align-items-center gap-2 py-2 px-3"
                   >
                     {record.verified[field] ? (
                       <>
-                        
+
                       </>
                     ) : (
                       <>
-                       
+
                       </>
                     )}
                   </Badge>
@@ -757,24 +756,23 @@ const QcProcess = ({ projectId }) => {
             <Modal.Title className="w-100">
               <div className="d-flex align-items-center justify-content-between">
                 <div className="d-flex align-items-center gap-4">
-                 
-                  <span className={`fs-4 ${
-                    selectedRecord?.action === 'verify' ? 'text-primary' : 
-                    selectedRecord?.action === 'verified' ? 'text-success' : 'text-danger'
-                  }`}>
+
+                  <span className={`fs-4 ${selectedRecord?.action === 'verify' ? 'text-primary' :
+                      selectedRecord?.action === 'verified' ? 'text-success' : 'text-danger'
+                    }`}>
                     {selectedRecord?.action === 'verify' ? '' :
-                     selectedRecord?.action === 'verified' ? 'MSS Verified Items' : 'MSS Rejected Items'}
+                      selectedRecord?.action === 'verified' ? 'MSS Verified Items' : 'MSS Rejected Items'}
                   </span>
-                  <Badge 
+                  <Badge
                     bg={customDark === "default-dark" ? "primary" :
-                        customDark === "red-dark" ? "danger" :
+                      customDark === "red-dark" ? "danger" :
                         customDark === "green-dark" ? "success" :
-                        customDark === "blue-dark" ? "info" :
-                        customDark === "dark-dark" ? "dark" :
-                        customDark === "pink-dark" ? "pink" :
-                        customDark === "purple-dark" ? "purple" :
-                        customDark === "light-dark" ? "light" :
-                        customDark === "brown-dark" ? "warning" : "light"}
+                          customDark === "blue-dark" ? "info" :
+                            customDark === "dark-dark" ? "dark" :
+                              customDark === "pink-dark" ? "pink" :
+                                customDark === "purple-dark" ? "purple" :
+                                  customDark === "light-dark" ? "light" :
+                                    customDark === "brown-dark" ? "warning" : "light"}
                     text="light"
                     className="px-4 py-2 rounded-pill d-flex align-items-center gap-2 fw-bold"
                   >
