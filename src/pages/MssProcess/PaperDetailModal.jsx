@@ -78,7 +78,7 @@ Course Code – A061006T
 Political Science
 Paper –- IV – a
 (international Law)
-Time :03 Hours 
+Time :03 Hours
 Max. Marks: 75
 Section-A
 Attempt all questions
@@ -217,9 +217,9 @@ const PaperDetailModal = ({
       // const selectedExamType = examType.find(
       //   (exam) => exam.examTypeId === values.ExamTypeId
       // );
-      const selectedLanguages = values.LanguageId?.length
-        ? values.LanguageId
-        : [0];
+      // const selectedLanguages = values.LanguageId?.length
+      //   ? values.LanguageId
+      //   : [0];
 
       // Format the payload according to the API's requirements
       const selectedCourse = courses.find((c) => c.courseName === values.CourseId);
@@ -281,7 +281,7 @@ const PaperDetailModal = ({
 
     // Find the ABCD config with groupId 19 (or use the first one if not found)
     const abcdConfig = abcdData.find(config => config.groupId === 19) || abcdData[0];
-    
+
     const getValue = (field) => {
       switch (field) {
         case "CourseId Examination SessionId TypeId":
@@ -332,7 +332,15 @@ const PaperDetailModal = ({
               </Col>
               <Col md={2}>
                 <Form.Item name="CourseId" label="Course">
-                  <Select allowClear>
+                  <Select
+                    allowClear
+                    showSearch
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                    }
+                    placeholder="Search course"
+                  >
                     {courses.map((course) => (
                       <Option key={course.courseId} value={course.courseName}>
                         {course.courseName}
@@ -344,7 +352,15 @@ const PaperDetailModal = ({
 
               <Col md={2}>
                 <Form.Item name="ExamTypeId" label="Semester">
-                  <Select allowClear>
+                  <Select
+                    allowClear
+                    showSearch
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                    }
+                    placeholder="Search semester"
+                  >
                     {examType?.map((exam) => (
                       <Option key={exam.examTypeId} value={exam.examTypeId}>
                         {exam.typeName}
@@ -371,6 +387,12 @@ const PaperDetailModal = ({
                 <Form.Item name="SubjectId" label="Subject">
                   <Select
                     allowClear
+                    showSearch
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                    }
+                    placeholder="Search subject"
                     onChange={(value) => {
                       form.setFieldsValue({ SubjectId: value });
                     }}
@@ -418,7 +440,16 @@ const PaperDetailModal = ({
               </Col>
               <Col md={6}>
                 <Form.Item name="LanguageId" label="Language">
-                  <Select mode="multiple" allowClear>
+                  <Select
+                    mode="multiple"
+                    allowClear
+                    showSearch
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                    }
+                    placeholder="Search languages"
+                  >
                     {/* <Option key={0} value={0}>Default Language</Option> */}
                     {language?.map((lang) => (
                       <Option key={lang.languageId} value={lang.languageId}>
@@ -452,6 +483,11 @@ const PaperDetailModal = ({
               <Form.Item label="Select Paper Structure Template">
                 <Select
                   allowClear
+                  showSearch
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }
                   placeholder="Select a structure"
                   onChange={handleStructureTemplateChange}
                   value={selectedTemplate}
@@ -503,7 +539,7 @@ const PaperDetailModal = ({
             {getFormattedHeaderText()}
           </Modal.Title>
         </Modal.Header>
-       
+
         <Modal.Footer className={`${customDark} border-top-0 justify-content-center gap-3`}>
           <Button
             variant="outline-secondary"
