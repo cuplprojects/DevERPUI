@@ -185,7 +185,6 @@ const QPTable = ({
         </Col>
       </Row>
       
-
       <Row className="mb-4">
         <Col md={2} className="d-md-none d-lg-block"></Col>
         <Col xs={12} md={3} className="mb-2">
@@ -278,7 +277,7 @@ const QPTable = ({
                 onClick={handleImportClick}
                 disabled={!selectedGroupId} size="sm"
               >
-                Import Paper
+                Import QP Register
               </Button>
             </span>
           </Tooltip>

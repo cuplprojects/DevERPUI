@@ -328,28 +328,48 @@ const ProjectTab = ({ setActiveTabKey, setSelectedProject }) => {
     }
   };
 
+  // const handleTypeChange = (event) => {
+  //   const selectedTypeId = parseInt(event.target.value, 10);
+  //   const selectedTypeObj = types.find((type) => type.typeId === selectedTypeId);
+  //   setSelectedType(selectedTypeObj);
+    
+  //   const typeName = selectedTypeObj.types;
+  //   if (typeName === 'Booklet') {
+  //     console.log("Booklet is found")
+  //     setShowSeriesFields(true)
+  //   }
+  //   else{
+  //     setShowSeriesFields(false)
+  //   }
+  //   if (selectedGroup && selectedTypeObj && selectedSession && selectedExamType) {
+  //       setProjectName(`${selectedGroup.name}-${selectedTypeObj.types} - ${selectedSession.session} - ${selectedExamType.typeName}`);
+  //   } else {
+  //     setProjectName('');
+  //   }
+  // };
 
   const handleTypeChange = (event) => {
-
     const selectedTypeId = parseInt(event.target.value, 10);
-
     const selectedTypeObj = types.find((type) => type.typeId === selectedTypeId);
-    console.log(selectedTypeObj)
     setSelectedType(selectedTypeObj);
-    const typeName = selectedTypeObj.types;
-    if (typeName === 'Booklet') {
-      console.log("Booklet is found")
-      setShowSeriesFields(true)
-    }
-    else{
-      setShowSeriesFields(false)
-    }
+
+    
     if (selectedGroup && selectedTypeObj && selectedSession && selectedExamType) {
+      const typeName = selectedTypeObj.types;
+      if (typeName === 'booklet'){
         setProjectName(`${selectedGroup.name}-${selectedTypeObj.types} - ${selectedSession.session} - ${selectedExamType.typeName}`);
+        setShowSeriesFields(true);
+      } else {
+        setShowSeriesFields(false);
+        setProjectName(`${selectedGroup.name}-${selectedTypeObj.types} - ${selectedSession.session} - ${selectedExamType.typeName}`);
+      }
+        
     } else {
       setProjectName('');
+      setShowSeriesFields(false);
     }
   };
+
 
   return (
     <>

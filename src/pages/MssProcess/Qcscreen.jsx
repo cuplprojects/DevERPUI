@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Button, Space, Checkbox, Row, Col, Table, Badge, Tooltip, Modal } from 'antd';
+import { Card, Button, Space, Checkbox, Row, Col, Table, Badge, Tooltip, Modal as AntModal } from 'antd';
+import { Modal } from 'react-bootstrap';
 import {
   CheckCircleOutlined,
   CloseCircleOutlined,
@@ -7,12 +8,27 @@ import {
   ArrowLeftOutlined,
   CheckOutlined,
   SyncOutlined,
+  ArrowRightOutlined,
 } from '@ant-design/icons';
 import API from '../../CustomHooks/MasterApiHooks/api';
 import { success, error } from '../../CustomHooks/Services/AlertMessageService';
 import { useTranslation } from 'react-i18next';
 import { useStore } from 'zustand';
 import themeStore from '../../store/themeStore';
+
+const customCheckboxStyle = `
+  .custom-checkbox .ant-checkbox-checked .ant-checkbox-inner {
+    background-color: #52c41a !important;
+    border-color: #52c41a !important;
+  }
+  .custom-checkbox .ant-checkbox-wrapper:hover .ant-checkbox-inner,
+  .custom-checkbox .ant-checkbox:hover .ant-checkbox-inner {
+    border-color: #52c41a !important;
+  }
+  .custom-checkbox .ant-checkbox-checked::after {
+    border-color: #52c41a !important;
+  }
+`;
 
 const QcProcess = ({ projectId }) => {
   const { t } = useTranslation();
@@ -27,6 +43,7 @@ const QcProcess = ({ projectId }) => {
   const [showback, setShowback] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [projectType, setProjectType] = useState('')
+  const [selectedRecordIndex, setSelectedRecordIndex] = useState(0);
 
   useEffect(() => {
     const fetchProjectType = async () => {
@@ -41,7 +58,7 @@ const QcProcess = ({ projectId }) => {
 
   })
 
-  console.log(projectType)
+  // console.log(projectType)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -60,7 +77,17 @@ const QcProcess = ({ projectId }) => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    // Add the custom styles to the document head
+    const styleElement = document.createElement('style');
+    styleElement.innerHTML = customCheckboxStyle;
+    document.head.appendChild(styleElement);
 
+    // Cleanup function to remove the styles when component unmounts
+    return () => {
+      document.head.removeChild(styleElement);
+    };
+  }, []);
 
   const verificationkeys = [
     {
@@ -266,6 +293,26 @@ const QcProcess = ({ projectId }) => {
       setTempVerification(record.verified || {});
       setSelectedRecord({ ...record, action });
       setIsModalVisible(true);
+      const currentIndex = filteredData.findIndex(item => item.quantitysheetId === record.quantitysheetId);
+      setSelectedRecordIndex(currentIndex);
+    }
+  };
+
+  const handlePreviousRecord = () => {
+    if (selectedRecordIndex > 0) {
+      const prevRecord = filteredData[selectedRecordIndex - 1];
+      setTempVerification(prevRecord.verified || {});
+      setSelectedRecord({ ...prevRecord, action: 'verify' });
+      setSelectedRecordIndex(selectedRecordIndex - 1);
+    }
+  };
+
+  const handleNextRecord = () => {
+    if (selectedRecordIndex < filteredData.length - 1) {
+      const nextRecord = filteredData[selectedRecordIndex + 1];
+      setTempVerification(nextRecord.verified || {});
+      setSelectedRecord({ ...nextRecord, action: 'verify' });
+      setSelectedRecordIndex(selectedRecordIndex + 1);
     }
   };
 
@@ -371,82 +418,200 @@ const QcProcess = ({ projectId }) => {
     const verificationItem = (label, value, field) => {
       if (!shouldShowItem(field)) return null;
 
+      const isValueEmpty = !value || (typeof value === 'string' && value.trim() === '') || 
+                          (Array.isArray(value) && value.length === 0);
+
       return (
-        <div style={{
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', borderBottom: '1px solid #f0f0f0',
-          backgroundColor: tempVerification[field] ? '#f6ffed' : '#fff',
-          transition: 'all 0.3s ease'
-        }}>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{ color: '#8c8c8c', marginBottom: '4px', fontSize: "1.5rem" }}>{label}</span>
-            <span style={{ fontWeight: '500', color: '#262626', fontSize: "1.5rem" }}>{value}</span>
+        <div className="verification-item p-4 border-bottom hover-highlight">
+          <div className="d-flex align-items-center">
+            {record.action === 'verify' && (
+              <div className="me-4">
+                <Checkbox 
+                  checked={tempVerification[field] || record.verified?.[field]}
+                  onChange={() => handleVerificationChange(field)}
+                  disabled={isValueEmpty || (record.verified?.status === true && record.mssStatus !== 5)}
+                  className="custom-checkbox"
+                  style={{
+                    '& .ant-checkbox-checked .ant-checkbox-inner': {
+                      backgroundColor: '#52c41a',
+                      borderColor: '#52c41a',
+                    },
+                    '& .ant-checkbox-wrapper:hover .ant-checkbox-inner, & .ant-checkbox:hover .ant-checkbox-inner': {
+                      borderColor: '#52c41a',
+                    }
+                  }}
+                />
+              </div>
+            )}
+            <div className="d-flex align-items-center flex-grow-1 gap-4">
+              <div className="verification-label" style={{ minWidth: '130px' }}>
+                <span className="text-uppercase fw-semibold text-secondary letter-spacing-1">
+                  {label}
+                </span>
+              </div>
+              <div className="verification-value flex-grow-1 ps-4 border-start">
+                <span className={`${isValueEmpty ? 'text-muted fst-italic' : 'fw-medium'}`}>
+                  {value}
+                </span>
+              </div>
+              <div className={`verification-status ms-3 d-flex align-items-center ${
+                record.action === 'verify' 
+                  ? (isValueEmpty ? 'text-muted' : (tempVerification[field] || record.verified?.[field]) ? 'text-success' : 'text-secondary')
+                  : record.verified[field] ? 'text-success' : 'text-danger'
+              }`}>
+                {record.action === 'verify' ? (
+                  isValueEmpty ? (
+                    <Badge bg="light" text="dark" className="d-flex align-items-center gap-2 py-2 px-3">
+                      
+                     
+                    </Badge>
+                  ) : (
+                    (tempVerification[field] || record.verified?.[field]) && (
+                      <Badge bg="success" className="d-flex align-items-center gap-2 py-2 px-3">
+                        
+                        
+                      </Badge>
+                    )
+                  )
+                ) : (
+                  <Badge 
+                    bg={record.verified[field] ? 'success' : 'danger'} 
+                    className="d-flex align-items-center gap-2 py-2 px-3"
+                  >
+                    {record.verified[field] ? (
+                      <>
+                        
+                      </>
+                    ) : (
+                      <>
+                       
+                      </>
+                    )}
+                  </Badge>
+                )}
+              </div>
+            </div>
           </div>
-          {record.action === 'verify' && !tempVerification[field] && (
-            <Checkbox onChange={() => handleVerificationChange(field)} style={{ marginLeft: '20px' }}>
-              <span style={{
-                color: tempVerification[field] ? '#52c41a' : '#ff4d4f',
-                fontWeight: '500', fontSize: "1.5rem"
-              }}>
-                Verify
-              </span>
-            </Checkbox>
-          )}
-          {!record.action && <span>{record.verified[field] ? 'Verified' : 'Not Verified'}</span>}
         </div>
       );
     };
 
     const handleVerificationChange = (field) => {
-      setTempVerification((prev) => {
-        return { ...prev, [field]: !prev[field] };
-      });
+      setTempVerification((prev) => ({
+        ...prev,
+        [field]: !prev[field],
+      }));
     };
 
     return (
-      <div style={{ padding: '8px' }}>
-        {verificationItem('Language', record.language, 'language')}
-        {verificationItem('Duration', record.duration, 'duration')}
-        {verificationItem('Structure', record.structureOfPaper, 'structure')}
-        {projectType === 1 && verificationItem('Series', record.series, 'series')}
-        {verificationItem('Max Marks', record.maxMarks, 'maxMarks')}
-        {verificationItem('A', record.a, 'a')}
-        {verificationItem('B', record.b, 'b')}
-        {verificationItem('C', record.c, 'c')}
-        {verificationItem('D', record.d, 'd')}
+      <div className="preview-panel bg-white rounded-3 shadow-sm">
+        <div className="verification-items">
+          {verificationItem('A', record.a, 'a')}
+          {verificationItem('B', record.b, 'b')}
+          {verificationItem('C', record.c, 'c')}
+          {verificationItem('D', record.d, 'd')}
+          {verificationItem('Language', Array.isArray(record.language) ? record.language.join(', ') : typeof record.language === 'string' ? record.language.replace(/\s+/g, ', ') : '', 'language')}
+          {verificationItem('Duration', record.duration, 'duration')}
+          {verificationItem('Structure', record.structureOfPaper, 'structure')}
+          {projectType === 1 && verificationItem('Series', record.series, 'series')}
+          {verificationItem('Max Marks', record.maxMarks, 'maxMarks')}
+        </div>
 
         {record.action === 'verify' && (
-          <div style={{
-            display: 'flex',
-            justifyContent: 'flex-end',
-            gap: '10px',
-            padding: '10px',
-            borderTop: '1px solid #f0f0f0',
-            marginTop: '8px'
-          }}>
-            {(record.verified?.status === false || Object.keys(record.verified).length === 0) && (
-              <>
-                <Button
-                  className={`${customBtn} ${customLightBorder}`}
-                  disabled={!allFieldsVerified()}
-                  onClick={handleFinalVerification}
-                >
-                  <span className="d-none d-lg-inline">Mark Verified</span>
-                  <CheckCircleOutlined style={{ marginLeft: 8 }} />
-                </Button>
-                <Button
-                  className={`${customBtn} ${customLightBorder}`}
-                  onClick={handleRejectVerification}
-                  disabled={allFieldsVerified()}
-                >
-                  <span className="d-none d-lg-inline">Mark Rejected</span>
-                  <CloseCircleOutlined style={{ marginLeft: 8 }} />
-                </Button>
-              </>
-            )}
+          <div className="action-buttons d-flex justify-content-center gap-4 p-4 mt-2 bg-light rounded-bottom">
+            <Button
+              variant="success"
+              disabled={!allFieldsVerified() || record.verified?.status === true}
+              onClick={handleFinalVerification}
+              className="d-flex align-items-center gap-2 px-4 py-2 fw-medium"
+              style={{ minWidth: '180px' }}
+            >
+              <CheckCircleOutlined />
+              {record.verified?.status === true ? 'Already Verified' : 'Mark Verified'}
+            </Button>
+            <Button
+              variant="danger"
+              onClick={handleRejectVerification}
+              disabled={allFieldsVerified() || record.verified?.status === true}
+              className="d-flex align-items-center gap-2 px-4 py-2 fw-medium"
+              style={{ minWidth: '180px' }}
+            >
+              <CloseCircleOutlined />
+              {record.verified?.status === true ? 'Cannot Reject' : 'Mark Rejected'}
+            </Button>
+            <Button
+              className={`${customBtn} ${customLightBorder}`}
+              onClick={handlePreviousRecord}
+              disabled={selectedRecordIndex === 0}
+              size="sm"
+            >
+              <ArrowLeftOutlined /> Previous
+            </Button>
+            <Button
+              className={`${customBtn} ${customLightBorder}`}
+              onClick={handleNextRecord}
+              disabled={selectedRecordIndex === filteredData.length - 1}
+              size="sm"
+            >
+              Next <ArrowRightOutlined />
+            </Button>
           </div>
         )}
       </div>
     );
+  };
+
+  const modalStyle = {
+    '.modal-content': {
+      borderRadius: '16px',
+      border: 'none',
+      boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+      overflow: 'hidden',
+    },
+    '.modal-header': {
+      padding: '1.5rem 2rem',
+      background: 'linear-gradient(to right, rgba(255,255,255,0.95), rgba(255,255,255,0.9))',
+      backdropFilter: 'blur(10px)',
+      borderBottom: '1px solid rgba(0,0,0,0.08)',
+    },
+    '.modal-body': {
+      maxHeight: 'calc(100vh - 200px)',
+      overflowY: 'auto',
+      padding: '2rem',
+      '&::-webkit-scrollbar': {
+        width: '8px',
+      },
+      '&::-webkit-scrollbar-track': {
+        background: '#f1f1f1',
+        borderRadius: '4px',
+      },
+      '&::-webkit-scrollbar-thumb': {
+        background: '#c1c1c1',
+        borderRadius: '4px',
+        '&:hover': {
+          background: '#a8a8a8',
+        },
+      },
+    },
+    '.modal-title': {
+      fontSize: '1.5rem',
+      fontWeight: '600',
+      letterSpacing: '-0.5px',
+    },
+    '.btn-close': {
+      opacity: '0.6',
+      transition: 'all 0.2s',
+      '&:hover': {
+        opacity: '1',
+        transform: 'scale(1.1)',
+      },
+    },
+    '.verification-item': {
+      transition: 'all 0.2s ease',
+      '&:hover': {
+        backgroundColor: 'rgba(0,0,0,0.02)',
+      },
+    },
   };
 
   return (
@@ -579,27 +744,50 @@ const QcProcess = ({ projectId }) => {
         </Row>
 
         <Modal
-          title={
-            <div style={{
-              color: selectedRecord?.action === 'verify' ? '#1890ff' :
-                selectedRecord?.action === 'verified' ? '#52c41a' : '#ff4d4f', fontSize: "1.5rem"
-            }}>
-              {selectedRecord?.action === 'verify' ? 'MSS Verify' :
-                selectedRecord?.action === 'verified' ? 'MSS Verified Items' : 'MSS Rejected Items'}
-            </div>
-          }
-          visible={isModalVisible}
-          onCancel={handleModalClose}
-          footer={null}
-          width="50%"
-          style={{ top: 80 }}
-          bodyStyle={{
-            maxHeight: 'calc(100vh - 200px)',
-            overflowY: 'auto'
-          }}
-          destroyOnClose={true}
+          show={isModalVisible}
+          onHide={handleModalClose}
+          size="lg"
+          backdrop="static"
+          keyboard={false}
+          centered
+          className="qc-modal"
+          style={modalStyle}
         >
-          {selectedRecord && <PreviewPanel record={selectedRecord} />}
+          <Modal.Header className={`${customDark} ${customLightText} border-0`} closeButton>
+            <Modal.Title className="w-100">
+              <div className="d-flex align-items-center justify-content-between">
+                <div className="d-flex align-items-center gap-4">
+                 
+                  <span className={`fs-4 ${
+                    selectedRecord?.action === 'verify' ? 'text-primary' : 
+                    selectedRecord?.action === 'verified' ? 'text-success' : 'text-danger'
+                  }`}>
+                    {selectedRecord?.action === 'verify' ? '' :
+                     selectedRecord?.action === 'verified' ? 'MSS Verified Items' : 'MSS Rejected Items'}
+                  </span>
+                  <Badge 
+                    bg={customDark === "default-dark" ? "primary" :
+                        customDark === "red-dark" ? "danger" :
+                        customDark === "green-dark" ? "success" :
+                        customDark === "blue-dark" ? "info" :
+                        customDark === "dark-dark" ? "dark" :
+                        customDark === "pink-dark" ? "pink" :
+                        customDark === "purple-dark" ? "purple" :
+                        customDark === "light-dark" ? "light" :
+                        customDark === "brown-dark" ? "warning" : "light"}
+                    text="light"
+                    className="px-4 py-2 rounded-pill d-flex align-items-center gap-2 fw-bold"
+                  >
+                    <span className="text-light">Catch No:</span>
+                    <span className="fw-bold text-light">{selectedRecord?.catchNo}</span>
+                  </Badge>
+                </div>
+              </div>
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body className={`${customLight} p-0`}>
+            {selectedRecord && <PreviewPanel record={selectedRecord} />}
+          </Modal.Body>
         </Modal>
       </Card>
     </div>

@@ -350,7 +350,8 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
             handleUpdateItem={handleUpdateItem}
             cssClasses={cssClasses}
             totalRecords = {totalRecords}
-          />
+            projectId={projectId}
+            />
           <UpdateRejectedItemModal
             cssClasses={cssClasses}
             languageOptions={languageOptions}
@@ -358,9 +359,11 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
             handleClose={handleCloseUpdateModal}
             data={selectedRejectedItem}
             onUpdate={handleUpdateSubmit}
-          />
+            projectId={projectId}
+            />
         </Col>
       </Row>
+
 
       <PaperDetailModal
         visible={!!selectedItem}

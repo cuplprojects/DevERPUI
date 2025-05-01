@@ -5,6 +5,7 @@ import { CheckCircleOutlined, EditOutlined } from "@ant-design/icons";
 import API from "../../CustomHooks/MasterApiHooks/api";
 import Highlighter from "react-highlight-words";
 import EditQuantitySheetModal from "./EditQuantitySheetModal";
+import { Tooltip } from "antd"; // Make sure this is imported
 
 
 const MSSTable = ({
@@ -295,6 +296,8 @@ const MSSTable = ({
       ...getColumnSearchProps("examTime"),
       editable: true,
     },
+
+
     {
       title: "Structure of Paper",
       dataIndex: "structureOfPaper",
@@ -302,7 +305,31 @@ const MSSTable = ({
       sorter: (a, b) => (a.structureOfPaper || '').localeCompare(b.structureOfPaper || ''),
       ...getColumnSearchProps("structureOfPaper"),
       editable: true,
+      render: (text) => {
+        if (!text) return "";
+    
+        return (
+          <Tooltip title={text} placement="topLeft">
+            <div
+              style={{
+                maxWidth: 200,
+                wordWrap: "break-word",
+                whiteSpace: "normal",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                display: "-webkit-box",
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical",
+              }}
+            >
+              {text}
+            </div>
+          </Tooltip>
+        );
+      },
     },
+    
+    
     {
       title: "Actions",
       key: "actions",
