@@ -10,6 +10,8 @@ import { AiFillCloseSquare } from "react-icons/ai";
 import ProcessDetails from './Process';
 import { FaUndo } from 'react-icons/fa';
 import { FaAnglesLeft, FaAnglesRight } from "react-icons/fa6";
+import DailyReport from "./Dailyreport";
+
 
 const ProjectReport = () => {
     const [activeProjects, setActiveProjects] = useState([]);
@@ -41,11 +43,12 @@ const ProjectReport = () => {
         quantity: true,
         pages: true,
         status: true,
+        startTime: true,
+        endTime: true,
+        duration: true,
         currentProcess: true,
         innerEnvelope: true,
         outerEnvelope: true,
-        dispatchDate: false,
-
     });
 
     const [sortField, setSortField] = useState(null);
@@ -58,16 +61,21 @@ const ProjectReport = () => {
     const [currentSearchPage, setCurrentSearchPage] = useState(1);
     const [hasMoreResults, setHasMoreResults] = useState(false);
 
+    const [showDailyReport, setShowDailyReport] = useState(false);
+
     const columnDefinitions = [
         { id: 'catchNo', label: 'Catch No' },
         { id: 'subject', label: 'Subject' },
-        { id: 'paper', label: 'Paper' },
         { id: 'course', label: 'Course' },
+        { id: 'paper', label: 'Paper' },
         { id: 'examDate', label: 'Exam Date' },
         { id: 'examTime', label: 'Exam Time' },
         { id: 'quantity', label: 'Quantity' },
         { id: 'pages', label: 'Pages' },
         { id: 'status', label: 'Status' },
+        { id: 'startTime', label: 'SD-ST' },
+        { id: 'endTime', label: 'ED-ET' },
+        { id: 'duration', label: 'Duration' },
         { id: 'currentProcess', label: 'Current Process' },
         { id: 'innerEnvelope', label: 'Inner Envelope' },
         { id: 'outerEnvelope', label: 'Outer Envelope' },
@@ -178,11 +186,40 @@ const ProjectReport = () => {
         if (selectedProjectId) {
             setIsLoading(true);
             try {
+                // First get the project details to get the series name
+                const projectResponse = await API.get(`/Project/${selectedProjectId}`);
+                const projectDetails = projectResponse.data;
+                
+                // Then get the quantity sheets
                 const response = await API.get(`/Reports/GetQuantitySheetsByProjectId/${selectedProjectId}/LotNo/${selectedLot}`);
                 const filteredSheets = selectedLot
                     ? response.data.filter((sheet) => sheet.lotNo === selectedLot)
                     : response.data;
-                setQuantitySheets(filteredSheets);
+
+                // Group by catchNo and sum quantities
+                const groupedSheets = filteredSheets.reduce((acc, sheet) => {
+                    const existing = acc.find(item => item.catchNo === sheet.catchNo);
+                    if (existing) {
+                        existing.quantity += sheet.quantity; // Sum the quantity
+                    } else {
+                        acc.push({ ...sheet }); // Add new entry
+                    }
+                    return acc;
+                }, []);
+
+                // Add series name to each sheet with the correct series letter if series exists
+                const sheetsWithSeries = groupedSheets.map((sheet, index) => {
+                    const catchNo = sheet.catchNo;
+                    
+                    // Check if project has series name and number of series
+                    // Removed series name logic
+                    return {
+                        ...sheet,
+                        // seriesName: `${seriesLetter}` // Removed this line
+                    };
+                });
+                
+                setQuantitySheets(sheetsWithSeries);
                 setShowTable(true);
             } catch (error) {
                 console.error("Error fetching quantity sheets:", error);
@@ -321,6 +358,7 @@ const ProjectReport = () => {
                     aValue = a.dispatchDate;
                     bValue = b.dispatchDate;
                     break;
+
                 default:
                     aValue = a[field];
                     bValue = b[field];
@@ -374,7 +412,8 @@ const ProjectReport = () => {
                 status: true,
                 innerEnvelope: true,
                 outerEnvelope: true,
-                dispatchDate: true
+                dispatchDate: true,
+
             });
         }
     };
@@ -394,7 +433,21 @@ const ProjectReport = () => {
                     }}>
                         Reports
                     </h4>
-                    <div className="position-absolute top-0 end-0">
+                    <div className="position-absolute top-0 end-0 d-flex align-items-center">
+                        <div className="form-check form-switch me-3">
+                            <input
+                                className="form-check-input"
+                                type="checkbox"
+                                role="switch"
+                                id="dailyReportSwitch"
+                                checked={showDailyReport}
+                                onChange={(e) => setShowDailyReport(e.target.checked)}
+                                style={{ cursor: 'pointer' }}
+                            />
+                            <label className="form-check-label" htmlFor="dailyReportSwitch">
+                                Daily Report
+                            </label>
+                        </div>
                         <Button
                             variant="outline-secondary"
                             className="rounded px-4 py-2 btn-sm"
@@ -411,386 +464,389 @@ const ProjectReport = () => {
                 </div>
                 <hr />
 
-                {/* Filters */}
-                <div className="d-flex align-items-center justify-content-between">
-                    {/* Group Dropdown */}
-                    <Col xs={12} md={2} lg={1} className="mb-3 mb-md-0">
-                        <Form.Label className="fw-bold text-primary mb-2" style={{ fontSize: "1.1rem", letterSpacing: "0.5px", fontWeight: "700" }}>
-                            <span style={{ color: '#2c3e50', textShadow: '1px 1px 2px rgba(0,0,0,0.1)' }}>Group</span>
-                            <span style={{ color: '#e74c3c' }}>*</span>
-                        </Form.Label>
-                        <Form.Select
-                            onChange={(e) => {
-                                setSelectedGroup(e.target.value);
-                                setSelectedProjectId('');
-                                setQuantitySheets([]);
-                            }}
-                            value={selectedGroup}
-                            className="form-select-lg border-0 rounded"
-                            style={{
-                                backgroundColor: "#f8f9fa",
-                                cursor: "pointer",
-                                transition: "all 0.2s ease",
-                                boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
-                                fontSize: "0.9rem"
-                            }}
-                        >
-                            <option value="">Select Group</option>
-                            {Object.entries(groups).map(([id, name]) => (
-                                <option key={id} value={id}>{name}</option>
-                            ))}
-                        </Form.Select>
-                    </Col>
-
-                    {/* Project Dropdown */}
-                    <Col xs={12} md={4} lg={2} className="mb-3 mb-md-0">
-                        <Form.Label className="fw-bold text-primary mb-2" style={{ fontSize: "1.1rem", letterSpacing: "0.5px", fontWeight: "700" }}>
-                            <span style={{ color: '#2c3e50', textShadow: '1px 1px 2px rgba(0,0,0,0.1)' }}>Project</span>
-                            <span style={{ color: '#e74c3c' }}>*</span>
-                        </Form.Label>
-                        <Form.Select
-                            onChange={(e) => {
-                                setSelectedProjectId(e.target.value);
-                                setSelectedLot("");
-                                setQuantitySheets([]);
-                            }}
-                            value={selectedProjectId}
-                            className="form-select-lg border-0 rounded"
-                            style={{
-                                backgroundColor: "#f8f9fa",
-                                cursor: "pointer",
-                                transition: "all 0.2s ease",
-                                boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
-                                fontSize: "0.9rem"
-                            }}
-                        >
-                            <option value="">Select Project</option>
-                            {console.log(activeProjects)}
-                            {activeProjects.map((project, index) => (
-                                <option key={index} value={project.projectId}>{project.name}</option>
-                            ))}
-                        </Form.Select>
-                    </Col>
-
-                    {/* Lot Dropdown */}
-                    <Col xs={12} md={2} lg={1} className="mb-3 mb-md-0">
-                        <Form.Label className="fw-bold text-primary mb-2" style={{ fontSize: "1.1rem", letterSpacing: "0.5px", fontWeight: "700" }}>
-                            <span style={{ color: '#2c3e50', textShadow: '1px 1px 2px rgba(0,0,0,0.1)' }}>Lot</span>
-                            <span style={{ color: '#e74c3c' }}>*</span>
-                        </Form.Label>
-                        <Form.Select
-                            onChange={(e) => {
-                                setSelectedLot(e.target.value);
-                                setQuantitySheets([]);
-                            }}
-                            value={selectedLot}
-                            disabled={!selectedProjectId}
-                            className="form-select-lg border-0 rounded"
-                            style={{
-                                backgroundColor: "#f8f9fa",
-                                cursor: "pointer",
-                                transition: "all 0.2s ease",
-                                boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
-                                opacity: selectedProjectId ? 1 : 0.7,
-                                fontSize: "0.9rem"
-                            }}
-                        >
-                            <option value="">Select Lot</option>
-                            {lotNumbers.map((lotNo) => (
-                                <option key={lotNo} value={lotNo}>{lotNo}</option>
-                            ))}
-                        </Form.Select>
-                    </Col>
-
-                    {/* DispatchDate Button */}
-                    <Col xs={12} md={2} lg={1} className="mt-4 mb-md-0">
-                        {showTable && quantitySheets.length > 0 && (
-                            <Form.Label className="fw-bold text-primary mb-2" style={{ fontSize: "0.9rem", letterSpacing: "0.5px", fontWeight: "700", whiteSpace: "nowrap" }}>
-                                <span style={{ color: '#2c3e50', textShadow: '1px 1px 2px rgba(0,0,0,0.1)' }}>Dispatch Date: {quantitySheets[0]?.dispatchDate || 'N/A'}</span>
-                            </Form.Label>
-                        )}
-                    </Col>
-
-                    {/* View Report Button */}
-                    <Col xs={12} md={3} lg={2} className="mt-4 mb-md-0 d-flex align-items-end justify-content-center">
-                        {selectedGroup && selectedProjectId && selectedLot && (
-                            <Button
-                                variant="primary"
-                                onClick={handleViewReport}
-                                disabled={isLoading}
-                                className="w-40 rounded fw-bold text-center d-flex align-items-center justify-content-center"
-                                style={{
-                                    transition: "all 0.3s ease",
-                                    boxShadow: "0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08)",
-                                    opacity: isLoading ? 0.7 : 1,
-                                    transform: isLoading ? "none" : "translateY(-1px)", 
-                                    fontSize: "0.9rem",
-                                    height: "30px"
-                                }}
-                            >
-                                View Report
-                            </Button>
-                        )}
-                    </Col>
-
-                    {/* Search Dropdown */}
-                    <Col xs={12} md={2} lg={1} className="mb-3 mb-md-0">
-                        <div className="d-flex justify-content-end mt-4">
-                            <div className="position-relative">
-                                <Form.Control
-                                    type="text"
-                                    placeholder="Quick search ..."
-                                    fontSize="0.9rem"
-                                    value={searchTerm}
+                {showDailyReport ? (
+                    <DailyReport />
+                ) : (
+                    <>
+                        {/* Filters */}
+                        <div className="d-flex align-items-center justify-content-between">
+                            {/* Group Dropdown */}
+                            <Col xs={12} md={2} lg={1} className="mb-3 mb-md-0">
+                                <Form.Label className="fw-bold text-primary mb-2" style={{ fontSize: "1.1rem", letterSpacing: "0.5px", fontWeight: "700" }}>
+                                    <span style={{ color: '#2c3e50', textShadow: '1px 1px 2px rgba(0,0,0,0.1)' }}>Group</span>
+                                    <span style={{ color: '#e74c3c' }}>*</span>
+                                </Form.Label>
+                                <Form.Select
                                     onChange={(e) => {
-                                        setSearchTerm(e.target.value);
-                                        setCurrentSearchPage(1); // Reset page when search term changes
-                                        handleSearch(e.target.value, 1);
+                                        setSelectedGroup(e.target.value);
+                                        setSelectedProjectId('');
+                                        setQuantitySheets([]);
                                     }}
-                                    className="form-control-lg border-0 rounded"
+                                    value={selectedGroup}
+                                    className="form-select-lg border-0 rounded"
                                     style={{
                                         backgroundColor: "#f8f9fa",
-                                        padding: "10px 20px 10px 40px",
+                                        cursor: "pointer",
+                                        transition: "all 0.2s ease",
                                         boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
-                                        width: "210px",
-                                        height: "30px",
                                         fontSize: "0.9rem"
                                     }}
-                                />
-                                <FaSearch
-                                    style={{
-                                        position: "absolute",
-                                        left: "15px",
-                                        top: "50%",
-                                        transform: "translateY(-50%)",
-                                        color: "#4A90E2"
-                                    }}
-                                />
+                                >
+                                    <option value="">Select Group</option>
+                                    {Object.entries(groups).map(([id, name]) => (
+                                        <option key={id} value={id}>{name}</option>
+                                    ))}
+                                </Form.Select>
+                            </Col>
 
-                                {searchTerm.length > 0 && (
-                                    <div
-                                        className="position-absolute w-100 bg-white rounded shadow-lg mt-1"
+                            {/* Project Dropdown */}
+                            <Col xs={12} md={4} lg={2} className="mb-3 mb-md-0">
+                                <Form.Label className="fw-bold text-primary mb-2" style={{ fontSize: "1.1rem", letterSpacing: "0.5px", fontWeight: "700" }}>
+                                    <span style={{ color: '#2c3e50', textShadow: '1px 1px 2px rgba(0,0,0,0.1)' }}>Project</span>
+                                    <span style={{ color: '#e74c3c' }}>*</span>
+                                </Form.Label>
+                                <Form.Select
+                                    onChange={(e) => {
+                                        setSelectedProjectId(e.target.value);
+                                        setSelectedLot("");
+                                        setQuantitySheets([]);
+                                    }}
+                                    value={selectedProjectId}
+                                    className="form-select-lg border-0 rounded"
+                                    style={{
+                                        backgroundColor: "#f8f9fa",
+                                        cursor: "pointer",
+                                        transition: "all 0.2s ease",
+                                        boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
+                                        fontSize: "0.9rem"
+                                    }}
+                                >
+                                    <option value="">Select Project</option>
+                                    {console.log(activeProjects)}
+                                    {activeProjects.map((project, index) => (
+                                        <option key={index} value={project.projectId}>{project.name}</option>
+                                    ))}
+                                </Form.Select>
+                            </Col>
+
+                            {/* Lot Dropdown */}
+                            <Col xs={12} md={2} lg={1} className="mb-3 mb-md-0">
+                                <Form.Label className="fw-bold text-primary mb-2" style={{ fontSize: "1.1rem", letterSpacing: "0.5px", fontWeight: "700" }}>
+                                    <span style={{ color: '#2c3e50', textShadow: '1px 1px 2px rgba(0,0,0,0.1)' }}>Lot</span>
+                                    <span style={{ color: '#e74c3c' }}>*</span>
+                                </Form.Label>
+                                <Form.Select
+                                    onChange={(e) => {
+                                        setSelectedLot(e.target.value);
+                                        setQuantitySheets([]);
+                                    }}
+                                    value={selectedLot}
+                                    disabled={!selectedProjectId}
+                                    className="form-select-lg border-0 rounded"
+                                    style={{
+                                        backgroundColor: "#f8f9fa",
+                                        cursor: "pointer",
+                                        transition: "all 0.2s ease",
+                                        boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
+                                        opacity: selectedProjectId ? 1 : 0.7,
+                                        fontSize: "0.9rem"
+                                    }}
+                                >
+                                    <option value="">Select Lot</option>
+                                    {lotNumbers.map((lotNo) => (
+                                        <option key={lotNo} value={lotNo}>{lotNo}</option>
+                                    ))}
+                                </Form.Select>
+                            </Col>
+
+                            {/* DispatchDate Button */}
+                            <Col xs={12} md={2} lg={1} className="mt-4 mb-md-0">
+                                {showTable && quantitySheets.length > 0 && (
+                                    <Form.Label className="fw-bold text-primary mb-2" style={{ fontSize: "0.9rem", letterSpacing: "0.5px", fontWeight: "700", whiteSpace: "nowrap" }}>
+                                        <span style={{ color: '#2c3e50', textShadow: '1px 1px 2px rgba(0,0,0,0.1)' }}>Dispatch Date: {quantitySheets[0]?.dispatchDate || 'N/A'}</span>
+                                    </Form.Label>
+                                )}
+                            </Col>
+
+                            {/* View Report Button */}
+                            <Col xs={12} md={3} lg={2} className="mt-4 mb-md-0 d-flex align-items-end justify-content-center">
+                                {selectedGroup && selectedProjectId && selectedLot && (
+                                    <Button
+                                        variant="primary"
+                                        onClick={handleViewReport}
+                                        disabled={isLoading}
+                                        className="w-40 rounded fw-bold text-center d-flex align-items-center justify-content-center"
                                         style={{
-                                            maxHeight: "300px",
-                                            overflowY: "auto",
-                                            zIndex: 1000
+                                            transition: "all 0.3s ease",
+                                            boxShadow: "0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08)",
+                                            opacity: isLoading ? 0.7 : 1,
+                                            transform: isLoading ? "none" : "translateY(-1px)",
+                                            fontSize: "0.9rem",
+                                            height: "30px"
                                         }}
                                     >
-                                        {isSearching && currentSearchPage === 1 ? (
-                                            <div className="text-center py-3">
-                                                <Spinner animation="border" size="sm" variant="primary" />
-                                                <div className="text-muted mt-2">Searching...</div>
-                                            </div>
-                                        ) : searchResults.length > 0 ? (
-                                            <>
-                                                <div className="search-results">
-                                                    {searchResults.map((result, index) => (
-                                                        <div
-                                                            key={index}
-                                                            className="p-3 border-bottom hover-bg-light"
-                                                            onClick={() => SearchCatchClick(result)}
-                                                            style={{ cursor: "pointer" }}
-                                                        >
-                                                            <div className="fw-bold text-primary">Catch No: {result.catchNo}</div>
-                                                            <div className="fw-bold text-primary">
-                                                                {result.matchedColumn}: {result.matchedValue}
-                                                            </div>
-                                                            <div className="fw-bold text-primary">Project Name: {result.projectName}</div>
-                                                            <div className="fw-bold text-primary">Lot No: {result.lotNo}</div>
-                                                        </div>
-                                                    ))}
-                                                </div>
+                                        View Report
+                                    </Button>
+                                )}
+                            </Col>
+                            {/* Search Dropdown */}
+                            <Col xs={12} md={2} lg={1} className="mb-3 mb-md-0">
+                                <div className="d-flex justify-content-end mt-4">
+                                    <div className="position-relative">
+                                        <Form.Control
+                                            type="text"
+                                            placeholder="Quick search ..."
+                                            fontSize="0.9rem"
+                                            value={searchTerm}
+                                            onChange={(e) => {
+                                                setSearchTerm(e.target.value);
+                                                setCurrentSearchPage(1); // Reset page when search term changes
+                                                handleSearch(e.target.value, 1);
+                                            }}
+                                            className="form-control-lg border-0 rounded"
+                                            style={{
+                                                backgroundColor: "#f8f9fa",
+                                                padding: "10px 20px 10px 40px",
+                                                boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
+                                                width: "210px",
+                                                height: "30px",
+                                                fontSize: "0.9rem"
+                                            }}
+                                        />
+                                        <FaSearch
+                                            style={{
+                                                position: "absolute",
+                                                left: "15px",
+                                                top: "50%",
+                                                transform: "translateY(-50%)",
+                                                color: "#4A90E2"
+                                            }}
+                                        />
 
-                                                {hasMoreResults && (
-                                                    <div
-                                                        className="text-center py-2 border-top"
-                                                        style={{ backgroundColor: '#f8f9fa' }}
-                                                    >
-                                                        <button
-                                                            className="btn btn-link text-primary"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handleShowMore();
-                                                            }}
-                                                            disabled={isSearching}
-                                                        >
-                                                            {isSearching ? (
-                                                                <>
-                                                                    <Spinner
-                                                                        animation="border"
-                                                                        size="sm"
-                                                                        className="me-2"
-                                                                    />
-                                                                    Loading...
-                                                                </>
-                                                            ) : (
-                                                                'Show More'
-                                                            )}
-                                                        </button>
+                                        {searchTerm.length > 0 && (
+                                            <div
+                                                className="position-absolute w-100 bg-white rounded shadow-lg mt-1"
+                                                style={{
+                                                    maxHeight: "300px",
+                                                    overflowY: "auto",
+                                                    zIndex: 1000
+                                                }}
+                                            >
+                                                {isSearching && currentSearchPage === 1 ? (
+                                                    <div className="text-center py-3">
+                                                        <Spinner animation="border" size="sm" variant="primary" />
+                                                        <div className="text-muted mt-2">Searching...</div>
+                                                    </div>
+                                                ) : searchResults.length > 0 ? (
+                                                    <>
+                                                        <div className="search-results">
+                                                            {searchResults.map((result, index) => (
+                                                                <div
+                                                                    key={index}
+                                                                    className="p-3 border-bottom hover-bg-light"
+                                                                    onClick={() => SearchCatchClick(result)}
+                                                                    style={{ cursor: "pointer" }}
+                                                                >
+                                                                    <div className="fw-bold text-primary">Catch No: {result.catchNo}</div>
+                                                                    <div className="fw-bold text-primary">
+                                                                        {result.matchedColumn}: {result.matchedValue}
+                                                                    </div>
+                                                                    <div className="fw-bold text-primary">Project Name: {result.projectName}</div>
+                                                                    <div className="fw-bold text-primary">Lot No: {result.lotNo}</div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+
+                                                        {hasMoreResults && (
+                                                            <div
+                                                                className="text-center py-2 border-top"
+                                                                style={{ backgroundColor: '#f8f9fa' }}
+                                                            >
+                                                                <button
+                                                                    className="btn btn-link text-primary"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        handleShowMore();
+                                                                    }}
+                                                                    disabled={isSearching}
+                                                                >
+                                                                    {isSearching ? (
+                                                                        <>
+                                                                            <Spinner
+                                                                                animation="border"
+                                                                                size="sm"
+                                                                                className="me-2"
+                                                                            />
+                                                                            Loading...
+                                                                        </>
+                                                                    ) : (
+                                                                        'Show More'
+                                                                    )}
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                    </>
+                                                ) : (
+                                                    <div className="text-center py-4">
+                                                        <div className="text-muted">No results found</div>
+                                                        <small className="text-muted">Try a different search term</small>
                                                     </div>
                                                 )}
-                                            </>
-                                        ) : (
-                                            <div className="text-center py-4">
-                                                <div className="text-muted">No results found</div>
-                                                <small className="text-muted">Try a different search term</small>
                                             </div>
                                         )}
                                     </div>
-                                )}
-                            </div>
+                                </div>
+                            </Col>
                         </div>
-                    </Col>
-                </div>
 
-                <div className="mb-3 mb-md-0">
-                    {/* Table to display selected data */}
-                    {selectedItem && (
-                        <>
-                            <div className="d-flex justify-content-end align-items-center mb-3 mt-2">
+                        <div className="mb-3 mb-md-0">
+                            {/* Table to display selected data */}
+                            {selectedItem && (
+                                <>
+                                    <div className="d-flex justify-content-end align-items-center mb-3 mt-2">
 
-                                <Dropdown className="d-inline-block">
-                                    <div className="export-btn d-flex justify-content-end">
-                                        <Dropdown.Toggle variant="primary" id="export-dropdown" className="me-2">
-                                            <FaFileExport className="me-2" />
-                                            Export
-                                        </Dropdown.Toggle>
-                                    </div>
+                                        <Dropdown className="d-inline-block">
+                                            <div className="export-btn d-flex justify-content-end">
+                                                <Dropdown.Toggle variant="primary" id="export-dropdown" className="me-2">
+                                                    <FaFileExport className="me-2" />
+                                                    Export
+                                                </Dropdown.Toggle>
+                                            </div>
 
 
-                                    <Dropdown.Menu className="mt-1">
-                                        <div className="d-flex">
-                                            <Dropdown.Item
-                                                as={ExcelExport}
-                                                data={[selectedItem]}
-                                                projectName={projectName}
-                                                groupName={groups[selectedGroup]}
-                                                lotNo={selectedLot}
-
-                                                visibleColumns={{
-                                                    catchNo: true,
-                                                    subject: true,
-                                                    course: true,
-                                                    paper: true,
-                                                    examDate: true,
-                                                    examTime: true,
-                                                    quantity: true,
-                                                    pages: true,
-                                                    status: true,
-                                                    currentProcess: true,
-                                                    innerEnvelope: true,
-                                                    outerEnvelope: true,
-                                                    dispatchDate: true
-                                                }}
-                                                className="py-2"
-                                            />
-                                            <div className="vr mx-1"></div>
-
-                                            <Dropdown.Item
-                                                as={PdfExport}
-                                                data={[selectedItem]}
-                                                projectName={projectName}
-                                                groupName={groups[selectedGroup]}
-                                                lotNo={selectedLot}
-
-                                                visibleColumns={{
-                                                    catchNo: true,
-                                                    subject: true,
-                                                    course: true,
-                                                    paper: true,
-                                                    examDate: true,
-                                                    examTime: true,
-                                                    quantity: true,
-                                                    pages: true,
-                                                    status: true,
-                                                    currentProcess: true,
-                                                    innerEnvelope: true,
-                                                    outerEnvelope: true,
-                                                    dispatchDate: true
-                                                }}
-                                                className="py-2"
-                                            />
-                                        </div>
-                                    </Dropdown.Menu>
-                                </Dropdown>
-                            </div>
-                            <div className="position-relative">
-                                <button
-                                    className="p-0 m-0 btn btn-sm btn-outline-secondary position-absolute"
-                                    style={{
-                                        top: '0px',
-                                        right: '10px',
-                                        transition: 'color 0.2s'
-                                    }}
-                                    onMouseEnter={(e) => e.target.style.color = 'red'}
-                                    onMouseLeave={(e) => e.target.style.color = ''}
-                                    onClick={() => setSelectedItem(null)}
-                                >
-                                    <AiFillCloseSquare size={30} color="red" />
-                                </button>
-                                <Table striped bordered hover>
-                                    <thead>
-                                        <tr>
-                                            <th>Catch No</th>
-                                            <th>Subject</th>
-                                            <th>Course</th>
-                                            <th>Paper</th>
-                                            <th>Exam Date</th>
-                                            <th>Exam Time</th>
-                                            <th>Quantity</th>
-                                            <th>Pages</th>
-                                            <th>Status</th>
-                                            <th>CurrentProcess</th>
-                                            <th>Inner Envelope</th>
-                                            <th>Outer Envelope</th>
-                                            <th>Dispatch</th>
-
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr onClick={() => {
-                                            selectedItem.showProcessDetails = !selectedItem.showProcessDetails;
-                                            setSelectedItem({ ...selectedItem });
-                                        }} style={{ cursor: 'pointer' }}>
-                                            <td>{selectedItem.catchNo}</td>
-                                            <td>{selectedItem.subject}</td>
-                                            <td>{selectedItem.course}</td>
-                                            <td>{selectedItem.paper}</td>
-                                            <td>{new Date(selectedItem.examDate).toLocaleDateString()}</td>
-                                            <td>{selectedItem.examTime}</td>
-                                            <td>{selectedItem.quantity}</td>
-                                            <td>{selectedItem.pages}</td>
-                                            <td><span className={`badge ${selectedItem.catchStatus === 'Completed' ? 'bg-success' :
-                                                selectedItem.catchStatus === 'Running' ? 'bg-primary' :
-                                                    selectedItem.catchStatus === 'Pending' ? 'bg-danger' : 'bg-secondary'
-                                                }`}>
-                                                {selectedItem.catchStatus}
-                                            </span></td>
-
-                                            <td>{selectedItem.currentProcessName}</td>
-                                            <td>{selectedItem.innerEnvelope}</td>
-                                            <td>{selectedItem.outerEnvelope}</td>
-                                            <td>{selectedItem.dispatchDate}</td>
-
-                                        </tr>
-                                        {selectedItem.showProcessDetails && (
-                                            <tr>
-                                                <td colSpan="13">
-                                                    <ProcessDetails
-                                                        catchData={selectedItem}
-                                                        projectName={selectedProjectId}
+                                            <Dropdown.Menu className="mt-1">
+                                                <div className="d-flex">
+                                                    <Dropdown.Item
+                                                        as={ExcelExport}
+                                                        data={[selectedItem]}
+                                                        projectName={projectName}
                                                         groupName={groups[selectedGroup]}
-                                                    />
-                                                </td>
-                                            </tr>
-                                        )}
-                                    </tbody>
-                                </Table>
+                                                        lotNo={selectedLot}
 
-                            </div>
-                        </>
-                    )}
-                </div>
+                                                        visibleColumns={{
+                                                            catchNo: true,
+                                                            subject: true,
+                                                            course: true,
+                                                            paper: true,
+                                                            examDate: true,
+                                                            examTime: true,
+                                                            quantity: true,
+                                                            pages: true,
+                                                            status: true,
+                                                            currentProcess: true,
+                                                            innerEnvelope: true,
+                                                            outerEnvelope: true,
+                                                            dispatchDate: true
+                                                        }}
+                                                        className="py-2"
+                                                    />
+                                                    <div className="vr mx-1"></div>
+
+                                                    <Dropdown.Item
+                                                        as={PdfExport}
+                                                        data={[selectedItem]}
+                                                        projectName={projectName}
+                                                        groupName={groups[selectedGroup]}
+                                                        lotNo={selectedLot}
+
+                                                        visibleColumns={{
+                                                            catchNo: true,
+                                                            subject: true,
+                                                            course: true,
+                                                            paper: true,
+                                                            examDate: true,
+                                                            examTime: true,
+                                                            quantity: true,
+                                                            pages: true,
+                                                            status: true,
+                                                            currentProcess: true,
+                                                            innerEnvelope: true,
+                                                            outerEnvelope: true,
+                                                            dispatchDate: true
+                                                        }}
+                                                        className="py-2"
+                                                    />
+                                                </div>
+                                            </Dropdown.Menu>
+                                        </Dropdown>
+                                    </div>
+                                    <div className="position-relative">
+                                        <button
+                                            className="p-0 m-0 btn btn-sm btn-outline-secondary position-absolute"
+                                            style={{
+                                                top: '0px',
+                                                right: '10px',
+                                                transition: 'color 0.2s'
+                                            }}
+                                            onMouseEnter={(e) => e.target.style.color = 'red'}
+                                            onMouseLeave={(e) => e.target.style.color = ''}
+                                            onClick={() => setSelectedItem(null)}
+                                        >
+                                            <AiFillCloseSquare size={30} color="red" />
+                                        </button>
+                                        <Table striped bordered hover>
+                                            <thead>
+                                                <tr>
+                                                    <th>Catch No</th>
+                                                    <th>Subject</th>
+                                                    <th>Course</th>
+                                                    <th>Paper</th>
+                                                    <th>Exam Date</th>
+                                                    <th>Exam Time</th>
+                                                    <th>Quantity</th>
+                                                    <th>Pages</th>
+                                                    <th>Status</th>
+                                                    <th>CurrentProcess</th>
+                                                    <th>Inner Envelope</th>
+                                                    <th>Outer Envelope</th>
+                                                    <th>Dispatch</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr onClick={() => {
+                                                    selectedItem.showProcessDetails = !selectedItem.showProcessDetails;
+                                                    setSelectedItem({ ...selectedItem });
+                                                }} style={{ cursor: 'pointer' }}>
+                                                    <td>{selectedItem.catchNo}</td>
+                                                    <td>{selectedItem.subject}</td>
+                                                    <td>{selectedItem.course}</td>
+                                                    <td>{selectedItem.paper}</td>
+                                                    <td>{new Date(selectedItem.examDate).toLocaleDateString()}</td>
+                                                    <td>{selectedItem.examTime}</td>
+                                                    <td>{selectedItem.quantity}</td>
+                                                    <td>{selectedItem.pages}</td>
+                                                    <td><span className={`badge ${selectedItem.catchStatus === 'Completed' ? 'bg-success' :
+                                                        selectedItem.catchStatus === 'Running' ? 'bg-primary' :
+                                                            selectedItem.catchStatus === 'Pending' ? 'bg-danger' : 'bg-secondary'
+                                                        }`}>
+                                                        {selectedItem.catchStatus}
+                                                    </span></td>
+
+                                                    <td>{selectedItem.currentProcessName}</td>
+                                                    <td>{selectedItem.innerEnvelope}</td>
+                                                    <td>{selectedItem.outerEnvelope}</td>
+                                                    <td>{selectedItem.dispatchDate}</td>
+                                                </tr>
+                                                {selectedItem.showProcessDetails && (
+                                                    <tr>
+                                                        <td colSpan="13">
+                                                            <ProcessDetails
+                                                                catchData={selectedItem}
+                                                                projectName={selectedProjectId}
+                                                                groupName={groups[selectedGroup]}
+                                                            />
+                                                        </td>
+                                                    </tr>
+                                                )}
+                                            </tbody>
+                                        </Table>
+
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    </>
+                )}
             </Row>
 
 
@@ -805,27 +861,7 @@ const ProjectReport = () => {
                 <Row className="">
                     <Col>
                         <Row className=" mb-2 mt-3">
-                            {/* <Col xs={12} md={4} lg={3} className="text-end">
-                                <div className="mb-3 d-flex justify-content-between align-items-center">
-                                    <div className="bg-light p-2 rounded shadow-sm">
-                                        <span className="fw-bold text-primary">Total Records: </span>
-                                        <span className="badge bg-danger">{filteredSheets.length}</span>
-                                    </div>
-                                    <div>
-                                        <strong>Show: </strong>
-                                        <select
-                                            className="form-select form-select-sm d-inline-block w-auto ms-2"
-                                            value={recordsPerPage}
-                                            onChange={handleRecordsPerPageChange}
-                                        >
-                                            <option value={5}>5</option>
-                                            <option value={10}>10</option>
-                                            <option value={20}>20</option>
-                                            <option value={50}>50</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </Col> */}
+
 
                             {/* Showing total records */}
                             <Col xs={12} md={4} lg={2}>
@@ -1090,7 +1126,7 @@ const ProjectReport = () => {
                                                     <div className="d-flex align-items-center justify-content-between">
                                                         <div onClick={() => handleSort('catchNo')} style={{ cursor: 'pointer', textAlign: 'center' }}>
                                                             <div className="d-flex align-items-center justify-content-center">
-                                                                Catch
+                                                                Catch No
                                                                 <div className="d-flex flex-column ms-2" style={{ fontSize: '12px' }}>
                                                                     <FaSortUp
                                                                         color={sortField === 'catchNo' && sortDirection === 'asc' ? '#fff' : '#000'}
@@ -1274,7 +1310,57 @@ const ProjectReport = () => {
                                                     </div>
                                                 </th>
                                             )}
-
+                                            {visibleColumns.startTime && (
+                                                <th onClick={() => handleSort('startTime')} style={{ cursor: 'pointer' }}>
+                                                    <div className="d-flex align-items-center justify-content-center">
+                                                        SD-ST
+                                                        <div className="d-flex flex-column ms-2" style={{ fontSize: '12px' }}>
+                                                            <FaSortUp
+                                                                color={sortField === 'startTime' && sortDirection === 'asc' ? '#fff' : '#000'}
+                                                                style={{ marginBottom: '-3px' }}
+                                                            />
+                                                            <FaSortDown
+                                                                color={sortField === 'startTime' && sortDirection === 'desc' ? '#fff' : '#000'}
+                                                                style={{ marginTop: '-3px' }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </th>
+                                            )}
+                                            {visibleColumns.endTime && (
+                                                <th onClick={() => handleSort('endTime')} style={{ cursor: 'pointer' }}>
+                                                    <div className="d-flex align-items-center justify-content-center">
+                                                        ED-ET
+                                                        <div className="d-flex flex-column ms-2" style={{ fontSize: '12px' }}>
+                                                            <FaSortUp
+                                                                color={sortField === 'endTime' && sortDirection === 'asc' ? '#fff' : '#000'}
+                                                                style={{ marginBottom: '-3px' }}
+                                                            />
+                                                            <FaSortDown
+                                                                color={sortField === 'endTime' && sortDirection === 'desc' ? '#fff' : '#000'}
+                                                                style={{ marginTop: '-3px' }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </th>
+                                            )}
+                                            {visibleColumns.duration && (
+                                                <th onClick={() => handleSort('duration')} style={{ cursor: 'pointer' }}>
+                                                    <div className="d-flex align-items-center justify-content-center">
+                                                        Duration
+                                                        <div className="d-flex flex-column ms-2" style={{ fontSize: '12px' }}>
+                                                            <FaSortUp
+                                                                color={sortField === 'duration' && sortDirection === 'asc' ? '#fff' : '#000'}
+                                                                style={{ marginBottom: '-3px' }}
+                                                            />
+                                                            <FaSortDown
+                                                                color={sortField === 'duration' && sortDirection === 'desc' ? '#fff' : '#000'}
+                                                                style={{ marginTop: '-3px' }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </th>
+                                            )}
                                             {visibleColumns.currentProcess && (
 
 
@@ -1330,6 +1416,7 @@ const ProjectReport = () => {
                                             )}
                                             
 
+
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -1365,11 +1452,23 @@ const ProjectReport = () => {
                                                             </span>
                                                         </td>
                                                     )}
+                                                    {visibleColumns.startTime && <td className="text-center">{new Date(sheet.startTime).toLocaleString('en-GB', { hour12: true })}</td>}
+                                                    {visibleColumns.endTime && (
+                                                        <td className="text-center">
+                                                            {sheet.catchStatus === 'Running' ? '' : new Date(sheet.endTime).toLocaleString('en-GB', { hour12: true })}
+                                                        </td>
+                                                    )}
+                                                    {visibleColumns.duration && (
+                                                        <td className="text-center">
+                                                            {sheet.catchStatus === 'Running' ? '' : sheet.duration || ''}
+                                                        </td>
+                                                    )}
                                                     {visibleColumns.currentProcess && <td className="text-center">{sheet.currentProcessName}</td>}
 
                                                     {visibleColumns.innerEnvelope && <td className="text-center">{sheet.innerEnvelope}</td>}
                                                     {visibleColumns.outerEnvelope && <td className="text-center">{sheet.outerEnvelope || ''}</td>}
-                                                  
+                                                   
+
 
                                                 </tr>,
                                                 sheet.showProcessDetails && (
@@ -1489,5 +1588,3 @@ const ProjectReport = () => {
 };
 
 export default ProjectReport;
-
-

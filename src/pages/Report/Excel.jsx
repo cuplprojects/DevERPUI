@@ -1,166 +1,213 @@
-import { Button } from 'react-bootstrap';
+import { useState } from 'react';
 import * as XLSX from 'xlsx';
 import { FaFileExcel } from "react-icons/fa";
+import API from "../../CustomHooks/MasterApiHooks/api";
+import { Spinner } from 'react-bootstrap';
+import { toast } from 'react-toastify';
 
 const ExcelExport = ({ data, projectName, groupName, visibleColumns, lotNo }) => {
-  const handleExcelExport = () => {
-    try {
-      const wb = XLSX.utils.book_new();
+  const [isExporting, setIsExporting] = useState(false);
 
-      // Map of headers to their corresponding data fields
-      const headerMap = {
-        'Catch No': sheet => sheet.catchNo,
-        'Subject': sheet => sheet.subject,
-        'Course': sheet => sheet.course,
-        'Paper': sheet => sheet.paper,
-        'Exam Date': sheet => new Date(sheet.examDate).toLocaleDateString(),
-        'Exam Time': sheet => sheet.examTime,
-        'Quantity': sheet => sheet.quantity,
-        'Pages': sheet => sheet.pages,
-        'Status': sheet => sheet.catchStatus,
-        'Current Process': sheet => sheet.currentProcessName,
-        
-        'Inner Envelope': sheet => sheet.innerEnvelope,
-        'Outer Envelope': sheet => sheet.outerEnvelope,
-        'Dispatch Date': sheet => sheet.dispatchDate
+  const handleExcelExport = async () => {
+    setIsExporting(true);
+    try {
+      const processesResponse = await API.get('/Processes');
+      const processes = processesResponse.data;
+
+      const getProcessName = (processId) => {
+        const process = processes.find(p => p.id === processId);
+        return process ? process.name : `Process ${processId}`;
       };
 
-      // Define headers based on visible columns
-      const headers = [
-        visibleColumns.catchNo && "Catch No",
-        visibleColumns.subject && "Subject", 
-        visibleColumns.course && "Course",
-        visibleColumns.paper && "Paper",
-        visibleColumns.examDate && "Exam Date",
-        visibleColumns.examTime && "Exam Time",
-        visibleColumns.quantity && "Quantity",
-        visibleColumns.pageNo && "Pages",
-        visibleColumns.status && "Status",
-        visibleColumns.currentProcessName && "Current Process",
-        visibleColumns.innerEnvelope && "Inner Envelope",
-        visibleColumns.outerEnvelope && "Outer Envelope",
-        visibleColumns.dispatchDate && "Dispatch Date"
-      ].filter(Boolean);
+      const wb = XLSX.utils.book_new();
+      const merges = [];
 
-      // Create worksheet data
-      const wsData = [
-        // Title row with all info in one row
-        [`Group: ${groupName || 'N/A'}`, `Project: ${projectName || 'N/A'}`, `Lot: ${lotNo || 'N/A'}`, `Generated: ${new Date().toLocaleString()}`, `Dispatch Date: ${data[0]?.dispatchDate || 'N/A'}`],
-        // Blank row for spacing
-        [],
-        // Column headers
-        headers,
-        // Data rows
-        ...data.map(sheet => {
-          return headers.map(header => {
-            const dataFn = headerMap[header];
-            return dataFn ? dataFn(sheet) : '';
-          });
-        })
+      // Create main data rows
+      const headers = [
+        'Catch No', 'Subject', 'Course', 'Paper', 'Exam Date', 'Exam Time', 
+        'Quantity', 'Pages', 'Status', 'SD-ST', 'ED-ET', 'Duration', 'Current Process', 'Inner Envelope', 'Outer Envelope'
       ];
+
+      const wsData = [
+        // Title row
+        [`Group: ${groupName || 'N/A'}`, `Project: ${projectName || 'N/A'}`, `Lot: ${lotNo || 'N/A'}`, 
+         `Generated: ${new Date().toLocaleString()}`, `Dispatch Date: ${data[0]?.dispatchDate || 'N/A'}`],
+        [], // Empty row
+        headers
+      ];
+
+      let currentRow = 3; // Start after headers
+
+      // Add each catch and its process details
+      for (const item of data) {
+        // Add catch data with merged cells
+        const catchRow = [
+         
+          item.catchNo || '',
+          item.subject || '',
+          item.course || '',
+          item.paper || '',
+          item.examDate ? new Date(item.examDate).toLocaleDateString() : '',
+          item.examTime || '',
+          item.quantity || '',
+          item.pages || '',
+          item.catchStatus || '',
+          item.startTime ? new Date(item.startTime).toLocaleString('en-GB', { hour12: true }) : '',
+          item.endTime ? new Date(item.endTime).toLocaleString('en-GB', { hour12: true }) : '',
+          item.duration || '',
+          item.currentProcessName || '',
+          item.innerEnvelope || '',
+          item.outerEnvelope || ''
+        ];
+        wsData.push(catchRow);
+
+        // Add process details if expanded
+        if (item.showProcessDetails) {
+          try {
+            const processResponse = await API.get(`/Reports/process-wise/${item.catchNo}`);
+            const processData = processResponse.data;
+
+            // Add process headers indented
+            wsData.push(
+              Array(10).fill(''), // Empty row
+              ['',  '', '', '', '', '', '', '', ''], // Section title
+              Array(10).fill(''), // Empty row
+              ['', 'Process', 'Zone', 'Team & Supervisor', 'Machine', 'Time'] // Process headers
+            );
+
+            // Add merge for "Process Details" title
+            merges.push({
+              s: { r: currentRow + 2, c: 1 },
+              e: { r: currentRow + 2, c: 9 }
+            });
+
+            // Add process rows indented
+            processData.forEach(process => {
+              process.transactions.forEach(transaction => {
+                wsData.push(['', // indent
+                  getProcessName(process.processId),
+                  transaction.zoneName || 'N/A',
+                  `${transaction.supervisor ? `(${transaction.supervisor.toUpperCase()})` : 'N/A'}\n${transaction.teamMembers?.map(m => m.fullName).join(', ') || 'N/A'}`,
+                  transaction.machineName || 'N/A',
+                  `Start: ${new Date(transaction.startTime).toLocaleString()}\nEnd: ${new Date(transaction.endTime).toLocaleString()}`
+                ]);
+              });
+            });
+
+            // Add empty row after process details
+            wsData.push(Array(10).fill(''));
+            currentRow += processData.reduce((acc, process) => acc + process.transactions.length, 0) + 5;
+          } catch (error) {
+            console.error(`Error fetching process data for catch ${item.catchNo}:`, error);
+          }
+        }
+        currentRow++;
+      }
 
       const ws = XLSX.utils.aoa_to_sheet(wsData);
+      ws['!merges'] = merges;
 
-      // Set column widths based on visible columns  
-      ws['!cols'] = headers.map(() => ({ wch: 15 }));
+      // Style the worksheet
+      styleWorksheet(ws, wsData);
 
-      // Merge cells for title components
-      ws['!merges'] = [
-        { s: { r: 0, c: 1 }, e: { r: 0, c: 1 } }, // Group name
-        { s: { r: 0, c: 3 }, e: { r: 0, c: 3 } }, // Project name 
-        { s: { r: 0, c: 5 }, e: { r: 0, c: 5 } }, // Lot number
-        { s: { r: 0, c: 7 }, e: { r: 0, c: 7 } }, // Generated date
-        { s: { r: 0, c: 9 }, e: { r: 0, c: 9 } }  // Dispatch date
-      ];
-
-      // Define header colors
-      const headerColors = [
-        "90EE90", "90EE90", "90EE90", "90EE90", "90EE90",
-        "90EE90", "90EE90", "90EE90", "90EE90", "90EE90"
-      ];
-
-      // Apply styles
-      headers.forEach((header, i) => {
-        try {
-          // Style title row
-          if (i <= 5) {
-            const titleCell = XLSX.utils.encode_cell({r: 0, c: i});
-            if (ws[titleCell]) {
-              ws[titleCell].s = {
-                font: { bold: true, size: 12 },
-                fill: { fgColor: { rgb: "90EE90" } },
-                alignment: { horizontal: 'center', vertical: 'center' }
-              };
-            }
-          }
-
-          // Style headers
-          const headerCell = XLSX.utils.encode_cell({r: 2, c: i});
-          if (ws[headerCell]) {
-            ws[headerCell].s = {
-              font: { bold: true, color: { rgb: "FFFFFF" }, size: 11 },
-              fill: { fgColor: { rgb: headerColors[i] } },
-              alignment: { horizontal: 'center', vertical: 'center' }
-            };
-          }
-
-          // Style data cells
-          for (let r = 3; r < 3 + data.length; r++) {
-            const dataCell = XLSX.utils.encode_cell({r: r, c: i});
-            if (ws[dataCell]) {
-              ws[dataCell].s = {
-                font: { size: 10 },
-                alignment: { vertical: 'center', wrapText: true },
-                border: {
-                  top: { style: 'thin', color: { rgb: "CCCCCC" } },
-                  bottom: { style: 'thin', color: { rgb: "CCCCCC" } },
-                  left: { style: 'thin', color: { rgb: "CCCCCC" } },
-                  right: { style: 'thin', color: { rgb: "CCCCCC" } }
-                }
-              };
-
-              // Add color to status cells
-              if (header === "Status") {
-                const status = ws[dataCell].v;
-                if (status === "Completed") {
-                  ws[dataCell].s.fill = { fgColor: { rgb: "2ECC71" } };
-                } else if (status === "Running") {
-                  ws[dataCell].s.fill = { fgColor: { rgb: "3498DB" } };
-                } else if (status === "Pending") {
-                  ws[dataCell].s.fill = { fgColor: { rgb: "E74C3C" } };
-                }
-              }
-            }
-          }
-        } catch (error) {
-          console.warn(`Error styling column ${i}:`, error);
-        }
-      });
-
-      // Add worksheet to workbook
-      XLSX.utils.book_append_sheet(wb, ws, "Quantity Sheets");
+      XLSX.utils.book_append_sheet(wb, ws, "Report");
 
       // Generate Excel file
       const dateStr = new Date().toISOString().slice(0,10);
       const fileName = `${groupName || 'no-group'}_${projectName || 'no-project'}_${dateStr}.xlsx`;
-
       XLSX.writeFile(wb, fileName);
+
+      // toast.success('Excel file downloaded successfully!');
 
     } catch (error) {
       console.error("Error exporting to Excel:", error);
-      alert("Failed to export Excel file");
+      toast.error('Error downloading Excel file. Please try again.');
+    } finally {
+      setIsExporting(false);
     }
   };
 
+  const styleWorksheet = (ws, wsData) => {
+    // Set column widths
+    ws['!cols'] = [
+      { wch: 5 },  // Indent column
+      { wch: 15 }, // Catch No/Process
+      { wch: 15 }, // SeriesName
+      { wch: 20 }, // Subject/Zone
+      { wch: 30 }, // Course/Team & Supervisor
+      { wch: 20 }, // Paper/Machine
+      { wch: 25 }, // Exam Date/Time
+      { wch: 12 }, // Quantity
+      { wch: 12 }, // Pages
+      { wch: 15 }, // Status
+      { wch: 15 }, // Start Date
+      { wch: 15 }, // End Date
+      { wch: 15 }, // Duration
+      { wch: 20 }, // Current Process
+      { wch: 15 }, // Inner Envelope
+      { wch: 15 }, // Outer Envelope
+
+
+    ];
+
+    // Style each row
+    wsData.forEach((row, rowIndex) => {
+      row.forEach((cell, colIndex) => {
+        const cellRef = XLSX.utils.encode_cell({ r: rowIndex, c: colIndex });
+        
+        if (rowIndex === 0) {
+          // Title row style
+          ws[cellRef].s = {
+            font: { bold: true, size: 12 },
+            fill: { fgColor: { rgb: "90EE90" } },
+            alignment: { horizontal: 'center', vertical: 'center' }
+          };
+        } else if (row[1] === 'Process Details') {
+          // Process section title style
+          ws[cellRef].s = {
+            font: { bold: true, size: 12 },
+            fill: { fgColor: { rgb: "90EE90" } },
+            alignment: { horizontal: 'center', vertical: 'center' }
+          };
+        } else if ((row[1] === 'Process' && colIndex > 0) || rowIndex === 2) {
+          // Headers style (both main and process)
+          ws[cellRef].s = {
+            font: { bold: true, color: { rgb: "FFFFFF" } },
+            fill: { fgColor: { rgb: "3B99FF" } },
+            alignment: { horizontal: 'center', vertical: 'center' }
+          };
+        } else if (cell !== '') {
+          // Data cells style
+          ws[cellRef].s = {
+            alignment: { vertical: 'center', wrapText: true },
+            border: {
+              top: { style: 'thin', color: { rgb: "CCCCCC" } },
+              bottom: { style: 'thin', color: { rgb: "CCCCCC" } },
+              left: { style: 'thin', color: { rgb: "CCCCCC" } },
+              right: { style: 'thin', color: { rgb: "CCCCCC" } }
+            }
+          };
+        }
+      });
+    });
+  };
+
   return (
-    <span 
-      className="ms-2"
+    <button
       onClick={handleExcelExport}
-      style={{ cursor: 'pointer' }}
+      className="btn btn-link ms-2 px-3"
+      style={{ cursor: isExporting ? 'not-allowed' : 'pointer' }}
+      disabled={isExporting}
     >
-      <FaFileExcel className="p-0" color='green' size={40}/>
-      {/* Export Excel */}
-    </span>
+      {isExporting ? (
+        <div className="d-flex flex-column align-items-center">
+          <Spinner animation="border" size="sm" variant="success" className="opacity-75" />
+          <small className="mt-2 text-success fw-semibold">Preparing your Excel file...</small>
+        </div>
+      ) : (
+        <FaFileExcel size={40} color='green' />
+      )}
+    </button>
   );
 };
 
