@@ -226,9 +226,14 @@ const EditQuantitySheetModal = ({
                 <Select
                   mode="multiple"
                   style={{ width: '100%' }}
-                  placeholder="Select languages"
+                  placeholder="Search languages"
                   value={formData.languageId}
                   onChange={handleLanguageChange}
+                  showSearch
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }
                 >
                   {languageOptions.map(option => (
                     <Select.Option key={option.languageId} value={option.languageId}>
