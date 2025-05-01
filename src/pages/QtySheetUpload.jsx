@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Form, Upload, Button, Select, message, Spin, Menu, Modal } from "antd";
 import { Row, Col } from "react-bootstrap";
 import { UploadOutlined, CloseOutlined, DeleteOutlined } from "@ant-design/icons";
@@ -74,6 +74,8 @@ const QtySheetUpload = () => {
     x: 0,
     y: 0,
   });
+    const courseCache = useRef({});
+    const subjectCache = useRef({});
 
   useEffect(() => {
     // Show config disclaimer only when no lots are found
@@ -550,7 +552,9 @@ const QtySheetUpload = () => {
     fetchLots();
   };
   const getCourseIdByName = async (courseName) => {
-    // console.log("Course Name being passed to API:", courseName);
+    if (courseCache.current[courseName]) {
+      return courseCache.current[courseName];
+    }
     try {
       const courseResponse = await API.get(`Course/GetCourse?courseName=${courseName}`);
       let courseId = courseResponse.data;
@@ -558,14 +562,19 @@ const QtySheetUpload = () => {
         const newCourseResponse = await API.post("/Course", { CourseName: courseName });
         courseId = newCourseResponse.data.courseId;
       }
+      courseCache.current[courseName] = courseId;
       return courseId;
-    } catch (err) {
+    }
+     catch (err) {
       console.error("Error in fetching or inserting course:", err);
       throw err;
     }
   };
 
   const getSubjectIdByName = async (subject) => {
+    if (subjectCache.current[subject]) {
+      return subjectCache.current[subject];
+    }
     try {
       const subjectResponse = await API.get(`Subject/Subject?subject=${subject}`);
       let subjectId = subjectResponse.data;
@@ -573,6 +582,7 @@ const QtySheetUpload = () => {
         const newsubjectResponse = await API.post("/Subject", { SubjectName: subject });
         subjectId = newsubjectResponse.data.subjectId;
       }
+      subjectCache.current[subject] = subjectId;
       return subjectId;
     } catch (err) {
       console.error("Error in fetching or inserting subject:", err);
