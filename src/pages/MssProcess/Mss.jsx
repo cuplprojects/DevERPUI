@@ -269,13 +269,13 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
                       <Col xs={12} md={8}>
                         <strong>{item.paperTitle}</strong>
                         <br />
-                        <small>
+                        <big>
                           <strong>Course Name:</strong> {item.courseName} &nbsp;
                           | &nbsp;
                           <strong>NEP Code:</strong> {item.nepCode} &nbsp; |
                           &nbsp;
                           <strong>Semester:</strong> {item.examTypeName}
-                        </small>
+                        </big>
                       </Col>
                     </Row>
                   </Option>
