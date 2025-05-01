@@ -45,10 +45,12 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [quantitySheetData, setQuantitySheetData] = useState([]);
+  const [allQuantitySheetData, setAllQuantitySheetData] = useState([]); // Store all data for searching
   const [rejectedQuantitySheetData, setRejectedQuantitySheetData] = useState(
     []
   );
   const [languageOptions, setLanguageOptions] = useState([]);
+  const [subjectOptions, setSubjectOptions] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [selectedSemester, setSelectedSemester] = useState(1);
@@ -59,6 +61,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [selectedRejectedItem, setSelectedRejectedItem] = useState(null);
   const [totalRecords, setTotalRecords] = useState(0);
+  const [isSearchMode, setIsSearchMode] = useState(false);
 
   useEffect(() => {
     setSearchTerm(null);
@@ -70,13 +73,16 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
       fetchQuantitySheetData();
     }
   }, [currentPage, pageSize]);
-  
+
 
   useEffect(() => {
     fetchQuantitySheetData();
     fetchSubjectOptions();
     fetchLanguageOptions();
     fetchSelectedGroupAndSem();
+
+    // Also fetch all data for searching
+    fetchAllQuantitySheetData();
   }, [projectId, processId, lotNo]);
 
   const fetchSelectedGroupAndSem = async () => {
@@ -147,15 +153,42 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
     setPageSize(pagination.pageSize);
   };
 
+  // Fetch all data for the project (used for searching)
+  const fetchAllQuantitySheetData = async () => {
+    try {
+      // Use a large page size to get all records in one request
+      const response = await API.get(
+        `/QuantitySheet/CatchByproject?ProjectId=${projectId}&pageSize=1000&currentpage=1`
+      );
+      setAllQuantitySheetData(response.data.data);
+      return response.data.data;
+    } catch (error) {
+      console.error("Error fetching all quantity sheet data:", error);
+      return [];
+    }
+  };
+
+  // Fetch paginated data (used for normal display)
   const fetchQuantitySheetData = async () => {
     try {
-      const response = await API.get(
-        `/QuantitySheet/CatchByproject?ProjectId=${projectId}&pageSize=${pageSize}&currentpage=${currentPage}`
-      );
-      console.log(response.data)
-      setQuantitySheetData(response.data.data);
-      setTotalRecords(response.data.totalrecords);
-      // console.log("Quantity Sheet Data -", response.data);
+      // If in search mode, use the all data
+      if (isSearchMode) {
+        // If we don't have all data yet, fetch it
+        if (allQuantitySheetData.length === 0) {
+          const allData = await fetchAllQuantitySheetData();
+          setQuantitySheetData(allData);
+        } else {
+          setQuantitySheetData(allQuantitySheetData);
+        }
+      } else {
+        // Normal paginated fetch
+        const response = await API.get(
+          `/QuantitySheet/CatchByproject?ProjectId=${projectId}&pageSize=${pageSize}&currentpage=${currentPage}`
+        );
+        console.log(response.data);
+        setQuantitySheetData(response.data.data);
+        setTotalRecords(response.data.totalrecords);
+      }
     } catch (error) {
       console.error("Error fetching quantity sheet data:", error);
     }
@@ -289,6 +322,12 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
                 onClick={() => {
                   if (rejectedCount > 0) {
                     setRejectedActive(true);
+
+                    // If in search mode, make sure we fetch all rejected items
+                    if (isSearchMode) {
+                      const allRejectedItems = filteredData.filter(item => item.mssStatus === 4);
+                      setRejectedQuantitySheetData(allRejectedItems);
+                    }
                   }
                 }}
                 className="fs-2"
@@ -302,7 +341,15 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
 
           <Tooltip title="Refresh" className="ms-2">
             <HiRefresh
-              onClick={() => setRejectedActive(false)}
+              onClick={() => {
+                setRejectedActive(false);
+                // If in search mode, make sure we're showing the correct data
+                if (isSearchMode) {
+                  fetchAllQuantitySheetData();
+                } else {
+                  fetchQuantitySheetData();
+                }
+              }}
               className="fs-2"
               color="blue"
             />
@@ -317,7 +364,26 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
           <Input.Search
             placeholder="Search within table..."
             value={tableSearchTerm}
-            onChange={(e) => setTableSearchTerm(e.target.value)}
+            onChange={(e) => {
+              const newSearchTerm = e.target.value;
+              setTableSearchTerm(newSearchTerm);
+
+              // If search term is not empty, enter search mode and fetch all data
+              if (newSearchTerm && newSearchTerm.trim() !== '') {
+                if (!isSearchMode) {
+                  setIsSearchMode(true);
+                  fetchAllQuantitySheetData().then(data => {
+                    setQuantitySheetData(data);
+                  });
+                }
+              } else {
+                // If search term is cleared, exit search mode and fetch paginated data
+                if (isSearchMode) {
+                  setIsSearchMode(false);
+                  fetchQuantitySheetData();
+                }
+              }
+            }}
             style={{ width: 200, marginRight: 10 }}
           />
           <Select
@@ -349,8 +415,9 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
             rejectedActive={rejectedActive}
             handleUpdateItem={handleUpdateItem}
             cssClasses={cssClasses}
-            totalRecords = {totalRecords}
+            totalRecords={totalRecords}
             projectId={projectId}
+            isSearchMode={isSearchMode}
             />
           <UpdateRejectedItemModal
             cssClasses={cssClasses}
