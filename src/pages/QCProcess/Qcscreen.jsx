@@ -79,6 +79,8 @@ const QcProcess = ({ projectId }) => {
     fetchData();
   }, []);
 
+  console.log("Data -",data)
+
   useEffect(() => {
     // Add the custom styles to the document head
     const styleElement = document.createElement('style');
@@ -376,6 +378,7 @@ useEffect(()=>{
 
       // Refresh the data
       const response = await API.get(`/QC/ByProject?projectId=${projectId}`);
+      console.log(response.data)
       const transformedData = response.data.map(item => ({
         ...item,
         verified: item.verified || {},
