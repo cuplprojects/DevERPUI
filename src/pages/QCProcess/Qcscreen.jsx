@@ -65,13 +65,13 @@ const QcProcess = ({ projectId }) => {
   // Function to fetch data that can be called from multiple places
   const fetchData = async () => {
     try {
-      console.log("Fetching QC data for project:", projectId);
+      // console.log("Fetching QC data for project:", projectId);
       const response = await API.get(`/QC/ByProject?projectId=${projectId}`);
       const transformedData = response.data.map(item => ({
         ...item,
         verified: item.verified || {},
       }));
-      console.log("Fetched QC data:", transformedData);
+      // console.log("Fetched QC data:", transformedData);
       setData(transformedData);
       setFilteredData(transformedData);
     } catch (error) {
@@ -125,9 +125,9 @@ const QcProcess = ({ projectId }) => {
       : record.verified?.[field];
 
     // Log verification status for debugging
-    if (field === 'structureOfPaper') {
-      console.log(`Structure verification status for record ${record.catchNo}:`, verified);
-    }
+    // if (field === 'structureOfPaper') {
+    //   console.log(`Structure verification status for record ${record.catchNo}:`, verified);
+    // }
 
     return (
       <div
@@ -377,7 +377,7 @@ const QcProcess = ({ projectId }) => {
       setIsSaving(true);
 
       // Log the edit form data for debugging
-      console.log("Edit form data before save:", editFormData);
+      // console.log("Edit form data before save:", editFormData);
 
       // Create payload for the API
       const payload = [{
@@ -415,7 +415,7 @@ const QcProcess = ({ projectId }) => {
         examTypeId: ogData[0].examTypeId || 0
       }];
 
-      console.log("Payload Data for update:", payload);
+      // console.log("Payload Data for update:", payload);
 
       // Call the API to update the item - using PUT method instead of POST
       await API.put('/QuantitySheet/bulk-update', payload);
@@ -444,8 +444,8 @@ const QcProcess = ({ projectId }) => {
 
   const prepareQcData = (status) => {
     // Log the tempVerification data to debug
-    console.log("tempVerification data:", tempVerification);
-    console.log("Selected record:", selectedRecord);
+    // console.log("tempVerification data:", tempVerification);
+    // console.log("Selected record:", selectedRecord);
 
     // Ensure structureOfPaper is included in the verification data
     const structureVerification = tempVerification.structureOfPaper !== undefined
@@ -466,7 +466,7 @@ const QcProcess = ({ projectId }) => {
       ProjectId: projectId
     };
 
-    console.log("Prepared QC data:", baseData);
+    // console.log("Prepared QC data:", baseData);
 
     return projectType === 1 ? { ...baseData, Series: tempVerification.series } : baseData;
   };
@@ -474,11 +474,11 @@ const QcProcess = ({ projectId }) => {
   const postQcData = async (qcData) => {
     try {
       // Log the data being sent to the API
-      console.log("Sending QC data to API:", qcData);
+      // console.log("Sending QC data to API:", qcData);
 
       const response = await API.post('/QC', qcData);
       if (response.status === 200 || response.status === 201) {
-        console.log("QC data successfully posted, response:", response.data);
+        // console.log("QC data successfully posted, response:", response.data);
 
         // Refresh the data from the server to ensure we have the latest state
         await fetchData();
