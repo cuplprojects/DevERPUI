@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Button, Space, Checkbox, Row, Col, Table, Badge, Tooltip, Modal as AntModal, Input, InputNumber, Form, Select } from 'antd';
-import { Modal } from 'react-bootstrap';
+import { Card, Button, Space, Row, Col, Table, Badge, Tooltip } from 'antd';
 import {
   CheckCircleOutlined,
   CloseCircleOutlined,
@@ -8,16 +7,13 @@ import {
   ArrowLeftOutlined,
   CheckOutlined,
   SyncOutlined,
-  ArrowRightOutlined,
-  EditOutlined,
-  SaveOutlined,
-  CloseOutlined,
 } from '@ant-design/icons';
 import API from '../../CustomHooks/MasterApiHooks/api';
 import { success, error } from '../../CustomHooks/Services/AlertMessageService';
 import { useTranslation } from 'react-i18next';
 import { useStore } from 'zustand';
 import themeStore from '../../store/themeStore';
+import VerificationModal from './Components/VerificationModal';
 
 const customCheckboxStyle = `
   .custom-checkbox .ant-checkbox-checked .ant-checkbox-inner {
@@ -95,45 +91,7 @@ const QcProcess = ({ projectId }) => {
     };
   }, []);
 
-  const verificationkeys = [
-    {
-      name: 'Language',
-      keyname: 'language'
-    },
-    {
-      name: 'Duration',
-      keyname: 'duration'
-    },
-    {
-      name: 'Structure',
-      keyname: 'structure'
-    },
-    ...(projectType === 1 ? [{
-      name: 'Series',
-      keyname: 'series'
-    }] : []),
-    {
-      name: 'Max Marks',
-      keyname: 'maxMarks'
-    },
-    {
-      name: 'A',
-      keyname: 'a'
-    },
-    {
-      name: 'B',
-      keyname: 'b'
-    },
-    {
-      name: 'C',
-      keyname: 'c'
-    },
-    {
-      name: 'D',
-      keyname: 'd'
-    },
 
-  ]
 
   const renderVerificationField = (record, field, text) => {
     const verified = record.verified?.[field];
@@ -185,7 +143,7 @@ const QcProcess = ({ projectId }) => {
       key: 'srNo',
       align: 'center',
       width: 80,
-      render: (_, record, index) => index + 1,
+      render: (_, __, index) => index + 1,
       sorter: (a, b) => a.srNo - b.srNo,
     },
     {
@@ -206,7 +164,7 @@ const QcProcess = ({ projectId }) => {
       dataIndex: 'language',
       key: 'language',
       align: 'center',
-      render: (text, record) => renderVerificationStatusOnly(record, 'language'),
+      render: (_, record) => renderVerificationStatusOnly(record, 'language'),
       sorter: (a, b) => String(a.language || '').localeCompare(String(b.language || '')),
     },
     {
@@ -214,7 +172,7 @@ const QcProcess = ({ projectId }) => {
       dataIndex: 'maxMarks',
       key: 'maxMarks',
       align: 'center',
-      render: (text, record) => renderVerificationStatusOnly(record, 'maxMarks'),
+      render: (_, record) => renderVerificationStatusOnly(record, 'maxMarks'),
       sorter: (a, b) => (a.maxMarks || 0) - (b.maxMarks || 0),
     },
     {
@@ -222,7 +180,7 @@ const QcProcess = ({ projectId }) => {
       dataIndex: 'duration',
       key: 'duration',
       align: 'center',
-      render: (text, record) => renderVerificationStatusOnly(record, 'duration'),
+      render: (_, record) => renderVerificationStatusOnly(record, 'duration'),
       sorter: (a, b) => (a.duration || 0) - (b.duration || 0),
     },
     {
@@ -230,7 +188,7 @@ const QcProcess = ({ projectId }) => {
       dataIndex: 'structure',
       key: 'structure',
       align: 'center',
-      render: (text, record) => renderVerificationStatusOnly(record, 'structure'),
+      render: (_, record) => renderVerificationStatusOnly(record, 'structure'),
       sorter: (a, b) => String(a.structure || '').localeCompare(String(b.structure || '')),
     },
     {
@@ -238,7 +196,7 @@ const QcProcess = ({ projectId }) => {
       dataIndex: 'a',
       key: 'a',
       align: 'center',
-      render: (text, record) => renderVerificationStatusOnly(record, 'a'),
+      render: (_, record) => renderVerificationStatusOnly(record, 'a'),
       sorter: (a, b) => String(a.a || '').localeCompare(String(b.a || '')),
     },
     {
@@ -246,7 +204,7 @@ const QcProcess = ({ projectId }) => {
       dataIndex: 'b',
       key: 'b',
       align: 'center',
-      render: (text, record) => renderVerificationStatusOnly(record, 'b'),
+      render: (_, record) => renderVerificationStatusOnly(record, 'b'),
       sorter: (a, b) => String(a.b || '').localeCompare(String(b.b || '')),
     },
     {
@@ -254,7 +212,7 @@ const QcProcess = ({ projectId }) => {
       dataIndex: 'c',
       key: 'c',
       align: 'center',
-      render: (text, record) => renderVerificationStatusOnly(record, 'c'),
+      render: (_, record) => renderVerificationStatusOnly(record, 'c'),
       sorter: (a, b) => String(a.c || '').localeCompare(String(b.c || '')),
     },
     {
@@ -262,7 +220,7 @@ const QcProcess = ({ projectId }) => {
       dataIndex: 'd',
       key: 'd',
       align: 'center',
-      render: (text, record) => renderVerificationStatusOnly(record, 'd'),
+      render: (_, record) => renderVerificationStatusOnly(record, 'd'),
       sorter: (a, b) => String(a.d || '').localeCompare(String(b.d || '')),
     },
     ...(projectType === 1 ? [{
@@ -270,7 +228,7 @@ const QcProcess = ({ projectId }) => {
       dataIndex: 'series',
       key: 'series',
       align: 'center',
-      render: (text, record) => renderVerificationStatusOnly(record, 'series'),
+      render: (_, record) => renderVerificationStatusOnly(record, 'series'),
       sorter: (a, b) => String(a.series || '').localeCompare(String(b.series || '')),
     }] : []),
     {
@@ -282,7 +240,7 @@ const QcProcess = ({ projectId }) => {
           className={`${customBtn} ${customLightBorder}`}
           icon={<CheckCircleOutlined />}
           size="large"
-          onClick={(e) => handlePreview(record, 'verify')}
+          onClick={() => handlePreview(record, 'verify')}
         >
           {record.verified?.status === true ? 'Verified' : record.verified?.status === false ? 'Rejected' : record.mssStatus == 5 ? 'Re-Verify' : 'Verify'}
         </Button>
@@ -510,288 +468,9 @@ useEffect(()=>{
     setFilteredData(data); // Reset to show all data
   };
 
-  const allFieldsVerified = () => {
-    var verified = (verificationkeys.length === Object.values(tempVerification).filter(Boolean).length) && Object.values(tempVerification).filter(Boolean).length != 0
-    console.log(verificationkeys, Object.values(tempVerification).filter(Boolean))
-    console.log(verified)
-    return verified;
-  };
 
-  const PreviewPanel = ({ record }) => {
-    if (!record) return null;
 
-    const shouldShowItem = (field) => {
-      if (record.action === 'verify') return true;
-      return record.verified[field];
-    };
 
-    const verificationItem = (label, value, field) => {
-      if (!shouldShowItem(field)) return null;
-
-      const isValueEmpty = !value || (typeof value === 'string' && value.trim() === '') ||
-        (Array.isArray(value) && value.length === 0);
-
-      // Determine if this field is editable
-      const isEditable = ['catchNo', 'paperNumber', 'paperTitle', 'nepCode', 'uniqueCode', 'maxMarks', 'duration', 'structureOfPaper', 'quantity'].includes(field);
-
-      return (
-        <div className="verification-item p-4 border-bottom hover-highlight">
-          <div className="d-flex align-items-center">
-            {record.action === 'verify' && !isEditMode && (
-              <div className="me-4">
-                <Checkbox
-                  checked={tempVerification[field] || record.verified?.[field]}
-                  onChange={() => handleVerificationChange(field)}
-                  disabled={isValueEmpty || (record.verified?.status === true && record.mssStatus !== 5)}
-                  className="custom-checkbox"
-                  style={{
-                    '& .ant-checkbox-checked .ant-checkbox-inner': {
-                      backgroundColor: '#52c41a',
-                      borderColor: '#52c41a',
-                    },
-                    '& .ant-checkbox-wrapper:hover .ant-checkbox-inner, & .ant-checkbox:hover .ant-checkbox-inner': {
-                      borderColor: '#52c41a',
-                    }
-                  }}
-                />
-              </div>
-            )}
-            <div className="d-flex align-items-center flex-grow-1 gap-4">
-              <div className="verification-label" style={{ minWidth: '130px' }}>
-                <span className="text-uppercase fw-semibold text-secondary letter-spacing-1">
-                  {label}
-                </span>
-              </div>
-              <div className="verification-value flex-grow-1 ps-4 border-start">
-                {isEditMode && isEditable ? (
-                  field === 'maxMarks' || field === 'quantity' ? (
-                    <InputNumber
-                      value={editFormData[field]}
-                      onChange={(value) => handleInputChange(field, value)}
-                      style={{ width: '100%' }}
-                      min={0}
-                    />
-                  ) : field === 'structureOfPaper' ? (
-                    <Input.TextArea
-                      value={editFormData[field]}
-                      onChange={(e) => handleInputChange(field, e.target.value)}
-                      rows={3}
-                    />
-                  ) : (
-                    <Input
-                      value={editFormData[field]}
-                      onChange={(e) => handleInputChange(field, e.target.value)}
-                    />
-                  )
-                ) : (
-                  <span className={`${isValueEmpty ? 'text-muted fst-italic' : 'fw-medium'}`}>
-                    {value}
-                  </span>
-                )}
-              </div>
-              {!isEditMode && (
-                <div className={`verification-status ms-3 d-flex align-items-center ${record.action === 'verify'
-                    ? (isValueEmpty ? 'text-muted' : (tempVerification[field] || record.verified?.[field]) ? 'text-success' : 'text-secondary')
-                    : record.verified[field] ? 'text-success' : 'text-danger'
-                  }`}>
-                  {record.action === 'verify' ? (
-                    isValueEmpty ? (
-                      <Badge bg="light" text="dark" className="d-flex align-items-center gap-2 py-2 px-3">
-                      </Badge>
-                    ) : (
-                      (tempVerification[field] || record.verified?.[field]) && (
-                        <Badge bg="success" className="d-flex align-items-center gap-2 py-2 px-3">
-                        </Badge>
-                      )
-                    )
-                  ) : (
-                    <Badge
-                      bg={record.verified[field] ? 'success' : 'danger'}
-                      className="d-flex align-items-center gap-2 py-2 px-3"
-                    >
-                      {record.verified[field] ? (
-                        <>
-                        </>
-                      ) : (
-                        <>
-                        </>
-                      )}
-                    </Badge>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      );
-    };
-
-    const handleVerificationChange = (field) => {
-      setTempVerification((prev) => ({
-        ...prev,
-        [field]: !prev[field],
-      }));
-    };
-
-    return (
-      <div className="preview-panel bg-white rounded-3 shadow-sm">
-        <div className="verification-items">
-          {verificationItem('A', record.a, 'a')}
-          {verificationItem('B', record.b, 'b')}
-          {verificationItem('C', record.c, 'c')}
-          {verificationItem('D', record.d, 'd')}
-          {verificationItem('Language', Array.isArray(record.language) ? record.language.join(', ') : typeof record.language === 'string' ? record.language.replace(/\s+/g, ', ') : '', 'language')}
-          {verificationItem('Duration', record.duration, 'duration')}
-          {verificationItem('Structure', record.structureOfPaper, 'structure')}
-          {projectType === 1 && verificationItem('Series', record.series, 'series')}
-          {verificationItem('Max Marks', record.maxMarks, 'maxMarks')}
-        </div>
-
-        <div className="action-buttons p-4 mt-2 bg-light rounded-bottom">
-          <div className="container-fluid p-0">
-            {isEditMode ? (
-              <div className="row g-3 justify-content-center">
-                <div className="col-12 col-md-6 col-lg-4 d-flex justify-content-center">
-                  <Button
-                    variant="success"
-                    onClick={handleSaveChanges}
-                    className="d-flex align-items-center gap-2 px-3 py-2 fw-medium w-100"
-                    disabled={isSaving}
-                  >
-                    <SaveOutlined />
-                    {isSaving ? 'Saving...' : 'Save Changes'}
-                  </Button>
-                </div>
-                <div className="col-12 col-md-6 col-lg-4 d-flex justify-content-center">
-                  <Button
-                    variant="secondary"
-                    onClick={handleEditCancel}
-                    className="d-flex align-items-center gap-2 px-3 py-2 fw-medium w-100"
-                    disabled={isSaving}
-                  >
-                    <CloseOutlined />
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <div className="row g-3 justify-content-center">
-                {record.action === 'verify' && (
-                  <>
-                    <div className="col-12 col-md-6 col-lg-3 d-flex justify-content-center">
-                      <Button
-                        variant="success"
-                        disabled={!allFieldsVerified() || record.verified?.status === true}
-                        onClick={handleFinalVerification}
-                        className="d-flex align-items-center gap-2 px-3 py-2 fw-medium w-100"
-                      >
-                        <CheckCircleOutlined />
-                        {record.verified?.status === true ? 'Already Verified' : 'Mark Verified'}
-                      </Button>
-                    </div>
-                    <div className="col-12 col-md-6 col-lg-3 d-flex justify-content-center">
-                      <Button
-                        variant="danger"
-                        onClick={handleRejectVerification}
-                        disabled={allFieldsVerified() || record.verified?.status === true}
-                        className="d-flex align-items-center gap-2 px-3 py-2 fw-medium w-100"
-                      >
-                        <CloseCircleOutlined />
-                        {record.verified?.status === true ? 'Cannot Reject' : 'Mark Rejected'}
-                      </Button>
-                    </div>
-                  </>
-                )}
-
-                <div className="col-12 col-md-6 col-lg-3 d-flex justify-content-center">
-                  <Button
-                    variant="primary"
-                    onClick={handleEditClick}
-                    className="d-flex align-items-center gap-2 px-3 py-2 fw-medium w-100"
-                  >
-                    <EditOutlined />
-                    Edit Details
-                  </Button>
-                </div>
-
-                <div className="col-12 col-md-6 col-lg-3 d-flex justify-content-center">
-                  <div className="d-flex gap-2 w-100">
-                    <Button
-                      className={`${customBtn} ${customLightBorder} flex-grow-1 p-0`}
-                      onClick={handlePreviousRecord}
-                      disabled={selectedRecordIndex === 0}
-                    >
-                      <ArrowLeftOutlined />
-                    </Button>
-                    <Button
-                      className={`${customBtn} ${customLightBorder} flex-grow-1 p-0`}
-                      onClick={handleNextRecord}
-                      disabled={selectedRecordIndex === filteredData.length - 1}
-                    >
-                      <ArrowRightOutlined />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const modalStyle = {
-    '.modal-content': {
-      borderRadius: '16px',
-      border: 'none',
-      boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
-      overflow: 'hidden',
-    },
-    '.modal-header': {
-      padding: '1.5rem 2rem',
-      background: 'linear-gradient(to right, rgba(255,255,255,0.95), rgba(255,255,255,0.9))',
-      backdropFilter: 'blur(10px)',
-      borderBottom: '1px solid rgba(0,0,0,0.08)',
-    },
-    '.modal-body': {
-      maxHeight: 'calc(100vh - 200px)',
-      overflowY: 'auto',
-      padding: '2rem',
-      '&::-webkit-scrollbar': {
-        width: '8px',
-      },
-      '&::-webkit-scrollbar-track': {
-        background: '#f1f1f1',
-        borderRadius: '4px',
-      },
-      '&::-webkit-scrollbar-thumb': {
-        background: '#c1c1c1',
-        borderRadius: '4px',
-        '&:hover': {
-          background: '#a8a8a8',
-        },
-      },
-    },
-    '.modal-title': {
-      fontSize: '1.5rem',
-      fontWeight: '600',
-      letterSpacing: '-0.5px',
-    },
-    '.btn-close': {
-      opacity: '0.6',
-      transition: 'all 0.2s',
-      '&:hover': {
-        opacity: '1',
-        transform: 'scale(1.1)',
-      },
-    },
-    '.verification-item': {
-      transition: 'all 0.2s ease',
-      '&:hover': {
-        backgroundColor: 'rgba(0,0,0,0.02)',
-      },
-    },
-  };
 
   return (
     <div className={` ${customLight} rounded py-2 shadow-lg ${customDark === "dark-dark" ? 'border' : ''}`}>
@@ -910,7 +589,7 @@ useEffect(()=>{
               }}
               bordered
               scroll={{ x: 1300, y: 400 }}
-              rowClassName={(record, index) => index % 2 === 0 ? 'table-row-light' : 'table-row-dark'}
+              rowClassName={(_, index) => index % 2 === 0 ? 'table-row-light' : 'table-row-dark'}
               onRow={(record) => ({
                 onClick: () => handlePreview(record),
               })}
@@ -922,51 +601,32 @@ useEffect(()=>{
           </Col>
         </Row>
 
-        <Modal
-          show={isModalVisible}
-          onHide={handleModalClose}
-          size="lg"
-          backdrop="static"
-          keyboard={false}
-          centered
-          className="qc-modal"
-          style={modalStyle}
-        >
-          <Modal.Header className={`${customDark} ${customLightText} border-0`} closeButton>
-            <Modal.Title className="w-100">
-              <div className="d-flex align-items-center justify-content-between">
-                <div className="d-flex align-items-center gap-4">
-
-                  <span className={`fs-4 ${selectedRecord?.action === 'verify' ? 'text-primary' :
-                      selectedRecord?.action === 'verified' ? 'text-success' : 'text-danger'
-                    }`}>
-                    {selectedRecord?.action === 'verify' ? '' :
-                      selectedRecord?.action === 'verified' ? 'MSS Verified Items' : 'MSS Rejected Items'}
-                  </span>
-                  <Badge
-                    bg={customDark === "default-dark" ? "primary" :
-                      customDark === "red-dark" ? "danger" :
-                        customDark === "green-dark" ? "success" :
-                          customDark === "blue-dark" ? "info" :
-                            customDark === "dark-dark" ? "dark" :
-                              customDark === "pink-dark" ? "pink" :
-                                customDark === "purple-dark" ? "purple" :
-                                  customDark === "light-dark" ? "light" :
-                                    customDark === "brown-dark" ? "warning" : "light"}
-                    text="light"
-                    className="px-4 py-2 rounded-pill d-flex align-items-center gap-2 fw-bold"
-                  >
-                    <span className="text-light">Catch No:</span>
-                    <span className="fw-bold text-light">{selectedRecord?.catchNo}</span>
-                  </Badge>
-                </div>
-              </div>
-            </Modal.Title>
-          </Modal.Header>
-          <Modal.Body className={`${customLight} p-0`}>
-            {selectedRecord && <PreviewPanel record={selectedRecord} />}
-          </Modal.Body>
-        </Modal>
+        <VerificationModal
+          isModalVisible={isModalVisible}
+          handleModalClose={handleModalClose}
+          selectedRecord={selectedRecord}
+          tempVerification={tempVerification}
+          setTempVerification={setTempVerification}
+          handleFinalVerification={handleFinalVerification}
+          handleRejectVerification={handleRejectVerification}
+          handleEditClick={handleEditClick}
+          isEditMode={isEditMode}
+          editFormData={editFormData}
+          handleInputChange={handleInputChange}
+          handleSaveChanges={handleSaveChanges}
+          handleEditCancel={handleEditCancel}
+          isSaving={isSaving}
+          selectedRecordIndex={selectedRecordIndex}
+          filteredData={filteredData}
+          handlePreviousRecord={handlePreviousRecord}
+          handleNextRecord={handleNextRecord}
+          customDark={customDark}
+          customLight={customLight}
+          customBtn={customBtn}
+          customLightBorder={customLightBorder}
+          customLightText={customLightText}
+          projectType={projectType}
+        />
       </Card>
     </div>
   );

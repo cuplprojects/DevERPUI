@@ -33,7 +33,7 @@ import { IoIosArrowDropdownCircle } from "react-icons/io";
 import { Collapse } from "react-bootstrap";
 import ProcessProgressTrain from "./ProcessProgressTrain";
 import ProcessTrainModals from "./ProcessTrainModals ";
-import QcScreen from "./../pages/MssProcess/Qcscreen";
+import QcScreen from "./../pages/QCProcess/Qcscreen";
 import MSS from "./../pages/MssProcess/Mss";
 
 const ProcessTable = () => {
