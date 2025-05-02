@@ -48,7 +48,7 @@ const EditProjectModal = ({
         if (selectedTypeObj) {
           const isBooklet = selectedTypeObj.typeId === 1 || selectedTypeObj.types === 'Booklet';
           setLocalShowSeriesFields(isBooklet);
-          console.log("Edit Modal - Type:", selectedTypeObj.types, "TypeID:", selectedTypeObj.typeId, "Show series fields:", isBooklet);
+          // console.log("Edit Modal - Type:", selectedTypeObj.types, "TypeID:", selectedTypeObj.typeId, "Show series fields:", isBooklet);
         }
       }
     }
@@ -61,7 +61,7 @@ const EditProjectModal = ({
     if (selectedTypeObj) {
       const isBooklet = selectedTypeObj.typeId === 1 || selectedTypeObj.types === 'Booklet';
       setLocalShowSeriesFields(isBooklet);
-      console.log("Type changed to:", selectedTypeObj.types, "TypeID:", selectedTypeObj.typeId, "Show series fields:", isBooklet);
+      // console.log("Type changed to:", selectedTypeObj.types, "TypeID:", selectedTypeObj.typeId, "Show series fields:", isBooklet);
 
       // Call the parent component's handleTypeChange if provided
       if (typeof handleTypeChange === 'function') {

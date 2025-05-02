@@ -134,7 +134,7 @@ const AddProjectModal = ({
       setLoading(false);
     }
   };
-  console.log(showSeriesFields)
+  // console.log(showSeriesFields)
   return (
     <Modal
       show={visible}

@@ -131,8 +131,8 @@ const VerificationModal = ({
     ];
 
     var verified = (verificationkeys.length === Object.values(tempVerification).filter(Boolean).length) && Object.values(tempVerification).filter(Boolean).length != 0;
-    console.log(verificationkeys, Object.values(tempVerification).filter(Boolean));
-    console.log(verified);
+    // console.log(verificationkeys, Object.values(tempVerification).filter(Boolean));
+    // console.log(verified);
     return verified;
   };
 

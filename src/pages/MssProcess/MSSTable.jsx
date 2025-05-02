@@ -22,8 +22,8 @@ const MSSTable = ({
   cssClasses,
   isSearchMode
 }) => {
-  console.log(quantitySheetData)
-  console.log(totalRecords)
+  // console.log(quantitySheetData)
+  // console.log(totalRecords)
   const [searchText] = useState("");
   const [searchedColumn] = useState("");
   const [selectedRows, setSelectedRows] = useState([]);

@@ -86,7 +86,7 @@ const DispatchPage = ({ projectId, processId, lotNo, fetchTransactions , project
       console.error("Error fetching dispatch data:", error);
     }
   };
-  console.log(...dispatchData)
+  // console.log(...dispatchData)
 
   useEffect(() => {
     if (projectId && processId && lotNo) {

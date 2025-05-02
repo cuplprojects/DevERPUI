@@ -292,7 +292,7 @@ const AllUsers = () => {
       render: (text, record) => {
         const editable = record.userId === editingUserId;
         const currentLocation = locations.find(l => l.locationId === text);
-        console.log(currentLocation)
+        // console.log(currentLocation)
 
         return editable ? (
           <Select
@@ -522,7 +522,7 @@ const AllUsers = () => {
                   Object.entries(currentUser).map(([key, value]) => {
                     if (key !== 'profilePicturePath' && key !== 'userId' && value !== null && value !== undefined && value !== '') {
                       if (key === 'roleId') {
-                        console.log("Reached")
+                        // console.log("Reached")
                         const role = roles.find(r => r.roleId === value);
                         return (
                           <div key={key} className="mb-2">
@@ -531,7 +531,7 @@ const AllUsers = () => {
                         );
                       }
                       if(key === 'locationId'){
-                        console.log("Reached")
+                        // console.log("Reached")
                         const location = locations.find(l=>l.locationId === value);
                         return(
                           <div key={key} className="mb-2">

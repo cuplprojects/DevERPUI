@@ -47,6 +47,9 @@ const QcProcess = ({ projectId }) => {
   const [editFormData, setEditFormData] = useState({});
   const [isSaving, setIsSaving] = useState(false);
 
+  //state for fetching the compelte original data of the selected record
+  const [ogData , setOgData] = useState([]);
+
   useEffect(() => {
     const fetchProjectType = async () => {
       try {
@@ -57,7 +60,6 @@ const QcProcess = ({ projectId }) => {
       }
     };
     fetchProjectType();
-
   })
 
   useEffect(() => {
@@ -88,8 +90,6 @@ const QcProcess = ({ projectId }) => {
       document.head.removeChild(styleElement);
     };
   }, []);
-
-
 
   const renderVerificationField = (record, field, text) => {
     const verified = record.verified?.[field];
@@ -315,17 +315,19 @@ const QcProcess = ({ projectId }) => {
     }
   };
 
+
+
   const handleEditCancel = () => {
     setIsEditMode(false);
     setEditFormData({});
   };
 
-useEffect(()=>{
-  console.log("Selected Record -",selectedRecord)
-  console.log("Edit Form Data -",editFormData)
-  console.log("Is Edit Mode -",isEditMode)
-  console.log("Table Data -",data)
-},[editFormData,isEditMode,selectedRecord,data])
+// useEffect(()=>{
+//   console.log("Selected Record -",selectedRecord)
+//   console.log("Edit Form Data -",editFormData)
+//   console.log("Is Edit Mode -",isEditMode)
+//   console.log("Table Data -",data)
+// },[editFormData,isEditMode,selectedRecord,data])
 
   const handleInputChange = (field, value) => {
     setEditFormData(prev => ({
@@ -334,41 +336,62 @@ useEffect(()=>{
     }));
   };
 
+  const fetchOgData = async () =>{
+    try{
+      const response = await API.get(`/QuantitySheet/${selectedRecord.quantitysheetId}`);
+      setOgData(response.data);
+      // console.log("Original Data -",response.data)
+    }
+    catch(error){
+      console.error('Failed to fetch data', error);
+    }
+  }
+  useEffect(()=>{
+    if(selectedRecord){
+      fetchOgData();
+    }
+  },[selectedRecord])
+
+
   const handleSaveChanges = async () => {
     try {
       setIsSaving(true);
       // Create payload for the API
       const payload = [{
+        // Include the fields for update
+        duration: editFormData.duration,
+        structureOfPaper: editFormData.structureOfPaper || '',
+        maxMarks: parseInt(editFormData.maxMarks, 10),
+        languageId: editFormData.languageId,
+
+        // Include other fields as needed
         quantitySheetId: selectedRecord.quantitysheetId,
         catchNo: editFormData.catchNo,
-        nepCode: editFormData.nepCode,
-        paperTitle: editFormData.paperTitle,
-        duration: editFormData.duration,
-        languageId: editFormData.languageId,
-        paperNumber: editFormData.paperNumber,
-        quantity: parseInt(editFormData.quantity, 10),
-        maxMarks: parseInt(editFormData.maxMarks, 10),
-        uniqueCode: editFormData.uniqueCode,
-        examTime: selectedRecord.examTime || '',
-        structureOfPaper: editFormData.structureOfPaper || '',
-        examDate: selectedRecord.examDate || '',
-        mssStatus: selectedRecord.mssStatus, 
-        ttfStatus: selectedRecord.ttfStatus, 
-        projectId: selectedRecord.projectId,
-        courseId: selectedRecord.courseId,
-        subjectId: selectedRecord.subjectId,
-        processId: selectedRecord.processId || [0],
-        lotNo: selectedRecord.lotNo,
-        percentageCatch: selectedRecord.percentageCatch || 0,
-        qpId: selectedRecord.qpId || 0,
-        pages: selectedRecord.pages || 0,
-        innerEnvelope: selectedRecord.innerEnvelope || '',
-        outerEnvelope: selectedRecord.outerEnvelope || 0,
-        status: selectedRecord.status || 0,
-        stopCatch: selectedRecord.stopCatch || 0,
-        examTypeId: selectedRecord.examTypeId || 0
+        nepCode: ogData[0].nepCode,
+        paperTitle: ogData[0].paperTitle,
+        paperNumber: ogData[0].paperNumber,
+        quantity: parseInt(ogData[0].quantity, 10),
+        uniqueCode: ogData[0].uniqueCode,
+        examTime: ogData[0].examTime || '',
+        examDate: ogData[0].examDate || '',
+        mssStatus: ogData[0].mssStatus, 
+        ttfStatus: ogData[0].ttfStatus, 
+        projectId: ogData[0].projectId,
+        courseId: ogData[0].courseId,
+        subjectId: ogData[0].subjectId,
+        processId: ogData[0].processId || [0],
+        lotNo: ogData[0].lotNo,
+        percentageCatch: ogData[0].percentageCatch || 0,
+        qpId: ogData[0].qpId || 0,
+        pages: ogData[0].pages || 0,
+        innerEnvelope: ogData[0].innerEnvelope || '',
+        outerEnvelope: ogData[0].outerEnvelope || 0,
+        status: ogData[0].status || 0,
+        stopCatch: ogData[0].stopCatch || 0,
+        examTypeId: ogData[0].examTypeId || 0
       }];
-
+      // console.log("OG Data -",ogData)
+      // console.log("Payload Data -",payload)
       // Call the API to update the item - using PUT method instead of POST
       await API.put('/QuantitySheet/bulk-update', payload);
 

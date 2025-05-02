@@ -48,9 +48,6 @@ const UserMenu = ({ onClose }) => {
 
   const handleLogoutClick = () => setShowModal(true);
   const handleProfileClick = () => navigate('/profile');
-  const handleSettingsClick = () => {
-    console.log("Trigger the right side bar.")
-  };
   const handleChangePasswordClick = () => navigate('/change-password');
 
   const handleLogoutConfirm = () => {

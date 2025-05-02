@@ -49,7 +49,7 @@ const EditQuantitySheetModal = ({
   // Initialize form data when record changes
   useEffect(() => {
     if (record) {
-      console.log(record)
+      // console.log(record)
       const initialFormData = {
         catchNo: record.catchNo || '',
         nepCode: record.nepCode || '',
@@ -144,7 +144,7 @@ const EditQuantitySheetModal = ({
         status : record.status,
         stopCatch : record.stopCatch,
       };
-      console.log("Payload Data -", payload);
+      // console.log("Payload Data -", payload);
       // Call the API to update the item
       await API.put('/QuantitySheet/bulk-update', [payload]);
 

@@ -222,7 +222,7 @@ const ImportPage = () => {
 
     try {
       const response = await API.post(`/${selectedField}`, data);
-      console.log("Upload Success:", response.data);
+      // console.log("Upload Success:", response.data);
       setIsModalVisible(false);
       setNewOptionValue(""); // Clear input value
       fetchOptions(selectedField);

@@ -750,7 +750,7 @@ const ProcessTable = () => {
               };
             });
             if (supervisor) {
-              console.log(supervisor.locationId)
+              // console.log(supervisor.locationId)
               formDataGet = formDataGet.filter((item) =>
                 supervisor.locationId === 1
                   ? item.ttfStatus === 0

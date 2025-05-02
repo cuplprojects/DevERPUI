@@ -54,7 +54,7 @@ const Cards = ({ item, onclick, disableProject, activeCardStyle }) => {
       const response = await API.get(
         `/ProjectProcess/GetProjectProcesses/${item.projectId}`
       );
-      console.log(response)
+      // console.log(response)
       if (response.data.length === 0) {
         setIsUploadDisabled(true);
       } else {
@@ -74,13 +74,13 @@ const Cards = ({ item, onclick, disableProject, activeCardStyle }) => {
         `/ProjectProcess/GetProjectProcesses/${projectId}`
       );
       const project = response.data;
-      console.log(project)
+      // console.log(project)
       // Check if the project has the MSS feature and if the logged-in user is assigned to it
       const hasMSS = project.find(project => project.name === "MSS");
-      console.log(hasMSS)
+      // console.log(hasMSS)
       if (hasMSS) {
         const isUserAssigned = hasMSS.userId.includes(userData?.userId);
-        console.log("Is User Assigned:", isUserAssigned);
+        // console.log("Is User Assigned:", isUserAssigned);
 
         const selectedProject = {
           value: projectId,
@@ -91,7 +91,7 @@ const Cards = ({ item, onclick, disableProject, activeCardStyle }) => {
         
         return isUserAssigned;
       } else {
-        console.log("No MSS project found.");
+        // console.log("No MSS project found.");
         return false;
       }
     } catch (error) {
@@ -120,8 +120,8 @@ const Cards = ({ item, onclick, disableProject, activeCardStyle }) => {
   // Navigate to the dashboard and send projectId as a route parameter
   const handleCardClick = async () => {
     if (await checkMSS(item.projectId)) {
-      console.log()
-      console.log(item.projectId)
+      // console.log()
+      // console.log(item.projectId)
       navigate(`/project-details/${encrypt(item.projectId)}`);
     
   } else {
@@ -134,7 +134,7 @@ const Cards = ({ item, onclick, disableProject, activeCardStyle }) => {
     return;
   }
   if (supervisor) {
-    console.log(supervisor)
+    // console.log(supervisor)
     //setLotInLocal(1);
     navigate(`/dashboard/${encrypt(item.projectId)}`);
     //navigate(`/project-details/${encrypt(item.projectId)}/${encrypt(1)}`);

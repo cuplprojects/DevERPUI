@@ -101,7 +101,7 @@ const FeatureManagement = ({ onUpdateFeatures, onAddFeature = () => {} }) => {
         };
 
         try {
-            console.log('Feature Payload:', featurePayload);
+            // console.log('Feature Payload:', featurePayload);
 
             if (isEditingFeature) {
                 // Update existing feature

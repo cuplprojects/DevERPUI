@@ -111,7 +111,7 @@ const ProjectTab = ({ setActiveTabKey, setSelectedProject }) => {
     try {
       const response = await API.get('/Session');
       setSessions(response.data);
-      console.log(response);
+      // console.log(response);
     } catch (err) {
       console.error('Failed to fetch session', err);
       error(t('unableToFetchSession'));
@@ -189,7 +189,7 @@ const ProjectTab = ({ setActiveTabKey, setSelectedProject }) => {
         noOfSeries: numberOfSeries, // Use the state value directly
         seriesName: values.seriesNames
       };
-      console.log(updatedProject)
+      // console.log(updatedProject)
 
 
       await API.put(`/Project/${editingProject.projectId}`, updatedProject);
@@ -266,7 +266,7 @@ const ProjectTab = ({ setActiveTabKey, setSelectedProject }) => {
               if (projectType) {
                 const isBooklet = projectType.typeId === 1 || projectType.types === 'Booklet';
                 setShowSeriesFields(isBooklet);
-                console.log("Edit project - Type:", projectType.types, "TypeID:", projectType.typeId, "Show series fields:", isBooklet);
+                // console.log("Edit project - Type:", projectType.types, "TypeID:", projectType.typeId, "Show series fields:", isBooklet);
               }
 
               editForm.setFieldsValue({
@@ -350,14 +350,14 @@ const ProjectTab = ({ setActiveTabKey, setSelectedProject }) => {
     // Find the exam type objects corresponding to the selected IDs
     const selectedExamTypeObjs = examTypes.filter((type) => value.includes(type.examTypeId));
 
-    console.log(selectedExamTypeObjs); // Log the selected exam types
+    // console.log(selectedExamTypeObjs); // Log the selected exam types
 
     setSelectedExamType(selectedExamTypeObjs);
 
     if (selectedGroup && selectedType && selectedSession && selectedExamTypeObjs.length > 0) {
       // Combine the selected exam types' names into a string for the project name
       const examTypeNames = selectedExamTypeObjs.map((obj) => obj.typeName).join(', ');
-      console.log(examTypeNames); // Log the combined exam type names
+      // console.log(examTypeNames); // Log the combined exam type names
 
       setProjectName(`${selectedGroup.name}-${selectedType.types} - ${selectedSession.session} - ${examTypeNames}`);
     } else {
@@ -394,7 +394,7 @@ const ProjectTab = ({ setActiveTabKey, setSelectedProject }) => {
     if (selectedTypeObj) {
       const isBooklet = selectedTypeObj.typeId === 1 || selectedTypeObj.types === 'Booklet';
       setShowSeriesFields(isBooklet);
-      console.log("Type selected:", selectedTypeObj.types, "TypeID:", selectedTypeObj.typeId, "Show series fields:", isBooklet);
+      // console.log("Type selected:", selectedTypeObj.types, "TypeID:", selectedTypeObj.typeId, "Show series fields:", isBooklet);
     } else {
       setShowSeriesFields(false);
     }
@@ -547,7 +547,7 @@ const ProjectTab = ({ setActiveTabKey, setSelectedProject }) => {
           if (selectedTypeObj) {
             const isBooklet = selectedTypeObj.typeId === 1 || selectedTypeObj.types === 'Booklet';
             setShowSeriesFields(isBooklet);
-            console.log("Edit modal type changed:", selectedTypeObj.types, "TypeID:", selectedTypeObj.typeId, "Show series fields:", isBooklet);
+            // console.log("Edit modal type changed:", selectedTypeObj.types, "TypeID:", selectedTypeObj.typeId, "Show series fields:", isBooklet);
           } else {
             setShowSeriesFields(false);
           }

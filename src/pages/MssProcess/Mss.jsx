@@ -185,7 +185,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
         const response = await API.get(
           `/QuantitySheet/CatchByproject?ProjectId=${projectId}&pageSize=${pageSize}&currentpage=${currentPage}`
         );
-        console.log(response.data);
+        // console.log(response.data);
         setQuantitySheetData(response.data.data);
         setTotalRecords(response.data.totalrecords);
       }
