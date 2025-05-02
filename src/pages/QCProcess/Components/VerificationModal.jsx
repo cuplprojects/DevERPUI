@@ -102,7 +102,7 @@ const VerificationModal = ({
       },
       {
         name: 'Structure',
-        keyname: 'structure'
+        keyname: 'structureOfPaper'
       },
       ...(projectType === 1 ? [{
         name: 'Series',
@@ -261,7 +261,7 @@ const VerificationModal = ({
           {verificationItem('D', record.d, 'd')}
           {verificationItem('Language', Array.isArray(record.language) ? record.language.join(', ') : typeof record.language === 'string' ? record.language.replace(/\s+/g, ', ') : '', 'language')}
           {verificationItem('Duration', record.duration, 'duration')}
-          {verificationItem('Structure', record.structureOfPaper, 'structure')}
+          {verificationItem('Structure', record.structureOfPaper, 'structureOfPaper')}
           {projectType === 1 && verificationItem('Series', record.series, 'series')}
           {verificationItem('Max Marks', record.maxMarks, 'maxMarks')}
         </div>
