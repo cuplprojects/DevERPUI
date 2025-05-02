@@ -364,6 +364,12 @@ const QcProcess = ({ projectId }) => {
     setEditFormData({});
   };
 
+useEffect(()=>{
+  console.log("Selected Record -",selectedRecord)
+  console.log("Edit Form Data -",editFormData)
+  console.log("Is Edit Mode -",isEditMode)
+},[editFormData,isEditMode,selectedRecord])
+
   const handleInputChange = (field, value) => {
     setEditFormData(prev => ({
       ...prev,
