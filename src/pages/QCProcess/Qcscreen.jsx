@@ -60,8 +60,6 @@ const QcProcess = ({ projectId }) => {
 
   })
 
-  // console.log(projectType)
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -78,8 +76,6 @@ const QcProcess = ({ projectId }) => {
     };
     fetchData();
   }, []);
-
-  console.log("Data -",data)
 
   useEffect(() => {
     // Add the custom styles to the document head
@@ -328,7 +324,8 @@ useEffect(()=>{
   console.log("Selected Record -",selectedRecord)
   console.log("Edit Form Data -",editFormData)
   console.log("Is Edit Mode -",isEditMode)
-},[editFormData,isEditMode,selectedRecord])
+  console.log("Table Data -",data)
+},[editFormData,isEditMode,selectedRecord,data])
 
   const handleInputChange = (field, value) => {
     setEditFormData(prev => ({
@@ -340,7 +337,6 @@ useEffect(()=>{
   const handleSaveChanges = async () => {
     try {
       setIsSaving(true);
-
       // Create payload for the API
       const payload = [{
         quantitySheetId: selectedRecord.quantitysheetId,
@@ -356,8 +352,8 @@ useEffect(()=>{
         examTime: selectedRecord.examTime || '',
         structureOfPaper: editFormData.structureOfPaper || '',
         examDate: selectedRecord.examDate || '',
-        mssStatus: selectedRecord.mssStatus, // Use the original mssStatus value
-        ttfStatus: selectedRecord.ttfStatus, // Use the original ttfStatus value
+        mssStatus: selectedRecord.mssStatus, 
+        ttfStatus: selectedRecord.ttfStatus, 
         projectId: selectedRecord.projectId,
         courseId: selectedRecord.courseId,
         subjectId: selectedRecord.subjectId,
@@ -378,7 +374,6 @@ useEffect(()=>{
 
       // Refresh the data
       const response = await API.get(`/QC/ByProject?projectId=${projectId}`);
-      console.log(response.data)
       const transformedData = response.data.map(item => ({
         ...item,
         verified: item.verified || {},
@@ -427,7 +422,6 @@ useEffect(()=>{
     try {
       const response = await API.post('/QC', qcData);
       if (response.status === 200 || response.status === 201) {
-        console.log('QC data processed successfully', response.data);
         const updatedData = data.map((item) =>
           item.quantitysheetId === selectedRecord.quantitysheetId ? { ...item, verified: { ...tempVerification, status: qcData.Status } } : item
         );
@@ -597,9 +591,6 @@ useEffect(()=>{
                 onClick: () => handlePreview(record),
               })}
               rowKey="srNo"
-              onChange={(pagination, filters, sorter) => {
-                console.log('Table params changed:', { pagination, filters, sorter });
-              }}
             />
           </Col>
         </Row>
