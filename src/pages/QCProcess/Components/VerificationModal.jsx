@@ -91,7 +91,8 @@ const VerificationModal = ({
   };
 
   const allFieldsVerified = () => {
-    const verificationkeys = [
+    // Required fields that must always be verified
+    const requiredFields = [
       {
         name: 'Language',
         keyname: 'language'
@@ -111,29 +112,36 @@ const VerificationModal = ({
       {
         name: 'Max Marks',
         keyname: 'maxMarks'
-      },
-      {
-        name: 'A',
-        keyname: 'a'
-      },
-      {
-        name: 'B',
-        keyname: 'b'
-      },
-      {
-        name: 'C',
-        keyname: 'c'
-      },
-      {
-        name: 'D',
-        keyname: 'd'
-      },
+      }
     ];
 
-    var verified = (verificationkeys.length === Object.values(tempVerification).filter(Boolean).length) && Object.values(tempVerification).filter(Boolean).length != 0;
-    // console.log(verificationkeys, Object.values(tempVerification).filter(Boolean));
-    // console.log(verified);
-    return verified;
+    // Optional fields that are only required if they have data
+    const optionalFields = [
+      { name: 'A', keyname: 'a' },
+      { name: 'B', keyname: 'b' },
+      { name: 'C', keyname: 'c' },
+      { name: 'D', keyname: 'd' }
+    ];
+
+    // Filter optional fields to only include those that have data
+    const optionalFieldsWithData = optionalFields.filter(field => {
+      const value = selectedRecord[field.keyname];
+      return value && (typeof value === 'string' ? value.trim() !== '' : true);
+    });
+
+    // Combine required fields with optional fields that have data
+    // const verificationKeys = [...requiredFields, ...optionalFieldsWithData];
+
+    // Check if all required fields are verified
+    const verifiedFields = Object.keys(tempVerification).filter(key => tempVerification[key]);
+    const allRequiredVerified = requiredFields.every(field => verifiedFields.includes(field.keyname));
+
+    // Check if all optional fields with data are verified
+    const allOptionalWithDataVerified = optionalFieldsWithData.every(field =>
+      verifiedFields.includes(field.keyname)
+    );
+
+    return allRequiredVerified && allOptionalWithDataVerified && verifiedFields.length > 0;
   };
 
   const PreviewPanel = ({ record }) => {
@@ -153,15 +161,25 @@ const VerificationModal = ({
       // Determine if this field is editable
       const isEditable = ['catchNo', 'paperNumber', 'paperTitle', 'nepCode', 'uniqueCode', 'maxMarks', 'duration', 'structureOfPaper', 'quantity'].includes(field);
 
+      // Determine if this is an ABCD field
+      const isAbcdField = ['a', 'b', 'c', 'd'].includes(field);
+
+      // Apply disabled styling for empty ABCD fields
+      const rowStyle = {
+        transition: 'all 0.2s ease',
+        opacity: isValueEmpty && isAbcdField ? 0.6 : 1,
+        backgroundColor: isValueEmpty && isAbcdField ? '#f9f9f9' : 'transparent'
+      };
+
       return (
-        <div className="verification-item p-4 border-bottom hover-highlight" style={{ transition: 'all 0.2s ease' }}>
+        <div className="verification-item p-4 border-bottom hover-highlight" style={rowStyle}>
           <div className="d-flex align-items-center">
             {record.action === 'verify' && !isEditMode && (
               <div className="me-4">
                 <Checkbox
                   checked={tempVerification[field] || record.verified?.[field]}
                   onChange={() => handleVerificationChange(field)}
-                  disabled={isValueEmpty || (record.verified?.status === true && record.mssStatus !== 5)}
+                  disabled={(isValueEmpty && isAbcdField) || (record.verified?.status === true && record.mssStatus !== 5)}
                   className="custom-checkbox"
                   style={{
                     '& .ant-checkbox-checked .ant-checkbox-inner': {
@@ -177,9 +195,12 @@ const VerificationModal = ({
             )}
             <div className="d-flex align-items-center flex-grow-1 gap-4">
               <div className="verification-label" style={{ minWidth: '130px' }}>
-                <span className="text-uppercase fw-semibold text-secondary letter-spacing-1">
+                <span className={`text-uppercase fw-semibold ${isValueEmpty && isAbcdField ? 'text-muted' : 'text-secondary'} letter-spacing-1`}>
                   {label}
                 </span>
+                {isValueEmpty && isAbcdField && (
+                  <span className="ms-2 text-muted fst-italic small">(No data)</span>
+                )}
               </div>
               <div className="verification-value flex-grow-1 ps-4 border-start">
                 {isEditMode && isEditable ? (
@@ -204,15 +225,17 @@ const VerificationModal = ({
                   )
                 ) : (
                   <span className={`${isValueEmpty ? 'text-muted fst-italic' : 'fw-medium'}`}>
-                    {value}
+                    {isValueEmpty ? (isAbcdField ? 'No data available' : '') : value}
                   </span>
                 )}
               </div>
               {!isEditMode && (
-                <div className={`verification-status ms-3 d-flex align-items-center ${record.action === 'verify'
+                <div className={`verification-status ms-3 d-flex align-items-center ${
+                  isValueEmpty && isAbcdField ? 'text-muted' :
+                  record.action === 'verify'
                     ? (isValueEmpty ? 'text-muted' : (tempVerification[field] || record.verified?.[field]) ? 'text-success' : 'text-secondary')
                     : record.verified[field] ? 'text-success' : 'text-danger'
-                  }`}>
+                }`}>
                   {record.action === 'verify' ? (
                     isValueEmpty ? (
                       <Badge bg="light" text="dark" className="d-flex align-items-center gap-2 py-2 px-3">
