@@ -62,22 +62,27 @@ const QcProcess = ({ projectId }) => {
     fetchProjectType();
   })
 
+  // Function to fetch data that can be called from multiple places
+  const fetchData = async () => {
+    try {
+      console.log("Fetching QC data for project:", projectId);
+      const response = await API.get(`/QC/ByProject?projectId=${projectId}`);
+      const transformedData = response.data.map(item => ({
+        ...item,
+        verified: item.verified || {},
+      }));
+      console.log("Fetched QC data:", transformedData);
+      setData(transformedData);
+      setFilteredData(transformedData);
+    } catch (error) {
+      console.error('Failed to fetch data', error);
+    }
+  };
+
+  // Initial data fetch
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await API.get(`/QC/ByProject?projectId=${projectId}`);
-        const transformedData = response.data.map(item => ({
-          ...item,
-          verified: item.verified || {},
-        }));
-        setData(transformedData);
-        setFilteredData((transformedData))
-      } catch (error) {
-        console.error('Failed to fetch data', error);
-      }
-    };
     fetchData();
-  }, []);
+  }, [projectId]);
 
   useEffect(() => {
     // Add the custom styles to the document head
@@ -114,7 +119,16 @@ const QcProcess = ({ projectId }) => {
   };
 
   const renderVerificationStatusOnly = (record, field) => {
-    const verified = record.verified?.[field];
+    // Check if the field is structureOfPaper and handle it specially
+    const verified = field === 'structureOfPaper'
+      ? record.verified?.structureOfPaper
+      : record.verified?.[field];
+
+    // Log verification status for debugging
+    if (field === 'structureOfPaper') {
+      console.log(`Structure verification status for record ${record.catchNo}:`, verified);
+    }
+
     return (
       <div
         style={{
@@ -309,7 +323,12 @@ const QcProcess = ({ projectId }) => {
         duration: selectedRecord.duration || '',
         structureOfPaper: selectedRecord.structureOfPaper || '',
         quantity: selectedRecord.quantity || 0,
-        languageId: selectedRecord.languageId || []
+        languageId: selectedRecord.languageId || [],
+        language: selectedRecord.language || ''
+      });
+      console.log("Edit form data initialized:", {
+        ...selectedRecord,
+        structureOfPaper: selectedRecord.structureOfPaper || ''
       });
       setIsEditMode(true);
     }
@@ -356,6 +375,10 @@ const QcProcess = ({ projectId }) => {
   const handleSaveChanges = async () => {
     try {
       setIsSaving(true);
+
+      // Log the edit form data for debugging
+      console.log("Edit form data before save:", editFormData);
+
       // Create payload for the API
       const payload = [{
         // Include the fields for update
@@ -363,6 +386,7 @@ const QcProcess = ({ projectId }) => {
         structureOfPaper: editFormData.structureOfPaper || '',
         maxMarks: parseInt(editFormData.maxMarks, 10),
         languageId: editFormData.languageId,
+        language: editFormData.language, // Include language field
 
         // Include other fields as needed
         quantitySheetId: selectedRecord.quantitysheetId,
@@ -390,22 +414,17 @@ const QcProcess = ({ projectId }) => {
         stopCatch: ogData[0].stopCatch || 0,
         examTypeId: ogData[0].examTypeId || 0
       }];
-      // console.log("OG Data -",ogData)
-      // console.log("Payload Data -",payload)
+
+      console.log("Payload Data for update:", payload);
+
       // Call the API to update the item - using PUT method instead of POST
       await API.put('/QuantitySheet/bulk-update', payload);
 
-      // Refresh the data
-      const response = await API.get(`/QC/ByProject?projectId=${projectId}`);
-      const transformedData = response.data.map(item => ({
-        ...item,
-        verified: item.verified || {},
-      }));
-      setData(transformedData);
-      setFilteredData(transformedData);
+      // Refresh the data using the fetchData function
+      await fetchData();
 
-      // Update the selected record with new data
-      const updatedRecord = transformedData.find(item => item.quantitysheetId === selectedRecord.quantitysheetId);
+      // Update the selected record with new data from the refreshed data
+      const updatedRecord = data.find(item => item.quantitysheetId === selectedRecord.quantitysheetId);
       if (updatedRecord) {
         setSelectedRecord({...updatedRecord, action: selectedRecord.action});
       }
@@ -424,6 +443,15 @@ const QcProcess = ({ projectId }) => {
   };
 
   const prepareQcData = (status) => {
+    // Log the tempVerification data to debug
+    console.log("tempVerification data:", tempVerification);
+    console.log("Selected record:", selectedRecord);
+
+    // Ensure structureOfPaper is included in the verification data
+    const structureVerification = tempVerification.structureOfPaper !== undefined
+      ? tempVerification.structureOfPaper
+      : false;
+
     const baseData = {
       QuantitySheetId: selectedRecord.quantitysheetId,
       Language: tempVerification.language,
@@ -434,22 +462,28 @@ const QcProcess = ({ projectId }) => {
       B: tempVerification.b,
       C: tempVerification.c,
       D: tempVerification.d,
-      StructureOfPaper: tempVerification.structureOfPaper,
+      StructureOfPaper: structureVerification, // Use the verified value
       ProjectId: projectId
     };
+
+    console.log("Prepared QC data:", baseData);
 
     return projectType === 1 ? { ...baseData, Series: tempVerification.series } : baseData;
   };
 
   const postQcData = async (qcData) => {
     try {
+      // Log the data being sent to the API
+      console.log("Sending QC data to API:", qcData);
+
       const response = await API.post('/QC', qcData);
       if (response.status === 200 || response.status === 201) {
-        const updatedData = data.map((item) =>
-          item.quantitysheetId === selectedRecord.quantitysheetId ? { ...item, verified: { ...tempVerification, status: qcData.Status } } : item
-        );
-        setData(updatedData);
-        setFilteredData(updatedData);
+        console.log("QC data successfully posted, response:", response.data);
+
+        // Refresh the data from the server to ensure we have the latest state
+        await fetchData();
+
+        // Close the modal and reset state
         setSelectedRecord(null);
         setTempVerification({});
         setIsModalVisible(false);

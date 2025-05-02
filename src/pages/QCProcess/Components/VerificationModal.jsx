@@ -159,7 +159,7 @@ const VerificationModal = ({
         (Array.isArray(value) && value.length === 0);
 
       // Determine if this field is editable
-      const isEditable = ['catchNo', 'paperNumber', 'paperTitle', 'nepCode', 'uniqueCode', 'maxMarks', 'duration', 'structureOfPaper', 'quantity'].includes(field);
+      const isEditable = ['catchNo', 'paperNumber', 'paperTitle', 'nepCode', 'uniqueCode', 'maxMarks', 'duration', 'structureOfPaper', 'quantity', 'language'].includes(field);
 
       // Determine if this is an ABCD field
       const isAbcdField = ['a', 'b', 'c', 'd'].includes(field);
@@ -179,7 +179,12 @@ const VerificationModal = ({
                 <Checkbox
                   checked={tempVerification[field] || record.verified?.[field]}
                   onChange={() => handleVerificationChange(field)}
-                  disabled={(isValueEmpty && isAbcdField) || (record.verified?.status === true && record.mssStatus !== 5)}
+                  disabled={
+                    // Only disable if it's an ABCD field with no data
+                    (isValueEmpty && isAbcdField) ||
+                    // Or if the record is already verified and not in re-verify status
+                    (record.verified?.status === true && record.mssStatus !== 5)
+                  }
                   className="custom-checkbox"
                   style={{
                     '& .ant-checkbox-checked .ant-checkbox-inner': {
