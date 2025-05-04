@@ -275,11 +275,11 @@ const AddPaperForm = ({ groupId, groupName }) => {
             </Row>
             <Row className="d-flex align-items-center">
             <Col md={1} className="d-lg-block d-md-none"></Col>
-                <Col md={3}>{renderField("Unique Code*", "uniqueCode", false)}</Col>
-                <Col md={1}>{renderField("Paper Number*", "paperNumber", false)}</Col>                
+                <Col md={3}>{renderField("Unique Code", "uniqueCode", false)}</Col>
+                <Col md={1}>{renderField("Paper Number", "paperNumber", false)}</Col>                
                 <Col md={1}>{renderField("Language", "language", true, false, null, language, "languages", "languageId")}</Col>
-                <Col md={1}>{renderField("Duration*", "duration", false)}</Col>
-                <Col md={1}>{renderField("Max Marks*", "maxMarks", false)}</Col>
+                <Col md={1}>{renderField("Duration", "duration", false)}</Col>
+                <Col md={1}>{renderField("Max Marks", "maxMarks", false)}</Col>
                 <Col md={1}>{renderField("Type", "type", true, false, null, type, "types", "typeId")}</Col>
                 <Col md={1} className="d-flex justify-content-en">
                     <Button type="primary" className="mt- me-2 w-100" size="sm" onClick={handleAdd}>
