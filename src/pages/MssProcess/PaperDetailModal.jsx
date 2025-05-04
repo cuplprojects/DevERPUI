@@ -174,7 +174,7 @@ const PaperDetailModal = ({
         PaperNumber: item.paperNumber,
         ExamDate: item.examDate ? moment(item.examDate) : null,
         ExamTime: item.examTime ?? null,
-        MaxMarks: item.MaxMarks ?? 0,
+        MaxMarks: item.maxMarks ?? 0,
         Duration: item.duration ?? null,
         LanguageId: item.languageIds ?? [],
         ExamTypeId: item.examTypeName ?? 0,
