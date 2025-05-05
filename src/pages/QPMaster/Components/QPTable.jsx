@@ -287,7 +287,7 @@ const QPTable = ({
 
       {showAddPaper && selectedGroupId && (
         <div className="">
-          <AddPaperForm groupId={selectedGroupId} groupName={groups.find(group => group.id === selectedGroupId)?.name} />
+          <AddPaperForm groupId={selectedGroupId} groupName={groups.find(group => group.id === selectedGroupId)?.name} isMSSAddPaperActive={false}/>
         </div>
       )}
 

@@ -19,6 +19,8 @@ import themeStore from "../../store/themeStore";
 import { useStore } from "zustand";
 import { HiRefresh } from "react-icons/hi";
 import UpdateRejectedItemModal from "./Components/UpdateRejectedItemModal";
+import AddPaperForm from "../QPMaster/Components/AddPaperForm";
+
 
 const { Option } = Select;
 
@@ -52,7 +54,8 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
   const [languageOptions, setLanguageOptions] = useState([]);
   const [subjectOptions, setSubjectOptions] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
-  const [selectedGroup, setSelectedGroup] = useState(null);
+  const [selectedGroupId, setSelectedGroupId] = useState(null);
+  const [selectedGroupName, setSelectedGroupName] = useState(null);
   const [selectedSemester, setSelectedSemester] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
@@ -62,6 +65,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
   const [selectedRejectedItem, setSelectedRejectedItem] = useState(null);
   const [totalRecords, setTotalRecords] = useState(0);
   const [isSearchMode, setIsSearchMode] = useState(false);
+  const [addPaperActive, setAddPaperActive] = useState(false);
 
   useEffect(() => {
     setSearchTerm(null);
@@ -88,12 +92,22 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
   const fetchSelectedGroupAndSem = async () => {
     try {
       const response = await API.get(`/Project/${projectId}`);
-      setSelectedGroup(response.data.groupId);
+      setSelectedGroupId(response.data.groupId);
       setSelectedSemester(response.data.examTypeId);
     } catch (error) {
       console.error("Error fetching selected group:", error);
     }
   };
+
+  const getGroupName = async () => {
+    try {
+      const response = await API.get(`/Groups/${selectedGroupId}`);
+      setSelectedGroupName(response.data.groupName);
+    }
+    catch (error) {
+      console.error("Error fetching group name:", error);
+    }
+  }
 
   const fetchResults = async (value, newPage = 1, append = false) => {
     if (!value) {
@@ -105,7 +119,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
     setLoading(true);
     try {
       const response = await API.get(
-        `/QPMasters/SearchInQpMaster?search=${value}&groupId=${selectedGroup}&examTypeId=${selectedSemester}&pageSize=${newPage}`
+        `/QPMasters/SearchInQpMaster?search=${value}&groupId=${selectedGroupId}&examTypeId=${selectedSemester}&pageSize=${newPage}`
       );
 
       setHasMore(response.data.length > 0);
@@ -208,7 +222,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
   }, []);
 
   const filterDataByStatus = () => {
-  // console.log(filteredData)
+    // console.log(filteredData)
     const rejectedItems = filteredData.filter(
       (item) => item.mssStatus === 4
     );
@@ -253,9 +267,16 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
     }
   };
 
+  const handleAddPaper = () => {
+    setAddPaperActive(prevState => !prevState);
+  };
+
   return (
     <div className="mt-4" style={{ maxWidth: "100%", overflowX: "hidden" }}>
+
       <Row className="w-100 d-flex justify-content-between align-items-center">
+
+        {/* Search bar with buttons*/}
         <Col xs={12} md={6} lg={6} className="d-flex align-items-center">
           <Collapse
             defaultActiveKey={["1"]}
@@ -355,12 +376,11 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
             />
           </Tooltip>
         </Col>
-        <Col
-          xs={12}
-          md={6}
-          lg={6}
-          className="d-flex justify-content-end align-items-center"
-        >
+
+        {/* Pagination and Search */}
+        <Col xs={12} md={6} lg={6} className="d-flex justify-content-end align-items-center gap-2">
+          <Button className={`${customBtn} border-0`} size="sm" onClick={handleAddPaper}>Add Paper</Button>
+
           <Input.Search
             placeholder="Search within table..."
             value={tableSearchTerm}
@@ -386,22 +406,28 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
             }}
             style={{ width: 200, marginRight: 10 }}
           />
-          <Select
-            value={pageSize}
-            onChange={(value) => setPageSize(value)}
-            style={{ width: 100 }}
-          >
+
+          <Select value={pageSize} onChange={(value) => setPageSize(value)} style={{ width: 100 }}>
             <Option value={5}>5</Option>
             <Option value={10}>10</Option>
             <Option value={20}>20</Option>
             <Option value={50}>50</Option>
             <Option value={100}>100</Option>
           </Select>
+
         </Col>
       </Row>
 
+      {addPaperActive && <Row>
+        <Col xs={12} md={12} lg={12}>
+          <AddPaperForm groupId={selectedGroupId} groupName={selectedGroupName} isMSSAddPaperActive={addPaperActive}/>
+        </Col>
+      </Row>}
+
+      {/* Table */}
       <Row className="justify-content-center">
         <Col xs={12} md={12} lg={12} className="">
+
           <MSSTable
             quantitySheetData={
               rejectedActive ? rejectedQuantitySheetData : quantitySheetData
@@ -418,7 +444,8 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
             totalRecords={totalRecords}
             projectId={projectId}
             isSearchMode={isSearchMode}
-            />
+          />
+
           <UpdateRejectedItemModal
             cssClasses={cssClasses}
             languageOptions={languageOptions}
@@ -427,11 +454,12 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
             data={selectedRejectedItem}
             onUpdate={handleUpdateSubmit}
             projectId={projectId}
-            />
+          />
+
         </Col>
       </Row>
 
-
+      {/* Modal */}
       <PaperDetailModal
         visible={!!selectedItem}
         item={selectedItem}

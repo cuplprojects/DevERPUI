@@ -2,13 +2,12 @@ import React, { useState, useMemo, useEffect } from "react";
 import { Container, Row, Col, Button } from "react-bootstrap";
 import { Select, Input, Modal, notification } from "antd";
 import { useStore } from "zustand";
-import { FaFileUpload } from "react-icons/fa";
 import themeStore from "../../../store/themeStore";
 import API from "../../../CustomHooks/MasterApiHooks/api";
 
 const { Option } = Select;
 
-const AddPaperForm = ({ groupId, groupName }) => {
+const AddPaperForm = ({ groupId, groupName ,isMSSAddPaperActive}) => {
 
     const [manualInputs, setManualInputs] = useState({});
     const [courses, setCourses] = useState([]);
