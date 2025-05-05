@@ -7,7 +7,7 @@ import API from "../../../CustomHooks/MasterApiHooks/api";
 
 const { Option } = Select;
 
-const AddPaperForm = ({ groupId, groupName ,isMSSAddPaperActive}) => {
+const AddPaperForm = ({ groupId, groupName, isMSSAddPaperActive }) => {
 
     const [manualInputs, setManualInputs] = useState({});
     const [courses, setCourses] = useState([]);
@@ -200,10 +200,18 @@ const AddPaperForm = ({ groupId, groupName ,isMSSAddPaperActive}) => {
         });
     };
 
+    const handleAddAndImport = () => {
+        // handleAdd();
+        notification.success({
+            message: "Success",
+            description: "Paper added successfully!",
+            duration: 4,
+        });
+    };
+
     const renderField = (label, field, isDropdown, isDisabled = false, fixedValue = null, options = [], labelField = "name", valueField = "id") => {
         return (
             <>
-                {/* <h5 className={`mb-0  ${cssClasses[5]}`}>{label}</h5> */}
                 {isDropdown ? (
                     <Select
                         placeholder={`${label}`}
@@ -215,18 +223,6 @@ const AddPaperForm = ({ groupId, groupName ,isMSSAddPaperActive}) => {
                         showSearch
                         allowClear
                         mode={field === "language" ? "multiple" : undefined}
-                        // notFoundContent={
-                        //     <div
-                        //         className="d-flex justify-content-center align-items-center"
-                        //         style={{ cursor: "pointer" }}
-                        //         onClick={() => {
-                        //             setSelectedField(field);
-                        //             setIsModalVisible(true);
-                        //         }}
-                        //     >
-                        //         <span>+</span> Add New
-                        //     </div>
-                        // }
                         filterOption={(input, option) =>
                             option.children?.toString().toLowerCase().includes(input.toLowerCase())
                         }
@@ -255,8 +251,8 @@ const AddPaperForm = ({ groupId, groupName ,isMSSAddPaperActive}) => {
     };
 
     return (
-        <Container fluid className="bg-ligh rounded mb-2 d-flex flex-column ">
-            <Row className="d-flex align-items-center ">
+        <Container fluid className="rounded mb-2 d-flex flex-column ">
+            <Row className="d-flex align-items-center">
                 <Col md={3} className="d-none">
                     {renderField("Group", "groupId", true, true, {
                         label: `${groupName} (ID: ${groupId})`,
@@ -273,9 +269,9 @@ const AddPaperForm = ({ groupId, groupName ,isMSSAddPaperActive}) => {
                 <Col md={2}>{renderField("Enter NEP Code / Paper Code", "nepCode", false)}</Col>
             </Row>
             <Row className="d-flex align-items-center">
-            <Col md={1} className="d-lg-block d-md-none"></Col>
-                <Col md={3}>{renderField("Unique Code", "uniqueCode", false)}</Col>
-                <Col md={1}>{renderField("Paper Number", "paperNumber", false)}</Col>                
+                <Col md={1} className="d-lg-block d-md-none"></Col>
+                <Col md={isMSSAddPaperActive ? 1 : 3}>{renderField("Unique Code", "uniqueCode", false)}</Col>
+                <Col md={1}>{renderField("Paper Number", "paperNumber", false)}</Col>
                 <Col md={1}>{renderField("Language", "language", true, false, null, language, "languages", "languageId")}</Col>
                 <Col md={1}>{renderField("Duration", "duration", false)}</Col>
                 <Col md={1}>{renderField("Max Marks", "maxMarks", false)}</Col>
@@ -285,27 +281,18 @@ const AddPaperForm = ({ groupId, groupName ,isMSSAddPaperActive}) => {
                         Add
                     </Button>
                 </Col>
-                <Col md={1}>
-                    <Button type="primary" className="mt- w-100" size="sm" onClick={handleClear}>
+                {isMSSAddPaperActive && <Col md={1} className="d-flex align-items-center">
+                    <Button type="primary" className="w-100" size="sm"
+                    onClick={handleAddAndImport}>
+                        Add & Import
+                    </Button>
+                </Col>}
+                <Col md={isMSSAddPaperActive ? 2 : 1}>
+                    <Button type="primary" variant="danger" className="w-100" size="sm" onClick={handleClear}>
                         Clear
                     </Button>
                 </Col>
             </Row>
-            <Row className="d-flex justify-content-end align-items-center">
-            </Row>
-{/* 
-            <Modal
-                title={`Add New ${selectedField}`}
-                visible={isModalVisible}
-                onCancel={() => setIsModalVisible(false)}
-                onOk={handleAddNewOption}
-            >
-                <Input
-                    placeholder={`Enter new ${selectedField}`}
-                    value={newOptionValue}
-                    onChange={(e) => setNewOptionValue(e.target.value)}
-                />
-            </Modal> */}
         </Container>
     );
 };
