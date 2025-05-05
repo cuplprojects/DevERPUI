@@ -304,9 +304,10 @@ const ImportPage = () => {
     } catch (error) {
       notification.error({
         message: 'Error',
-        description: error.response?.data?.message || 'Failed to add paper. Please try again.',
+        description: error.response?.data || 'Failed to add paper. Please try again.',
         duration: 4,
       });
+      handleClear();
       console.error("Error adding paper:", error);
     }
   };
