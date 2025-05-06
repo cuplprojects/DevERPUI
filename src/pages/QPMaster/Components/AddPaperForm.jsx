@@ -97,39 +97,6 @@ const AddPaperForm = ({ groupId, groupName, isMSSAddPaperActive }) => {
         }));
     };
 
-    const handleAddNewOption = async () => {
-        let data = {};
-        switch (selectedField) {
-            case "course":
-                data = { courseName: newOptionValue };
-                break;
-            case "subject":
-                data = { subjectName: newOptionValue };
-                break;
-            case "examType":
-                data = { typeName: newOptionValue };
-                break;
-            case "language":
-                data = { languages: newOptionValue };
-                break;
-            case "type":
-                data = { types: newOptionValue };
-                break;
-            default:
-                console.error("Unknown field type:", selectedField);
-                return;
-        }
-
-        try {
-            const response = await API.post(`/${selectedField}`, data);
-            setIsModalVisible(false);
-            setNewOptionValue("");
-            fetchOptions(selectedField);
-        } catch (error) {
-            console.error(`Error adding ${selectedField}:`, error);
-        }
-    };
-
     // reqruied fields
     const handleAdd = async () => {
         const requiredFields = [
@@ -253,7 +220,7 @@ const AddPaperForm = ({ groupId, groupName, isMSSAddPaperActive }) => {
     return (
         <Container fluid className="rounded mb-2 d-flex flex-column ">
             <Row className="d-flex align-items-center">
-                <Col md={3} className="d-none">
+                <Col md={4} className="d-none">
                     {renderField("Group", "groupId", true, true, {
                         label: `${groupName} (ID: ${groupId})`,
                         value: groupId,
