@@ -97,6 +97,7 @@ const PaperDetailModal = ({
   projectId,
   fetchQuantitySheetData,
   setSearchTerm,
+  isNewPaper = false,
 }) => {
   const [form] = Form.useForm();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
@@ -162,26 +163,51 @@ const PaperDetailModal = ({
     fetchABCD();
 
     if (item) {
-      form.setFieldsValue({
-        QPId: item.qpMasterId,
-        Quantity: item.quantity ?? 0.0,
-        CourseId: item.courseName ?? 0,
-        SubjectId: item.subjectId ?? 0,
-        CatchNo: "",
-        InnerEnvelope: item.innerEnvelope ?? "",
-        OuterEnvelope: item.outerEnvelope ?? 0,
-        PaperTitle: item.paperTitle,
-        PaperNumber: item.paperNumber,
-        ExamDate: item.examDate ? moment(item.examDate) : null,
-        ExamTime: item.examTime ?? null,
-        MaxMarks: item.maxMarks ?? 0,
-        Duration: item.duration ?? null,
-        LanguageId: item.languageIds ?? [],
-        ExamTypeId: item.examTypeName ?? 0,
-        NEPCode: item.nepCode ?? "",
-        UniqueCode: item.uniqueCode ?? "",
-        StructureOfPaper: item.structureOfPaper ?? "",
-      });
+      // If it's a new paper, set empty values
+      if (isNewPaper) {
+        form.setFieldsValue({
+          QPId: 0,
+          Quantity: 0,
+          CourseId: "",
+          SubjectId: 0,
+          CatchNo: "",
+          InnerEnvelope: "",
+          OuterEnvelope: 0,
+          PaperTitle: "",
+          PaperNumber: "",
+          ExamDate: null,
+          ExamTime: "",
+          MaxMarks: 0,
+          Duration: "",
+          LanguageId: [],
+          ExamTypeId: 0,
+          NEPCode: "",
+          UniqueCode: "",
+          StructureOfPaper: "",
+        });
+      } else {
+        // For existing paper, set values from the item
+        form.setFieldsValue({
+          QPId: item.qpMasterId,
+          Quantity: item.quantity ?? 0.0,
+          CourseId: item.courseName ?? 0,
+          SubjectId: item.subjectId ?? 0,
+          CatchNo: "",
+          InnerEnvelope: item.innerEnvelope ?? "",
+          OuterEnvelope: item.outerEnvelope ?? 0,
+          PaperTitle: item.paperTitle,
+          PaperNumber: item.paperNumber,
+          ExamDate: item.examDate ? moment(item.examDate) : null,
+          ExamTime: item.examTime ?? null,
+          MaxMarks: item.maxMarks ?? 0,
+          Duration: item.duration ?? null,
+          LanguageId: item.languageIds ?? [],
+          ExamTypeId: item.examTypeName ?? 0,
+          NEPCode: item.nepCode ?? "",
+          UniqueCode: item.uniqueCode ?? "",
+          StructureOfPaper: item.structureOfPaper ?? "",
+        });
+      }
     }
   }, [item, form]);
 
@@ -243,7 +269,7 @@ const PaperDetailModal = ({
           catchNo: values.CatchNo || 0,
           innerEnvelope: values.InnerEnvelope || "",
           outerEnvelope: Number(values.OuterEnvelope) || 0,
-          qpId: item.qpMasterId || 0,
+          qpId: isNewPaper ? 0 : (item?.qpMasterId || 0),
           projectId: projectId,
           lotNo: "51",
           processId: [0],
@@ -264,7 +290,7 @@ const PaperDetailModal = ({
         },
       });
 
-      showMessage('success', "Data imported successfully!");
+      showMessage('success', isNewPaper ? "Paper added successfully!" : "Data imported successfully!");
       setShowConfirmDialog(false);
       onCancel();
       fetchQuantitySheetData();
@@ -320,7 +346,9 @@ const PaperDetailModal = ({
     <>
       <Modal show={visible} onHide={onCancel} size="lg">
         <Modal.Header className={`${customDark} ${customLightText}`}>
-          <Modal.Title className="text-center">{item.paperTitle}</Modal.Title>
+          <Modal.Title className="text-center">
+            {isNewPaper ? "Add New Paper" : item?.paperTitle}
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body className={`${customLight}`}>
           <Form form={form} layout="vertical">
@@ -519,9 +547,9 @@ const PaperDetailModal = ({
           <Button
             variant="primary"
             onClick={handleUpdate}
-            disabled={importing === item.qpMasterId}
+            disabled={importing === item?.qpMasterId}
           >
-            Import
+            {isNewPaper ? "Add Paper" : "Import"}
           </Button>
         </Modal.Footer>
       </Modal>

@@ -65,7 +65,8 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
   const [selectedRejectedItem, setSelectedRejectedItem] = useState(null);
   const [totalRecords, setTotalRecords] = useState(0);
   const [isSearchMode, setIsSearchMode] = useState(false);
-  const [addPaperActive, setAddPaperActive] = useState(false);
+  const [showAddPaperModal, setShowAddPaperModal] = useState(false);
+  const [newPaperItem, setNewPaperItem] = useState(null);
 
   useEffect(() => {
     setSearchTerm(null);
@@ -268,7 +269,24 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
   };
 
   const handleAddPaper = () => {
-    setAddPaperActive(prevState => !prevState);
+    // Create a dummy item for the new paper
+    const dummyItem = {
+      qpMasterId: 0,
+      paperTitle: "",
+      paperNumber: "",
+      courseName: "",
+      subjectId: 0,
+      examTypeName: "",
+      nepCode: "",
+      uniqueCode: "",
+      quantity: 0,
+      languageIds: [],
+      isNewPaper: true // Flag to identify this is a new paper
+    };
+
+    // Set the new paper item and show the modal
+    setNewPaperItem(dummyItem);
+    setShowAddPaperModal(true);
   };
 
   return (
@@ -418,11 +436,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
         </Col>
       </Row>
 
-      {addPaperActive && <Row>
-        <Col xs={12} md={12} lg={12}>
-          <AddPaperForm groupId={selectedGroupId} groupName={selectedGroupName} isMSSAddPaperActive={addPaperActive}/>
-        </Col>
-      </Row>}
+
 
       {/* Table */}
       <Row className="justify-content-center">
@@ -459,7 +473,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
         </Col>
       </Row>
 
-      {/* Modal */}
+      {/* Modal for existing paper */}
       <PaperDetailModal
         visible={!!selectedItem}
         item={selectedItem}
@@ -472,6 +486,22 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
         projectId={projectId}
         fetchQuantitySheetData={fetchQuantitySheetData}
         setSearchTerm={setSearchTerm}
+      />
+
+      {/* Modal for adding new paper */}
+      <PaperDetailModal
+        visible={showAddPaperModal}
+        item={newPaperItem}
+        onCancel={() => {
+          setShowAddPaperModal(false);
+          setNewPaperItem(null);
+        }}
+        importing={importing}
+        cssClasses={cssClasses}
+        projectId={projectId}
+        fetchQuantitySheetData={fetchQuantitySheetData}
+        setSearchTerm={setSearchTerm}
+        isNewPaper={true}
       />
     </div>
   );
