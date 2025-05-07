@@ -509,50 +509,42 @@ const DailyReportExport = ({
 
   return (
     <>
-
+     
 
       <Dropdown className="d-inline-block">
-        <Dropdown.Toggle variant="primary" id="export-dropdown" className="me-2">
-          <FaFileExport className="me-2" />
+        <Dropdown.Toggle variant="primary" id="export-dropdown" className="me-">
+          <FaFileExport className="me-3" />
           Export
         </Dropdown.Toggle>
 
-        <Dropdown.Menu className="mt-1">
+        <Dropdown.Menu className="mt-1 py-1">
           <Dropdown.Item
             onClick={handleExcelExport}
-            className="py-2"
+            className="py-2 d-flex align-items-center justify-content-center"
             disabled={isExporting}
+            title="Export to Excel"
+            style={{ width: '120px' }}
           >
             {isExporting && exportType === 'excel' ? (
-              <div className="d-flex align-items-center">
-                <Spinner animation="border" size="sm" variant="success" className="opacity-75 me-2" />
-                <span className="text-success">Preparing Excel...</span>
-              </div>
+              <Spinner animation="border" size="sm" variant="success" className="mx-2" />
             ) : (
-              <div className="d-flex align-items-center">
-                <FaFileExcel size={20} color="green" className="me-2" />
-                <span>Export to Excel</span>
-              </div>
+              <FaFileExcel size={30} color="#1d6f42" className="mx-2" />
             )}
           </Dropdown.Item>
 
-          <div className="dropdown-divider"></div>
+          <div className="dropdown-divider my-1"></div>
 
           <Dropdown.Item
             onClick={handlePdfExport}
-            className="py-2"
+            className="py-2 d-flex align-items-center justify-content-center"
             disabled={isExporting}
+            title="Export to PDF"
+            style={{ width: '120px' }}
           >
             {isExporting && exportType === 'pdf' ? (
-              <div className="d-flex align-items-center">
-                <Spinner animation="border" size="sm" variant="danger" className="opacity-75 me-2" />
-                <span className="text-danger">Preparing PDF...</span>
-              </div>
+              <Spinner animation="border" size="sm" variant="danger" className="mx-2" />
             ) : (
-              <div className="d-flex align-items-center">
-                <FaFilePdf size={20} color="red" className="me-2" />
-                <span>Export to PDF</span>
-              </div>
+              <FaFilePdf size={33} color='purple' className="mx-2" />
             )}
           </Dropdown.Item>
         </Dropdown.Menu>
