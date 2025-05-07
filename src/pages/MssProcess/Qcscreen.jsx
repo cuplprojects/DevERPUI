@@ -58,7 +58,7 @@ const QcProcess = ({ projectId }) => {
 
   })
 
-  console.log(projectType)
+  // console.log(projectType)
 
   useEffect(() => {
     const fetchData = async () => {
