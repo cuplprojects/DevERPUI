@@ -1151,43 +1151,7 @@ const DailyReport = ({ date }) => {
                                     backgroundColor: 'white',
                                     cursor: 'pointer'
                                 }}>
-                                    <Card.Body style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        padding: '20px'
-                                    }}>
-                                        <div style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            width: '50px',
-                                            height: '50px',
-                                            borderRadius: '12px',
-                                            background: 'linear-gradient(135deg, #f5365c, #f56036)',
-                                            color: 'white',
-                                            marginRight: '15px',
-                                            boxShadow: '0 4px 6px rgba(245, 54, 92, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08)'
-                                        }}>
-                                            <FaUsers size={20} />
-                                        </div>
-                                        <div>
-                                            <div style={{
-                                                fontSize: '0.85rem',
-                                                fontWeight: '500',
-                                                color: '#6c757d',
-                                                marginBottom: '5px'
-                                            }}>Total Team Members</div>
-                                            <div style={{
-                                                fontSize: '1.75rem',
-                                                fontWeight: '700',
-                                                color: '#2c3e50',
-                                                lineHeight: '1'
-                                            }}>
-                                                {reportData.userTransactionDetails ?
-                                                    new Set(reportData.userTransactionDetails.flatMap(t => t.teamMembersNames || [])).size : 0}
-                                            </div>
-                                        </div>
-                                    </Card.Body>
+                                  
                                 </Card>
                             </Col>
                         </Row>
