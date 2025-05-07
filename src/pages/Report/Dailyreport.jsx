@@ -1945,7 +1945,7 @@ const DailyReport = ({ date }) => {
                                                             <span style={{
                                                                 color: '#adb5bd',
                                                                 fontSize: '0.85rem'
-                                                            }}>No team members</span>
+                                                            }}></span>
                                                         )}
                                                     </td>
                                                 </tr>
