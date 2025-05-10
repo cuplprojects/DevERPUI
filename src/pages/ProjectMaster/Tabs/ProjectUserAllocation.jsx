@@ -25,7 +25,7 @@ const ProjectUserAllocation = ({ selectedProject, activeKey }) => {
     }
     fetchUsers();
   }, [selectedProject, activeKey]);
-  
+
   const fetchProjectName = async (projectId) => {
     try {
       const response = await API.get(`/Project/${projectId}`);
@@ -41,7 +41,15 @@ const ProjectUserAllocation = ({ selectedProject, activeKey }) => {
     try {
       const response = await API.get("/User");
       const filteredUsers = response.data.filter(user => user.roleId === 5 || user.roleId === 1 || user.roleId === 4 || user.roleId === 3);
-      setUsers(filteredUsers);
+
+      // Sort users alphabetically by firstName and lastName
+      const sortedUsers = filteredUsers.sort((a, b) => {
+        const nameA = `${a.firstName} ${a.lastName}`.toLowerCase();
+        const nameB = `${b.firstName} ${b.lastName}`.toLowerCase();
+        return nameA.localeCompare(nameB);
+      });
+
+      setUsers(sortedUsers);
     } catch (error) {
       console.error(t("failedToFetchUsers"), error);
     }
@@ -52,12 +60,12 @@ const ProjectUserAllocation = ({ selectedProject, activeKey }) => {
       // Fetch processes for the selected project
       const response = await API.get(`/ProjectProcess/GetProcessesWithUsers/${selectedProject}`);
       const { processes } = response.data;
-  
+
       setProcesses(processes);
-  
+
       // Prepare userSelections based on the fetched processes
       const newUserSelections = {};
-  
+
       // Check each process
       for (const process of processes) {
         if (process.userId && process.userId.length > 0) {
@@ -67,10 +75,10 @@ const ProjectUserAllocation = ({ selectedProject, activeKey }) => {
           // If userId is not present, fetch the previous project's userId for the same processId
           const previousProjectResponse = await API.get(`/ProjectProcess/GetProcessesWithUsers/${selectedProject - 1}`);
           const previousProcesses = previousProjectResponse.data.processes;
-  
+
           // Find the process from the previous project with the same processId
           const previousProcess = previousProcesses.find(p => p.processId === process.processId);
-  
+
           // If a corresponding process is found, use its userId
           if (previousProcess && previousProcess.userId && previousProcess.userId.length > 0) {
             newUserSelections[process.processId] = previousProcess.userId;
@@ -80,15 +88,15 @@ const ProjectUserAllocation = ({ selectedProject, activeKey }) => {
           }
         }
       }
-  
+
       // Set the user selections
       setUserSelections(newUserSelections);
-  
+
     } catch (error) {
       console.error(t("failedToFetchProcesses"), error);
     }
   };
-  
+
 
   const handleUserChange = (processId, selectedUsers) => {
     setUserSelections(prev => ({
@@ -128,7 +136,15 @@ const ProjectUserAllocation = ({ selectedProject, activeKey }) => {
           placeholder="Select Users"
           value={userSelections[record.processId] || []}
           onChange={(selectedUsers) => handleUserChange(record.processId, selectedUsers)}
-          style={{  width: 400, whiteSpace: 'nowrap' }}
+          style={{ width: 400, whiteSpace: 'nowrap' }}
+          showSearch
+          optionFilterProp="children"
+          filterOption={(input, option) => {
+            // In newer versions of Ant Design, option.children might be a React node
+            // We need to check if option.label exists first, then fall back to a safe string conversion
+            const optionText = option.label || String(option.children || '');
+            return optionText.toLowerCase().indexOf(input.toLowerCase()) >= 0;
+          }}
         >
           {users.map(user => (
             <Option key={user.userId} value={user.userId}>
@@ -149,7 +165,7 @@ const ProjectUserAllocation = ({ selectedProject, activeKey }) => {
         rowKey="processId" // Ensure this matches your data structure
         pagination={false}
       />
-      <Button 
+      <Button
         type="primary"
         size="large"
         onClick={handleSubmit}
