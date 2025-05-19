@@ -4,6 +4,7 @@ import { FaFileExcel, FaFilePdf, FaFileExport } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import { toast } from 'react-toastify';
 import API from "../../CustomHooks/MasterApiHooks/api";
 
 
@@ -14,13 +15,16 @@ import API from "../../CustomHooks/MasterApiHooks/api";
  */
 const DailyReportExport = ({
   selectedDate,
+  startDate,
+  endDate,
   selectedGroup,
   userId,
   groupName,
   processes,
   machines,
   zones,
-  users
+  users,
+  projectName
 }) => {
   const [isExporting, setIsExporting] = useState(false);
   const [exportType, setExportType] = useState(null);
@@ -74,19 +78,33 @@ const DailyReportExport = ({
   // Function to fetch all transaction data
   const fetchAllTransactionData = async () => {
     try {
-      const formattedDate = selectedDate ? new Date(selectedDate).toLocaleDateString('en-GB', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
-      }).replace(/\//g, '-') : '';
+      // Format dates for API
+      const formatDateForApi = (dateStr) => {
+        if (!dateStr) return '';
+        return new Date(dateStr).toLocaleDateString('en-GB', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        }).replace(/\//g, '-');
+      };
 
       // Prepare API parameters - use a large pageSize to get all records
       // This approach is more reliable than using a custom parameter
       const params = {
-        date: formattedDate,
         page: 1,
         pageSize: 10000 // Use a very large page size to get all records
       };
+
+      // Use date range if both start and end dates are provided
+      if (startDate && endDate) {
+        params.startDate = formatDateForApi(startDate);
+        params.endDate = formatDateForApi(endDate);
+        console.log(`Using date range: ${params.startDate} to ${params.endDate}`);
+      } else if (selectedDate) {
+        // Fall back to single date if date range is not provided
+        params.date = formatDateForApi(selectedDate);
+        console.log(`Using single date: ${params.date}`);
+      }
 
       // Only add userId if it's selected
       if (userId) {
@@ -223,9 +241,35 @@ const DailyReportExport = ({
       // Add worksheet to workbook
       XLSX.utils.book_append_sheet(wb, ws, "Daily Report");
 
-      // Generate Excel file
-      const dateStr = selectedDate ? new Date(selectedDate).toISOString().slice(0,10) : new Date().toISOString().slice(0,10);
-      const fileName = `DailyReport_${groupName || 'All'}_${dateStr}.xlsx`;
+      // Add project name to the workbook if available
+      if (projectName) {
+        const projectSheet = XLSX.utils.aoa_to_sheet([['Project:', projectName]]);
+        XLSX.utils.book_append_sheet(wb, projectSheet, "Project Info");
+      }
+
+      // Generate Excel file with appropriate filename based on date range or single date
+      let dateStr = '';
+      let filenameDateStr = '';
+      if (startDate && endDate) {
+        const startDateStr = new Date(startDate).toISOString().slice(0,10);
+        const endDateStr = new Date(endDate).toISOString().slice(0,10);
+        dateStr = `${startDateStr}_to_${endDateStr}`;
+        filenameDateStr = `${startDateStr.replace(/-/g, '')}_to_${endDateStr.replace(/-/g, '')}`;
+      } else if (selectedDate) {
+        dateStr = new Date(selectedDate).toISOString().slice(0,10);
+        filenameDateStr = dateStr.replace(/-/g, '');
+      } else {
+        dateStr = new Date().toISOString().slice(0,10);
+        filenameDateStr = dateStr.replace(/-/g, '');
+      }
+
+      let fileName = `DailyReport_${groupName || 'All'}_${filenameDateStr}.xlsx`;
+
+      // Add project name to the filename if available
+      if (projectName) {
+        const safeProjectName = projectName.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 20);
+        fileName = `DailyReport_${safeProjectName}_${filenameDateStr}.xlsx`;
+      }
       XLSX.writeFile(wb, fileName);
 
 
@@ -374,14 +418,14 @@ const DailyReportExport = ({
         // Define column widths - optimized for A4 landscape with proper proportions
         // Define column widths as percentages of total width (adding up to 100%)
         const columnWidths = {
-          0: { cellWidth: '7%', cellPadding: 2 },     // S.No - smallest column (7%)
+          0: { cellWidth: '5%', cellPadding: 2 },     // S.No - smallest column (5%)
           1: { cellWidth: '10%', cellPadding: 3 },    // Catch No (10%)
           2: { cellWidth: '13%', cellPadding: 3 },    // Process (13%)
           3: { cellWidth: '10%', cellPadding: 3 },    // Zone (10%)
           4: { cellWidth: '10%', cellPadding: 3 },    // Machine (10%)
-          5: { cellWidth: '8%', cellPadding: 3 },     // Quantity - smaller (8%)
-          6: { cellWidth: '17%', cellPadding: 3 },    // Time Range (17%)
-          7: { cellWidth: '25%', cellPadding: 3 }     // Team Members - largest (25%)
+          5: { cellWidth: '7%', cellPadding: 3 },     // Quantity - smaller (7%)
+          6: { cellWidth: '15%', cellPadding: 3 },    // Time Range (15%)
+          7: { cellWidth: '30%', cellPadding: 3 }     // Team Members - largest (30%)
         };
 
         console.log("Creating PDF table with styling to match example...");
@@ -435,32 +479,57 @@ const DailyReportExport = ({
             // Get current page number
             const currentPage = doc.internal.getCurrentPageInfo().pageNumber;
 
-            // Add title with professional styling only on the first page
+            // Only show header information on the first page
             if (currentPage === 1) {
+              // Add title with professional styling
               doc.setFontSize(18);
               doc.setFont('helvetica', 'bold');
               doc.setTextColor(44, 62, 80); // Dark blue-gray color
               doc.text('Daily Report', pageWidth / 2, 15, { align: 'center' });
+
+              // Add a subtle separator line
+              doc.setDrawColor(200, 200, 200);
+              doc.setLineWidth(0.3);
+              doc.line(margins.left, 20, pageWidth - margins.right, 20);
+
+              // Add date, group, and project info
+              doc.setFontSize(10);
+              doc.setFont('helvetica', 'normal');
+              doc.setTextColor(80, 80, 80);
+
+              // Create a structured header layout with proper spacing to prevent overflow
+              let dateText = '';
+              if (startDate && endDate) {
+                dateText = `Date Range: ${formatDate(startDate)} to ${formatDate(endDate)}`;
+              } else if (selectedDate) {
+                dateText = `Date: ${formatDate(selectedDate)}`;
+              }
+
+              // Calculate positions for better layout
+              const col1X = margins.left;
+              const col2X = pageWidth / 3;
+              const col3X = (pageWidth / 3) * 2;
+
+              // Draw date text
+              doc.text(dateText, col1X, 25);
+
+              // Second column: Group info if available
+              if (groupName) {
+                doc.text(`Group: ${groupName}`, col2X, 25);
+              }
+
+              // Third column: Project name if available
+              if (projectName) {
+                doc.text(`Project: ${projectName}`, col3X, 25);
+              }
+            } else {
+              // For pages after the first, only add a simple separator line
+              doc.setDrawColor(200, 200, 200);
+              doc.setLineWidth(0.3);
+              doc.line(margins.left, 20, pageWidth - margins.right, 20);
             }
 
-            // Add a subtle separator line on all pages
-            doc.setDrawColor(200, 200, 200);
-            doc.setLineWidth(0.3);
-            doc.line(margins.left, 20, pageWidth - margins.right, 20);
-
-            // Add date on left side on all pages
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'normal');
-            doc.setTextColor(80, 80, 80);
-            const dateText = `Date: ${formatDate(selectedDate)}`;
-            doc.text(dateText, margins.left, 25);
-
-            // Add group info if available on all pages
-            if (groupName) {
-              doc.text(`Group: ${groupName}`, margins.left + 60, 25);
-            }
-
-            // Simple footer with just page number like the example on all pages
+            // Simple footer with just page number on all pages
             doc.setFontSize(10);
             doc.setFont('helvetica', 'normal');
             doc.setTextColor(80, 80, 80);
@@ -478,10 +547,29 @@ const DailyReportExport = ({
         // The example doesn't have a notes section, so we'll skip it
         // No additional content needed after the table
 
-        // Save PDF with clean filename like the example
-        const dateStr = selectedDate ? new Date(selectedDate).toISOString().slice(0,10) : new Date().toISOString().slice(0,10);
-        const formattedDate = dateStr.replace(/-/g, '');
-        const fileName = `DailyReport_${groupName || 'All'}_${formattedDate}.pdf`;
+        // Save PDF with clean filename based on date range or single date
+        let dateStr = '';
+        let filenameDateStr = '';
+        if (startDate && endDate) {
+          const startDateStr = new Date(startDate).toISOString().slice(0,10);
+          const endDateStr = new Date(endDate).toISOString().slice(0,10);
+          dateStr = `${startDateStr}_to_${endDateStr}`;
+          filenameDateStr = `${startDateStr.replace(/-/g, '')}_to_${endDateStr.replace(/-/g, '')}`;
+        } else if (selectedDate) {
+          dateStr = new Date(selectedDate).toISOString().slice(0,10);
+          filenameDateStr = dateStr.replace(/-/g, '');
+        } else {
+          dateStr = new Date().toISOString().slice(0,10);
+          filenameDateStr = dateStr.replace(/-/g, '');
+        }
+
+        let fileName = `DailyReport_${groupName || 'All'}_${filenameDateStr}.pdf`;
+
+        // Add project name to the filename if available
+        if (projectName) {
+          const safeProjectName = projectName.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 20);
+          fileName = `DailyReport_${safeProjectName}_${filenameDateStr}.pdf`;
+        }
 
         try {
           doc.save(fileName);
@@ -509,7 +597,7 @@ const DailyReportExport = ({
 
   return (
     <>
-     
+
 
       <Dropdown className="d-inline-block">
         <Dropdown.Toggle variant="primary" id="export-dropdown" className="me-">

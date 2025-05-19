@@ -106,6 +106,8 @@ const DailyReport = ({ date }) => {
     const [users, setUsers] = useState([]);
     const [userId, setUserId] = useState('');
     const [selectedDate, setSelectedDate] = useState(date || '');
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
     const [sortField, setSortField] = useState('projectName');
     const [sortDirection, setSortDirection] = useState('asc');
     const [userMap, setUserMap] = useState({});
@@ -116,8 +118,9 @@ const DailyReport = ({ date }) => {
     const [groups, setGroups] = useState([]);
     const [selectedGroup, setSelectedGroup] = useState('');
     const [isProcessSummaryExpanded, setIsProcessSummaryExpanded] = useState(true);
+    const [projectName, setProjectName] = useState('');
 
-    const handleDateSelect = (e) => {
+    const handleStartDateSelect = (e) => {
         // Reset report data when date changes to avoid showing stale data
         setReportData({
             userTransactionDetails: [],
@@ -130,7 +133,48 @@ const DailyReport = ({ date }) => {
             totalQuantity: 0,
             distinctLotNos: []
         });
-        setSelectedDate(e.target.value);
+
+        // Set the start date
+        setStartDate(e.target.value);
+
+        // If end date is not set, use this as a single date
+        if (!endDate) {
+            setSelectedDate(e.target.value);
+        } else {
+            // If end date is set, clear the single date as we're using a range
+            setSelectedDate('');
+        }
+
+        setCurrentPage(1); // Reset to first page
+    };
+
+    const handleEndDateSelect = (e) => {
+        // Reset report data when date changes to avoid showing stale data
+        setReportData({
+            userTransactionDetails: [],
+            totalRecords: 0,
+            currentPage: 1,
+            pageSize: 10,
+            machines: [],
+            supervisors: [],
+            totalCatches: 0,
+            totalQuantity: 0,
+            distinctLotNos: []
+        });
+
+        // If end date is cleared
+        if (!e.target.value) {
+            setEndDate('');
+            // If start date exists, treat it as a single date
+            if (startDate) {
+                setSelectedDate(startDate);
+            }
+        } else {
+            // End date is set, we're using a date range
+            setEndDate(e.target.value);
+            setSelectedDate(''); // Clear single date when using range
+        }
+
         setCurrentPage(1); // Reset to first page
     };
 
@@ -275,18 +319,32 @@ const DailyReport = ({ date }) => {
                 distinctLotNos: []
             });
 
-            const formattedDate = selectedDate ? new Date(selectedDate).toLocaleDateString('en-GB', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
-            }).replace(/\//g, '-') : '';
+            // Format dates for API
+            const formatDateForApi = (dateStr) => {
+                if (!dateStr) return '';
+                return new Date(dateStr).toLocaleDateString('en-GB', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                }).replace(/\//g, '-');
+            };
 
             // Prepare API parameters
             const params = {
-                date: formattedDate,
                 page: currentPage,
                 pageSize: pageSize
             };
+
+            // Use date range if both start and end dates are provided
+            if (startDate && endDate) {
+                params.startDate = formatDateForApi(startDate);
+                params.endDate = formatDateForApi(endDate);
+                console.log(`Using date range: ${params.startDate} to ${params.endDate}`);
+            } else if (startDate) {
+                // Use start date as a single date if end date is not provided
+                params.date = formatDateForApi(startDate);
+                console.log(`Using single date: ${params.date}`);
+            }
 
             // Only add userId if it's selected
             if (userId) {
@@ -301,6 +359,17 @@ const DailyReport = ({ date }) => {
 
             const response = await API.get(`/Reports/DailyReports`, { params });
             console.log('API Response:', response.data);
+
+            // Extract project name from the first transaction if available
+            if (response.data &&
+                response.data.userTransactionDetails &&
+                response.data.userTransactionDetails.length > 0 &&
+                response.data.userTransactionDetails[0].projectName) {
+                setProjectName(response.data.userTransactionDetails[0].projectName);
+            } else {
+                setProjectName('');
+            }
+
             setReportData(response.data);
         } catch (error) {
             console.error("Error fetching daily report:", error);
@@ -318,12 +387,21 @@ const DailyReport = ({ date }) => {
     }, []);
 
     useEffect(() => {
-        // Only fetch data if we have a valid date
-        if (selectedDate) {
+        // Fetch data if we have either a valid start date or a date range
+        if (startDate) {
             // Reset any previous data and fetch new data
             fetchDailyReport();
         }
-    }, [selectedDate, userId, selectedGroup, currentPage, pageSize]);
+    }, [startDate, endDate, userId, selectedGroup, currentPage, pageSize]);
+
+    // Initialize with today's date if no date is selected
+    useEffect(() => {
+        if (!startDate && !endDate) {
+            const today = new Date().toISOString().split('T')[0];
+            setStartDate(today);
+            setSelectedDate(today); // Also set selectedDate for API compatibility
+        }
+    }, []);
 
 
 
@@ -442,7 +520,7 @@ const DailyReport = ({ date }) => {
 
 
 
-    // Define CSS animations
+    // Define CSS animations and custom styles
     const keyframes = `
         @keyframes fadeIn {
             from { opacity: 0; }
@@ -460,6 +538,99 @@ const DailyReport = ({ date }) => {
         @keyframes shimmer {
             0% { background-position: -1000px 0; }
             100% { background-position: 1000px 0; }
+        }
+
+        /* Custom scrollbar styling */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Custom tooltip styling */
+        .tooltip.show {
+            opacity: 1 !important;
+            z-index: 9999 !important;
+        }
+
+        /* Process card tooltips - transparent background */
+        .custom-tooltip .tooltip-inner {
+            background-color: transparent !important;
+            padding: 0 !important;
+            border-radius: 8px !important;
+            max-width: 320px !important;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2) !important;
+        }
+
+        /* Table tooltips - styled background */
+        .tooltip-inner {
+            background-color: #2c3e50 !important;
+            color: white !important;
+            padding: 10px 15px !important;
+            border-radius: 8px !important;
+            max-width: 350px !important;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2) !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            font-size: 0.9rem !important;
+            line-height: 1.5 !important;
+            text-align: left !important;
+            overflow: visible !important;
+        }
+
+        /* Fix for tooltip positioning */
+        .tooltip {
+            pointer-events: none !important;
+        }
+
+        /* Make sure tooltip content is visible */
+        .tooltip-inner * {
+            pointer-events: auto !important;
+        }
+
+        /* Tooltip arrows */
+        .tooltip.bs-tooltip-auto[x-placement^=top] .arrow::before,
+        .tooltip.bs-tooltip-top .arrow::before {
+            border-top-color: #2c3e50 !important;
+        }
+
+        .tooltip.bs-tooltip-auto[x-placement^=bottom] .arrow::before,
+        .tooltip.bs-tooltip-bottom .arrow::before {
+            border-bottom-color: #2c3e50 !important;
+        }
+
+        .tooltip.bs-tooltip-auto[x-placement^=left] .arrow::before,
+        .tooltip.bs-tooltip-left .arrow::before {
+            border-left-color: #2c3e50 !important;
+        }
+
+        .tooltip.bs-tooltip-auto[x-placement^=right] .arrow::before,
+        .tooltip.bs-tooltip-right .arrow::before {
+            border-right-color: #2c3e50 !important;
+        }
+
+        /* Custom tooltip arrows for process cards */
+        .custom-tooltip.tooltip.bs-tooltip-auto[x-placement^=top] .arrow::before,
+        .custom-tooltip.tooltip.bs-tooltip-top .arrow::before,
+        .custom-tooltip.tooltip.bs-tooltip-auto[x-placement^=bottom] .arrow::before,
+        .custom-tooltip.tooltip.bs-tooltip-bottom .arrow::before,
+        .custom-tooltip.tooltip.bs-tooltip-auto[x-placement^=left] .arrow::before,
+        .custom-tooltip.tooltip.bs-tooltip-left .arrow::before,
+        .custom-tooltip.tooltip.bs-tooltip-auto[x-placement^=right] .arrow::before,
+        .custom-tooltip.tooltip.bs-tooltip-right .arrow::before {
+            border-color: transparent !important;
         }
     `;
 
@@ -592,16 +763,51 @@ const DailyReport = ({ date }) => {
                                         color: '#4a90e2'
                                     }} />
                                     Select Date
-                                    <span style={{
-                                        color: '#dc3545',
-                                        fontWeight: '700',
-                                        marginLeft: '2px'
-                                    }}>*</span>
                                 </div>
                                 <Form.Control
                                     type="date"
-                                    value={selectedDate}
-                                    onChange={handleDateSelect}
+                                    value={startDate}
+                                    onChange={handleStartDateSelect}
+                                    style={{
+                                        backgroundColor: "#ffffff",
+                                        border: '1px solid #e0e0e0',
+                                        borderRadius: '8px',
+                                        cursor: "pointer",
+                                        transition: "all 0.2s ease",
+                                        boxShadow: "0 2px 4px rgba(0,0,0,0.03)",
+                                        height: "42px",
+                                        fontSize: "0.9rem",
+                                        position: "relative",
+                                        zIndex: 10,
+                                        padding: '10px 12px',
+                                        width: '100%'
+                                    }}
+                                />
+                            </div>
+                        </Col>
+
+                        <Col xs={12} sm={6} md={4} lg={3}>
+                            <div style={{
+                                marginBottom: '15px'
+                            }}>
+                                <div style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    marginBottom: '8px',
+                                    fontWeight: '600',
+                                    fontSize: '0.9rem',
+                                    color: '#495057'
+                                }}>
+                                    <FaCalendarAlt style={{
+                                        marginRight: '8px',
+                                        color: '#4a90e2'
+                                    }} />
+                                    End Date
+                                </div>
+                                <Form.Control
+                                    type="date"
+                                    value={endDate}
+                                    onChange={handleEndDateSelect}
                                     style={{
                                         backgroundColor: "#ffffff",
                                         border: '1px solid #e0e0e0',
@@ -785,7 +991,7 @@ const DailyReport = ({ date }) => {
                         </Col>
 
                         <Col xs={12} sm={6} md={4} lg={3} className="d-flex align-items-end">
-                            {selectedDate && (
+                            {startDate && (
                                 <div style={{
                                     display: 'inline-flex',
                                     alignItems: 'center',
@@ -801,12 +1007,30 @@ const DailyReport = ({ date }) => {
                                     animation: 'fadeIn 0.3s ease-in-out'
                                 }}>
                                     <FaCalendarAlt style={{ marginRight: '8px' }} />
-                                    {new Date(selectedDate).toLocaleDateString('en-US', {
-                                        weekday: 'long',
-                                        year: 'numeric',
-                                        month: 'long',
-                                        day: 'numeric'
-                                    })}
+                                    {endDate ? (
+                                        // Show date range if both dates are selected
+                                        <>
+                                            {new Date(startDate).toLocaleDateString('en-US', {
+                                                year: 'numeric',
+                                                month: 'short',
+                                                day: 'numeric'
+                                            })} to {new Date(endDate).toLocaleDateString('en-US', {
+                                                year: 'numeric',
+                                                month: 'short',
+                                                day: 'numeric'
+                                            })}
+                                        </>
+                                    ) : (
+                                        // Show single date if only start date is selected
+                                        <>
+                                            {new Date(startDate).toLocaleDateString('en-US', {
+                                                weekday: 'long',
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric'
+                                            })}
+                                        </>
+                                    )}
                                 </div>
                             )}
                         </Col>
@@ -869,7 +1093,7 @@ const DailyReport = ({ date }) => {
                         margin: '0 auto'
                     }}>Please wait while we fetch the latest information...</p>
                 </div>
-            ) : selectedDate ? (
+            ) : (startDate) ? (
                 <>
                     {/* Summary Cards */}
                     <div style={{
@@ -891,7 +1115,7 @@ const DailyReport = ({ date }) => {
                             <Col md={6} lg={3} xl={3} className="mb-3">
                                 <Card style={{
                                     borderRadius: '12px',
-                                    border: '1px solid rgba(0,0,0,0.05)',
+                                         border: '  1px solid silver',
                                     boxShadow: '0 4px 6px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.03)',
                                     transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                                     overflow: 'hidden',
@@ -939,7 +1163,7 @@ const DailyReport = ({ date }) => {
                             <Col md={6} lg={3} xl={3} className="mb-3">
                                 <Card style={{
                                     borderRadius: '12px',
-                                    border: '1px solid rgba(0,0,0,0.05)',
+                                        border: '  1px solid silver',
                                     boxShadow: '0 4px 6px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.03)',
                                     transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                                     overflow: 'hidden',
@@ -987,7 +1211,7 @@ const DailyReport = ({ date }) => {
                             <Col md={6} lg={3} xl={3} className="mb-3">
                                 <Card style={{
                                     borderRadius: '12px',
-                                    border: '1px solid rgba(0,0,0,0.05)',
+                                    border: '  1px solid silver',
                                     boxShadow: '0 4px 6px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.03)',
                                     transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                                     overflow: 'hidden',
@@ -1067,7 +1291,7 @@ const DailyReport = ({ date }) => {
                             <Col md={6} lg={3} xl={3} className="mb-3">
                                 <Card style={{
                                     borderRadius: '12px',
-                                    border: '1px solid rgba(0,0,0,0.05)',
+                                       border: '  1px solid silver',
                                     boxShadow: '0 4px 6px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.03)',
                                     transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                                     overflow: 'hidden',
@@ -1140,20 +1364,7 @@ const DailyReport = ({ date }) => {
                                 </Card>
                             </Col>
 
-                            <Col md={6} lg={3} xl={3} className="mb-3">
-                                <Card style={{
-                                    borderRadius: '12px',
-                                    border: '1px solid rgba(0,0,0,0.05)',
-                                    boxShadow: '0 4px 6px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.03)',
-                                    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                                    overflow: 'hidden',
-                                    height: '100%',
-                                    backgroundColor: 'white',
-                                    cursor: 'pointer'
-                                }}>
-                                  
-                                </Card>
-                            </Col>
+
                         </Row>
                     </div>
 
@@ -1162,7 +1373,7 @@ const DailyReport = ({ date }) => {
                         <div style={{
                             marginBottom: '20px',
                             animation: 'slideInUp 0.5s ease-in-out 0.3s both',
-                            border: '1px solid rgba(0,0,0,0.05)',
+                                border: '  1px solid silver',
                             borderRadius: '12px',
                             backgroundColor: 'white',
                             boxShadow: '0 4px 6px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.03)',
@@ -1231,7 +1442,7 @@ const DailyReport = ({ date }) => {
                                         fontWeight: '500',
                                         fontSize: '0.8rem',
                                         boxShadow: '0 1px 3px rgba(44, 123, 229, 0.1)',
-                                        border: '1px solid rgba(44, 123, 229, 0.2)',
+                                             border: '  1px solid silver',
                                         marginRight: '10px'
                                     }}>
                                         <FaChartPie style={{ marginRight: '6px', fontSize: '10px' }} />
@@ -1261,7 +1472,7 @@ const DailyReport = ({ date }) => {
                                                     <Col key={index} xs={12} sm={6} md={4} lg={3}>
                                                         <Card style={{
                                                             borderRadius: '8px',
-                                                            border: '1px solid rgba(0,0,0,0.05)',
+                                                                  border: '  1px solid silver',
                                                             boxShadow: '0 2px 4px rgba(0,0,0,0.03), 0 1px 2px rgba(0,0,0,0.02)',
                                                             transition: 'transform 0.2s ease, box-shadow 0.2s ease',
                                                             overflow: 'hidden',
@@ -1371,32 +1582,329 @@ const DailyReport = ({ date }) => {
                                                                     })()}
                                                                 </div>
 
+                                                                {/* Quantity and Catch Count Row */}
                                                                 <div style={{
                                                                     display: 'flex',
                                                                     justifyContent: 'space-between',
                                                                     alignItems: 'center',
-                                                                    marginTop: 'auto'
+                                                                    marginTop: 'auto',
+                                                                    gap: '8px'
                                                                 }}>
+                                                                    {/* Quantity */}
                                                                     <div style={{
-                                                                        fontSize: '0.75rem',
-                                                                        color: '#6c757d',
-                                                                        fontWeight: '500'
+                                                                        display: 'flex',
+                                                                        flexDirection: 'column',
+                                                                        flex: '1'
                                                                     }}>
-                                                                        Quantity:
+                                                                        <div style={{
+                                                                            fontSize: '0.75rem',
+                                                                            color: '#6c757d',
+                                                                            fontWeight: '500',
+                                                                            marginBottom: '4px'
+                                                                        }}>
+                                                                            Quantity:
+                                                                        </div>
+                                                                        <div style={{
+                                                                            display: 'inline-flex',
+                                                                            alignItems: 'center',
+                                                                            padding: '3px 8px',
+                                                                            borderRadius: '4px',
+                                                                            backgroundColor: '#e6f9f1',
+                                                                            color: '#2dce89',
+                                                                            fontWeight: '600',
+                                                                            fontSize: '0.8rem',
+                                                                            boxShadow: '0 1px 2px rgba(45, 206, 137, 0.1)',
+                                                                            border: '1px solid rgba(45, 206, 137, 0.2)'
+                                                                        }}>
+                                                                            {process.totalQuantity.toLocaleString()}
+                                                                        </div>
                                                                     </div>
+
+                                                                    {/* Catch Count */}
                                                                     <div style={{
-                                                                        display: 'inline-flex',
-                                                                        alignItems: 'center',
-                                                                        padding: '3px 8px',
-                                                                        borderRadius: '4px',
-                                                                        backgroundColor: '#e6f9f1',
-                                                                        color: '#2dce89',
-                                                                        fontWeight: '600',
-                                                                        fontSize: '0.8rem',
-                                                                        boxShadow: '0 1px 2px rgba(45, 206, 137, 0.1)',
-                                                                        border: '1px solid rgba(45, 206, 137, 0.2)'
+                                                                        display: 'flex',
+                                                                        flexDirection: 'column',
+                                                                        flex: '1'
                                                                     }}>
-                                                                        {process.totalQuantity.toLocaleString()}
+                                                                        <div style={{
+                                                                            fontSize: '0.75rem',
+                                                                            color: '#6c757d',
+                                                                            fontWeight: '500',
+                                                                            marginBottom: '4px'
+                                                                        }}>
+                                                                            Catches:
+                                                                        </div>
+                                                                        {(() => {
+                                                                            // Get all transactions for this process
+                                                                            const processTransactions = reportData.userTransactionDetails.filter(
+                                                                                t => t.processId === process.processId
+                                                                            );
+
+                                                                            // Get unique catch numbers
+                                                                            const uniqueCatches = [...new Set(processTransactions.map(t => t.catchNo))];
+                                                                            const catchCount = uniqueCatches.length;
+
+                                                                            return (
+                                                                                <OverlayTrigger
+                                                                                    placement="auto"
+                                                                                    delay={{ show: 200, hide: 100 }}
+                                                                                    popperConfig={{
+                                                                                        modifiers: [
+                                                                                            {
+                                                                                                name: 'preventOverflow',
+                                                                                                options: {
+                                                                                                    boundary: 'viewport',
+                                                                                                    padding: 10
+                                                                                                }
+                                                                                            },
+                                                                                            {
+                                                                                                name: 'offset',
+                                                                                                options: {
+                                                                                                    offset: [0, 10]
+                                                                                                }
+                                                                                            },
+                                                                                            {
+                                                                                                name: 'flip',
+                                                                                                options: {
+                                                                                                    fallbackPlacements: ['top', 'bottom', 'right', 'left'],
+                                                                                                    padding: 10
+                                                                                                }
+                                                                                            }
+                                                                                        ]
+                                                                                    }}
+                                                                                    overlay={
+                                                                                        <Tooltip id={`tooltip-catch-${process.processId}`} className="custom-tooltip">
+                                                                                            <div style={{
+                                                                                                textAlign: 'left',
+                                                                                                padding: '12px',
+                                                                                                width: uniqueCatches.length > 15 ? '320px' : '300px',
+                                                                                                background: 'linear-gradient(135deg, #2c3e50, #34495e)',
+                                                                                                borderRadius: '10px',
+                                                                                                boxShadow: '0 6px 20px rgba(0,0,0,0.25)',
+                                                                                                border: '1px solid rgba(255,255,255,0.1)',
+                                                                                                position: 'relative',
+                                                                                                overflow: 'hidden',
+                                                                                                transform: 'translateZ(0)'
+                                                                                            }}>
+                                                                                                {/* Add decorative elements */}
+                                                                                                <div style={{
+                                                                                                    position: 'absolute',
+                                                                                                    top: '-20px',
+                                                                                                    right: '-20px',
+                                                                                                    width: '80px',
+                                                                                                    height: '80px',
+                                                                                                    borderRadius: '50%',
+                                                                                                    background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%)',
+                                                                                                    pointerEvents: 'none'
+                                                                                                }}></div>
+                                                                                                <div style={{
+                                                                                                    position: 'absolute',
+                                                                                                    bottom: '-30px',
+                                                                                                    left: '-30px',
+                                                                                                    width: '100px',
+                                                                                                    height: '100px',
+                                                                                                    borderRadius: '50%',
+                                                                                                    background: 'radial-gradient(circle, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 70%)',
+                                                                                                    pointerEvents: 'none'
+                                                                                                }}></div>
+                                                                                                <div style={{
+                                                                                                    borderBottom: '1px solid rgba(255,255,255,0.15)',
+                                                                                                    paddingBottom: '10px',
+                                                                                                    marginBottom: '10px',
+                                                                                                    fontWeight: 'bold',
+                                                                                                    display: 'flex',
+                                                                                                    alignItems: 'center',
+                                                                                                    justifyContent: 'space-between',
+                                                                                                    position: 'relative',
+                                                                                                    zIndex: 1
+                                                                                                }}>
+                                                                                                    <div style={{
+                                                                                                        display: 'flex',
+                                                                                                        alignItems: 'center'
+                                                                                                    }}>
+                                                                                                        <div style={{
+                                                                                                            width: '24px',
+                                                                                                            height: '24px',
+                                                                                                            borderRadius: '50%',
+                                                                                                            background: 'linear-gradient(135deg, #3498db, #2980b9)',
+                                                                                                            display: 'flex',
+                                                                                                            alignItems: 'center',
+                                                                                                            justifyContent: 'center',
+                                                                                                            marginRight: '8px',
+                                                                                                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                                                                                                        }}>
+                                                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="#ffffff" viewBox="0 0 16 16">
+                                                                                                                <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+                                                                                                                <path d="M10.97 4.97a.75.75 0 0 1 1.071 1.05l-3.992 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.235.235 0 0 1 .02-.022z"/>
+                                                                                                            </svg>
+                                                                                                        </div>
+                                                                                                        <span style={{
+                                                                                                            fontSize: '0.95rem',
+                                                                                                            color: '#ecf0f1',
+                                                                                                            textShadow: '0 1px 2px rgba(0,0,0,0.2)'
+                                                                                                        }}>
+                                                                                                            Catch Numbers <span style={{
+                                                                                                                display: 'inline-flex',
+                                                                                                                alignItems: 'center',
+                                                                                                                justifyContent: 'center',
+                                                                                                                width: '22px',
+                                                                                                                height: '22px',
+                                                                                                                borderRadius: '50%',
+                                                                                                                backgroundColor: 'rgba(255,255,255,0.15)',
+                                                                                                                marginLeft: '6px',
+                                                                                                                fontSize: '0.8rem'
+                                                                                                            }}>{uniqueCatches.length}</span>
+                                                                                                        </span>
+                                                                                                    </div>
+                                                                                                    <div style={{
+                                                                                                        fontSize: '0.75rem',
+                                                                                                        background: 'linear-gradient(135deg, rgba(52, 152, 219, 0.8), rgba(41, 128, 185, 0.8))',
+                                                                                                        padding: '4px 10px',
+                                                                                                        borderRadius: '12px',
+                                                                                                        color: 'white',
+                                                                                                        boxShadow: '0 2px 4px rgba(0,0,0,0.15)',
+                                                                                                        border: '1px solid rgba(255,255,255,0.1)',
+                                                                                                        display: 'flex',
+                                                                                                        alignItems: 'center'
+                                                                                                    }}>
+                                                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="currentColor" viewBox="0 0 16 16" style={{ marginRight: '4px' }}>
+                                                                                                            <path d="M8 4a.5.5 0 0 1 .5.5V6H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V7H6a.5.5 0 0 1 0-1h1.5V4.5A.5.5 0 0 1 8 4z"/>
+                                                                                                            <path d="M4 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H4zm0 1h8a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z"/>
+                                                                                                        </svg>
+                                                                                                        {getProcessName(process.processId)}
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                                <div style={{
+                                                                                                    display: 'flex',
+                                                                                                    flexWrap: 'wrap',
+                                                                                                    gap: '6px',
+                                                                                                    width: '100%',
+                                                                                                    maxHeight: uniqueCatches.length > 30 ? '200px' :
+                                                                                                              uniqueCatches.length > 20 ? '180px' :
+                                                                                                              uniqueCatches.length > 10 ? '150px' : 'auto',
+                                                                                                    overflowY: uniqueCatches.length > 10 ? 'auto' : 'visible',
+                                                                                                    padding: '10px',
+                                                                                                    backgroundColor: 'rgba(255,255,255,0.05)',
+                                                                                                    borderRadius: '8px',
+                                                                                                    scrollbarWidth: 'thin',
+                                                                                                    scrollbarColor: 'rgba(255,255,255,0.3) transparent',
+                                                                                                    msOverflowStyle: 'none', /* IE and Edge */
+                                                                                                    border: '1px solid rgba(255,255,255,0.08)',
+                                                                                                    boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.1)',
+                                                                                                    position: 'relative',
+                                                                                                    zIndex: 1,
+                                                                                                    marginTop: '5px'
+                                                                                                }}
+                                                                                                className="custom-scrollbar"
+                                                                                                >
+                                                                                                    {uniqueCatches.map((catchNo, idx) => {
+                                                                                                        // Generate different colors for catch numbers
+                                                                                                        const colors = [
+                                                                                                            'rgba(52, 152, 219, 0.9)',  // Blue
+                                                                                                            'rgba(46, 204, 113, 0.9)',  // Green
+                                                                                                            'rgba(155, 89, 182, 0.9)',  // Purple
+                                                                                                            'rgba(241, 196, 15, 0.9)',  // Yellow
+                                                                                                            'rgba(231, 76, 60, 0.9)',   // Red
+                                                                                                            'rgba(26, 188, 156, 0.9)',   // Teal
+                                                                                                            'rgba(230, 126, 34, 0.9)'    // Orange
+                                                                                                        ];
+
+                                                                                                        // Use hash of catchNo to get consistent color
+                                                                                                        const hash = catchNo.split('').reduce((acc, char) => {
+                                                                                                            return char.charCodeAt(0) + ((acc << 5) - acc);
+                                                                                                        }, 0);
+
+                                                                                                        const colorIndex = Math.abs(hash) % colors.length;
+
+                                                                                                        // We'll use the color index for visual grouping
+
+                                                                                                        return (
+                                                                                                            <span key={idx} style={{
+                                                                                                                display: 'inline-flex',
+                                                                                                                alignItems: 'center',
+                                                                                                                padding: '5px 10px',
+                                                                                                                borderRadius: '6px',
+                                                                                                                backgroundColor: colors[colorIndex],
+                                                                                                                color: '#ffffff',
+                                                                                                                margin: '3px',
+                                                                                                                fontSize: '0.85rem',
+                                                                                                                fontWeight: '500',
+                                                                                                                boxShadow: '0 2px 4px rgba(0,0,0,0.15)',
+                                                                                                                border: '1px solid rgba(255,255,255,0.15)',
+                                                                                                                position: 'relative',
+                                                                                                                overflow: 'hidden'
+                                                                                                            }}>
+                                                                                                                <span style={{
+                                                                                                                    position: 'absolute',
+                                                                                                                    top: 0,
+                                                                                                                    left: 0,
+                                                                                                                    width: '100%',
+                                                                                                                    height: '100%',
+                                                                                                                    background: 'linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0))',
+                                                                                                                    pointerEvents: 'none'
+                                                                                                                }}></span>
+                                                                                                                {catchNo}
+                                                                                                            </span>
+                                                                                                        );
+                                                                                                    })}
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </Tooltip>
+                                                                                    }
+                                                                                >
+                                                                                    <div
+                                                                                        style={{
+                                                                                            display: 'inline-flex',
+                                                                                            alignItems: 'center',
+                                                                                            padding: '4px 10px',
+                                                                                            borderRadius: '6px',
+                                                                                            background: 'linear-gradient(135deg, #e8f4fd, #d0e6fb)',
+                                                                                            color: '#4a90e2',
+                                                                                            fontWeight: '600',
+                                                                                            fontSize: '0.85rem',
+                                                                                            boxShadow: '0 2px 4px rgba(74, 144, 226, 0.15)',
+                                                                                            border: '1px solid rgba(74, 144, 226, 0.25)',
+                                                                                            cursor: 'pointer',
+                                                                                            position: 'relative',
+                                                                                            transition: 'all 0.2s ease'
+                                                                                        }}
+                                                                                        onMouseEnter={(e) => {
+                                                                                            e.currentTarget.style.transform = 'translateY(-2px)';
+                                                                                            e.currentTarget.style.boxShadow = '0 4px 8px rgba(74, 144, 226, 0.25)';
+                                                                                            e.currentTarget.style.background = 'linear-gradient(135deg, #d0e6fb, #c0defa)';
+                                                                                        }}
+                                                                                        onMouseLeave={(e) => {
+                                                                                            e.currentTarget.style.transform = 'translateY(0)';
+                                                                                            e.currentTarget.style.boxShadow = '0 2px 4px rgba(74, 144, 226, 0.15)';
+                                                                                            e.currentTarget.style.background = 'linear-gradient(135deg, #e8f4fd, #d0e6fb)';
+                                                                                        }}
+                                                                                    >
+                                                                                        <span>{catchCount}</span>
+                                                                                        <span style={{
+                                                                                            marginLeft: '6px',
+                                                                                            fontSize: '10px',
+                                                                                            display: 'inline-flex',
+                                                                                            alignItems: 'center',
+                                                                                            justifyContent: 'center',
+                                                                                            width: '18px',
+                                                                                            height: '18px',
+                                                                                            borderRadius: '50%',
+                                                                                            background: 'linear-gradient(135deg, #ffffff, #f0f7ff)',
+                                                                                            color: '#4a90e2',
+                                                                                            fontWeight: 'bold',
+                                                                                            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                                                                                            border: '1px solid rgba(74, 144, 226, 0.3)',
+                                                                                            transition: 'all 0.2s ease'
+                                                                                        }}>
+                                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="currentColor" viewBox="0 0 16 16">
+                                                                                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                                                                                <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+                                                                                            </svg>
+                                                                                        </span>
+                                                                                    </div>
+                                                                                </OverlayTrigger>
+                                                                            );
+                                                                        })()}
                                                                     </div>
                                                                 </div>
 
@@ -1447,17 +1955,37 @@ const DailyReport = ({ date }) => {
                                 alignItems: 'center',
                                 marginBottom: '15px'
                             }}>
-                                <h5 style={{
-                                    fontSize: '1.1rem',
-                                    fontWeight: '600',
-                                    margin: 0,
-                                    color: '#2c3e50',
-                                    display: 'flex',
-                                    alignItems: 'center'
-                                }}>
-                                    <FaTable style={{ marginRight: '8px', color: '#4a90e2' }} />
-                                    Transaction Details
-                                </h5>
+                                <div>
+                                    <h5 style={{
+                                        fontSize: '1.1rem',
+                                        fontWeight: '600',
+                                        margin: 0,
+                                        marginBottom: '5px',
+                                        color: '#2c3e50',
+                                        display: 'flex',
+                                        alignItems: 'center'
+                                    }}>
+                                        <FaTable style={{ marginRight: '8px', color: '#4a90e2' }} />
+                                        Transaction Details
+                                    </h5>
+                                    {projectName && (
+                                        <div style={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            padding: '4px 10px',
+                                            borderRadius: '6px',
+                                            backgroundColor: '#f0f7ff',
+                                            color: '#4a90e2',
+                                            fontWeight: '500',
+                                            fontSize: '0.85rem',
+                                            marginTop: '5px',
+                                            boxShadow: '0 1px 2px rgba(44, 123, 229, 0.1)',
+                                            border: '1px solid rgba(44, 123, 229, 0.2)'
+                                        }}>
+                                            Project: {projectName}
+                                        </div>
+                                    )}
+                                </div>
 
                                 <div style={{
                                     display: 'flex',
@@ -1467,6 +1995,8 @@ const DailyReport = ({ date }) => {
                                     {/* Export Component */}
                                     <DailyReportExport
                                         selectedDate={selectedDate}
+                                        startDate={startDate}
+                                        endDate={endDate}
                                         selectedGroup={selectedGroup}
                                         userId={userId}
                                         groupName={selectedGroup ? groups.find(g => g.id === parseInt(selectedGroup))?.name : ''}
@@ -1474,6 +2004,7 @@ const DailyReport = ({ date }) => {
                                         machines={reportData.machines || []}
                                         zones={zones || []}
                                         users={users || []}
+                                        projectName={projectName}
                                     />
 
                                     {selectedGroup && (
@@ -1851,12 +2382,163 @@ const DailyReport = ({ date }) => {
                                                         borderTop: '1px solid #e9ecef'
                                                     }}>
                                                         <OverlayTrigger
-                                                            placement="top"
+                                                            placement="auto"
+                                                            delay={{ show: 200, hide: 100 }}
+                                                            popperConfig={{
+                                                                modifiers: [
+                                                                    {
+                                                                        name: 'preventOverflow',
+                                                                        options: {
+                                                                            boundary: 'viewport',
+                                                                            padding: 10
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        name: 'offset',
+                                                                        options: {
+                                                                            offset: [0, 8]
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        name: 'flip',
+                                                                        options: {
+                                                                            fallbackPlacements: ['bottom', 'top', 'right', 'left'],
+                                                                            padding: 10
+                                                                        }
+                                                                    }
+                                                                ]
+                                                            }}
                                                             overlay={
                                                                 <Tooltip>
-                                                                    <div style={{ textAlign: 'left' }}>
-                                                                        <div><strong>Start:</strong> {new Date(transaction.startTime).toLocaleString()}</div>
-                                                                        <div><strong>End:</strong> {new Date(transaction.endTime).toLocaleString()}</div>
+                                                                    <div style={{
+                                                                        padding: '8px',
+                                                                        borderRadius: '6px',
+                                                                        background: 'rgba(255,255,255,0.05)',
+                                                                        width: '100%'
+                                                                    }}>
+                                                                        <div style={{
+                                                                            display: 'flex',
+                                                                            alignItems: 'center',
+                                                                            marginBottom: '10px',
+                                                                            borderBottom: '1px solid rgba(255,255,255,0.1)',
+                                                                            paddingBottom: '8px'
+                                                                        }}>
+                                                                            <div style={{
+                                                                                width: '24px',
+                                                                                height: '24px',
+                                                                                borderRadius: '50%',
+                                                                                background: 'linear-gradient(135deg, #fb6340, #f5365c)',
+                                                                                display: 'flex',
+                                                                                alignItems: 'center',
+                                                                                justifyContent: 'center',
+                                                                                marginRight: '8px',
+                                                                                boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                                                                            }}>
+                                                                                <FaClock style={{ color: 'white', fontSize: '12px' }} />
+                                                                            </div>
+                                                                            <span style={{ fontWeight: 'bold' }}>Time Details</span>
+                                                                        </div>
+
+                                                                        <div style={{
+                                                                            display: 'flex',
+                                                                            flexDirection: 'column',
+                                                                            gap: '10px'
+                                                                        }}>
+                                                                            <div style={{
+                                                                                display: 'flex',
+                                                                                alignItems: 'flex-start',
+                                                                                padding: '6px 8px',
+                                                                                borderRadius: '4px',
+                                                                                backgroundColor: 'rgba(17, 205, 239, 0.1)',
+                                                                                border: '1px solid rgba(17, 205, 239, 0.2)'
+                                                                            }}>
+                                                                                <div style={{
+                                                                                    display: 'flex',
+                                                                                    flexDirection: 'column',
+                                                                                    width: '100%'
+                                                                                }}>
+                                                                                    <div style={{
+                                                                                        display: 'flex',
+                                                                                        alignItems: 'center',
+                                                                                        marginBottom: '4px'
+                                                                                    }}>
+                                                                                        <strong style={{ color: '#11cdef', marginRight: '5px' }}>Start:</strong>
+                                                                                        <span style={{ fontSize: '0.9rem' }}>
+                                                                                            {new Date(transaction.startTime).toLocaleDateString()}
+                                                                                        </span>
+                                                                                    </div>
+                                                                                    <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)' }}>
+                                                                                        {new Date(transaction.startTime).toLocaleTimeString()}
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+
+                                                                            <div style={{
+                                                                                display: 'flex',
+                                                                                alignItems: 'flex-start',
+                                                                                padding: '6px 8px',
+                                                                                borderRadius: '4px',
+                                                                                backgroundColor: 'rgba(251, 99, 64, 0.1)',
+                                                                                border: '1px solid rgba(251, 99, 64, 0.2)'
+                                                                            }}>
+                                                                                <div style={{
+                                                                                    display: 'flex',
+                                                                                    flexDirection: 'column',
+                                                                                    width: '100%'
+                                                                                }}>
+                                                                                    <div style={{
+                                                                                        display: 'flex',
+                                                                                        alignItems: 'center',
+                                                                                        marginBottom: '4px'
+                                                                                    }}>
+                                                                                        <strong style={{ color: '#fb6340', marginRight: '5px' }}>End:</strong>
+                                                                                        <span style={{ fontSize: '0.9rem' }}>
+                                                                                            {new Date(transaction.endTime).toLocaleDateString()}
+                                                                                        </span>
+                                                                                    </div>
+                                                                                    <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)' }}>
+                                                                                        {new Date(transaction.endTime).toLocaleTimeString()}
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+
+                                                                            <div style={{
+                                                                                display: 'flex',
+                                                                                alignItems: 'center',
+                                                                                padding: '6px 8px',
+                                                                                borderRadius: '4px',
+                                                                                backgroundColor: 'rgba(45, 206, 137, 0.1)',
+                                                                                border: '1px solid rgba(45, 206, 137, 0.2)',
+                                                                                marginTop: '2px'
+                                                                            }}>
+                                                                                <div style={{
+                                                                                    width: '16px',
+                                                                                    height: '16px',
+                                                                                    borderRadius: '50%',
+                                                                                    background: 'linear-gradient(135deg, #2dce89, #2bce89)',
+                                                                                    display: 'flex',
+                                                                                    alignItems: 'center',
+                                                                                    justifyContent: 'center',
+                                                                                    marginRight: '8px',
+                                                                                    boxShadow: '0 1px 2px rgba(0,0,0,0.2)'
+                                                                                }}>
+                                                                                    <FaClock style={{ color: 'white', fontSize: '8px' }} />
+                                                                                </div>
+                                                                                <div>
+                                                                                    <strong style={{ color: '#2dce89', marginRight: '5px', fontSize: '0.85rem' }}>Duration:</strong>
+                                                                                    <span style={{ fontSize: '0.85rem' }}>
+                                                                                        {(() => {
+                                                                                            const start = new Date(transaction.startTime);
+                                                                                            const end = new Date(transaction.endTime);
+                                                                                            const diff = Math.abs(end - start);
+                                                                                            const hours = Math.floor(diff / (1000 * 60 * 60));
+                                                                                            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                                                                                            return `${hours}h ${minutes}m`;
+                                                                                        })()}
+                                                                                    </span>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
                                                                 </Tooltip>
                                                             }
@@ -1899,20 +2581,103 @@ const DailyReport = ({ date }) => {
                                                                 ))}
                                                                 {transaction.teamMembersNames.length > 5 && (
                                                                     <OverlayTrigger
-                                                                        placement="top"
+                                                                        placement="auto"
+                                                                        delay={{ show: 200, hide: 100 }}
+                                                                        popperConfig={{
+                                                                            modifiers: [
+                                                                                {
+                                                                                    name: 'preventOverflow',
+                                                                                    options: {
+                                                                                        boundary: 'viewport',
+                                                                                        padding: 10
+                                                                                    }
+                                                                                },
+                                                                                {
+                                                                                    name: 'offset',
+                                                                                    options: {
+                                                                                        offset: [0, 8]
+                                                                                    }
+                                                                                },
+                                                                                {
+                                                                                    name: 'flip',
+                                                                                    options: {
+                                                                                        fallbackPlacements: ['bottom', 'top', 'right', 'left'],
+                                                                                        padding: 10
+                                                                                    }
+                                                                                }
+                                                                            ]
+                                                                        }}
                                                                         overlay={
                                                                             <Tooltip>
-                                                                                <div style={{ textAlign: 'left' }}>
-                                                                                    <strong>Additional members:</strong>
-                                                                                    <ul style={{
-                                                                                        marginBottom: 0,
-                                                                                        paddingLeft: '20px',
-                                                                                        marginTop: '5px'
+                                                                                <div style={{
+                                                                                    padding: '5px',
+                                                                                    borderRadius: '6px',
+                                                                                    background: 'rgba(255,255,255,0.05)'
+                                                                                }}>
+                                                                                    <div style={{
+                                                                                        display: 'flex',
+                                                                                        alignItems: 'center',
+                                                                                        marginBottom: '8px',
+                                                                                        borderBottom: '1px solid rgba(255,255,255,0.1)',
+                                                                                        paddingBottom: '5px'
                                                                                     }}>
-                                                                                        {transaction.teamMembersNames.slice(5).map((member, idx) => (
-                                                                                            <li key={idx}>{member}</li>
-                                                                                        ))}
-                                                                                    </ul>
+                                                                                        <FaUsers style={{ marginRight: '8px', color: '#5e72e4' }} />
+                                                                                        <span style={{ fontWeight: 'bold' }}>Team Members</span>
+                                                                                    </div>
+                                                                                    <div>
+                                                                                        <strong style={{ color: '#5e72e4', marginBottom: '5px', display: 'block' }}>
+                                                                                            All Members ({transaction.teamMembersNames.length}):
+                                                                                        </strong>
+                                                                                        <div style={{
+                                                                                            display: 'flex',
+                                                                                            flexDirection: 'column',
+                                                                                            gap: '5px',
+                                                                                            maxHeight: transaction.teamMembersNames.length > 15 ? '200px' :
+                                                                                                      transaction.teamMembersNames.length > 8 ? '180px' : '150px',
+                                                                                            overflowY: transaction.teamMembersNames.length > 6 ? 'auto' : 'visible',
+                                                                                            paddingRight: '5px',
+                                                                                            width: '100%'
+                                                                                        }} className="custom-scrollbar">
+                                                                                            {transaction.teamMembersNames.map((member, idx) => (
+                                                                                                <div key={idx} style={{
+                                                                                                    display: 'flex',
+                                                                                                    alignItems: 'center',
+                                                                                                    padding: '3px 6px',
+                                                                                                    borderRadius: '4px',
+                                                                                                    backgroundColor: idx % 2 === 0 ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.04)',
+                                                                                                    fontSize: '0.85rem',
+                                                                                                    whiteSpace: 'nowrap',
+                                                                                                    overflow: 'hidden',
+                                                                                                    textOverflow: 'ellipsis'
+                                                                                                }}>
+                                                                                                    <div style={{
+                                                                                                        width: '18px',
+                                                                                                        height: '18px',
+                                                                                                        borderRadius: '50%',
+                                                                                                        background: `linear-gradient(135deg, hsl(${(idx * 40) % 360}, 70%, 60%), hsl(${(idx * 40 + 20) % 360}, 70%, 50%))`,
+                                                                                                        marginRight: '6px',
+                                                                                                        display: 'flex',
+                                                                                                        alignItems: 'center',
+                                                                                                        justifyContent: 'center',
+                                                                                                        fontSize: '9px',
+                                                                                                        fontWeight: 'bold',
+                                                                                                        color: 'white',
+                                                                                                        flexShrink: 0,
+                                                                                                        boxShadow: '0 1px 2px rgba(0,0,0,0.2)'
+                                                                                                    }}>
+                                                                                                        {member.charAt(0).toUpperCase()}
+                                                                                                    </div>
+                                                                                                    <span style={{
+                                                                                                        overflow: 'hidden',
+                                                                                                        textOverflow: 'ellipsis',
+                                                                                                        maxWidth: '250px'
+                                                                                                    }}>
+                                                                                                        {member}
+                                                                                                    </span>
+                                                                                                </div>
+                                                                                            ))}
+                                                                                        </div>
+                                                                                    </div>
                                                                                 </div>
                                                                             </Tooltip>
                                                                         }
@@ -2226,7 +2991,7 @@ const DailyReport = ({ date }) => {
                                 marginBottom: '10px',
                                 maxWidth: '500px'
                             }}>
-                                No transaction details found for the selected date
+                                No transaction details found for the selected {startDate && endDate ? 'date range' : 'date'}
                                 {userId ? ' and user' : ''}
                                 {selectedGroup ? ' and group' : ''}.
                             </p>
@@ -2277,14 +3042,14 @@ const DailyReport = ({ date }) => {
                         fontWeight: '600',
                         marginBottom: '15px',
                         color: '#2c3e50'
-                    }}>Select a Date</h4>
+                    }}>Select Date</h4>
                     <p style={{
                         fontSize: '1rem',
                         color: '#6c757d',
                         marginBottom: '0',
                         maxWidth: '500px'
                     }}>
-                        Please select a date from the calendar to view the daily report.
+                        Please select either a single date or a date range (start date and end date) to view the daily report.
                     </p>
                 </div>
             )}
