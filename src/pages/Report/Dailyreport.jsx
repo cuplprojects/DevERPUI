@@ -46,6 +46,341 @@ const generateAvatarColor = (name) => {
 };
 
 // User Avatar component
+// CatchNumbersTooltip component to handle the tooltip for catch numbers
+const CatchNumbersTooltip = ({ process, uniqueCatches, getProcessName }) => {
+    const [showTooltip, setShowTooltip] = useState(false);
+
+    const toggleTooltip = () => {
+        setShowTooltip(!showTooltip);
+    };
+
+    const catchCount = uniqueCatches.length;
+
+    return (
+        <OverlayTrigger
+            placement="auto"
+            trigger="click"
+            show={showTooltip}
+            onToggle={setShowTooltip}
+            rootClose={true}
+            popperConfig={{
+                modifiers: [
+                    {
+                        name: 'preventOverflow',
+                        options: {
+                            boundary: 'viewport',
+                            padding: 10
+                        }
+                    },
+                    {
+                        name: 'offset',
+                        options: {
+                            offset: [0, 10]
+                        }
+                    },
+                    {
+                        name: 'flip',
+                        options: {
+                            fallbackPlacements: ['top', 'bottom', 'right', 'left'],
+                            padding: 10
+                        }
+                    }
+                ]
+            }}
+            overlay={
+                <Tooltip id={`tooltip-catch-${process.processId}`} className="custom-tooltip">
+                    <div style={{
+                        textAlign: 'left',
+                        padding: '12px',
+                        width: uniqueCatches.length > 15 ? '320px' : '300px',
+                        background: 'linear-gradient(135deg, #2c3e50, #34495e)',
+                        borderRadius: '10px',
+                        boxShadow: '0 6px 20px rgba(0,0,0,0.25)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        transform: 'translateZ(0)'
+                    }}>
+                        {/* Add decorative elements */}
+                        <div style={{
+                            position: 'absolute',
+                            top: '-20px',
+                            right: '-20px',
+                            width: '80px',
+                            height: '80px',
+                            borderRadius: '50%',
+                            background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%)',
+                            pointerEvents: 'none'
+                        }}></div>
+                        <div style={{
+                            position: 'absolute',
+                            bottom: '-30px',
+                            left: '-30px',
+                            width: '100px',
+                            height: '100px',
+                            borderRadius: '50%',
+                            background: 'radial-gradient(circle, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 70%)',
+                            pointerEvents: 'none'
+                        }}></div>
+                        <div style={{
+                            borderBottom: '1px solid rgba(255,255,255,0.15)',
+                            paddingBottom: '10px',
+                            marginBottom: '10px',
+                            fontWeight: 'bold',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            position: 'relative',
+                            zIndex: 1
+                        }}>
+                            <div style={{
+                                display: 'flex',
+                                alignItems: 'center'
+                            }}>
+                                <div style={{
+                                    width: '24px',
+                                    height: '24px',
+                                    borderRadius: '50%',
+                                    background: 'linear-gradient(135deg, #3498db, #2980b9)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    marginRight: '8px',
+                                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                                }}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="#ffffff" viewBox="0 0 16 16">
+                                        <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+                                        <path d="M10.97 4.97a.75.75 0 0 1 1.071 1.05l-3.992 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.235.235 0 0 1 .02-.022z"/>
+                                    </svg>
+                                </div>
+                                <span style={{
+                                    fontSize: '0.95rem',
+                                    color: '#ecf0f1',
+                                    textShadow: '0 1px 2px rgba(0,0,0,0.2)'
+                                }}>
+                                    Catch Numbers <span style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        width: '22px',
+                                        height: '22px',
+                                        borderRadius: '50%',
+                                        backgroundColor: 'rgba(255,255,255,0.15)',
+                                        marginLeft: '6px',
+                                        fontSize: '0.8rem'
+                                    }}>{uniqueCatches.length}</span>
+                                </span>
+                            </div>
+                            <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px'
+                            }}>
+                                <div style={{
+                                    fontSize: '0.75rem',
+                                    background: 'linear-gradient(135deg, rgba(52, 152, 219, 0.8), rgba(41, 128, 185, 0.8))',
+                                    padding: '4px 10px',
+                                    borderRadius: '12px',
+                                    color: 'white',
+                                    boxShadow: '0 2px 4px rgba(0,0,0,0.15)',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    display: 'flex',
+                                    alignItems: 'center'
+                                }}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="currentColor" viewBox="0 0 16 16" style={{ marginRight: '4px' }}>
+                                        <path d="M8 4a.5.5 0 0 1 .5.5V6H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V7H6a.5.5 0 0 1 0-1h1.5V4.5A.5.5 0 0 1 8 4z"/>
+                                        <path d="M4 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H4zm0 1h8a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z"/>
+                                    </svg>
+                                    {getProcessName(process.processId)}
+                                </div>
+
+                                {/* Close button */}
+                                <div
+                                    onClick={toggleTooltip}
+                                    style={{
+                                        width: '22px',
+                                        height: '22px',
+                                        borderRadius: '50%',
+                                        background: 'rgba(255,255,255,0.1)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        cursor: 'pointer',
+                                        border: '1px solid rgba(255,255,255,0.2)',
+                                        transition: 'all 0.2s ease'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.background = 'rgba(255,255,255,0.2)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+                                    }}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="#ffffff" viewBox="0 0 16 16">
+                                        <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        {uniqueCatches.length > 10 && (
+                            <div style={{
+                                fontSize: '0.7rem',
+                                color: 'rgba(255,255,255,0.5)',
+                                textAlign: 'center',
+                                marginBottom: '5px',
+                                fontStyle: 'italic'
+                            }}>
+                                Scroll to view all {uniqueCatches.length} catch numbers
+                            </div>
+                        )}
+                        <div style={{
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            gap: '6px',
+                            width: '100%',
+                            maxHeight: uniqueCatches.length > 30 ? '200px' :
+                                      uniqueCatches.length > 20 ? '180px' :
+                                      uniqueCatches.length > 10 ? '150px' : 'auto',
+                            overflowY: uniqueCatches.length > 10 ? 'auto' : 'visible',
+                            padding: '10px',
+                            backgroundColor: 'rgba(255,255,255,0.05)',
+                            borderRadius: '8px',
+                            scrollbarWidth: 'thin',
+                            scrollbarColor: 'rgba(255,255,255,0.3) transparent',
+                            msOverflowStyle: 'none', /* IE and Edge */
+                            border: '1px solid rgba(255,255,255,0.08)',
+                            boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.1)',
+                            position: 'relative',
+                            zIndex: 1,
+                            marginTop: '5px'
+                        }}
+                        className="custom-scrollbar"
+                        >
+                            {uniqueCatches.map((catchNo, idx) => {
+                                // Generate different colors for catch numbers
+                                const colors = [
+                                    'rgba(52, 152, 219, 0.9)',  // Blue
+                                    'rgba(46, 204, 113, 0.9)',  // Green
+                                    'rgba(155, 89, 182, 0.9)',  // Purple
+                                    'rgba(241, 196, 15, 0.9)',  // Yellow
+                                    'rgba(231, 76, 60, 0.9)',   // Red
+                                    'rgba(26, 188, 156, 0.9)',   // Teal
+                                    'rgba(230, 126, 34, 0.9)'    // Orange
+                                ];
+
+                                // Use hash of catchNo to get consistent color
+                                const hash = catchNo.split('').reduce((acc, char) => {
+                                    return char.charCodeAt(0) + ((acc << 5) - acc);
+                                }, 0);
+
+                                const colorIndex = Math.abs(hash) % colors.length;
+
+                                return (
+                                    <span key={idx} style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        padding: '5px 10px',
+                                        borderRadius: '6px',
+                                        backgroundColor: colors[colorIndex],
+                                        color: '#ffffff',
+                                        margin: '3px',
+                                        fontSize: '0.85rem',
+                                        fontWeight: '500',
+                                        boxShadow: '0 2px 4px rgba(0,0,0,0.15)',
+                                        border: '1px solid rgba(255,255,255,0.15)',
+                                        position: 'relative',
+                                        overflow: 'hidden'
+                                    }}>
+                                        <span style={{
+                                            position: 'absolute',
+                                            top: 0,
+                                            left: 0,
+                                            width: '100%',
+                                            height: '100%',
+                                            background: 'linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0))',
+                                            pointerEvents: 'none'
+                                        }}></span>
+                                        {catchNo}
+                                    </span>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </Tooltip>
+            }
+        >
+            <div
+                style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    padding: '4px 10px',
+                    borderRadius: '6px',
+                    background: showTooltip
+                        ? 'linear-gradient(135deg, #c0defa, #b0d6fa)'
+                        : 'linear-gradient(135deg, #e8f4fd, #d0e6fb)',
+                    color: '#4a90e2',
+                    fontWeight: '600',
+                    fontSize: '0.85rem',
+                    boxShadow: showTooltip
+                        ? '0 4px 8px rgba(74, 144, 226, 0.3)'
+                        : '0 2px 4px rgba(74, 144, 226, 0.15)',
+                    border: '1px solid rgba(74, 144, 226, 0.25)',
+                    cursor: 'pointer',
+                    position: 'relative',
+                    transition: 'all 0.2s ease',
+                    transform: showTooltip ? 'translateY(-2px)' : 'translateY(0)'
+                }}
+                onClick={toggleTooltip}
+                onMouseEnter={(e) => {
+                    if (!showTooltip) {
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                        e.currentTarget.style.boxShadow = '0 4px 8px rgba(74, 144, 226, 0.25)';
+                        e.currentTarget.style.background = 'linear-gradient(135deg, #d0e6fb, #c0defa)';
+                    }
+                }}
+                onMouseLeave={(e) => {
+                    if (!showTooltip) {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = '0 2px 4px rgba(74, 144, 226, 0.15)';
+                        e.currentTarget.style.background = 'linear-gradient(135deg, #e8f4fd, #d0e6fb)';
+                    }
+                }}
+            >
+                <span>{catchCount}</span>
+                <span style={{
+                    marginLeft: '6px',
+                    fontSize: '10px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '18px',
+                    height: '18px',
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #ffffff, #f0f7ff)',
+                    color: '#4a90e2',
+                    fontWeight: 'bold',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                    border: '1px solid rgba(74, 144, 226, 0.3)',
+                    transition: 'all 0.2s ease'
+                }}>
+                    {showTooltip ? (
+                        // Show close icon when tooltip is open
+                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                        </svg>
+                    ) : (
+                        // Show click icon when tooltip is closed
+                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+                            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                        </svg>
+                    )}
+                </span>
+            </div>
+        </OverlayTrigger>
+    );
+};
+
 const UserAvatar = ({ name, size = 30 }) => {
     const color = generateAvatarColor(name);
     const initials = name
@@ -100,6 +435,9 @@ const DailyReport = ({ date }) => {
         totalQuantity: 0,
         distinctLotNos: []
     });
+
+    // Store all transaction data (not just paginated data) for accurate catch number counting
+    const [allTransactionData, setAllTransactionData] = useState([]);
     const [machineMap, setMachineMap] = useState({});
     const [loading, setLoading] = useState(false);
     const [processes, setProcesses] = useState([]);
@@ -134,6 +472,9 @@ const DailyReport = ({ date }) => {
             distinctLotNos: []
         });
 
+        // Reset all transaction data
+        setAllTransactionData([]);
+
         // Set the start date
         setStartDate(e.target.value);
 
@@ -161,6 +502,9 @@ const DailyReport = ({ date }) => {
             totalQuantity: 0,
             distinctLotNos: []
         });
+
+        // Reset all transaction data
+        setAllTransactionData([]);
 
         // If end date is cleared
         if (!e.target.value) {
@@ -191,6 +535,10 @@ const DailyReport = ({ date }) => {
             totalQuantity: 0,
             distinctLotNos: []
         });
+
+        // Reset all transaction data
+        setAllTransactionData([]);
+
         setUserId(selectedOption ? selectedOption.value : '');
         setCurrentPage(1); // Reset to first page
     };
@@ -213,6 +561,9 @@ const DailyReport = ({ date }) => {
             totalQuantity: 0,
             distinctLotNos: []
         });
+
+        // Reset all transaction data
+        setAllTransactionData([]);
 
         const newGroupValue = selectedOption ? selectedOption.value : '';
         setSelectedGroup(newGroupValue);
@@ -303,6 +654,63 @@ const DailyReport = ({ date }) => {
         }
     };
 
+    // Function to fetch all transaction data (not just paginated)
+    const fetchAllTransactionData = async () => {
+        try {
+            // Format dates for API
+            const formatDateForApi = (dateStr) => {
+                if (!dateStr) return '';
+                return new Date(dateStr).toLocaleDateString('en-GB', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                }).replace(/\//g, '-');
+            };
+
+            // Prepare API parameters - use a large pageSize to get all records
+            const params = {
+                page: 1,
+                pageSize: 10000 // Use a very large page size to get all records
+            };
+
+            // Use date range if both start and end dates are provided
+            if (startDate && endDate) {
+                params.startDate = formatDateForApi(startDate);
+                params.endDate = formatDateForApi(endDate);
+            } else if (startDate) {
+                // Use start date as a single date if end date is not provided
+                params.date = formatDateForApi(startDate);
+            }
+
+            // Only add userId if it's selected
+            if (userId) {
+                params.userId = userId;
+            }
+
+            // Only add groupId if it's selected
+            if (selectedGroup) {
+                params.groupId = parseInt(selectedGroup);
+            }
+
+            const response = await API.get(`/Reports/DailyReports`, { params });
+
+            // If the API returns paginated data, use userTransactionDetails
+            if (response.data && response.data.userTransactionDetails) {
+                return response.data.userTransactionDetails || [];
+            }
+
+            // If the API returns an array directly
+            if (Array.isArray(response.data)) {
+                return response.data;
+            }
+
+            return [];
+        } catch (error) {
+            console.error("Error fetching all transaction data:", error);
+            return [];
+        }
+    };
+
     const fetchDailyReport = async () => {
         try {
             // Clear previous data and set loading state
@@ -318,6 +726,9 @@ const DailyReport = ({ date }) => {
                 totalQuantity: 0,
                 distinctLotNos: []
             });
+
+            // Reset all transaction data
+            setAllTransactionData([]);
 
             // Format dates for API
             const formatDateForApi = (dateStr) => {
@@ -371,6 +782,10 @@ const DailyReport = ({ date }) => {
             }
 
             setReportData(response.data);
+
+            // Fetch all transaction data for accurate catch number counting
+            const allTransactions = await fetchAllTransactionData();
+            setAllTransactionData(allTransactions);
         } catch (error) {
             console.error("Error fetching daily report:", error);
         } finally {
@@ -1635,274 +2050,21 @@ const DailyReport = ({ date }) => {
                                                                             Catches:
                                                                         </div>
                                                                         {(() => {
-                                                                            // Get all transactions for this process
-                                                                            const processTransactions = reportData.userTransactionDetails.filter(
+                                                                            // Get all transactions for this process from allTransactionData (not just paginated data)
+                                                                            const processTransactions = allTransactionData.filter(
                                                                                 t => t.processId === process.processId
                                                                             );
 
                                                                             // Get unique catch numbers
                                                                             const uniqueCatches = [...new Set(processTransactions.map(t => t.catchNo))];
-                                                                            const catchCount = uniqueCatches.length;
 
+                                                                            // Use the CatchNumbersTooltip component
                                                                             return (
-                                                                                <OverlayTrigger
-                                                                                    placement="auto"
-                                                                                    delay={{ show: 200, hide: 100 }}
-                                                                                    popperConfig={{
-                                                                                        modifiers: [
-                                                                                            {
-                                                                                                name: 'preventOverflow',
-                                                                                                options: {
-                                                                                                    boundary: 'viewport',
-                                                                                                    padding: 10
-                                                                                                }
-                                                                                            },
-                                                                                            {
-                                                                                                name: 'offset',
-                                                                                                options: {
-                                                                                                    offset: [0, 10]
-                                                                                                }
-                                                                                            },
-                                                                                            {
-                                                                                                name: 'flip',
-                                                                                                options: {
-                                                                                                    fallbackPlacements: ['top', 'bottom', 'right', 'left'],
-                                                                                                    padding: 10
-                                                                                                }
-                                                                                            }
-                                                                                        ]
-                                                                                    }}
-                                                                                    overlay={
-                                                                                        <Tooltip id={`tooltip-catch-${process.processId}`} className="custom-tooltip">
-                                                                                            <div style={{
-                                                                                                textAlign: 'left',
-                                                                                                padding: '12px',
-                                                                                                width: uniqueCatches.length > 15 ? '320px' : '300px',
-                                                                                                background: 'linear-gradient(135deg, #2c3e50, #34495e)',
-                                                                                                borderRadius: '10px',
-                                                                                                boxShadow: '0 6px 20px rgba(0,0,0,0.25)',
-                                                                                                border: '1px solid rgba(255,255,255,0.1)',
-                                                                                                position: 'relative',
-                                                                                                overflow: 'hidden',
-                                                                                                transform: 'translateZ(0)'
-                                                                                            }}>
-                                                                                                {/* Add decorative elements */}
-                                                                                                <div style={{
-                                                                                                    position: 'absolute',
-                                                                                                    top: '-20px',
-                                                                                                    right: '-20px',
-                                                                                                    width: '80px',
-                                                                                                    height: '80px',
-                                                                                                    borderRadius: '50%',
-                                                                                                    background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%)',
-                                                                                                    pointerEvents: 'none'
-                                                                                                }}></div>
-                                                                                                <div style={{
-                                                                                                    position: 'absolute',
-                                                                                                    bottom: '-30px',
-                                                                                                    left: '-30px',
-                                                                                                    width: '100px',
-                                                                                                    height: '100px',
-                                                                                                    borderRadius: '50%',
-                                                                                                    background: 'radial-gradient(circle, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 70%)',
-                                                                                                    pointerEvents: 'none'
-                                                                                                }}></div>
-                                                                                                <div style={{
-                                                                                                    borderBottom: '1px solid rgba(255,255,255,0.15)',
-                                                                                                    paddingBottom: '10px',
-                                                                                                    marginBottom: '10px',
-                                                                                                    fontWeight: 'bold',
-                                                                                                    display: 'flex',
-                                                                                                    alignItems: 'center',
-                                                                                                    justifyContent: 'space-between',
-                                                                                                    position: 'relative',
-                                                                                                    zIndex: 1
-                                                                                                }}>
-                                                                                                    <div style={{
-                                                                                                        display: 'flex',
-                                                                                                        alignItems: 'center'
-                                                                                                    }}>
-                                                                                                        <div style={{
-                                                                                                            width: '24px',
-                                                                                                            height: '24px',
-                                                                                                            borderRadius: '50%',
-                                                                                                            background: 'linear-gradient(135deg, #3498db, #2980b9)',
-                                                                                                            display: 'flex',
-                                                                                                            alignItems: 'center',
-                                                                                                            justifyContent: 'center',
-                                                                                                            marginRight: '8px',
-                                                                                                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-                                                                                                        }}>
-                                                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="#ffffff" viewBox="0 0 16 16">
-                                                                                                                <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
-                                                                                                                <path d="M10.97 4.97a.75.75 0 0 1 1.071 1.05l-3.992 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.235.235 0 0 1 .02-.022z"/>
-                                                                                                            </svg>
-                                                                                                        </div>
-                                                                                                        <span style={{
-                                                                                                            fontSize: '0.95rem',
-                                                                                                            color: '#ecf0f1',
-                                                                                                            textShadow: '0 1px 2px rgba(0,0,0,0.2)'
-                                                                                                        }}>
-                                                                                                            Catch Numbers <span style={{
-                                                                                                                display: 'inline-flex',
-                                                                                                                alignItems: 'center',
-                                                                                                                justifyContent: 'center',
-                                                                                                                width: '22px',
-                                                                                                                height: '22px',
-                                                                                                                borderRadius: '50%',
-                                                                                                                backgroundColor: 'rgba(255,255,255,0.15)',
-                                                                                                                marginLeft: '6px',
-                                                                                                                fontSize: '0.8rem'
-                                                                                                            }}>{uniqueCatches.length}</span>
-                                                                                                        </span>
-                                                                                                    </div>
-                                                                                                    <div style={{
-                                                                                                        fontSize: '0.75rem',
-                                                                                                        background: 'linear-gradient(135deg, rgba(52, 152, 219, 0.8), rgba(41, 128, 185, 0.8))',
-                                                                                                        padding: '4px 10px',
-                                                                                                        borderRadius: '12px',
-                                                                                                        color: 'white',
-                                                                                                        boxShadow: '0 2px 4px rgba(0,0,0,0.15)',
-                                                                                                        border: '1px solid rgba(255,255,255,0.1)',
-                                                                                                        display: 'flex',
-                                                                                                        alignItems: 'center'
-                                                                                                    }}>
-                                                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="currentColor" viewBox="0 0 16 16" style={{ marginRight: '4px' }}>
-                                                                                                            <path d="M8 4a.5.5 0 0 1 .5.5V6H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V7H6a.5.5 0 0 1 0-1h1.5V4.5A.5.5 0 0 1 8 4z"/>
-                                                                                                            <path d="M4 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H4zm0 1h8a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z"/>
-                                                                                                        </svg>
-                                                                                                        {getProcessName(process.processId)}
-                                                                                                    </div>
-                                                                                                </div>
-                                                                                                <div style={{
-                                                                                                    display: 'flex',
-                                                                                                    flexWrap: 'wrap',
-                                                                                                    gap: '6px',
-                                                                                                    width: '100%',
-                                                                                                    maxHeight: uniqueCatches.length > 30 ? '200px' :
-                                                                                                              uniqueCatches.length > 20 ? '180px' :
-                                                                                                              uniqueCatches.length > 10 ? '150px' : 'auto',
-                                                                                                    overflowY: uniqueCatches.length > 10 ? 'auto' : 'visible',
-                                                                                                    padding: '10px',
-                                                                                                    backgroundColor: 'rgba(255,255,255,0.05)',
-                                                                                                    borderRadius: '8px',
-                                                                                                    scrollbarWidth: 'thin',
-                                                                                                    scrollbarColor: 'rgba(255,255,255,0.3) transparent',
-                                                                                                    msOverflowStyle: 'none', /* IE and Edge */
-                                                                                                    border: '1px solid rgba(255,255,255,0.08)',
-                                                                                                    boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.1)',
-                                                                                                    position: 'relative',
-                                                                                                    zIndex: 1,
-                                                                                                    marginTop: '5px'
-                                                                                                }}
-                                                                                                className="custom-scrollbar"
-                                                                                                >
-                                                                                                    {uniqueCatches.map((catchNo, idx) => {
-                                                                                                        // Generate different colors for catch numbers
-                                                                                                        const colors = [
-                                                                                                            'rgba(52, 152, 219, 0.9)',  // Blue
-                                                                                                            'rgba(46, 204, 113, 0.9)',  // Green
-                                                                                                            'rgba(155, 89, 182, 0.9)',  // Purple
-                                                                                                            'rgba(241, 196, 15, 0.9)',  // Yellow
-                                                                                                            'rgba(231, 76, 60, 0.9)',   // Red
-                                                                                                            'rgba(26, 188, 156, 0.9)',   // Teal
-                                                                                                            'rgba(230, 126, 34, 0.9)'    // Orange
-                                                                                                        ];
-
-                                                                                                        // Use hash of catchNo to get consistent color
-                                                                                                        const hash = catchNo.split('').reduce((acc, char) => {
-                                                                                                            return char.charCodeAt(0) + ((acc << 5) - acc);
-                                                                                                        }, 0);
-
-                                                                                                        const colorIndex = Math.abs(hash) % colors.length;
-
-                                                                                                        // We'll use the color index for visual grouping
-
-                                                                                                        return (
-                                                                                                            <span key={idx} style={{
-                                                                                                                display: 'inline-flex',
-                                                                                                                alignItems: 'center',
-                                                                                                                padding: '5px 10px',
-                                                                                                                borderRadius: '6px',
-                                                                                                                backgroundColor: colors[colorIndex],
-                                                                                                                color: '#ffffff',
-                                                                                                                margin: '3px',
-                                                                                                                fontSize: '0.85rem',
-                                                                                                                fontWeight: '500',
-                                                                                                                boxShadow: '0 2px 4px rgba(0,0,0,0.15)',
-                                                                                                                border: '1px solid rgba(255,255,255,0.15)',
-                                                                                                                position: 'relative',
-                                                                                                                overflow: 'hidden'
-                                                                                                            }}>
-                                                                                                                <span style={{
-                                                                                                                    position: 'absolute',
-                                                                                                                    top: 0,
-                                                                                                                    left: 0,
-                                                                                                                    width: '100%',
-                                                                                                                    height: '100%',
-                                                                                                                    background: 'linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0))',
-                                                                                                                    pointerEvents: 'none'
-                                                                                                                }}></span>
-                                                                                                                {catchNo}
-                                                                                                            </span>
-                                                                                                        );
-                                                                                                    })}
-                                                                                                </div>
-                                                                                            </div>
-                                                                                        </Tooltip>
-                                                                                    }
-                                                                                >
-                                                                                    <div
-                                                                                        style={{
-                                                                                            display: 'inline-flex',
-                                                                                            alignItems: 'center',
-                                                                                            padding: '4px 10px',
-                                                                                            borderRadius: '6px',
-                                                                                            background: 'linear-gradient(135deg, #e8f4fd, #d0e6fb)',
-                                                                                            color: '#4a90e2',
-                                                                                            fontWeight: '600',
-                                                                                            fontSize: '0.85rem',
-                                                                                            boxShadow: '0 2px 4px rgba(74, 144, 226, 0.15)',
-                                                                                            border: '1px solid rgba(74, 144, 226, 0.25)',
-                                                                                            cursor: 'pointer',
-                                                                                            position: 'relative',
-                                                                                            transition: 'all 0.2s ease'
-                                                                                        }}
-                                                                                        onMouseEnter={(e) => {
-                                                                                            e.currentTarget.style.transform = 'translateY(-2px)';
-                                                                                            e.currentTarget.style.boxShadow = '0 4px 8px rgba(74, 144, 226, 0.25)';
-                                                                                            e.currentTarget.style.background = 'linear-gradient(135deg, #d0e6fb, #c0defa)';
-                                                                                        }}
-                                                                                        onMouseLeave={(e) => {
-                                                                                            e.currentTarget.style.transform = 'translateY(0)';
-                                                                                            e.currentTarget.style.boxShadow = '0 2px 4px rgba(74, 144, 226, 0.15)';
-                                                                                            e.currentTarget.style.background = 'linear-gradient(135deg, #e8f4fd, #d0e6fb)';
-                                                                                        }}
-                                                                                    >
-                                                                                        <span>{catchCount}</span>
-                                                                                        <span style={{
-                                                                                            marginLeft: '6px',
-                                                                                            fontSize: '10px',
-                                                                                            display: 'inline-flex',
-                                                                                            alignItems: 'center',
-                                                                                            justifyContent: 'center',
-                                                                                            width: '18px',
-                                                                                            height: '18px',
-                                                                                            borderRadius: '50%',
-                                                                                            background: 'linear-gradient(135deg, #ffffff, #f0f7ff)',
-                                                                                            color: '#4a90e2',
-                                                                                            fontWeight: 'bold',
-                                                                                            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-                                                                                            border: '1px solid rgba(74, 144, 226, 0.3)',
-                                                                                            transition: 'all 0.2s ease'
-                                                                                        }}>
-                                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="currentColor" viewBox="0 0 16 16">
-                                                                                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-                                                                                                <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
-                                                                                            </svg>
-                                                                                        </span>
-                                                                                    </div>
-                                                                                </OverlayTrigger>
+                                                                                <CatchNumbersTooltip
+                                                                                    process={process}
+                                                                                    uniqueCatches={uniqueCatches}
+                                                                                    getProcessName={getProcessName}
+                                                                                />
                                                                             );
                                                                         })()}
                                                                     </div>
