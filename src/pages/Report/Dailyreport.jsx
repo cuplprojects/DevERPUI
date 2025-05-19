@@ -2047,7 +2047,7 @@ const DailyReport = ({ date }) => {
                                                                             fontWeight: '500',
                                                                             marginBottom: '4px'
                                                                         }}>
-                                                                            Catch:
+                                                                            Catches :
                                                                         </div>
                                                                         {(() => {
                                                                             // Get all transactions for this process from allTransactionData (not just paginated data)
