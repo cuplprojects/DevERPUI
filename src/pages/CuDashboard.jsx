@@ -12,6 +12,7 @@ import {
 } from "react-icons/io";
 import { PiDotsNineBold } from "react-icons/pi";
 import { MdExpandMore } from "react-icons/md";
+import { MdNotifications, MdClose } from "react-icons/md";
 import { useStore } from "zustand";
 import themeStore from "./../store/themeStore";
 import statisticsImage from "./../assets/images/statistics.png";
@@ -104,6 +105,7 @@ const CuDashboard = () => {
   const [page, setPage] = useState(1);
   const pageSize = 5; // Number of projects per page
   const [hasMore, setHasMore] = useState(true);
+  const [showNoticeBoard, setShowNoticeBoard] = useState(false);
 
   const hasDisable = (projectid) => {
     const hasQuantitySheet = hasquantitySheet.find(
@@ -276,7 +278,7 @@ const CuDashboard = () => {
   };
 
   const handleTaskClick = (projectId, lotNumber) => {
-    setSelectedLot({ projectId, lotNumber });
+    setExpandedTask({ projectId, lotNumber });
     setActiveCard(projectId);
   };
 
@@ -320,8 +322,19 @@ const CuDashboard = () => {
               </Col>
             ))}
           </Row>
-          {hasMore && (
-            <div className="text-center mt-3">
+          <div className="d-flex justify-content-between align-items-center mt-3">
+            <Button
+              onClick={() => setShowNoticeBoard(!showNoticeBoard)}
+              className={`${customDark} ${customLightText} rounded-5 border-0 d-flex align-items-center`}
+              style={{ marginLeft: 'auto', marginRight: hasMore ? '10px' : '0' }}
+            >
+              {showNoticeBoard ? (
+                <MdClose size={20} />
+              ) : (
+                <MdNotifications size={20} />
+              )}
+            </Button>
+            {hasMore && (
               <MdExpandMore
                 onClick={() => fetchProjects(page + 1)}
                 style={{
@@ -330,8 +343,8 @@ const CuDashboard = () => {
                 }}
                 className={`${isLoading ? 'opacity-50' : ''} ${customDark} ${customLightText} rounded-5`}
               />
-            </div>
-          )}
+            )}
+          </div>
         </>
       );
     }
@@ -404,7 +417,18 @@ const CuDashboard = () => {
             </Carousel>
           </div>
           {hasMore && (
-            <div className="text-center mt-3">
+            <div className="d-flex justify-content-between align-items-center mt-3">
+              <Button
+                onClick={() => setShowNoticeBoard(!showNoticeBoard)}
+                className={`${customDark} ${customLightText} rounded-5 border-0 d-flex align-items-center`}
+                style={{ marginLeft: 'auto', marginRight: '10px' }}
+              >
+                {showNoticeBoard ? (
+                  <MdClose size={20} />
+                ) : (
+                  <MdNotifications size={20} />
+                )}
+              </Button>
               <Button
                 onClick={() => fetchProjects(page + 1)}
                 disabled={isLoading}
@@ -414,6 +438,20 @@ const CuDashboard = () => {
                   <Spinner size="sm" />
                 ) : (
                   <MdExpandMore size={20} />
+                )}
+              </Button>
+            </div>
+          )}
+          {!hasMore && (
+            <div className="d-flex justify-content-end mt-3">
+              <Button
+                onClick={() => setShowNoticeBoard(!showNoticeBoard)}
+                className={`${customDark} ${customLightText} rounded-5 border-0 d-flex align-items-center`}
+              >
+                {showNoticeBoard ? (
+                  <MdClose size={20} />
+                ) : (
+                  <MdNotifications size={20} />
                 )}
               </Button>
             </div>
@@ -444,13 +482,38 @@ const CuDashboard = () => {
           </div>
         </ScrollableContainer>
         {hasMore && (
-          <div className="text-center mt-3">
+          <div className="d-flex justify-content-between align-items-center mt-3">
+            <Button
+              onClick={() => setShowNoticeBoard(!showNoticeBoard)}
+              className={`${customDark} ${customLightText} rounded-5 border-0 d-flex align-items-center`}
+              style={{ marginLeft: 'auto', marginRight: '10px' }}
+            >
+              {showNoticeBoard ? (
+                <MdClose size={20} />
+              ) : (
+                <MdNotifications size={20} />
+              )}
+            </Button>
             <Button
               onClick={() => fetchProjects(page + 1)}
               disabled={isLoading}
               variant="primary"
             >
               {isLoading ? t("loading") : t("showMore")}
+            </Button>
+          </div>
+        )}
+        {!hasMore && (
+          <div className="d-flex justify-content-end mt-3">
+            <Button
+              onClick={() => setShowNoticeBoard(!showNoticeBoard)}
+              className={`${customDark} ${customLightText} rounded-5 border-0 d-flex align-items-center`}
+            >
+              {showNoticeBoard ? (
+                <MdClose size={20} />
+              ) : (
+                <MdNotifications size={20} />
+              )}
             </Button>
           </div>
         )}
@@ -541,7 +604,7 @@ const CuDashboard = () => {
 
       {renderCards()}
 
-      <Row className="gx-3 mt-4">
+      {/* <Row className="gx-3 mt-4">
         {visibleCards.lineChart && (
           <Col lg={visibleCards.pieChart ? 8 : 12}>
             <Card
@@ -579,12 +642,12 @@ const CuDashboard = () => {
             </Card>
           </Col>
         )}
-      </Row>
+      </Row> */}
 
         {/* Graphs and Charts */}
       <Row className="gx-3 mt-4">
         {visibleCards.agGrid && (
-          <Col lg={6} md={12}>
+          <Col lg={showNoticeBoard ? 4 : 6} md={12}>
             <Card
               className={`dcard shadow-lg d-flex flex-column mb-3 ${customLight} ${customLightBorder}`}
               style={{ height: "550px", background: "rgba(255,255,255,0.6)" }}
@@ -601,7 +664,7 @@ const CuDashboard = () => {
         )}
 
         {visibleCards.barChart && (
-          <Col lg={visibleCards.agGrid ? 6 : 12}>
+          <Col lg={showNoticeBoard ? (visibleCards.agGrid ? 4 : 8) : (visibleCards.agGrid ? 6 : 12)}>
             <Card
               className={`dcard shadow-lg mb-3 ${customLight} ${customLightBorder}`}
               style={{
@@ -625,56 +688,80 @@ const CuDashboard = () => {
             </Card>
           </Col>
         )}
+
+        {/* Notice Board */}
+        {showNoticeBoard && (
+          <Col lg={4}>
+            <Card
+              className={`dcard shadow-lg mb-3 ${customLight} ${customLightBorder}`}
+              style={{
+                height: "550px",
+                background: "rgba(255,255,255,0.6)",
+                overflow: "hidden",
+              }}
+            >
+              <div className="d-flex justify-content-between align-items-center p-3 py-2">
+                <h4 className={`text-dark mb-0 ${customDarkText}`}>
+                  {t("todaysTasks")}
+                </h4>
+                <Button
+                  variant="link"
+                  onClick={() => setShowNoticeBoard(false)}
+                  className="p-0"
+                >
+                  <MdClose size={20} className={customDarkText} />
+                </Button>
+              </div>
+              <div
+                style={{
+                  height: "calc(100% - 60px)",
+                  overflowY: "auto",
+                  padding: "0 15px 15px 15px",
+                }}
+              >
+                {/* Task List Items */}
+                {dispatchData.filter(task => {
+                  const isToday = new Date(task.dispatchDate).toLocaleDateString() === new Date().toLocaleDateString();
+                  return isToday;
+                }).length > 0 ? (
+                  dispatchData.map(task => {
+                    const isToday = new Date(task.dispatchDate).toLocaleDateString() === new Date().toLocaleDateString();
+
+                    if (!isToday) {
+                      return null;
+                    }
+
+                    return (
+                      <Card key={`${task.projectId}-${task.lotNumber}`} className="mb-2" size="sm">
+                        <Card.Body className="p-2">
+                          <Card.Title className="h6 mb-1">{task.name}</Card.Title>
+                          <Card.Text className="small mb-2">
+                            Box Count: {task.boxCount}
+                            <br />
+                            Dispatch Date: {new Date(task.dispatchDate).toLocaleString()}
+                          </Card.Text>
+                          <TodayTaskIcon
+                            dispatchDate={task.dispatchDate}
+                            projectId={task.projectId}
+                            lotNumber={task.lotNumber}
+                            onClick={handleTaskClick}
+                          />
+                        </Card.Body>
+                      </Card>
+                    );
+                  })
+                ) : (
+                  <div className="text-center mt-4">
+                    <p className={customDarkText}>{t("noTasksToday")}</p>
+                  </div>
+                )}
+              </div>
+            </Card>
+          </Col>
+        )}
       </Row>
 
-        {/* Task List */}
-      <Row>
-        {dispatchData.map(task => {
-          const isToday = new Date(task.dispatchDate).toLocaleDateString() === new Date().toLocaleDateString();
 
-          // Only render the card if isToday is true
-          if (!isToday) {
-            return null;
-          }
-
-          return (
-            <Col key={`${task.projectId}-${task.lotNumber}`} xs={12} sm={6} md={4}>
-              <Card className="mb-3">
-                <Card.Body>
-                  <Card.Title>{task.name}</Card.Title>
-                  <Card.Text>
-                    Box Count: {task.boxCount}
-                    <br />
-                    Dispatch Date: {new Date(task.dispatchDate).toLocaleString()}
-                  </Card.Text>
-
-                  {/* Render TodayTaskIcon since we know isToday is true */}
-                  <TodayTaskIcon
-                    dispatchDate={task.dispatchDate}
-                    projectId={task.projectId}
-                    lotNumber={task.lotNumber}
-                    onClick={handleTaskClick}
-                  />
-
-                  {/* Show expanded task details if this task is the one that was clicked */}
-                  {expandedTask?.projectId === task.projectId && expandedTask?.lotNumber === task.lotNumber && (
-                    <div>
-                      <hr />
-                      <div>
-                        <strong>Task Details:</strong>
-                        <p>Project ID: {task.projectId}</p>
-                        <p>Lot Number: {task.lotNumber}</p>
-                        <p>Box Count: {task.boxCount}</p>
-                        {/* Add more task details here as needed */}
-                      </div>
-                    </div>
-                  )}
-                </Card.Body>
-              </Card>
-            </Col>
-          );
-        })}
-      </Row>
 
     </Container>
   );
