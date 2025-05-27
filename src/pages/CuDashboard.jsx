@@ -23,6 +23,8 @@ import { CSSTransition } from "react-transition-group";
 import styled from "styled-components";
 import { getAllProjectCompletionPercentages } from "../CustomHooks/ApiServices/transacationService";
 import { useTranslation } from "react-i18next";
+import TodayTaskIcon from "./DailyTask/TodayTaskIcon";
+import axios from "axios";
 
 const AnimatedDropdownMenu = styled(Dropdown.Menu)`
   &.dropdown-enter {
@@ -74,6 +76,8 @@ const CuDashboard = () => {
   const carouselRef = useRef(null);
   const [hasquantitySheet, setHasquantitySheet] = useState([]);
   const [activeCard, setActiveCard] = useState(null);
+  const [dispatchData, setDispatchData] = useState([]);
+  const [expandedTask, setExpandedTask] = useState(null); // Track the expanded task
   const [visibleCards, setVisibleCards] = useState(() => {
     const savedState = localStorage.getItem("visibleCards");
     return savedState
@@ -108,99 +112,16 @@ const CuDashboard = () => {
     return hasQuantitySheet ? hasQuantitySheet.quantitySheet : false;
   };
 
-  const generateQueryString = (projectIds) => {
-    return projectIds.map(id => `projectIds=${id}`).join('&');
-  };
-
-  // useEffect(() => {
-  //   const fetchPercentages = async () => {
-  //     setIsLoading(prev => ({ ...prev, projects: true }));
-  //     try {
-  //       // get percentage
-  //       //const projectCompletionPercentages = await getAllProjectCompletionPercentages();
-  //       // get project
-  //       const projectData = await API.get(
-  //         `/Project/GetDistinctProjectsForUser/${userData.userId}`
-  //       );
-  //       const projectIds = projectData.data.map(project => project.projectId); // Extract project IDs
-  //       // Convert the projectIds array into a query string like ?projectIds=7&projectIds=9&projectIds=11
-  //       const queryString = generateQueryString(projectIds);
-
-  //       // Fetch the completion percentages for the specific projects with the correct query string
-  //       const projectCompletionPercentages = await API.get(`/Transactions/all-project-completion-percentages?${queryString}`);
-  //       console.log(projectCompletionPercentages)
-  //       // Check if the response is an array before using .find()
-
-  //       const mergedData = projectData.data.map((project) => {
-  //         const percentage = projectCompletionPercentages.data.find(
-  //           (p) => p.projectId === project.projectId
-  //         );
-  //         return {
-  //           ...project,
-  //           completionPercentage: percentage
-  //             ? percentage.completionPercentage
-  //             : 0,
-  //           remainingPercentage: percentage
-  //             ? 100 - percentage.completionPercentage
-  //             : 100,
-  //           isrecent: false, // Add the is recent field and set it to false by default
-  //         };
-  //       }); // Filter out projects with 100% completion
-
-  //       // Check if the selected project exists in the data
-  //       const selectedProject = JSON.parse(localStorage.getItem("selectedProject"));
-  //       if (selectedProject) {
-  //         const selectedProjectIndex = mergedData.findIndex(
-  //           (project) => project.projectId === selectedProject.value
-  //         );
-  //         if (selectedProjectIndex !== -1) {
-  //           const [selectedProjectData] = mergedData.splice(selectedProjectIndex, 1);
-  //           selectedProjectData.isrecent = true; // Set isrecent to true for the selected project
-  //           mergedData.unshift(selectedProjectData);
-  //         }
-  //       }
-
-  //       // Separate projects with and without quantity sheets
-  //       const projectsWithQtySheet = mergedData.filter(project => hasDisable(project.projectId));
-  //       const projectsWithoutQtySheet = mergedData.filter(project => !hasDisable(project.projectId));
-
-  //       // Combine the two arrays, keeping projects without quantity sheets at the end
-  //       const finalData = [...projectsWithQtySheet, ...projectsWithoutQtySheet];
-
-  //       setData(finalData);
-  //     } catch (error) {
-  //       console.error("Error fetching data:", error);
-  //     }
-  //     finally {
-
-  //       setIsLoading(prev => ({ ...prev, projects: false }))
-  //     }
-  //   };
-  //   fetchPercentages();
-  // }, [userData.userId, hasquantitySheet]);
-
-  
-  // useEffect(() => {
-  //   const fetchHasQuantitySheet = async () => {
-  //     setIsLoading(prev => ({ ...prev, quantitySheet: true }));
-  //     try {
-  //       const projectData = await API.get(
-  //         `/Project/GetDistinctProjectsForUser/${userData.userId}`
-  //       );
-  //       const projectIds = projectData.data.map(project => project.projectId); // Extract project IDs
-  //       const queryString = generateQueryString(projectIds); // Use the function to generate the query string
-
-
-  //       const quantitySheetResponse = await API.get(`/QuantitySheet/check-all-quantity-sheets?${queryString}`);
-  //       setHasquantitySheet(quantitySheetResponse.data); // Store the result from quantity sheet API
-  //     } catch (error) {
-  //       console.error("Error fetching quantity sheet data:", error);
-  //     } finally {
-  //       setIsLoading(prev => ({ ...prev, quantitySheet: false }));
-  //     }
-  //   };
-  //   fetchHasQuantitySheet();
-  // }, []);
+  useEffect(() => {
+    // Fetch data from the API
+    axios.get('https://localhost:7212/api/Dispatch')
+      .then(response => {
+        setDispatchData(response.data); // Store the data in state
+      })
+      .catch(error => {
+        console.error('Error fetching dispatch data:', error);
+      });
+  }, []); // Empty array ensures the API call runs only once after the first render
 
 
   useEffect(() => {
@@ -354,6 +275,11 @@ const CuDashboard = () => {
     });
   };
 
+ const handleTaskClick = (projectId, lotNumber) => {
+    setSelectedLot({ projectId, lotNumber });
+    setActiveCard(projectId);
+  };
+
   const renderCards = () => {
     if (isLoading.projects || isLoading.quantitySheet) {
       return (
@@ -376,6 +302,7 @@ const CuDashboard = () => {
         </div>
       );
     }
+    
 
     const activeCards = Object.values(visibleCards).filter(Boolean).length;
     if (activeCards === 0) {
@@ -530,6 +457,55 @@ const CuDashboard = () => {
     </>
     );
   };
+
+    return (
+    <Container>
+      <Row>
+        {dispatchData.map(task => {
+          const isToday = new Date(task.dispatchDate).toLocaleDateString() === new Date().toLocaleDateString();
+
+          return (
+            <Col key={`${task.projectId}-${task.lotNumber}`} xs={12} sm={6} md={4}>
+              <Card className="mb-3">
+                <Card.Body>
+                  <Card.Title>{task.name}</Card.Title>
+                  <Card.Text>
+                    Box Count: {task.boxCount}
+                    <br />
+                    Dispatch Date: {new Date(task.dispatchDate).toLocaleString()}
+                  </Card.Text>
+
+                  {/* Render TodayTaskIcon only if the dispatch date matches today */}
+                  {isToday && (
+                    <TodayTaskIcon
+                      dispatchDate={task.dispatchDate}
+                      projectId={task.projectId}
+                      lotNumber={task.lotNumber}
+                      onClick={handleTaskClick}
+                    />
+                  )}
+
+                  {/* Show expanded task details if this task is the one that was clicked */}
+                  {expandedTask?.projectId === task.projectId && expandedTask?.lotNumber === task.lotNumber && (
+                    <div>
+                      <hr />
+                      <div>
+                        <strong>Task Details:</strong>
+                        <p>Project ID: {task.projectId}</p>
+                        <p>Lot Number: {task.lotNumber}</p>
+                        <p>Box Count: {task.boxCount}</p>
+                        {/* Add more task details here as needed */}
+                      </div>
+                    </div>
+                  )}
+                </Card.Body>
+              </Card>
+            </Col>
+          );
+        })}
+      </Row>
+    </Container>
+  );
 
   return (
     <Container fluid className="px-3 position-relative">
