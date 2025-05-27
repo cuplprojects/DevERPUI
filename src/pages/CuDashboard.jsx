@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import LineChart from "./../sub-Components/LineChart";
 import BarChart from "./../sub-Components/BarChart";
-import { Card, Col,Row,Carousel,Container,OverlayTrigger,Tooltip,Dropdown,Spinner, Button} from "react-bootstrap";
+import { Card, Col, Row, Carousel, Container, OverlayTrigger, Tooltip, Dropdown, Spinner, Button } from "react-bootstrap";
 import CuDetailedAgGrid from "../sub-Components/CuDetailedAgGrid";
 import PieChart from "../sub-Components/PieChart";
 import Cards from "../sub-Components/Cards";
@@ -52,13 +52,13 @@ const ScrollableContainer = styled.div`
     &::-webkit-scrollbar {
       display: none;
     }
-    
+
     .d-flex {
       scroll-behavior: smooth;
       -webkit-overflow-scrolling: touch;
       scroll-snap-type: x mandatory;
       padding: 8px 0;
-      
+
       > div {
         scroll-snap-align: start;
       }
@@ -136,15 +136,15 @@ const CuDashboard = () => {
       const response = await API.get(
         `/Transactions/all-project-completion-percentages?userId=${userData.userId}&page=${pageNumber}&pageSize=${pageSize}`
       );
-  
+
       const quantitySheetResponse = await API.get(
         `/QuantitySheet/check-all-quantity-sheets?userId=${userData.userId}`
       );
-  
+
       const quantitySheetMap = new Map(
         quantitySheetResponse.data.map((item) => [item.projectId, item.quantitySheet])
       );
-  
+
       // Merge project data with completion percentages
       const mergedData = response.data.map((project) => {
         const percentage = response.data.find(
@@ -157,11 +157,11 @@ const CuDashboard = () => {
           isrecent: false, // Add the is recent field and set it to false by default
         };
       });
-  
+
       // Check if the selected project exists in the data
       const selectedProject = JSON.parse(localStorage.getItem("selectedProject"));
       let finalData = [...mergedData];
-  
+
       if (selectedProject) {
         // Check if the selected project exists in the current set of data
         const selectedProjectIndex = mergedData.findIndex(
@@ -173,30 +173,30 @@ const CuDashboard = () => {
           finalData.unshift(selectedProjectData); // Place the selected project at the start
         }
       }
-  
+
       // Separate projects with and without quantity sheets
       const projectsWithQtySheet = finalData.filter((project) => hasDisable(project.projectId));
       const projectsWithoutQtySheet = finalData.filter((project) => !hasDisable(project.projectId));
-  
+
       // Combine the two arrays, keeping projects without quantity sheets at the end
       finalData = [...projectsWithQtySheet, ...projectsWithoutQtySheet];
-  
+
       setData((prevData) => {
         // Add new data to the existing data, ensuring the selected project stays at the top
         return [...prevData, ...finalData];
       });
       setPage(pageNumber);
-  
+
       // Set hasMore based on whether we received a full page of results
       setHasMore(finalData.length === pageSize);
-  
+
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
       setIsLoading(false);
     }
   };
-  
+
 
   const fetchHasQuantitySheet = async () => {
     setIsLoading(true);
@@ -275,7 +275,7 @@ const CuDashboard = () => {
     });
   };
 
- const handleTaskClick = (projectId, lotNumber) => {
+  const handleTaskClick = (projectId, lotNumber) => {
     setSelectedLot({ projectId, lotNumber });
     setActiveCard(projectId);
   };
@@ -302,36 +302,36 @@ const CuDashboard = () => {
         </div>
       );
     }
-    
+
 
     const activeCards = Object.values(visibleCards).filter(Boolean).length;
     if (activeCards === 0) {
       return (
         <>
-        <Row className="g-4">
-          {data.map((item) => (
-            <Col key={item.projectId} xs={12} sm={12} md={6} lg={3}>
-              <Cards
-                item={item}
-                onclick={onclick}
-                disableProject={hasDisable(item.projectId)}
-                activeCardStyle={activeCard === item.projectId}
+          <Row className="g-4">
+            {data.map((item) => (
+              <Col key={item.projectId} xs={12} sm={12} md={6} lg={3}>
+                <Cards
+                  item={item}
+                  onclick={onclick}
+                  disableProject={hasDisable(item.projectId)}
+                  activeCardStyle={activeCard === item.projectId}
+                />
+              </Col>
+            ))}
+          </Row>
+          {hasMore && (
+            <div className="text-center mt-3">
+              <MdExpandMore
+                onClick={() => fetchProjects(page + 1)}
+                style={{
+                  cursor: isLoading ? 'not-allowed' : 'pointer',
+                  fontSize: '3rem',
+                }}
+                className={`${isLoading ? 'opacity-50' : ''} ${customDark} ${customLightText} rounded-5`}
               />
-            </Col>
-          ))}
-        </Row>
-        {hasMore && (
-          <div className="text-center mt-3">
-            <MdExpandMore
-              onClick={() => fetchProjects(page + 1)}
-              style={{ 
-                cursor: isLoading ? 'not-allowed' : 'pointer',
-                fontSize: '3rem',
-              }}
-              className={`${isLoading ? 'opacity-50' : ''} ${customDark} ${customLightText} rounded-5`}
-            />
-          </div>
-        )}
+            </div>
+          )}
         </>
       );
     }
@@ -369,143 +369,100 @@ const CuDashboard = () => {
 
       return (
         <>
-        <div className="position-relative mb-4">
-          <div className="d-none d-lg-block">
-            <div
-              className={`position-absolute top-50 start-0 translate-middle-y rounded-circle ${customDark}`}
-              style={{ zIndex: 9, left: "10px", cursor: "pointer" }}
-              onClick={() => handleCarouselControl("prev")}
-            >
-              <IoMdArrowDropleftCircle
-                size={40}
-                className={`${customBtn} rounded-circle custom-zoom-btn ${customLightBorder}`}
-              />
+          <div className="position-relative mb-4">
+            <div className="d-none d-lg-block">
+              <div
+                className={`position-absolute top-50 start-0 translate-middle-y rounded-circle ${customDark}`}
+                style={{ zIndex: 9, left: "10px", cursor: "pointer" }}
+                onClick={() => handleCarouselControl("prev")}
+              >
+                <IoMdArrowDropleftCircle
+                  size={40}
+                  className={`${customBtn} rounded-circle custom-zoom-btn ${customLightBorder}`}
+                />
+              </div>
+              <div
+                className={`position-absolute top-50 end-0 translate-middle-y rounded-circle ${customDark}`}
+                style={{ zIndex: 9, right: "10px", cursor: "pointer" }}
+                onClick={() => handleCarouselControl("next")}
+              >
+                <IoMdArrowDroprightCircle
+                  size={40}
+                  className={`${customBtn} rounded-circle custom-zoom-btn ${customLightBorder}`}
+                />
+              </div>
             </div>
-            <div
-              className={`position-absolute top-50 end-0 translate-middle-y rounded-circle ${customDark}`}
-              style={{ zIndex: 9, right: "10px", cursor: "pointer" }}
-              onClick={() => handleCarouselControl("next")}
+            <Carousel
+              ref={carouselRef}
+              interval={null}
+              indicators={false}
+              controls={false}
+              touch={true}
+              slide={true}
             >
-              <IoMdArrowDroprightCircle
-                size={40}
-                className={`${customBtn} rounded-circle custom-zoom-btn ${customLightBorder}`}
-              />
+              {carouselItems}
+            </Carousel>
+          </div>
+          {hasMore && (
+            <div className="text-center mt-3">
+              <Button
+                onClick={() => fetchProjects(page + 1)}
+                disabled={isLoading}
+                className={`${isLoading ? 'opacity-50' : ''} ${customDark} ${customLightText} rounded-5 border-0 d-flex `}
+              >
+                {isLoading ? (
+                  <Spinner size="sm" />
+                ) : (
+                  <MdExpandMore size={20} />
+                )}
+              </Button>
             </div>
-          </div>
-          <Carousel
-            ref={carouselRef}
-            interval={null}
-            indicators={false}
-            controls={false}
-            touch={true}
-            slide={true}
-          >
-            {carouselItems}
-          </Carousel>
-        </div>
-        {hasMore && (
-          <div className="text-center mt-3">
-            <Button 
-              onClick={() => fetchProjects(page + 1)}
-              disabled={isLoading}
-              className={`${isLoading ? 'opacity-50' : ''} ${customDark} ${customLightText} rounded-5 border-0 d-flex `}
-            >
-              {isLoading ? (
-                <Spinner size="sm" />
-              ) : (
-                <MdExpandMore size={20} />
-              )}
-            </Button>
-          </div>
-        )}
-      </>
+          )}
+        </>
       );
     }
 
     // For medium and small screens, use scrollable container
     return (
       <>
-      <ScrollableContainer className="scrollable-container mb-4" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-        <div className="d-flex flex-nowrap px-2" style={{ gap: '8px' }}>
-          {data.map((item) => (
-            <div key={item.projectId} style={{ 
-              flex: '0 0 auto', 
-              minWidth: window.innerWidth < 768 ? '280px' : '343px',
-              transition: 'min-width 0.3s ease'
-            }}>
-              <Cards
-                item={item}
-                onclick={onclick}
-                disableProject={hasDisable(item.projectId)}
-                activeCardStyle={activeCard === item.projectId}
-              />
-            </div>
-          ))}
-        </div>
-      </ScrollableContainer>
-      {hasMore && (
-        <div className="text-center mt-3">
-          <Button 
-            onClick={() => fetchProjects(page + 1)}
-            disabled={isLoading}
-            variant="primary"
-          >
-            {isLoading ? t("loading") : t("showMore")}
-          </Button>
-        </div>
-      )}
-    </>
+        <ScrollableContainer className="scrollable-container mb-4" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          <div className="d-flex flex-nowrap px-2" style={{ gap: '8px' }}>
+            {data.map((item) => (
+              <div key={item.projectId} style={{
+                flex: '0 0 auto',
+                minWidth: window.innerWidth < 768 ? '280px' : '343px',
+                transition: 'min-width 0.3s ease'
+              }}>
+                <Cards
+                  item={item}
+                  onclick={onclick}
+                  disableProject={hasDisable(item.projectId)}
+                  activeCardStyle={activeCard === item.projectId}
+                />
+              </div>
+            ))}
+          </div>
+        </ScrollableContainer>
+        {hasMore && (
+          <div className="text-center mt-3">
+            <Button
+              onClick={() => fetchProjects(page + 1)}
+              disabled={isLoading}
+              variant="primary"
+            >
+              {isLoading ? t("loading") : t("showMore")}
+            </Button>
+          </div>
+        )}
+      </>
     );
   };
 
-    return (
-    <Container>
-      <Row>
-        {dispatchData.map(task => {
-          const isToday = new Date(task.dispatchDate).toLocaleDateString() === new Date().toLocaleDateString();
+  // return (
+  //   <Container>
 
-          return (
-            <Col key={`${task.projectId}-${task.lotNumber}`} xs={12} sm={6} md={4}>
-              <Card className="mb-3">
-                <Card.Body>
-                  <Card.Title>{task.name}</Card.Title>
-                  <Card.Text>
-                    Box Count: {task.boxCount}
-                    <br />
-                    Dispatch Date: {new Date(task.dispatchDate).toLocaleString()}
-                  </Card.Text>
-
-                  {/* Render TodayTaskIcon only if the dispatch date matches today */}
-                  {isToday && (
-                    <TodayTaskIcon
-                      dispatchDate={task.dispatchDate}
-                      projectId={task.projectId}
-                      lotNumber={task.lotNumber}
-                      onClick={handleTaskClick}
-                    />
-                  )}
-
-                  {/* Show expanded task details if this task is the one that was clicked */}
-                  {expandedTask?.projectId === task.projectId && expandedTask?.lotNumber === task.lotNumber && (
-                    <div>
-                      <hr />
-                      <div>
-                        <strong>Task Details:</strong>
-                        <p>Project ID: {task.projectId}</p>
-                        <p>Lot Number: {task.lotNumber}</p>
-                        <p>Box Count: {task.boxCount}</p>
-                        {/* Add more task details here as needed */}
-                      </div>
-                    </div>
-                  )}
-                </Card.Body>
-              </Card>
-            </Col>
-          );
-        })}
-      </Row>
-    </Container>
-  );
+  //   </Container>
+  // );
 
   return (
     <Container fluid className="px-3 position-relative">
@@ -624,6 +581,7 @@ const CuDashboard = () => {
         )}
       </Row>
 
+        {/* Graphs and Charts */}
       <Row className="gx-3 mt-4">
         {visibleCards.agGrid && (
           <Col lg={6} md={12}>
@@ -668,6 +626,56 @@ const CuDashboard = () => {
           </Col>
         )}
       </Row>
+
+        {/* Task List */}
+      <Row>
+        {dispatchData.map(task => {
+          const isToday = new Date(task.dispatchDate).toLocaleDateString() === new Date().toLocaleDateString();
+
+          // Only render the card if isToday is true
+          if (!isToday) {
+            return null;
+          }
+
+          return (
+            <Col key={`${task.projectId}-${task.lotNumber}`} xs={12} sm={6} md={4}>
+              <Card className="mb-3">
+                <Card.Body>
+                  <Card.Title>{task.name}</Card.Title>
+                  <Card.Text>
+                    Box Count: {task.boxCount}
+                    <br />
+                    Dispatch Date: {new Date(task.dispatchDate).toLocaleString()}
+                  </Card.Text>
+
+                  {/* Render TodayTaskIcon since we know isToday is true */}
+                  <TodayTaskIcon
+                    dispatchDate={task.dispatchDate}
+                    projectId={task.projectId}
+                    lotNumber={task.lotNumber}
+                    onClick={handleTaskClick}
+                  />
+
+                  {/* Show expanded task details if this task is the one that was clicked */}
+                  {expandedTask?.projectId === task.projectId && expandedTask?.lotNumber === task.lotNumber && (
+                    <div>
+                      <hr />
+                      <div>
+                        <strong>Task Details:</strong>
+                        <p>Project ID: {task.projectId}</p>
+                        <p>Lot Number: {task.lotNumber}</p>
+                        <p>Box Count: {task.boxCount}</p>
+                        {/* Add more task details here as needed */}
+                      </div>
+                    </div>
+                  )}
+                </Card.Body>
+              </Card>
+            </Col>
+          );
+        })}
+      </Row>
+
     </Container>
   );
 };
