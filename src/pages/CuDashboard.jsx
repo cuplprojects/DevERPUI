@@ -216,13 +216,13 @@ const CuDashboard = () => {
         `/Transactions/all-project-completion-percentages?userId=${userData.userId}&page=${pageNumber}&pageSize=${pageSize}`
       );
   
-      const quantitySheetResponse = await API.get(
-        `/QuantitySheet/check-all-quantity-sheets?userId=${userData.userId}`
-      );
+      // const quantitySheetResponse = await API.get(
+      //   `/QuantitySheet/check-all-quantity-sheets?userId=${userData.userId}`
+      // );
   
-      const quantitySheetMap = new Map(
-        quantitySheetResponse.data.map((item) => [item.projectId, item.quantitySheet])
-      );
+      // const quantitySheetMap = new Map(
+      //   quantitySheetResponse.data.map((item) => [item.projectId, item.quantitySheet])
+      // );
   
       // Merge project data with completion percentages
       const mergedData = response.data.map((project) => {
