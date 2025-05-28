@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import LineChart from "./../sub-Components/LineChart";
 import BarChart from "./../sub-Components/BarChart";
-import { Card, Col,Row,Carousel,Container,OverlayTrigger,Tooltip,Dropdown,Spinner, Button} from "react-bootstrap";
+import { Card, Col, Row, Carousel, Container, OverlayTrigger, Tooltip, Dropdown, Spinner, Button } from "react-bootstrap";
 import CuDetailedAgGrid from "../sub-Components/CuDetailedAgGrid";
 import PieChart from "../sub-Components/PieChart";
 import Cards from "../sub-Components/Cards";
@@ -382,30 +382,30 @@ const CuDashboard = () => {
     if (activeCards === 0) {
       return (
         <>
-        <Row className="g-4">
-          {data.map((item) => (
-            <Col key={item.projectId} xs={12} sm={12} md={6} lg={3}>
-              <Cards
-                item={item}
-                onclick={onclick}
-                disableProject={hasDisable(item.projectId)}
-                activeCardStyle={activeCard === item.projectId}
+          <Row className="g-4">
+            {data.map((item) => (
+              <Col key={item.projectId} xs={12} sm={12} md={6} lg={3}>
+                <Cards
+                  item={item}
+                  onclick={onclick}
+                  disableProject={hasDisable(item.projectId)}
+                  activeCardStyle={activeCard === item.projectId}
+                />
+              </Col>
+            ))}
+          </Row>
+          {hasMore && (
+            <div className="text-center mt-3">
+              <MdExpandMore
+                onClick={() => fetchProjects(page + 1)}
+                style={{
+                  cursor: isLoading ? 'not-allowed' : 'pointer',
+                  fontSize: '3rem',
+                }}
+                className={`${isLoading ? 'opacity-50' : ''} ${customDark} ${customLightText} rounded-5`}
               />
-            </Col>
-          ))}
-        </Row>
-        {hasMore && (
-          <div className="text-center mt-3">
-            <MdExpandMore
-              onClick={() => fetchProjects(page + 1)}
-              style={{
-                cursor: isLoading ? 'not-allowed' : 'pointer',
-                fontSize: '3rem',
-              }}
-              className={`${isLoading ? 'opacity-50' : ''} ${customDark} ${customLightText} rounded-5`}
-            />
-          </div>
-        )}
+            </div>
+          )}
         </>
       );
     }
@@ -443,92 +443,92 @@ const CuDashboard = () => {
 
       return (
         <>
-        <div className="position-relative mb-4">
-          <div className="d-none d-lg-block">
-            <div
-              className={`position-absolute top-50 start-0 translate-middle-y rounded-circle ${customDark}`}
-              style={{ zIndex: 9, left: "10px", cursor: "pointer" }}
-              onClick={() => handleCarouselControl("prev")}
-            >
-              <IoMdArrowDropleftCircle
-                size={40}
-                className={`${customBtn} rounded-circle custom-zoom-btn ${customLightBorder}`}
-              />
+          <div className="position-relative mb-4">
+            <div className="d-none d-lg-block">
+              <div
+                className={`position-absolute top-50 start-0 translate-middle-y rounded-circle ${customDark}`}
+                style={{ zIndex: 9, left: "10px", cursor: "pointer" }}
+                onClick={() => handleCarouselControl("prev")}
+              >
+                <IoMdArrowDropleftCircle
+                  size={40}
+                  className={`${customBtn} rounded-circle custom-zoom-btn ${customLightBorder}`}
+                />
+              </div>
+              <div
+                className={`position-absolute top-50 end-0 translate-middle-y rounded-circle ${customDark}`}
+                style={{ zIndex: 9, right: "10px", cursor: "pointer" }}
+                onClick={() => handleCarouselControl("next")}
+              >
+                <IoMdArrowDroprightCircle
+                  size={40}
+                  className={`${customBtn} rounded-circle custom-zoom-btn ${customLightBorder}`}
+                />
+              </div>
             </div>
-            <div
-              className={`position-absolute top-50 end-0 translate-middle-y rounded-circle ${customDark}`}
-              style={{ zIndex: 9, right: "10px", cursor: "pointer" }}
-              onClick={() => handleCarouselControl("next")}
+            <Carousel
+              ref={carouselRef}
+              interval={null}
+              indicators={false}
+              controls={false}
+              touch={true}
+              slide={true}
             >
-              <IoMdArrowDroprightCircle
-                size={40}
-                className={`${customBtn} rounded-circle custom-zoom-btn ${customLightBorder}`}
-              />
+              {carouselItems}
+            </Carousel>
+          </div>
+          {hasMore && (
+            <div className="text-center mt-3">
+              <Button
+                onClick={() => fetchProjects(page + 1)}
+                disabled={isLoading}
+                className={`${isLoading ? 'opacity-50' : ''} ${customDark} ${customLightText} rounded-5 border-0 d-flex `}
+              >
+                {isLoading ? (
+                  <Spinner size="sm" />
+                ) : (
+                  <MdExpandMore size={20} />
+                )}
+              </Button>
             </div>
-          </div>
-          <Carousel
-            ref={carouselRef}
-            interval={null}
-            indicators={false}
-            controls={false}
-            touch={true}
-            slide={true}
-          >
-            {carouselItems}
-          </Carousel>
-        </div>
-        {hasMore && (
-          <div className="text-center mt-3">
-            <Button
-              onClick={() => fetchProjects(page + 1)}
-              disabled={isLoading}
-              className={`${isLoading ? 'opacity-50' : ''} ${customDark} ${customLightText} rounded-5 border-0 d-flex `}
-            >
-              {isLoading ? (
-                <Spinner size="sm" />
-              ) : (
-                <MdExpandMore size={20} />
-              )}
-            </Button>
-          </div>
-        )}
-      </>
+          )}
+        </>
       );
     }
 
     // For medium and small screens, use scrollable container
     return (
       <>
-      <ScrollableContainer className="scrollable-container mb-4" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-        <div className="d-flex flex-nowrap px-2" style={{ gap: '8px' }}>
-          {data.map((item) => (
-            <div key={item.projectId} style={{
-              flex: '0 0 auto',
-              minWidth: window.innerWidth < 768 ? '280px' : '343px',
-              transition: 'min-width 0.3s ease'
-            }}>
-              <Cards
-                item={item}
-                onclick={onclick}
-                disableProject={hasDisable(item.projectId)}
-                activeCardStyle={activeCard === item.projectId}
-              />
-            </div>
-          ))}
-        </div>
-      </ScrollableContainer>
-      {hasMore && (
-        <div className="text-center mt-3">
-          <Button
-            onClick={() => fetchProjects(page + 1)}
-            disabled={isLoading}
-            variant="primary"
-          >
-            {isLoading ? t("loading") : t("showMore")}
-          </Button>
-        </div>
-      )}
-    </>
+        <ScrollableContainer className="scrollable-container mb-4" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          <div className="d-flex flex-nowrap px-2" style={{ gap: '8px' }}>
+            {data.map((item) => (
+              <div key={item.projectId} style={{
+                flex: '0 0 auto',
+                minWidth: window.innerWidth < 768 ? '280px' : '343px',
+                transition: 'min-width 0.3s ease'
+              }}>
+                <Cards
+                  item={item}
+                  onclick={onclick}
+                  disableProject={hasDisable(item.projectId)}
+                  activeCardStyle={activeCard === item.projectId}
+                />
+              </div>
+            ))}
+          </div>
+        </ScrollableContainer>
+        {hasMore && (
+          <div className="text-center mt-3">
+            <Button
+              onClick={() => fetchProjects(page + 1)}
+              disabled={isLoading}
+              variant="primary"
+            >
+              {isLoading ? t("loading") : t("showMore")}
+            </Button>
+          </div>
+        )}
+      </>
     );
   };
 
