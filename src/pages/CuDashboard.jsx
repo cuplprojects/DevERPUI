@@ -26,6 +26,8 @@ import { getAllProjectCompletionPercentages } from "../CustomHooks/ApiServices/t
 import { useTranslation } from "react-i18next";
 import TodayTaskIcon from "./DailyTask/TodayTaskIcon";
 import axios from "axios";
+import useProjectMap from "../CustomHooks/ApiServices/useProjectMap";
+import { Accordion, ListGroup } from 'react-bootstrap';
 
 const AnimatedDropdownMenu = styled(Dropdown.Menu)`
   &.dropdown-enter {
@@ -106,6 +108,7 @@ const CuDashboard = () => {
   const pageSize = 5; // Number of projects per page
   const [hasMore, setHasMore] = useState(true);
   const [showNoticeBoard, setShowNoticeBoard] = useState(false);
+  const projectMap = useProjectMap();
 
   const hasDisable = (projectid) => {
     const hasQuantitySheet = hasquantitySheet.find(
@@ -277,10 +280,10 @@ const CuDashboard = () => {
     });
   };
 
-  const handleTaskClick = (projectId, lotNumber) => {
-    setExpandedTask({ projectId, lotNumber });
-    setActiveCard(projectId);
-  };
+  // const handleTaskClick = (projectId, lotNumber) => {
+  //   setExpandedTask({ projectId, lotNumber });
+  //   setActiveCard(projectId);
+  // };
 
   const renderCards = () => {
     if (isLoading.projects || isLoading.quantitySheet) {
@@ -644,10 +647,10 @@ const CuDashboard = () => {
         )}
       </Row> */}
 
-        {/* Graphs and Charts */}
+      {/* Graphs and Charts */}
       <Row className="gx-3 mt-4">
         {visibleCards.agGrid && (
-          <Col lg={showNoticeBoard ? 4 : 6} md={12}>
+          <Col lg={6} md={12}>
             <Card
               className={`dcard shadow-lg d-flex flex-column mb-3 ${customLight} ${customLightBorder}`}
               style={{ height: "550px", background: "rgba(255,255,255,0.6)" }}
@@ -664,7 +667,7 @@ const CuDashboard = () => {
         )}
 
         {visibleCards.barChart && (
-          <Col lg={showNoticeBoard ? (visibleCards.agGrid ? 4 : 8) : (visibleCards.agGrid ? 6 : 12)}>
+          <Col lg={visibleCards.agGrid ? 6 : 12}>
             <Card
               className={`dcard shadow-lg mb-3 ${customLight} ${customLightBorder}`}
               style={{
@@ -688,78 +691,124 @@ const CuDashboard = () => {
             </Card>
           </Col>
         )}
-
-        {/* Notice Board */}
-        {showNoticeBoard && (
-          <Col lg={4}>
-            <Card
-              className={`dcard shadow-lg mb-3 ${customLight} ${customLightBorder}`}
-              style={{
-                height: "550px",
-                background: "rgba(255,255,255,0.6)",
-                overflow: "hidden",
-              }}
-            >
-              <div className="d-flex justify-content-between align-items-center p-3 py-2">
-                <h4 className={`text-dark mb-0 ${customDarkText}`}>
-                  {t("todaysTasks")}
-                </h4>
-                <Button
-                  variant="link"
-                  onClick={() => setShowNoticeBoard(false)}
-                  className="p-0"
-                >
-                  <MdClose size={20} className={customDarkText} />
-                </Button>
-              </div>
-              <div
-                style={{
-                  height: "calc(100% - 60px)",
-                  overflowY: "auto",
-                  padding: "0 15px 15px 15px",
-                }}
-              >
-                {/* Task List Items */}
-                {dispatchData.filter(task => {
-                  const isToday = new Date(task.dispatchDate).toLocaleDateString() === new Date().toLocaleDateString();
-                  return isToday;
-                }).length > 0 ? (
-                  dispatchData.map(task => {
-                    const isToday = new Date(task.dispatchDate).toLocaleDateString() === new Date().toLocaleDateString();
-
-                    if (!isToday) {
-                      return null;
-                    }
-
-                    return (
-                      <Card key={`${task.projectId}-${task.lotNumber}`} className="mb-2" size="sm">
-                        <Card.Body className="p-2">
-                          <Card.Title className="h6 mb-1">{task.name}</Card.Title>
-                          <Card.Text className="small mb-2">
-                            Box Count: {task.boxCount}
-                            <br />
-                            Dispatch Date: {new Date(task.dispatchDate).toLocaleString()}
-                          </Card.Text>
-                          <TodayTaskIcon
-                            dispatchDate={task.dispatchDate}
-                            projectId={task.projectId}
-                            lotNumber={task.lotNumber}
-                            onClick={handleTaskClick}
-                          />
-                        </Card.Body>
-                      </Card>
-                    );
-                  })
-                ) : (
-                  <div className="text-center mt-4">
-                    <p className={customDarkText}>{t("noTasksToday")}</p>
-                  </div>
-                )}
-              </div>
-            </Card>
-          </Col>
-        )}
       </Row>
+
+      {/* Floating Notice Board Drawer */}
+      {showNoticeBoard && (
+        <>
+          {/* Backdrop */}
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100vw',
+              height: '100vh',
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              zIndex: 1040,
+            }}
+            onClick={() => setShowNoticeBoard(false)}
+          />
+
+          {/* Drawer */}
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              right: 0,
+              width: window.innerWidth < 768 ? '100vw' : '400px',
+              height: '100vh',
+              backgroundColor: 'white',
+              boxShadow: '-2px 0 10px rgba(0, 0, 0, 0.1)',
+              zIndex: 1050,
+              transform: showNoticeBoard ? 'translateX(0)' : 'translateX(100%)',
+              transition: 'transform 0.3s ease-in-out',
+              overflowY: 'auto',
+            }}
+            className={`${customLight}`}
+          >
+            {/* Drawer Header */}
+            <div className={`d-flex justify-content-between align-items-center p-3 border-bottom ${customLightBorder}`}>
+              <h4 className={`mb-0 ${customDarkText}`}>
+                {t("todaysTasks")}
+              </h4>
+              <Button
+                variant="link"
+                onClick={() => setShowNoticeBoard(false)}
+                className="p-0"
+              >
+                <MdClose size={24} className={customDarkText} />
+              </Button>
+            </div>
+
+            {/* Drawer Content */}
+            <div className="p-3">
+              {dispatchData.some(task =>
+                new Date(task.dispatchDate).toLocaleDateString() === new Date().toLocaleDateString()
+              ) ? (
+                (() => {
+                  const todayTasks = dispatchData.filter(task =>
+                    new Date(task.dispatchDate).toLocaleDateString() === new Date().toLocaleDateString()
+                  );
+                  const dispatchDateFormatted = new Date(todayTasks[0].dispatchDate).toLocaleDateString();
+
+                  return (
+                    <Accordion defaultActiveKey="0">
+                      <Accordion.Item eventKey="0">
+                        <Accordion.Header className="fs-5 d-flex justify-content-between align-items-center w-100">
+                          <div className="d-flex justify-content-between w-100">
+                            <strong>Dispatch Today</strong>
+                            <span className="text-muted small">{dispatchDateFormatted}</span>
+                          </div>
+                        </Accordion.Header>
+                        <Accordion.Body>
+                          <ListGroup variant="flush">
+                            {todayTasks.map(task => {
+                              const projectName = projectMap[task.projectId];
+
+                              return (
+                                <ListGroup.Item key={`${task.projectId}-${task.lotNumber}`}>
+                                  <div className="mb-2">
+                                    <p className="mb-1">
+                                      <strong>{task.name}</strong>
+                                    </p>
+                                    <ul className="mb-1 ps-3">
+                                      <strong>Project</strong><strong></strong> {projectName}
+                                      <li><strong>Lot Number:</strong> {task.lotNo}</li>
+                                      {/* <li><strong>Dispatch Date:</strong> {new Date(task.dispatchDate).toLocaleString()}</li> */}
+                                      <li><strong>Box Count:</strong> {task.boxCount}</li>
+                                    </ul>
+
+                                    {expandedTask?.projectId === task.projectId &&
+                                      expandedTask?.lotNumber === task.lotNumber && (
+                                        <div className="mt-2 border-top pt-2">
+                                          <strong>Task Details:</strong>
+                                          <p className="mb-0"><strong>Box Count:</strong> {task.boxCount}</p>
+                                        </div>
+                                      )}
+                                  </div>
+                                </ListGroup.Item>
+                              );
+                            })}
+                          </ListGroup>
+                        </Accordion.Body>
+                      </Accordion.Item>
+                    </Accordion>
+                  );
+                })()
+              ) : (
+                <div className="text-center mt-5">
+                  <MdNotifications size={48} className={`${customDarkText} opacity-50 mb-3`} />
+                  <p className={`${customDarkText} mb-0`}>{t("noTasksToday")}</p>
+                  <small className={`${customDarkText} opacity-75`}>
+                    Check back later for new tasks
+                  </small>
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
 
 
 
