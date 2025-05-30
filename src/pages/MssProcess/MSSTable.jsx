@@ -17,10 +17,13 @@ const MSSTable = ({
   pageSize,
   handleTableChange,
   totalRecords,
-  rejectedActive, handleUpdateItem, cssClasses
+  rejectedActive,
+  handleUpdateItem,
+  cssClasses,
+  isSearchMode
 }) => {
-  console.log(quantitySheetData)
-  console.log(totalRecords)
+  // console.log(quantitySheetData)
+  // console.log(totalRecords)
   const [searchText] = useState("");
   const [searchedColumn] = useState("");
   const [selectedRows, setSelectedRows] = useState([]);
@@ -307,7 +310,7 @@ const MSSTable = ({
       editable: true,
       render: (text) => {
         if (!text) return "";
-    
+
         return (
           <Tooltip title={text} placement="topLeft">
             <div
@@ -328,8 +331,8 @@ const MSSTable = ({
         );
       },
     },
-    
-    
+
+
     {
       title: "Actions",
       key: "actions",
@@ -368,13 +371,51 @@ const MSSTable = ({
     }
   ];
 
-  const filteredData = quantitySheetData.filter((record) =>
-    Object.values(record).some((value) =>
-      value
-        ? value.toString().toLowerCase().includes(tableSearchTerm.toLowerCase())
-        : false
-    )
-  );
+  // Improved search function that handles all types of data
+  const filteredData = tableSearchTerm
+    ? quantitySheetData.filter((record) => {
+        // Create a searchable string from all record values
+        const searchableText = Object.entries(record)
+          .map(([key, value]) => {
+            // Skip non-searchable fields
+            if (key === 'quantitySheetId' || key === 'projectId' || key === 'processId') {
+              return '';
+            }
+
+            // Handle special case for languageId which is an array
+            if (key === 'languageId' && Array.isArray(value)) {
+              return value
+                .map((id) => {
+                  const language = languageOptions.find((l) => l.languageId === id);
+                  return language ? language.languages : '';
+                })
+                .join(" ");
+            }
+
+            // Handle null/undefined values
+            if (value === null || value === undefined) {
+              return '';
+            }
+
+            // Handle objects
+            if (typeof value === 'object') {
+              try {
+                return JSON.stringify(value);
+              } catch (e) {
+                return '';
+              }
+            }
+
+            // Convert to string
+            return String(value);
+          })
+          .join(" ")
+          .toLowerCase();
+
+        // Check if the search term is in the searchable text
+        return searchableText.includes(tableSearchTerm.toLowerCase());
+      })
+    : quantitySheetData;
 
   const rowSelection = {
     onChange: (_, selectedRows) => {
@@ -450,13 +491,16 @@ ${customDark === "brown-dark" ? "thead-brown" : ""} `}
         dataSource={filteredData}
         rowKey="quantitySheetId"
         pagination={{
-          current: currentPage,
+          current: isSearchMode || tableSearchTerm ? 1 : currentPage,
           pageSize: pageSize,
-          total: totalRecords,
+          total: isSearchMode || tableSearchTerm ? filteredData.length : totalRecords,
+          showTotal: (total) => `Total ${total} items`,
         }}
-        onChange={(pagination, filters, sorter, extra) => {
-          console.log("params", pagination, filters, sorter, extra);
-          handleTableChange(pagination);
+        onChange={(pagination) => {
+          // Only update pagination if we're not searching
+          if (!isSearchMode && !tableSearchTerm) {
+            handleTableChange(pagination);
+          }
         }}
       />
 

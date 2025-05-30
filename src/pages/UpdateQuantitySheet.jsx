@@ -476,7 +476,7 @@ const UpdateQuantitySheet = ({ projectId, onClose }) => {
           // Handle Course
           if (courseName !== "") {
             let courseResponse = await API.get(`Course/GetCourse?courseName=${courseName}`);
-            console.log("Course Response", courseResponse);
+            // console.log("Course Response", courseResponse);
   
             if (!courseResponse || courseResponse === 0) {
               // Create a new course if not found
@@ -602,7 +602,7 @@ const UpdateQuantitySheet = ({ projectId, onClose }) => {
       }));
   
       const response = await API.put("/QuantitySheet", formattedData);
-      console.log("Update successful:", response);
+      // console.log("Update successful:", response);
       success("Quantity sheet updated successfully");
       onClose();
     } catch (err) {
@@ -642,11 +642,11 @@ const UpdateQuantitySheet = ({ projectId, onClose }) => {
   };
 
   // Add a debug display for API data (optional, remove in production)
-  useEffect(() => {
-    if (apiData.length > 0) {
-      console.log("API Data loaded:", apiData);
-    }
-  }, [apiData]);
+  // useEffect(() => {
+  //   if (apiData.length > 0) {
+  //     console.log("API Data loaded:", apiData);
+  //   }
+  // }, [apiData]);
 
   // Add clearFile handler
   const clearFile = () => {

@@ -7,7 +7,7 @@ import API from '../../../CustomHooks/MasterApiHooks/api';
 
 
 const AssignTeams = ({ data, processId , handleClose, fetchTransactions}) => {
-  console.log(data)
+  // console.log(data)
   const [assignmentType, setAssignmentType] = useState('catch');
   const [teams, setTeams] = useState([]);
   const [lots, setLots] = useState([]);

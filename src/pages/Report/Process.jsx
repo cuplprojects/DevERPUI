@@ -48,7 +48,7 @@ const ProcessDetails = ({ catchData, projectName }) => {
       setLoading(true);
       try {
         const response = await API.get(`/Reports/process-wise/${catchData.catchNo}`);
-        console.log(response.data)
+        // console.log(response.data)
         setProcessData(response.data);
       } catch (error) {
         console.error("Error fetching process data:", error);

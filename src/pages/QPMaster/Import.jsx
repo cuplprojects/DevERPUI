@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import API from "../../CustomHooks/MasterApiHooks/api";
 import { Select, Form, Upload, Button, Row, Col } from "antd";
 import { success, error } from "../../CustomHooks/Services/AlertMessageService";
@@ -40,6 +40,9 @@ const Import = () => {
   const customLightBorder = cssClasses[6];
   const customDarkBorder = cssClasses[7];
   const navigate = useNavigate();
+  const courseCache = useRef({});
+  const subjectCache = useRef({});
+
 
   useEffect(() => {
     const decryptGroupId = decrypt(encryptedGroupId);
@@ -215,6 +218,9 @@ const Import = () => {
   };
 
   const getCourseIdByName = async (courseName) => {
+    if (courseCache.current[courseName]) {
+      return courseCache.current[courseName];
+    }
     try {
       const courseResponse = await API.get(
         `Course/GetCourse?courseName=${courseName}`
@@ -226,6 +232,7 @@ const Import = () => {
         });
         courseId = newCourseResponse.data.courseId;
       }
+      courseCache.current[courseName] = courseId;
       return courseId;
     } catch (err) {
       console.error("Error in fetching or inserting course:", err);
@@ -234,6 +241,9 @@ const Import = () => {
   };
 
   const getSubjectIdByName = async (subject) => {
+    if (subjectCache.current[subject]) {
+      return subjectCache.current[subject];
+    }
     try {
       const subjectResponse = await API.get(
         `Subject/Subject?subject=${subject}`
@@ -246,6 +256,7 @@ const Import = () => {
         });
         subjectId = newsubjectResponse.data.subjectId;
       }
+      subjectCache.current[subject] = subjectId;
       return subjectId;
     } catch (err) {
       console.error("Error in fetching or inserting course:", err);
@@ -325,7 +336,7 @@ const Import = () => {
         uniqueCode: item.UniqueCode || "",
         subjectId: item.SubjectId || 0,
         paperNumber: String(item.PaperNumber || ""),
-        paperTitle: item.PaperTitle || "",
+        paperTitle: String(item.PaperTitle || ""),
         maxMarks: item.MaxMarks || 0,
         duration: item.Duration || "",
         languageId: item.LanguageId || [],
@@ -341,7 +352,7 @@ const Import = () => {
           "Content-Type": "application/json",
         },
       });
-      console.log("Upload Success:", response.data);
+      // console.log("Upload Success:", response.data);
       success(t("quantitySheetUploadedSuccessfully"), true);
       setFileList([]);
       setSelectedFile(null);

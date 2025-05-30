@@ -33,9 +33,44 @@ const EditProjectModal = ({
   selectedSession,
   selectedExamType,
   handleExamTypeChange,
+  handleTypeChange,
   selectedType
 }) => {
   const [pageQuantities, setPageQuantities] = useState([{ pages: '', quantity: '' }]);
+  const [localShowSeriesFields, setLocalShowSeriesFields] = useState(showSeriesFields);
+
+  // Check if type is Booklet when form values change
+  useEffect(() => {
+    if (visible) {
+      const typeId = form.getFieldValue('type');
+      if (typeId) {
+        const selectedTypeObj = types.find(type => type.typeId === typeId);
+        if (selectedTypeObj) {
+          const isBooklet = selectedTypeObj.typeId === 1 || selectedTypeObj.types === 'Booklet';
+          setLocalShowSeriesFields(isBooklet);
+          // console.log("Edit Modal - Type:", selectedTypeObj.types, "TypeID:", selectedTypeObj.typeId, "Show series fields:", isBooklet);
+        }
+      }
+    }
+  }, [visible, form, types]);
+
+  // Add a form field value change handler
+  const handleTypeFieldChange = (value) => {
+    const typeId = parseInt(value, 10);
+    const selectedTypeObj = types.find(type => type.typeId === typeId);
+    if (selectedTypeObj) {
+      const isBooklet = selectedTypeObj.typeId === 1 || selectedTypeObj.types === 'Booklet';
+      setLocalShowSeriesFields(isBooklet);
+      // console.log("Type changed to:", selectedTypeObj.types, "TypeID:", selectedTypeObj.typeId, "Show series fields:", isBooklet);
+
+      // Call the parent component's handleTypeChange if provided
+      if (typeof handleTypeChange === 'function') {
+        handleTypeChange(value);
+      }
+    } else {
+      setLocalShowSeriesFields(false);
+    }
+  };
 
   useEffect(() => {
     const quantityThresholdValue = form.getFieldValue('quantityThreshold');
@@ -123,9 +158,9 @@ const EditProjectModal = ({
                   {groups.map((group) => (
                     <Option key={group.id} value={group.id}>{group.name}</Option>
                   ))}
-                  
+
                 </Select>
-                
+
               </Form.Item>
             </Col>
             <Col xs={24} sm={24}>
@@ -134,7 +169,10 @@ const EditProjectModal = ({
                 label={<span className={customDarkText}>{t('type')}</span>}
                 rules={[{ required: true, message: t('pleaseSelectType') }]}
               >
-                <Select placeholder={t('selectType')}>
+                <Select
+                  placeholder={t('selectType')}
+                  onChange={handleTypeFieldChange}
+                >
                   {types.map((type) => (
                     <Option key={type.typeId} value={type.typeId}>{type.types}</Option>
                   ))}
@@ -172,7 +210,7 @@ const EditProjectModal = ({
               </Form.Item>
             </Col>
           </Row>
-          {showSeriesFields && (
+          {localShowSeriesFields && (
             <Row gutter={[16, 0]}>
               <Col xs={24} sm={12}>
                 <Form.Item

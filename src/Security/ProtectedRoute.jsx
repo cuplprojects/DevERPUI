@@ -57,7 +57,7 @@ const ProtectedRoute = ({ component: Component }) => {
     useEffect(() => {
         const handleInvalidToken = async () => {
             if (!token || !isTokenValid(token)) {
-                console.log('Invalid or expired token - redirecting to login');
+                // console.log('Invalid or expired token - redirecting to login');
                 await logout();
             }
         };

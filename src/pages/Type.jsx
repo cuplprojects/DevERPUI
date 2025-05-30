@@ -141,7 +141,7 @@ const Type = () => {
         setRequiredEditingProcessIds(originalData.requiredProcessId)
         setEditingStatus(originalData.status);
     };
-console.log(originalData.requiredProcessIds)
+// console.log(originalData.requiredProcessIds)
     const handleSearch = (value) => {
         setSearchText(value);
     };

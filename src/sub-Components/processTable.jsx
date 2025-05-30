@@ -12,7 +12,7 @@ import themeStore from "../store/themeStore";
 import { useStore } from "zustand";
 import { useTranslation } from "react-i18next";
 import API from "../CustomHooks/MasterApiHooks/api";
-import quantitySheetService from "../CustomHooks/ApiServices/quantitySheetService";
+// import quantitySheetService from "../CustomHooks/ApiServices/quantitySheetService";
 import { useUserData } from "../store/userDataStore";
 import {
   getProjectProcessAndFeature,
@@ -33,7 +33,7 @@ import { IoIosArrowDropdownCircle } from "react-icons/io";
 import { Collapse } from "react-bootstrap";
 import ProcessProgressTrain from "./ProcessProgressTrain";
 import ProcessTrainModals from "./ProcessTrainModals ";
-import QcScreen from "./../pages/MssProcess/Qcscreen";
+import QcScreen from "./../pages/QCProcess/Qcscreen";
 import MSS from "./../pages/MssProcess/Mss";
 
 const ProcessTable = () => {
@@ -750,7 +750,7 @@ const ProcessTable = () => {
               };
             });
             if (supervisor) {
-              console.log(supervisor.locationId)
+              // console.log(supervisor.locationId)
               formDataGet = formDataGet.filter((item) =>
                 supervisor.locationId === 1
                   ? item.ttfStatus === 0

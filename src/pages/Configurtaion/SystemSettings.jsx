@@ -19,7 +19,7 @@ const { TabPane } = Tabs;
 const SystemSettings = () => {
   const userData = useUserData();
   const roleId = userData.role.roleId;
-  console.log(roleId);
+  // console.log(roleId);
   const [features, setFeatures] = useState([]);
   const { t } = useTranslation();
   const { getCssClasses } = useStore(themeStore);

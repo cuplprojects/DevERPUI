@@ -77,7 +77,7 @@ const DisplaySettings = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     // Save settings to backend
-    console.log('Saving settings:', settings);
+    // console.log('Saving settings:', settings);
   };
 
   return (

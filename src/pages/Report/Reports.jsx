@@ -498,7 +498,7 @@ const ProjectReport = () => {
 
         try {
             const response = await API.get(`/Reports/GetQuantitySheetsByCatchNo/${value.projectId}/${value.catchNo}`);
-            console.log(response.data);
+            // console.log(response.data);
             setShowDropdown(false);
             setSelectedItem(response.data[0]);
         } catch (error) {
@@ -1766,7 +1766,7 @@ const ProjectReport = () => {
                                             </Dropdown.Item>
 
                                             <div className="vr mx-1"></div>
-                                            {console.log(quantitySheets)}
+                                            {/* {console.log(quantitySheets)} */}
                                             <Dropdown.Item
                                                 as={PdfExport}
                                                 data={quantitySheets}
