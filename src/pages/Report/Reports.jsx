@@ -65,6 +65,7 @@ const ProjectReport = () => {
     const [hasMoreResults, setHasMoreResults] = useState(false);
 
     const [showDailyReport, setShowDailyReport] = useState(false);
+    const [selectedReportType, setSelectedReportType] = useState('Detailed Report');
 
     // Define CSS animations
     const keyframes = `
@@ -591,35 +592,38 @@ const ProjectReport = () => {
     };
 
     const handleResetAll = () => {
-        {
-            // Reset all state variables
-            setSelectedGroup('');
-            setSelectedProjectId('');
-            setSelectedLot('');
-            setQuantitySheets([]);
-            setFilteredSheets([]);
-            setSearchTerm('');
-            setCurrentPage(0);
-            setRecordsPerPage(10);
-            setSortField('');
-            setSortDirection('asc');
-            setSearchResults([]);
-            setVisibleColumns({
-                catchNo: true,
-                subject: true,
-                course: true,
-                paper: true,
-                examDate: true,
-                examTime: true,
-                quantity: true,
-                pages: true,
-                status: true,
-                innerEnvelope: true,
-                outerEnvelope: true,
-                dispatchDate: true,
-
-            });
-        }
+        // Reset all state variables
+        setSelectedReportType('Detailed Report');
+        setShowDailyReport(false);
+        setSelectedGroup('');
+        setSelectedProjectId('');
+        setSelectedLot('');
+        setQuantitySheets([]);
+        setFilteredSheets([]);
+        setSearchTerm('');
+        setCurrentPage(0);
+        setRecordsPerPage(10);
+        setSortField('');
+        setSortDirection('asc');
+        setSearchResults([]);
+        setSelectedItem(null);
+        setSelectedCatch(null);
+        setShowCatchView(false);
+        setShowTable(false);
+        setVisibleColumns({
+            catchNo: true,
+            subject: true,
+            course: true,
+            paper: true,
+            examDate: true,
+            examTime: true,
+            quantity: true,
+            pages: true,
+            status: true,
+            innerEnvelope: true,
+            outerEnvelope: true,
+            dispatchDate: true,
+        });
     };
 
     return (
@@ -633,33 +637,46 @@ const ProjectReport = () => {
                         <span style={styles.pageTitleIcon}>
                             <FaChartBar />
                         </span>
-                        Report Dashboard
+                        Report
                     </h2>
-                    <div style={{display: 'flex', alignItems: 'center', gap: '10px', width: '200px', justifyContent: 'flex-end'}}>
-                        <div className="form-check form-switch" style={{
-                            backgroundColor: '#f0f7ff',
-                            padding: '4px 12px',
-                            borderRadius: '8px',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.03)',
-                            border: '1px solid #4a90e2',
-                            display: 'flex',
-                            alignItems: 'center',
-                            position: 'relative',
-                            minWidth: '110px'
-                        }}>
-                            <input
-                                className="form-check-input"
-                                type="checkbox"
-                                role="switch"
-                                id="dailyReportSwitch"
-                                checked={showDailyReport}
-                                onChange={(e) => {
-                                    const isChecked = e.target.checked;
-                                    setShowDailyReport(isChecked);
+                    <div style={{display: 'flex', alignItems: 'center', gap: '10px', width: '250px', justifyContent: 'flex-end'}}>
+                        <Dropdown>
+                            
+                            <Dropdown.Toggle
+                                variant="outline-primary"
+                                id="report-type-dropdown"
+                                style={{
+                                    backgroundColor: '#f0f7ff',
+                                    padding: '6px 12px',
+                                    borderRadius: '8px',
+                                    boxShadow: '0 2px 4px rgba(0,0,0,0.03)',
+                                    border: '1px solid #4a90e2',
+                                    fontSize: '0.85rem',
+                                    fontWeight: '500',
+                                    color: '#4a90e2',
+                                    minWidth: '150px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between'
+                                }}
+                            >
+                                {selectedReportType}
+                                
+                            </Dropdown.Toggle>
 
-                                    // If switching to Daily Report, clear all data from Reports page
-                                    if (isChecked) {
-                                        // Reset all state variables
+                            <Dropdown.Menu style={{
+                                borderRadius: '8px',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                                border: '1px solid rgba(0,0,0,0.05)',
+                                padding: '8px',
+                                minWidth: '200px'
+                            }}>
+                                
+                                <Dropdown.Item
+                                    onClick={() => {
+                                        setSelectedReportType('Detailed Report');
+                                        setShowDailyReport(false);
+                                        // Reset all state variables when switching report types
                                         setSelectedGroup('');
                                         setSelectedProjectId('');
                                         setSelectedLot('');
@@ -689,25 +706,244 @@ const ProjectReport = () => {
                                             outerEnvelope: true,
                                             dispatchDate: true,
                                         });
-                                    }
-                                }}
-                                style={{
-                                    cursor: 'pointer',
-                                    marginRight: '8px'
-                                }}
-                            />
-                            <label className="form-check-label" htmlFor="dailyReportSwitch" style={{
-                                fontSize: '0.85rem',
-                                fontWeight: '500',
-                                color: '#4a90e2',
-                                marginLeft: '0',
-                                whiteSpace: 'nowrap',
-                                position: 'relative',
-                                top: '1px'
-                            }}>
-                                Daily Report
-                            </label>
-                        </div>
+                                    }}
+                                    style={{
+                                        borderRadius: '4px',
+                                        fontSize: '0.85rem',
+                                        fontWeight: selectedReportType === 'Detailed Report' ? '600' : '500',
+                                        backgroundColor: selectedReportType === 'Detailed Report' ? '#e8f4fd' : 'transparent',
+                                        color: selectedReportType === 'Detailed Report' ? '#4a90e2' : '#495057'
+                                    }}
+                                >
+                                    Detailed Report
+                                </Dropdown.Item>
+                                <Dropdown.Item
+                                    onClick={() => {
+                                        setSelectedReportType('Daily Report');
+                                        setShowDailyReport(true);
+                                        // Reset all state variables when switching to Daily Report
+                                        setSelectedGroup('');
+                                        setSelectedProjectId('');
+                                        setSelectedLot('');
+                                        setQuantitySheets([]);
+                                        setFilteredSheets([]);
+                                        setSearchTerm('');
+                                        setCurrentPage(0);
+                                        setRecordsPerPage(10);
+                                        setSortField('');
+                                        setSortDirection('asc');
+                                        setSearchResults([]);
+                                        setSelectedItem(null);
+                                        setSelectedCatch(null);
+                                        setShowCatchView(false);
+                                        setShowTable(false);
+                                        setVisibleColumns({
+                                            catchNo: true,
+                                            subject: true,
+                                            course: true,
+                                            paper: true,
+                                            examDate: true,
+                                            examTime: true,
+                                            quantity: true,
+                                            pages: true,
+                                            status: true,
+                                            innerEnvelope: true,
+                                            outerEnvelope: true,
+                                            dispatchDate: true,
+                                        });
+                                    }}
+                                    style={{
+                                        borderRadius: '4px',
+                                        fontSize: '0.85rem',
+                                        fontWeight: selectedReportType === 'Daily Report' ? '600' : '500',
+                                        backgroundColor: selectedReportType === 'Daily Report' ? '#e8f4fd' : 'transparent',
+                                        color: selectedReportType === 'Daily Report' ? '#4a90e2' : '#495057'
+                                    }}
+                                >
+                                    Daily Report
+                                </Dropdown.Item>
+                                <Dropdown.Item
+                                    onClick={() => {
+                                        setSelectedReportType('Date Range Report');
+                                        setShowDailyReport(false);
+                                        // Reset all state variables when switching report types
+                                        setSelectedGroup('');
+                                        setSelectedProjectId('');
+                                        setSelectedLot('');
+                                        setQuantitySheets([]);
+                                        setFilteredSheets([]);
+                                        setSearchTerm('');
+                                        setCurrentPage(0);
+                                        setRecordsPerPage(10);
+                                        setSortField('');
+                                        setSortDirection('asc');
+                                        setSearchResults([]);
+                                        setSelectedItem(null);
+                                        setSelectedCatch(null);
+                                        setShowCatchView(false);
+                                        setShowTable(false);
+                                        setVisibleColumns({
+                                            catchNo: true,
+                                            subject: true,
+                                            course: true,
+                                            paper: true,
+                                            examDate: true,
+                                            examTime: true,
+                                            quantity: true,
+                                            pages: true,
+                                            status: true,
+                                            innerEnvelope: true,
+                                            outerEnvelope: true,
+                                            dispatchDate: true,
+                                        });
+                                    }}
+                                    style={{
+                                        borderRadius: '4px',
+                                        fontSize: '0.85rem',
+                                        fontWeight: selectedReportType === 'Date Range Report' ? '600' : '500',
+                                        backgroundColor: selectedReportType === 'Date Range Report' ? '#e8f4fd' : 'transparent',
+                                        color: selectedReportType === 'Date Range Report' ? '#4a90e2' : '#495057'
+                                    }}
+                                >
+                                    Date Range Report
+                                </Dropdown.Item>
+                                <Dropdown.Item
+                                    onClick={() => {
+                                        setSelectedReportType('User Wise Report');
+                                        setShowDailyReport(false);
+                                        // Reset all state variables when switching report types
+                                        setSelectedGroup('');
+                                        setSelectedProjectId('');
+                                        setSelectedLot('');
+                                        setQuantitySheets([]);
+                                        setFilteredSheets([]);
+                                        setSearchTerm('');
+                                        setCurrentPage(0);
+                                        setRecordsPerPage(10);
+                                        setSortField('');
+                                        setSortDirection('asc');
+                                        setSearchResults([]);
+                                        setSelectedItem(null);
+                                        setSelectedCatch(null);
+                                        setShowCatchView(false);
+                                        setShowTable(false);
+                                        setVisibleColumns({
+                                            catchNo: true,
+                                            subject: true,
+                                            course: true,
+                                            paper: true,
+                                            examDate: true,
+                                            examTime: true,
+                                            quantity: true,
+                                            pages: true,
+                                            status: true,
+                                            innerEnvelope: true,
+                                            outerEnvelope: true,
+                                            dispatchDate: true,
+                                        });
+                                    }}
+                                    style={{
+                                        borderRadius: '4px',
+                                        fontSize: '0.85rem',
+                                        fontWeight: selectedReportType === 'User Wise Report' ? '600' : '500',
+                                        backgroundColor: selectedReportType === 'User Wise Report' ? '#e8f4fd' : 'transparent',
+                                        color: selectedReportType === 'User Wise Report' ? '#4a90e2' : '#495057'
+                                    }}
+                                >
+                                    User Wise Report
+                                </Dropdown.Item>
+                                <Dropdown.Item
+                                    onClick={() => {
+                                        setSelectedReportType('Process Report');
+                                        setShowDailyReport(false);
+                                        // Reset all state variables when switching report types
+                                        setSelectedGroup('');
+                                        setSelectedProjectId('');
+                                        setSelectedLot('');
+                                        setQuantitySheets([]);
+                                        setFilteredSheets([]);
+                                        setSearchTerm('');
+                                        setCurrentPage(0);
+                                        setRecordsPerPage(10);
+                                        setSortField('');
+                                        setSortDirection('asc');
+                                        setSearchResults([]);
+                                        setSelectedItem(null);
+                                        setSelectedCatch(null);
+                                        setShowCatchView(false);
+                                        setShowTable(false);
+                                        setVisibleColumns({
+                                            catchNo: true,
+                                            subject: true,
+                                            course: true,
+                                            paper: true,
+                                            examDate: true,
+                                            examTime: true,
+                                            quantity: true,
+                                            pages: true,
+                                            status: true,
+                                            innerEnvelope: true,
+                                            outerEnvelope: true,
+                                            dispatchDate: true,
+                                        });
+                                    }}
+                                    style={{
+                                        borderRadius: '4px',
+                                        fontSize: '0.85rem',
+                                        fontWeight: selectedReportType === 'Process Report' ? '600' : '500',
+                                        backgroundColor: selectedReportType === 'Process Report' ? '#e8f4fd' : 'transparent',
+                                        color: selectedReportType === 'Process Report' ? '#4a90e2' : '#495057'
+                                    }}
+                                >
+                                    Process Report
+                                </Dropdown.Item>
+                                <Dropdown.Item
+                                    onClick={() => {
+                                        setSelectedReportType('Machine Report');
+                                        setShowDailyReport(false);
+                                        // Reset all state variables when switching report types
+                                        setSelectedGroup('');
+                                        setSelectedProjectId('');
+                                        setSelectedLot('');
+                                        setQuantitySheets([]);
+                                        setFilteredSheets([]);
+                                        setSearchTerm('');
+                                        setCurrentPage(0);
+                                        setRecordsPerPage(10);
+                                        setSortField('');
+                                        setSortDirection('asc');
+                                        setSearchResults([]);
+                                        setSelectedItem(null);
+                                        setSelectedCatch(null);
+                                        setShowCatchView(false);
+                                        setShowTable(false);
+                                        setVisibleColumns({
+                                            catchNo: true,
+                                            subject: true,
+                                            course: true,
+                                            paper: true,
+                                            examDate: true,
+                                            examTime: true,
+                                            quantity: true,
+                                            pages: true,
+                                            status: true,
+                                            innerEnvelope: true,
+                                            outerEnvelope: true,
+                                            dispatchDate: true,
+                                        });
+                                    }}
+                                    style={{
+                                        borderRadius: '4px',
+                                        fontSize: '0.85rem',
+                                        fontWeight: selectedReportType === 'Machine Report' ? '600' : '500',
+                                        backgroundColor: selectedReportType === 'Machine Report' ? '#e8f4fd' : 'transparent',
+                                        color: selectedReportType === 'Machine Report' ? '#4a90e2' : '#495057'
+                                    }}
+                                >
+                                   Machine Report
+                                </Dropdown.Item>
+                            </Dropdown.Menu>
+                        </Dropdown>
                         <Button
                             variant="outline-primary"
                             className="rounded"
@@ -732,13 +968,13 @@ const ProjectReport = () => {
                     </div>
                 </div>
 
-                {showDailyReport ? (
+                {selectedReportType === 'Daily Report' ? (
                     <DailyReport />
-                ) : (
+                ) : selectedReportType === 'Detailed Report' ? (
                     <>
                         {/* Filters Section */}
                         <div style={styles.filterSection}>
-                            
+
                             <Row className="g-3">
                                 {/* Group Dropdown */}
                                 <Col xs={12} md={6} lg={3}>
@@ -1222,6 +1458,39 @@ const ProjectReport = () => {
                             )}
                         </div>
                     </>
+                ) : (
+                    <div style={{
+                        background: 'white',
+                        borderRadius: '12px',
+                        padding: '40px 20px',
+                        textAlign: 'center',
+                        boxShadow: '0 4px 6px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.03)',
+                        border: '1px solid rgba(0,0,0,0.05)',
+                        animation: 'slideInUp 0.5s ease-in-out'
+                    }}>
+                        <div style={{
+                            fontSize: '3rem',
+                            color: '#4a90e2',
+                            marginBottom: '20px'
+                        }}>
+                            <FaChartBar />
+                        </div>
+                        <h4 style={{
+                            color: '#2c3e50',
+                            marginBottom: '15px',
+                            fontWeight: '600'
+                        }}>
+                            {selectedReportType}
+                        </h4>
+                        <p style={{
+                            color: '#6c757d',
+                            fontSize: '1.1rem',
+                            maxWidth: '400px',
+                            margin: '0 auto'
+                        }}>
+                            This report type is coming soon. Please select "Detailed Report" or "Daily Report" for now.
+                        </p>
+                    </div>
                 )}
             </div>
 
@@ -1303,7 +1572,7 @@ const ProjectReport = () => {
                             <div style={{
                                 display: 'inline-flex',
                                 alignItems: 'center',
-                                padding: '8px 12px',
+                                padding: '10px 19px',
                                 borderRadius: '8px',
                                 backgroundColor: '#f8f9fa',
                                 color: '#495057',
@@ -1347,11 +1616,11 @@ const ProjectReport = () => {
                                     value={recordsPerPage}
                                     onChange={handleRecordsPerPageChange}
                                     style={{
-                                        width: 'auto',
+
                                         borderRadius: '6px',
                                         border: '1px solid #e0e0e0',
                                         boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-                                        padding: '6px 10px',
+                                        width: ' 90px',
                                         fontSize: '0.9rem',
                                         cursor: 'pointer'
                                     }}
@@ -1435,14 +1704,7 @@ const ProjectReport = () => {
                                             <FaFilter style={{ color: '#6c757d', fontSize: '1.5rem', transition: 'transform 0.2s', ':hover': { transform: 'scale(1.1)' } }} />
                                         </Button>
                                         <div className="dropdown-menu p-3" style={{ minWidth: '300px' }}>
-                                            <div className="d-flex justify-content-between mb-3">
-                                                <Button
-                                                    variant="primary"
-                                                    size="sm"
-                                                >
-                                                    <FaSave className="me-1" /> Save
-                                                </Button>
-                                            </div>
+
                                             <div>
                                                 <div className="mb-3">
 
