@@ -546,6 +546,35 @@ const DailyReport = ({ date }) => {
     const [transactionCurrentPage, setTransactionCurrentPage] = useState(1);
     const transactionPageSize = 10; // Items per page for transaction table
 
+    // Add state for Quick Task data
+    const [quickTaskData, setQuickTaskData] = useState([]);
+    const [quickTaskActiveTab, setQuickTaskActiveTab] = useState('summary');
+    const [quickTaskCurrentPage, setQuickTaskCurrentPage] = useState(1);
+    const quickTaskPageSize = 10; // Items per page for quick task table
+
+    // Add state for Quick Task name filter
+    const [quickTaskNameFilter, setQuickTaskNameFilter] = useState('');
+
+    // Filter Quick Task data based on name filter
+    const filteredQuickTaskData = quickTaskData.filter(task => {
+        if (!quickTaskNameFilter.trim()) return true;
+
+        const userName = userMap[task.triggeredBy_A] || `User ${task.triggeredBy_A}`;
+        return userName.toLowerCase().includes(quickTaskNameFilter.toLowerCase());
+    });
+
+    // Handle Quick Task name filter change
+    const handleQuickTaskNameFilterChange = (e) => {
+        setQuickTaskNameFilter(e.target.value);
+        setQuickTaskCurrentPage(1); // Reset to first page when filtering
+    };
+
+    // Handle Quick Task name filter clear
+    const handleQuickTaskNameFilterClear = () => {
+        setQuickTaskNameFilter('');
+        setQuickTaskCurrentPage(1);
+    };
+
     // Add tooltip handlers
     const handleTooltipToggle = (tooltipName) => {
         setShowTooltip(prev => ({
@@ -591,6 +620,10 @@ const DailyReport = ({ date }) => {
             totalProjects: 0,
             totalQuantity: 0
         });
+
+        // Reset Quick Task data
+        setQuickTaskData([]);
+        setQuickTaskCurrentPage(1);
 
         // Hide report until View Report button is clicked
         setShowReport(false);
@@ -647,6 +680,10 @@ const DailyReport = ({ date }) => {
             totalProjects: 0,
             totalQuantity: 0
         });
+
+        // Reset Quick Task data
+        setQuickTaskData([]);
+        setQuickTaskCurrentPage(1);
 
         // Hide report until View Report button is clicked
         setShowReport(false);
@@ -756,6 +793,7 @@ const DailyReport = ({ date }) => {
             await fetchDailySummary();
             await fetchDailyProductionReport();
             await fetchDailyProductionSummaryReport();
+            await fetchQuickTaskData();
 
             // Show the report after data is loaded
             setShowReport(true);
@@ -1125,6 +1163,49 @@ const DailyReport = ({ date }) => {
                 totalProjects: 0,
                 totalQuantity: 0
             });
+        }
+    };
+
+    // Function to fetch Quick Task data
+    const fetchQuickTaskData = async () => {
+        try {
+            console.log('Fetching QuickCompletion data with startDate:', startDate);
+
+            // Format dates for API
+            const formatDateForApi = (dateStr) => {
+                if (!dateStr) return '';
+                return new Date(dateStr).toLocaleDateString('en-GB', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                }).replace(/\//g, '-');
+            };
+
+            // Prepare API parameters
+            const params = {};
+
+            // Use start date for quick completion data
+            if (startDate) {
+                params.date = formatDateForApi(startDate);
+                console.log('Using date for quick completion:', params.date);
+            }
+
+            console.log('API params for QuickCompletion:', params);
+            const response = await API.get(`/Reports/quickCompletion`, { params });
+            console.log('QuickCompletion API Response:', response);
+            console.log('QuickCompletion API Response data:', response.data);
+
+            if (Array.isArray(response.data)) {
+                setQuickTaskData(response.data);
+                console.log('Set quickTaskData with', response.data.length, 'items');
+            } else {
+                console.log('Response data is not an array:', typeof response.data);
+                setQuickTaskData([]);
+            }
+
+        } catch (error) {
+            console.error("Error fetching quick task data:", error);
+            setQuickTaskData([]);
         }
     };
 
@@ -1961,6 +2042,38 @@ const DailyReport = ({ date }) => {
                                 <FaTable />
                                 Transaction Details
                             </button>
+                            <button
+                                onClick={() => setActiveTab('quicktask')}
+                                style={{
+                                    padding: '12px 24px',
+                                    border: 'none',
+                                    backgroundColor: 'transparent',
+                                    color: activeTab === 'quicktask' ? '#4a90e2' : '#6c757d',
+                                    fontWeight: activeTab === 'quicktask' ? '600' : '500',
+                                    fontSize: '1rem',
+                                    cursor: 'pointer',
+                                    borderBottom: activeTab === 'quicktask' ? '3px solid #4a90e2' : '3px solid transparent',
+                                    transition: 'all 0.3s ease',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px'
+                                }}
+                                onMouseEnter={(e) => {
+                                    if (activeTab !== 'quicktask') {
+                                        e.target.style.color = '#4a90e2';
+                                        e.target.style.borderBottomColor = '#e3f2fd';
+                                    }
+                                }}
+                                onMouseLeave={(e) => {
+                                    if (activeTab !== 'quicktask') {
+                                        e.target.style.color = '#6c757d';
+                                        e.target.style.borderBottomColor = 'transparent';
+                                    }
+                                }}
+                            >
+                                <FaClock />
+                                Quick Task
+                            </button>
                         </div>
 
                         {/* Tab Content */}
@@ -2454,6 +2567,9 @@ const DailyReport = ({ date }) => {
                                         productionReportData={productionReportData}
                                         projects={projects}
                                         types={types}
+                                        // Quick Task data
+                                        quickTaskData={quickTaskData}
+                                        userMap={userMap}
                                     />
 
 
@@ -3012,6 +3128,507 @@ const DailyReport = ({ date }) => {
                             </p>
                         </div>
                     )}
+                            </div>
+                        )}
+
+                        {/* Quick Task Tab */}
+                        {activeTab === 'quicktask' && (
+                            <div style={{
+                                animation: 'fadeIn 0.3s ease-in-out'
+                            }}>
+                                {/* Quick Task Sub-tabs */}
+                                <div style={{
+                                    display: 'flex',
+                                    borderBottom: '1px solid #e9ecef',
+                                    marginBottom: '20px'
+                                }}>
+                                    <button
+                                        onClick={() => setQuickTaskActiveTab('summary')}
+                                        style={{
+                                            padding: '8px 16px',
+                                            border: 'none',
+                                            backgroundColor: 'transparent',
+                                            color: quickTaskActiveTab === 'summary' ? '#28a745' : '#6c757d',
+                                            fontWeight: quickTaskActiveTab === 'summary' ? '600' : '500',
+                                            fontSize: '0.9rem',
+                                            cursor: 'pointer',
+                                            borderBottom: quickTaskActiveTab === 'summary' ? '2px solid #28a745' : '2px solid transparent',
+                                            transition: 'all 0.3s ease',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '6px'
+                                        }}
+                                    >
+                                        <FaChartPie />
+                                        Summary
+                                    </button>
+                                    <button
+                                        onClick={() => setQuickTaskActiveTab('transactions')}
+                                        style={{
+                                            padding: '8px 16px',
+                                            border: 'none',
+                                            backgroundColor: 'transparent',
+                                            color: quickTaskActiveTab === 'transactions' ? '#28a745' : '#6c757d',
+                                            fontWeight: quickTaskActiveTab === 'transactions' ? '600' : '500',
+                                            fontSize: '0.9rem',
+                                            cursor: 'pointer',
+                                            borderBottom: quickTaskActiveTab === 'transactions' ? '2px solid #28a745' : '2px solid transparent',
+                                            transition: 'all 0.3s ease',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '6px'
+                                        }}
+                                    >
+                                        <FaTable />
+                                        Transactions
+                                    </button>
+                                </div>
+
+                                {/* Quick Task Summary */}
+                                {quickTaskActiveTab === 'summary' && (
+                                    <div style={{
+                                        backgroundColor: 'white',
+                                        borderRadius: '8px',
+                                        overflow: 'hidden',
+                                        boxShadow: '0 2px 4px rgba(0,0,0,0.06)',
+                                        border: '1px solid rgba(0,0,0,0.08)',
+                                        marginBottom: '20px',
+                                        maxWidth: '500px'
+                                    }}>
+                                        <Table striped hover style={{
+                                            margin: 0,
+                                            width: '100%',
+                                            borderCollapse: 'separate',
+                                            borderSpacing: 0,
+                                            tableLayout: 'fixed',
+                                            fontSize: '0.85rem'
+                                        }}
+                                        className="striped-columns-table">
+                                            <thead>
+                                                <tr style={{
+                                                    backgroundColor: '#f8f9fa',
+                                                    borderBottom: '1px solid #e9ecef'
+                                                }}>
+                                                    <th style={{
+                                                        padding: '10px 15px',
+                                                        fontSize: '0.8rem',
+                                                        fontWeight: '600',
+                                                        color: '#2c3e50',
+                                                        textAlign: 'left',
+                                                        borderTop: 'none',
+                                                        width: '60%',
+                                                        verticalAlign: 'middle'
+                                                    }}>
+                                                        <span style={{
+                                                            display: 'flex',
+                                                            alignItems: 'center'
+                                                        }}>
+                                                            <FaClock style={{
+                                                                marginRight: '6px',
+                                                                color: '#28a745',
+                                                                fontSize: '12px'
+                                                            }} />
+                                                            Metric
+                                                        </span>
+                                                    </th>
+                                                    <th style={{
+                                                        padding: '10px 15px',
+                                                        fontSize: '0.8rem',
+                                                        fontWeight: '600',
+                                                        color: '#2c3e50',
+                                                        textAlign: 'center',
+                                                        borderTop: 'none',
+                                                        width: '40%',
+                                                        verticalAlign: 'middle'
+                                                    }}>
+                                                        <span style={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center'
+                                                        }}>
+                                                            <FaHashtag style={{
+                                                                marginRight: '4px',
+                                                                color: '#28a745',
+                                                                fontSize: '10px'
+                                                            }} />
+                                                            Count
+                                                        </span>
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr style={{
+                                                    backgroundColor: 'white',
+                                                    transition: 'background-color 0.2s ease'
+                                                }}>
+                                                    <td style={{
+                                                        padding: '8px 15px',
+                                                        fontSize: '0.8rem',
+                                                        color: '#495057',
+                                                        textAlign: 'left',
+                                                        borderTop: '1px solid #e9ecef',
+                                                        verticalAlign: 'middle'
+                                                    }}>
+                                                        <div style={{
+                                                            display: 'flex',
+                                                            alignItems: 'center'
+                                                        }}>
+                                                            <div style={{
+                                                                width: '24px',
+                                                                height: '24px',
+                                                                borderRadius: '4px',
+                                                                backgroundColor: '#28a745',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                marginRight: '8px',
+                                                                boxShadow: '0 1px 2px rgba(40, 167, 69, 0.25)'
+                                                            }}>
+                                                                <FaClock size={10} color="white" />
+                                                            </div>
+                                                            <span style={{
+                                                                fontWeight: '500',
+                                                                fontSize: '0.8rem',
+                                                                color: '#2c3e50'
+                                                            }}>Total Quick Tasks</span>
+                                                        </div>
+                                                    </td>
+                                                    <td style={{
+                                                        padding: '8px 15px',
+                                                        fontSize: '0.9rem',
+                                                        fontWeight: '600',
+                                                        color: '#2c3e50',
+                                                        textAlign: 'center',
+                                                        borderTop: '1px solid #e9ecef',
+                                                        verticalAlign: 'middle'
+                                                    }}>
+                                                        <span style={{
+                                                            display: 'inline-block',
+                                                            padding: '3px 8px',
+                                                            backgroundColor: '#d4edda',
+                                                            color: '#28a745',
+                                                            borderRadius: '4px',
+                                                            fontWeight: '600',
+                                                            minWidth: '30px',
+                                                            fontSize: '0.85rem'
+                                                        }}>
+                                                            {quickTaskData.length || 0}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </Table>
+                                    </div>
+                                )}
+
+                                {/* Quick Task Transactions */}
+                                {quickTaskActiveTab === 'transactions' && (
+                                    <div>
+                                        {quickTaskData && quickTaskData.length > 0 ? (
+                                            <div>
+                                                {/* Name Filter */}
+                                                <div style={{
+                                                    marginBottom: '20px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '10px',
+                                                    padding: '15px',
+                                              
+                                                    borderRadius: '8px',
+                                                   
+                                                }}>
+                                                    <FaSearch style={{
+                                                        color: '#6c757d',
+                                                        fontSize: '20px',
+                                                        
+                                                    }} />
+                                                    <Form.Control
+                                                        type="text"
+                                                        placeholder="Filter by name..."
+                                                        value={quickTaskNameFilter}
+                                                        onChange={handleQuickTaskNameFilterChange}
+                                                        style={{
+                                                            fontSize: '0.85rem',
+                                                         
+                                                            borderRadius: '6px',
+                                                            padding: '8px 12px',
+                                                            maxWidth: '300px'
+                                                        }}
+                                                    />
+                                                    {quickTaskNameFilter && (
+                                                        <button
+                                                            onClick={handleQuickTaskNameFilterClear}
+                                                            style={{
+                                                                background: 'none',
+                                                                border: 'none',
+                                                               
+                                                                cursor: 'pointer',
+                                                                padding: '4px',
+                                                                borderRadius: '4px',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                fontSize: '12px'
+                                                            }}
+                                                            title="Clear filter"
+                                                        >
+                                                            ✕
+                                                        </button>
+                                                    )}
+                                                   
+                                                </div>
+                                                <div style={{
+                                                    backgroundColor: 'white',
+                                                    borderRadius: '8px',
+                                                    overflow: 'hidden',
+                                                    boxShadow: '0 2px 4px rgba(0,0,0,0.06)',
+                                                    border: '1px solid rgba(0,0,0,0.08)',
+                                                    marginBottom: '20px'
+                                                }}>
+                                                <Table striped hover style={{
+                                                    margin: 0,
+                                                    fontSize: '0.85rem'
+                                                }}
+                                                className="striped-columns-table">
+                                                    <thead>
+                                                        <tr style={{
+                                                            backgroundColor: '#f8f9fa',
+                                                            borderBottom: '1px solid #e9ecef'
+                                                        }}>
+                                                            <th style={{
+                                                                padding: '10px 12px',
+                                                                fontSize: '0.8rem',
+                                                                fontWeight: '600',
+                                                                color: '#2c3e50',
+                                                                textAlign: 'center',
+                                                                borderTop: 'none'
+                                                            }}>S.No</th>
+                                                            <th style={{
+                                                                padding: '10px 12px',
+                                                                fontSize: '0.8rem',
+                                                                fontWeight: '600',
+                                                                color: '#2c3e50',
+                                                                textAlign: 'center',
+                                                                borderTop: 'none'
+                                                            }}>Name</th>
+                                                            
+                                                            <th style={{
+                                                                padding: '10px 12px',
+                                                                fontSize: '0.8rem',
+                                                                fontWeight: '600',
+                                                                color: '#2c3e50',
+                                                                textAlign: 'center',
+                                                                borderTop: 'none'
+                                                            }}>Time Difference (Min)</th>
+                                                            <th style={{
+                                                                padding: '10px 12px',
+                                                                fontSize: '0.8rem',
+                                                                fontWeight: '600',
+                                                                color: '#2c3e50',
+                                                                textAlign: 'center',
+                                                                borderTop: 'none'
+                                                            }}>Date Range</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {filteredQuickTaskData.slice(
+                                                            (quickTaskCurrentPage - 1) * quickTaskPageSize,
+                                                            quickTaskCurrentPage * quickTaskPageSize
+                                                        ).map((task, index) => (
+                                                            <tr key={index} style={{
+                                                                backgroundColor: index % 2 === 0 ? 'white' : '#f8f9fa'
+                                                            }}>
+                                                                <td style={{
+                                                                    padding: '8px 12px',
+                                                                    fontSize: '0.8rem',
+                                                                    textAlign: 'center',
+                                                                    borderTop: '1px solid #e9ecef'
+                                                                }}>
+                                                                    {((quickTaskCurrentPage - 1) * quickTaskPageSize) + index + 1}
+                                                                </td>
+                                                                <td style={{
+                                                                    padding: '8px 12px',
+                                                                    fontSize: '0.8rem',
+                                                                    textAlign: 'center',
+                                                                    borderTop: '1px solid #e9ecef'
+                                                                }}>
+                                                                    {userMap[task.triggeredBy_A] || `User ${task.triggeredBy_A}`}
+                                                                </td>
+                                                               
+                                                                <td style={{
+                                                                    padding: '8px 12px',
+                                                                    fontSize: '0.8rem',
+                                                                    textAlign: 'center',
+                                                                    borderTop: '1px solid #e9ecef'
+                                                                }}>
+                                                                    {task.timeDifferenceMinutes}
+                                                                </td>
+                                                                <td style={{
+                                                                    padding: '8px 12px',
+                                                                    fontSize: '0.8rem',
+                                                                    textAlign: 'center',
+                                                                    borderTop: '1px solid #e9ecef'
+                                                                }}>
+                                                                    {task.loggedAT_A && task.loggedAT_B ? (
+                                                                        <span>
+                                                                            {new Date(task.loggedAT_A).toLocaleDateString('en-GB')} - {new Date(task.loggedAT_B).toLocaleDateString('en-GB')}
+                                                                        </span>
+                                                                    ) : 'N/A'}
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </Table>
+
+                                                {/* Pagination for Quick Task */}
+                                                {filteredQuickTaskData.length > quickTaskPageSize && (
+                                                    <div style={{
+                                                        display: 'flex',
+                                                        justifyContent: 'space-between',
+                                                        alignItems: 'center',
+                                                        padding: '15px 20px',
+                                                        backgroundColor: '#f8f9fa',
+                                                        borderTop: '1px solid #e9ecef'
+                                                    }}>
+                                                        <div style={{
+                                                            fontSize: '0.85rem',
+                                                            color: '#6c757d'
+                                                        }}>
+                                                            Showing {((quickTaskCurrentPage - 1) * quickTaskPageSize) + 1} to {Math.min(quickTaskCurrentPage * quickTaskPageSize, filteredQuickTaskData.length)} of {filteredQuickTaskData.length} records
+                                                        </div>
+                                                        <Pagination size="sm" style={{ margin: 0 }}>
+                                                            <Pagination.First
+                                                                disabled={quickTaskCurrentPage === 1}
+                                                                onClick={() => setQuickTaskCurrentPage(1)}
+                                                            />
+                                                            <Pagination.Prev
+                                                                disabled={quickTaskCurrentPage === 1}
+                                                                onClick={() => setQuickTaskCurrentPage(quickTaskCurrentPage - 1)}
+                                                            />
+
+                                                            {(() => {
+                                                                const totalPages = Math.ceil(filteredQuickTaskData.length / quickTaskPageSize);
+                                                                const currentPage = quickTaskCurrentPage;
+                                                                const maxVisiblePages = 5;
+                                                                let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+                                                                let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+                                                                // Adjust start page if we're near the end
+                                                                if (endPage - startPage + 1 < maxVisiblePages) {
+                                                                    startPage = Math.max(1, endPage - maxVisiblePages + 1);
+                                                                }
+
+                                                                const pages = [];
+
+                                                                // Add first page and ellipsis if needed
+                                                                if (startPage > 1) {
+                                                                    pages.push(
+                                                                        <Pagination.Item
+                                                                            key={1}
+                                                                            active={1 === currentPage}
+                                                                            onClick={() => setQuickTaskCurrentPage(1)}
+                                                                        >
+                                                                            1
+                                                                        </Pagination.Item>
+                                                                    );
+                                                                    if (startPage > 2) {
+                                                                        pages.push(<Pagination.Ellipsis key="start-ellipsis" disabled />);
+                                                                    }
+                                                                }
+
+                                                                // Add visible page numbers
+                                                                for (let i = startPage; i <= endPage; i++) {
+                                                                    pages.push(
+                                                                        <Pagination.Item
+                                                                            key={i}
+                                                                            active={i === currentPage}
+                                                                            onClick={() => setQuickTaskCurrentPage(i)}
+                                                                        >
+                                                                            {i}
+                                                                        </Pagination.Item>
+                                                                    );
+                                                                }
+
+                                                                // Add ellipsis and last page if needed
+                                                                if (endPage < totalPages) {
+                                                                    if (endPage < totalPages - 1) {
+                                                                        pages.push(<Pagination.Ellipsis key="end-ellipsis" disabled />);
+                                                                    }
+                                                                    pages.push(
+                                                                        <Pagination.Item
+                                                                            key={totalPages}
+                                                                            active={totalPages === currentPage}
+                                                                            onClick={() => setQuickTaskCurrentPage(totalPages)}
+                                                                        >
+                                                                            {totalPages}
+                                                                        </Pagination.Item>
+                                                                    );
+                                                                }
+
+                                                                return pages;
+                                                            })()}
+
+                                                            <Pagination.Next
+                                                                disabled={quickTaskCurrentPage === Math.ceil(filteredQuickTaskData.length / quickTaskPageSize)}
+                                                                onClick={() => setQuickTaskCurrentPage(quickTaskCurrentPage + 1)}
+                                                            />
+                                                            <Pagination.Last
+                                                                disabled={quickTaskCurrentPage === Math.ceil(filteredQuickTaskData.length / quickTaskPageSize)}
+                                                                onClick={() => setQuickTaskCurrentPage(Math.ceil(filteredQuickTaskData.length / quickTaskPageSize))}
+                                                            />
+                                                        </Pagination>
+                                                    </div>
+                                                )}
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div style={{
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                padding: '60px 20px',
+                                                backgroundColor: 'white',
+                                                borderRadius: '12px',
+                                                boxShadow: '0 4px 6px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.03)',
+                                                border: '1px solid rgba(0,0,0,0.05)',
+                                                textAlign: 'center',
+                                                marginBottom: '25px'
+                                            }}>
+                                                <div style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    width: '70px',
+                                                    height: '70px',
+                                                    borderRadius: '50%',
+                                                    backgroundColor: '#f8f9fa',
+                                                    marginBottom: '20px',
+                                                    boxShadow: '0 4px 6px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.03)',
+                                                    border: '1px solid rgba(0,0,0,0.05)'
+                                                }}>
+                                                    <FaClock style={{
+                                                        fontSize: '28px',
+                                                        color: '#6c757d'
+                                                    }} />
+                                                </div>
+                                                <h4 style={{
+                                                    fontSize: '1.4rem',
+                                                    fontWeight: '600',
+                                                    marginBottom: '15px',
+                                                    color: '#2c3e50'
+                                                }}>No Quick Task Data</h4>
+                                                <p style={{
+                                                    fontSize: '1rem',
+                                                    color: '#6c757d',
+                                                    marginBottom: '0',
+                                                    maxWidth: '500px'
+                                                }}>
+                                                    No quick task completion data is available for the selected date.
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>

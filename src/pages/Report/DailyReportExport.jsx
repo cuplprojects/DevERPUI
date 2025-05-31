@@ -29,7 +29,10 @@ const DailyReportExport = ({
   productionSummaryData,
   productionReportData,
   projects,
-  types
+  types,
+  // Quick Task data
+  quickTaskData,
+  userMap
 }) => {
   const [isExporting, setIsExporting] = useState(false);
   const [exportType, setExportType] = useState(null);
@@ -338,7 +341,96 @@ const DailyReportExport = ({
     }
   };
 
+  // Function to handle Quick Task Excel export
+  const handleQuickTaskExcelExport = async () => {
+    setIsExporting(true);
+    setExportType('quicktask-excel');
 
+    try {
+      if (!quickTaskData || quickTaskData.length === 0) {
+        toast.warning('No quick task data available to export.');
+        return;
+      }
+
+      // Create a new workbook
+      const wb = XLSX.utils.book_new();
+
+      // Define headers for quick task data
+      const headers = [
+        'S.No',
+        'Triggered By A',
+        'Triggered By B',
+        'Time Difference (Min)',
+        'Date Range'
+      ];
+
+      // Prepare data for Excel
+      const wsData = [headers];
+
+      // Add quick task data rows
+      quickTaskData.forEach((task, index) => {
+        const dateRange = task.loggedAT_A && task.loggedAT_B ?
+          `${new Date(task.loggedAT_A).toLocaleDateString('en-GB')} - ${new Date(task.loggedAT_B).toLocaleDateString('en-GB')}` :
+          'N/A';
+
+        const row = [
+          index + 1,
+          userMap[task.triggeredBy_A] || `User ${task.triggeredBy_A}`,
+          userMap[task.triggeredBy_B] || `User ${task.triggeredBy_B}`,
+          task.timeDifferenceMinutes || 0,
+          dateRange
+        ];
+        wsData.push(row);
+      });
+
+      // Create worksheet
+      const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+      // Set column widths
+      ws['!cols'] = [
+        { wch: 8 },   // S.No
+        { wch: 20 },  // Triggered By A
+        { wch: 20 },  // Triggered By B
+        { wch: 18 },  // Time Difference
+        { wch: 25 }   // Date Range
+      ];
+
+      // Add worksheet to workbook
+      XLSX.utils.book_append_sheet(wb, ws, "Quick Task Data");
+
+      // Generate filename
+      let dateStr = '';
+      let filenameDateStr = '';
+      if (startDate && endDate) {
+        const startDateStr = new Date(startDate).toISOString().slice(0,10);
+        const endDateStr = new Date(endDate).toISOString().slice(0,10);
+        dateStr = `${startDateStr}_to_${endDateStr}`;
+        filenameDateStr = `${startDateStr.replace(/-/g, '')}_to_${endDateStr.replace(/-/g, '')}`;
+      } else if (selectedDate) {
+        dateStr = new Date(selectedDate).toISOString().slice(0,10);
+        filenameDateStr = dateStr.replace(/-/g, '');
+      } else {
+        dateStr = new Date().toISOString().slice(0,10);
+        filenameDateStr = dateStr.replace(/-/g, '');
+      }
+
+      let fileName = `QuickTask_Report_${groupName || 'All'}_${filenameDateStr}.xlsx`;
+
+      if (projectName) {
+        const safeProjectName = projectName.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 20);
+        fileName = `QuickTask_Report_${safeProjectName}_${filenameDateStr}.xlsx`;
+      }
+
+      XLSX.writeFile(wb, fileName);
+
+    } catch (error) {
+      console.error("Error exporting quick task data to Excel:", error);
+      toast.error('Failed to export quick task data.');
+    } finally {
+      setIsExporting(false);
+      setExportType(null);
+    }
+  };
 
   // Function to handle Summary Overview PDF export
   const handleSummaryPdfExport = async () => {
@@ -654,6 +746,163 @@ const DailyReportExport = ({
     }
   };
 
+  // Function to handle Quick Task PDF export
+  const handleQuickTaskPdfExport = async () => {
+    setIsExporting(true);
+    setExportType('quicktask-pdf');
+
+    try {
+      if (!quickTaskData || quickTaskData.length === 0) {
+        toast.warning('No quick task data available to export.');
+        return;
+      }
+
+      // Create PDF in landscape A4 format
+      const doc = new jsPDF('l', 'mm', 'a4');
+      const pageWidth = doc.internal.pageSize.width;
+      const pageHeight = doc.internal.pageSize.height;
+      const margins = {
+        top: 30,
+        bottom: 25,
+        left: 15,
+        right: 15
+      };
+
+      // Prepare quick task data for table
+      const quickTaskTableData = [];
+      quickTaskData.forEach((task, index) => {
+        const dateRange = task.loggedAT_A && task.loggedAT_B ?
+          `${new Date(task.loggedAT_A).toLocaleDateString('en-GB')} - ${new Date(task.loggedAT_B).toLocaleDateString('en-GB')}` :
+          'N/A';
+
+        const row = [
+          index + 1,
+          userMap[task.triggeredBy_A] || `User ${task.triggeredBy_A}`,
+          userMap[task.triggeredBy_B] || `User ${task.triggeredBy_B}`,
+          task.timeDifferenceMinutes || 0,
+          dateRange
+        ];
+        quickTaskTableData.push(row);
+      });
+
+      // Create the quick task table
+      doc.autoTable({
+        head: [['S.No', 'Triggered By A', 'Triggered By B', 'Time Diff (Min)', 'Date Range']],
+        body: quickTaskTableData,
+        startY: 35,
+        margin: margins,
+        styles: {
+          fontSize: 9,
+          cellPadding: { top: 6, right: 4, bottom: 6, left: 4 },
+          halign: 'center',
+          lineColor: [200, 200, 200],
+          lineWidth: 0.1,
+          font: "helvetica",
+          textColor: [60, 60, 60],
+          overflow: 'linebreak'
+        },
+        headStyles: {
+          fillColor: [40, 167, 69],
+          textColor: [255, 255, 255],
+          fontSize: 10,
+          fontStyle: 'bold',
+          halign: 'center',
+          cellPadding: { top: 8, right: 4, bottom: 8, left: 4 }
+        },
+        columnStyles: {
+          0: { cellWidth: '8%' },   // S.No
+          1: { cellWidth: '25%' },  // Triggered By A
+          2: { cellWidth: '25%' },  // Triggered By B
+          3: { cellWidth: '15%' },  // Time Difference
+          4: { cellWidth: '27%' }   // Date Range
+        },
+        theme: 'grid',
+        tableLineColor: [200, 200, 200],
+        tableLineWidth: 0.2,
+        alternateRowStyles: {
+          fillColor: [245, 245, 245]
+        },
+        showHead: 'firstPage',
+        didDrawPage: function() {
+          const currentPage = doc.internal.getCurrentPageInfo().pageNumber;
+
+          if (currentPage === 1) {
+            // Add title
+            doc.setFontSize(18);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(44, 62, 80);
+            doc.text('Quick Task Report', pageWidth / 2, 15, { align: 'center' });
+
+            // Add date and project info
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(80, 80, 80);
+
+            let dateText = '';
+            if (startDate && endDate) {
+              dateText = `Date Range: ${formatDate(startDate)} to ${formatDate(endDate)}`;
+            } else if (selectedDate) {
+              dateText = `Date: ${formatDate(selectedDate)}`;
+            }
+
+            const col1X = margins.left;
+            const col2X = pageWidth / 3;
+            const col3X = (pageWidth / 3) * 2;
+
+            doc.text(dateText, col1X, 25);
+
+            if (groupName) {
+              doc.text(`Group: ${groupName}`, col2X, 25);
+            }
+
+            if (projectName) {
+              doc.text(`Project: ${projectName}`, col3X, 25);
+            }
+          }
+
+          // Footer with page number
+          doc.setFontSize(10);
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(80, 80, 80);
+          doc.text(
+            `Page ${currentPage} of ${doc.internal.getNumberOfPages()}`,
+            pageWidth / 2,
+            pageHeight - 10,
+            { align: 'center' }
+          );
+        }
+      });
+
+      // Generate filename
+      let filenameDateStr = '';
+      if (startDate && endDate) {
+        const startDateStr = new Date(startDate).toISOString().slice(0,10);
+        const endDateStr = new Date(endDate).toISOString().slice(0,10);
+        filenameDateStr = `${startDateStr.replace(/-/g, '')}_to_${endDateStr.replace(/-/g, '')}`;
+      } else if (selectedDate) {
+        filenameDateStr = new Date(selectedDate).toISOString().slice(0,10).replace(/-/g, '');
+      } else {
+        filenameDateStr = new Date().toISOString().slice(0,10).replace(/-/g, '');
+      }
+
+      let fileName = `QuickTask_Report_${groupName || 'All'}_${filenameDateStr}.pdf`;
+
+      if (projectName) {
+        const safeProjectName = projectName.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 20);
+        fileName = `QuickTask_Report_${safeProjectName}_${filenameDateStr}.pdf`;
+      }
+
+      doc.save(fileName);
+
+    } catch (error) {
+      console.error("Error exporting quick task data to PDF:", error);
+      toast.error('Failed to export quick task data PDF.');
+    } finally {
+      setIsExporting(false);
+      setExportType(null);
+    }
+  };
+
   return (
     <>
 
@@ -731,6 +980,41 @@ const DailyReportExport = ({
               <FaFilePdf size={16} color='#dc3545' className="me-2" />
             )}
             <span style={{ fontSize: '0.9rem' }}>Details PDF</span>
+          </Dropdown.Item>
+
+          <div className="dropdown-divider my-2"></div>
+
+          {/* Quick Task Section */}
+          <Dropdown.Header className="text-muted fw-bold" style={{ fontSize: '0.75rem' }}>
+            QUICK TASK
+          </Dropdown.Header>
+
+          <Dropdown.Item
+            onClick={handleQuickTaskExcelExport}
+            className="py-2 d-flex align-items-center"
+            disabled={isExporting}
+            title="Export Quick Task to Excel"
+          >
+            {isExporting && exportType === 'quicktask-excel' ? (
+              <Spinner animation="border" size="sm" variant="success" className="me-2" />
+            ) : (
+              <FaFileExcel size={16} color="#1d6f42" className="me-2" />
+            )}
+            <span style={{ fontSize: '0.9rem' }}>Quick Task Excel</span>
+          </Dropdown.Item>
+
+          <Dropdown.Item
+            onClick={handleQuickTaskPdfExport}
+            className="py-2 d-flex align-items-center"
+            disabled={isExporting}
+            title="Export Quick Task to PDF"
+          >
+            {isExporting && exportType === 'quicktask-pdf' ? (
+              <Spinner animation="border" size="sm" variant="danger" className="me-2" />
+            ) : (
+              <FaFilePdf size={16} color='#dc3545' className="me-2" />
+            )}
+            <span style={{ fontSize: '0.9rem' }}>Quick Task PDF</span>
           </Dropdown.Item>
 
         </Dropdown.Menu>
