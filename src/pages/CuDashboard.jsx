@@ -12,7 +12,6 @@ import {
 } from "react-icons/io";
 import { PiDotsNineBold } from "react-icons/pi";
 import { MdExpandMore } from "react-icons/md";
-import { MdNotifications, MdClose } from "react-icons/md";
 import { useStore } from "zustand";
 import themeStore from "./../store/themeStore";
 import statisticsImage from "./../assets/images/statistics.png";
@@ -24,10 +23,7 @@ import { CSSTransition } from "react-transition-group";
 import styled from "styled-components";
 import { getAllProjectCompletionPercentages } from "../CustomHooks/ApiServices/transacationService";
 import { useTranslation } from "react-i18next";
-import TodayTaskIcon from "./DailyTask/TodayTaskIcon";
-import axios from "axios";
-import useProjectMap from "../CustomHooks/ApiServices/useProjectMap";
-import { Accordion, ListGroup } from 'react-bootstrap';
+
 
 const AnimatedDropdownMenu = styled(Dropdown.Menu)`
   &.dropdown-enter {
@@ -79,19 +75,16 @@ const CuDashboard = () => {
   const carouselRef = useRef(null);
   const [hasquantitySheet, setHasquantitySheet] = useState([]);
   const [activeCard, setActiveCard] = useState(null);
-  const [dispatchData, setDispatchData] = useState([]);
-  const [expandedTask, setExpandedTask] = useState(null); // Track the expanded task
   const [visibleCards, setVisibleCards] = useState(() => {
     const savedState = localStorage.getItem("visibleCards");
     return savedState
       ? JSON.parse(savedState)
       : {
-        // lineChart: true,
-        // pieChart: true,
         agGrid: true,
         barChart: true,
       };
   });
+
   const [visiblecardsIcon] = useState({
     lineChart: LineChartIcon,
     pieChart: PieChartIcon,
@@ -107,26 +100,14 @@ const CuDashboard = () => {
   const [page, setPage] = useState(1);
   const pageSize = 5; // Number of projects per page
   const [hasMore, setHasMore] = useState(true);
-  const [showNoticeBoard, setShowNoticeBoard] = useState(false);
-  const projectMap = useProjectMap();
 
+  // funtion to handle the disabled projects
   const hasDisable = (projectid) => {
     const hasQuantitySheet = hasquantitySheet.find(
       (item) => item.projectId === projectid
     );
     return hasQuantitySheet ? hasQuantitySheet.quantitySheet : false;
   };
-
-  useEffect(() => {
-    // Fetch data from the API
-    axios.get('https://localhost:7212/api/Dispatch')
-      .then(response => {
-        setDispatchData(response.data); // Store the data in state
-      })
-      .catch(error => {
-        console.error('Error fetching dispatch data:', error);
-      });
-  }, []); // Empty array ensures the API call runs only once after the first render
 
 
   useEffect(() => {
@@ -137,20 +118,21 @@ const CuDashboard = () => {
   const fetchProjects = async (pageNumber) => {
     setIsLoading(true);
     try {
+      // Get starred project ID from localStorage
+      const storedProject = JSON.parse(localStorage.getItem("selectedProject"));
+      const starredProjectId = storedProject?.value;
+
+      // Build API URL with optional starred project parameter
+      let apiUrl = `/Transactions/all-project-completion-percentages?userId=${userData.userId}&page=${pageNumber}&pageSize=${pageSize}`;
+      if (starredProjectId && pageNumber === 1) {
+        apiUrl += `&starredProjectId=${starredProjectId}`;
+      }
+
       // Fetch project completion percentages and quantity sheets in parallel
-      const response = await API.get(
-        `/Transactions/all-project-completion-percentages?userId=${userData.userId}&page=${pageNumber}&pageSize=${pageSize}`
-      );
+      const response = await API.get(apiUrl);
 
-      const quantitySheetResponse = await API.get(
-        `/QuantitySheet/check-all-quantity-sheets?userId=${userData.userId}`
-      );
 
-      const quantitySheetMap = new Map(
-        quantitySheetResponse.data.map((item) => [item.projectId, item.quantitySheet])
-      );
-
-      // Merge project data with completion percentages
+      // Merge project data with completion percentages and mark starred projects
       const mergedData = response.data.map((project) => {
         const percentage = response.data.find(
           (p) => p.projectId === project.projectId
@@ -159,25 +141,11 @@ const CuDashboard = () => {
           ...project,
           completionPercentage: percentage ? percentage.completionPercentage : 0,
           remainingPercentage: percentage ? 100 - percentage.completionPercentage : 100,
-          isrecent: false, // Add the is recent field and set it to false by default
+          isrecent: starredProjectId && project.projectId === starredProjectId, // Mark starred project
         };
       });
 
-      // Check if the selected project exists in the data
-      const selectedProject = JSON.parse(localStorage.getItem("selectedProject"));
       let finalData = [...mergedData];
-
-      if (selectedProject) {
-        // Check if the selected project exists in the current set of data
-        const selectedProjectIndex = mergedData.findIndex(
-          (project) => project.projectId === selectedProject.value
-        );
-        if (selectedProjectIndex !== -1) {
-          const [selectedProjectData] = finalData.splice(selectedProjectIndex, 1);
-          selectedProjectData.isrecent = true; // Set isrecent to true for the selected project
-          finalData.unshift(selectedProjectData); // Place the selected project at the start
-        }
-      }
 
       // Separate projects with and without quantity sheets
       const projectsWithQtySheet = finalData.filter((project) => hasDisable(project.projectId));
@@ -187,8 +155,15 @@ const CuDashboard = () => {
       finalData = [...projectsWithQtySheet, ...projectsWithoutQtySheet];
 
       setData((prevData) => {
-        // Add new data to the existing data, ensuring the selected project stays at the top
-        return [...prevData, ...finalData];
+        if (pageNumber === 1) {
+          // For first page, replace all data (includes starred project if any)
+          return finalData;
+        } else {
+          // For subsequent pages, append new data avoiding duplicates
+          const existingProjectIds = new Set(prevData.map(p => p.projectId));
+          const newProjects = finalData.filter(p => !existingProjectIds.has(p.projectId));
+          return [...prevData, ...newProjects];
+        }
       });
       setPage(pageNumber);
 
@@ -280,11 +255,6 @@ const CuDashboard = () => {
     });
   };
 
-  // const handleTaskClick = (projectId, lotNumber) => {
-  //   setExpandedTask({ projectId, lotNumber });
-  //   setActiveCard(projectId);
-  // };
-
   const renderCards = () => {
     if (isLoading.projects || isLoading.quantitySheet) {
       return (
@@ -308,7 +278,6 @@ const CuDashboard = () => {
       );
     }
 
-
     const activeCards = Object.values(visibleCards).filter(Boolean).length;
     if (activeCards === 0) {
       return (
@@ -325,19 +294,8 @@ const CuDashboard = () => {
               </Col>
             ))}
           </Row>
-          <div className="d-flex justify-content-between align-items-center mt-3">
-            <Button
-              onClick={() => setShowNoticeBoard(!showNoticeBoard)}
-              className={`${customDark} ${customLightText} rounded-5 border-0 d-flex align-items-center`}
-              style={{ marginLeft: 'auto', marginRight: hasMore ? '10px' : '0' }}
-            >
-              {showNoticeBoard ? (
-                <MdClose size={20} />
-              ) : (
-                <MdNotifications size={20} />
-              )}
-            </Button>
-            {hasMore && (
+          {hasMore && (
+            <>
               <MdExpandMore
                 onClick={() => fetchProjects(page + 1)}
                 style={{
@@ -346,8 +304,8 @@ const CuDashboard = () => {
                 }}
                 className={`${isLoading ? 'opacity-50' : ''} ${customDark} ${customLightText} rounded-5`}
               />
-            )}
-          </div>
+            </>
+          )}
         </>
       );
     }
@@ -419,19 +377,12 @@ const CuDashboard = () => {
               {carouselItems}
             </Carousel>
           </div>
+          <div className="d-flex justify-content-between align-items-center mt-3">
+          
+          
           {hasMore && (
-            <div className="d-flex justify-content-between align-items-center mt-3">
-              <Button
-                onClick={() => setShowNoticeBoard(!showNoticeBoard)}
-                className={`${customDark} ${customLightText} rounded-5 border-0 d-flex align-items-center`}
-                style={{ marginLeft: 'auto', marginRight: '10px' }}
-              >
-                {showNoticeBoard ? (
-                  <MdClose size={20} />
-                ) : (
-                  <MdNotifications size={20} />
-                )}
-              </Button>
+            <div className="text-center mt-3">
+              
               <Button
                 onClick={() => fetchProjects(page + 1)}
                 disabled={isLoading}
@@ -445,20 +396,7 @@ const CuDashboard = () => {
               </Button>
             </div>
           )}
-          {!hasMore && (
-            <div className="d-flex justify-content-end mt-3">
-              <Button
-                onClick={() => setShowNoticeBoard(!showNoticeBoard)}
-                className={`${customDark} ${customLightText} rounded-5 border-0 d-flex align-items-center`}
-              >
-                {showNoticeBoard ? (
-                  <MdClose size={20} />
-                ) : (
-                  <MdNotifications size={20} />
-                )}
-              </Button>
-            </div>
-          )}
+          </div>
         </>
       );
     }
@@ -484,19 +422,9 @@ const CuDashboard = () => {
             ))}
           </div>
         </ScrollableContainer>
-        {hasMore && (
+       
           <div className="d-flex justify-content-between align-items-center mt-3">
-            <Button
-              onClick={() => setShowNoticeBoard(!showNoticeBoard)}
-              className={`${customDark} ${customLightText} rounded-5 border-0 d-flex align-items-center`}
-              style={{ marginLeft: 'auto', marginRight: '10px' }}
-            >
-              {showNoticeBoard ? (
-                <MdClose size={20} />
-              ) : (
-                <MdNotifications size={20} />
-              )}
-            </Button>
+            {hasMore && (
             <Button
               onClick={() => fetchProjects(page + 1)}
               disabled={isLoading}
@@ -504,31 +432,21 @@ const CuDashboard = () => {
             >
               {isLoading ? t("loading") : t("showMore")}
             </Button>
-          </div>
         )}
-        {!hasMore && (
+        </div>
+        {/* {!hasMore && (
           <div className="d-flex justify-content-end mt-3">
-            <Button
+            <NoticeBoardButton
               onClick={() => setShowNoticeBoard(!showNoticeBoard)}
-              className={`${customDark} ${customLightText} rounded-5 border-0 d-flex align-items-center`}
-            >
-              {showNoticeBoard ? (
-                <MdClose size={20} />
-              ) : (
-                <MdNotifications size={20} />
-              )}
-            </Button>
+              showNoticeBoard={showNoticeBoard}
+              customDark={customDark}
+              customLightText={customLightText}
+            />
           </div>
-        )}
+        )} */}
       </>
     );
   };
-
-  // return (
-  //   <Container>
-
-  //   </Container>
-  // );
 
   return (
     <Container fluid className="px-3 position-relative">
@@ -607,7 +525,7 @@ const CuDashboard = () => {
 
       {renderCards()}
 
-      {/* <Row className="gx-3 mt-4">
+      <Row className="gx-3 mt-4">
         {visibleCards.lineChart && (
           <Col lg={visibleCards.pieChart ? 8 : 12}>
             <Card
@@ -645,9 +563,8 @@ const CuDashboard = () => {
             </Card>
           </Col>
         )}
-      </Row> */}
+      </Row>
 
-      {/* Graphs and Charts */}
       <Row className="gx-3 mt-4">
         {visibleCards.agGrid && (
           <Col lg={6} md={12}>
@@ -692,126 +609,6 @@ const CuDashboard = () => {
           </Col>
         )}
       </Row>
-
-      {/* Floating Notice Board Drawer */}
-      {showNoticeBoard && (
-        <>
-          {/* Backdrop */}
-          <div
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              width: '100vw',
-              height: '100vh',
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              zIndex: 1040,
-            }}
-            onClick={() => setShowNoticeBoard(false)}
-          />
-
-          {/* Drawer */}
-          <div
-            style={{
-              position: 'fixed',
-              top: 0,
-              right: 0,
-              width: window.innerWidth < 768 ? '100vw' : '400px',
-              height: '100vh',
-              backgroundColor: 'white',
-              boxShadow: '-2px 0 10px rgba(0, 0, 0, 0.1)',
-              zIndex: 1050,
-              transform: showNoticeBoard ? 'translateX(0)' : 'translateX(100%)',
-              transition: 'transform 0.3s ease-in-out',
-              overflowY: 'auto',
-            }}
-            className={`${customLight}`}
-          >
-            {/* Drawer Header */}
-            <div className={`d-flex justify-content-between align-items-center p-3 border-bottom ${customLightBorder}`}>
-              <h4 className={`mb-0 ${customDarkText}`}>
-                {t("todaysTasks")}
-              </h4>
-              <Button
-                variant="link"
-                onClick={() => setShowNoticeBoard(false)}
-                className="p-0"
-              >
-                <MdClose size={24} className={customDarkText} />
-              </Button>
-            </div>
-
-            {/* Drawer Content */}
-            <div className="p-3">
-              {dispatchData.some(task =>
-                new Date(task.dispatchDate).toLocaleDateString() === new Date().toLocaleDateString()
-              ) ? (
-                (() => {
-                  const todayTasks = dispatchData.filter(task =>
-                    new Date(task.dispatchDate).toLocaleDateString() === new Date().toLocaleDateString()
-                  );
-                  const dispatchDateFormatted = new Date(todayTasks[0].dispatchDate).toLocaleDateString();
-
-                  return (
-                    <Accordion defaultActiveKey="0">
-                      <Accordion.Item eventKey="0">
-                        <Accordion.Header className="fs-5 d-flex justify-content-between align-items-center w-100">
-                          <div className="d-flex justify-content-between w-100">
-                            <strong>Dispatch Today</strong>
-                            <span className="text-muted small">{dispatchDateFormatted}</span>
-                          </div>
-                        </Accordion.Header>
-                        <Accordion.Body>
-                          <ListGroup variant="flush">
-                            {todayTasks.map(task => {
-                              const projectName = projectMap[task.projectId];
-
-                              return (
-                                <ListGroup.Item key={`${task.projectId}-${task.lotNumber}`}>
-                                  <div className="mb-2">
-                                    <p className="mb-1">
-                                      <strong>{task.name}</strong>
-                                    </p>
-                                    <ul className="mb-1 ps-3">
-                                      <strong>Project</strong><strong></strong> {projectName}
-                                      <li><strong>Lot Number:</strong> {task.lotNo}</li>
-                                      {/* <li><strong>Dispatch Date:</strong> {new Date(task.dispatchDate).toLocaleString()}</li> */}
-                                      <li><strong>Box Count:</strong> {task.boxCount}</li>
-                                    </ul>
-
-                                    {expandedTask?.projectId === task.projectId &&
-                                      expandedTask?.lotNumber === task.lotNumber && (
-                                        <div className="mt-2 border-top pt-2">
-                                          <strong>Task Details:</strong>
-                                          <p className="mb-0"><strong>Box Count:</strong> {task.boxCount}</p>
-                                        </div>
-                                      )}
-                                  </div>
-                                </ListGroup.Item>
-                              );
-                            })}
-                          </ListGroup>
-                        </Accordion.Body>
-                      </Accordion.Item>
-                    </Accordion>
-                  );
-                })()
-              ) : (
-                <div className="text-center mt-5">
-                  <MdNotifications size={48} className={`${customDarkText} opacity-50 mb-3`} />
-                  <p className={`${customDarkText} mb-0`}>{t("noTasksToday")}</p>
-                  <small className={`${customDarkText} opacity-75`}>
-                    Check back later for new tasks
-                  </small>
-                </div>
-              )}
-            </div>
-          </div>
-        </>
-      )}
-
-
-
     </Container>
   );
 };
