@@ -1,5 +1,5 @@
 import React from "react";
-import { Modal, Form, Input, Button, message } from "antd";
+import { Modal, Form, Input, Button, message,DatePicker } from "antd";
 import { createDispatch } from "../CustomHooks/ApiServices/dispatchService";
 
 const DispatchFormModal = ({ show, handleClose, processId, projectId, lotNo, fetchDispatchData }) => {
@@ -13,6 +13,7 @@ const DispatchFormModal = ({ show, handleClose, processId, projectId, lotNo, fet
       lotNo,
       status: false // Initialize dispatch with pending status
     };
+  
 
     try {
       await createDispatch(submitData);
@@ -55,6 +56,14 @@ const DispatchFormModal = ({ show, handleClose, processId, projectId, lotNo, fet
           <Input type="number" min={1} />
         </Form.Item>
 
+        <Form.Item
+          label = "Dispatch Date"
+          name="dispatchDate"
+          rules={[{ required: true, message: "Please enter Dispatch date"}]} 
+        >
+          <DatePicker style={{ width: '100%' }} />
+
+        </Form.Item>
         <Form.Item
           label="Messenger Name"
           name="messengerName"

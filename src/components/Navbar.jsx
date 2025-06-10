@@ -11,6 +11,8 @@ import themeStore from './../store/themeStore';
 import { useStore } from 'zustand';
 import { Link } from 'react-router-dom';
 import useUserDataStore, { useUserData, useUserDataActions } from '../store/userDataStore';
+import { NoticeBoard, NoticeBoardButton } from './../pages/DailyTask/TodayTaskIcon';
+import API from './../CustomHooks/MasterApiHooks/api';
 import SampleUser1 from "./../assets/sampleUsers/defaultUser.jpg";
 const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -40,10 +42,23 @@ const Navbar = () => {
 
   const userData = useUserData();
   const { fetchUserData } = useUserDataActions();
+  const [showNoticeBoard, setShowNoticeBoard] = useState(false);
+  const [dispatchData, setDispatchData] = useState([]);
 
   useEffect(() => {
     fetchUserData();
   }, [fetchUserData]);
+
+    useEffect(() => {
+    API.get('/Dispatch/dispatch-summary-today')
+      .then(response => {
+        setDispatchData(response.data);
+        console.log(response.data);
+      })
+      .catch(error => {
+        console.error('Error fetching dispatch data:', error);
+      });
+  }, []);
 
   const toggleNav = () => {
     setShowNav(prev => !prev);
@@ -159,6 +174,14 @@ const Navbar = () => {
             >
               <RiNotification2Fill className="text-light custom-zoom-btn" style={{ fontSize: '24px' }} />
             </button> */}
+
+                        <NoticeBoardButton
+              onClick={() => setShowNoticeBoard(!showNoticeBoard)}
+              showNoticeBoard={showNoticeBoard}
+              customDark={customDark}
+              customLightText={customLightText}
+              style={{ marginLeft: 'auto', marginRight: '10px' }}
+            />
             <button
               onClick={toggleUserMenu}
               className="btn p-0 border-0 bg-transparent"
@@ -239,6 +262,13 @@ const Navbar = () => {
       >
         <Notification onClose={closeNotification} />
       </div> */}
+
+            {/* Notice Board Component */}
+      <NoticeBoard
+        show={showNoticeBoard}
+        onHide={() => setShowNoticeBoard(false)}
+        dispatchData={dispatchData}
+      />
     </div>
   );
 };

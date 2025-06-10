@@ -213,6 +213,7 @@ const permissionOptions = [
         ]},
       { title: 'team', key: '2.9' },
       { title: 'Process Settings', key: '2.10' },
+      { title: 'DailyTask', key: '2.12' },
     ],
   },
   { title: 'Message Management', key: '3' },

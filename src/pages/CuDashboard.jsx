@@ -24,6 +24,7 @@ import styled from "styled-components";
 import { getAllProjectCompletionPercentages } from "../CustomHooks/ApiServices/transacationService";
 import { useTranslation } from "react-i18next";
 
+
 const AnimatedDropdownMenu = styled(Dropdown.Menu)`
   &.dropdown-enter {
     opacity: 0;
@@ -79,12 +80,11 @@ const CuDashboard = () => {
     return savedState
       ? JSON.parse(savedState)
       : {
-        // lineChart: true,
-        // pieChart: true,
         agGrid: true,
         barChart: true,
       };
   });
+
   const [visiblecardsIcon] = useState({
     lineChart: LineChartIcon,
     pieChart: PieChartIcon,
@@ -101,6 +101,7 @@ const CuDashboard = () => {
   const pageSize = 5; // Number of projects per page
   const [hasMore, setHasMore] = useState(true);
 
+  // funtion to handle the disabled projects
   const hasDisable = (projectid) => {
     const hasQuantitySheet = hasquantitySheet.find(
       (item) => item.projectId === projectid
