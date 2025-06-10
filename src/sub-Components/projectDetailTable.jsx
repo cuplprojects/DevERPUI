@@ -1497,14 +1497,10 @@ const ProjectDetailsTable = ({
 
   return (
     <>
-      <div className="">
+      <div className="" style={{}}>
         <Row className={`${customLight} mb-2 p-2 rounded`}>
-          <Col
-            lg={1}
-            md={1}
-            xs={2}
-            className="d-flex justify-content- mt-md-1 mt-xs-1 mb-md-1 mb-xs-1"
-          >
+          {/* Funnel filters */}
+          <Col lg={1} md={1} xs={2} className="d-flex justify-content- mt-md-1 mt-xs-1 mb-md-1 mb-xs-1">
             {hasFeaturePermission(6) && (
               <Dropdown
                 overlay={
@@ -1721,6 +1717,7 @@ const ProjectDetailsTable = ({
             )}
           </Col>
 
+          {/* Lot No */}
           <Col lg={6} md={8} className="pe-0">
             <div className="d-flex flex-wrap gap-2 justify-content-center">
               {projectLots.map((lot, index) => (
@@ -1816,8 +1813,10 @@ const ProjectDetailsTable = ({
               </Dropdown>
             </div>
           </Col>
+
         </Row>
       </div>
+
       <div>
         <Row>
           <Col lg={12} md={12}>
@@ -1848,6 +1847,7 @@ const ProjectDetailsTable = ({
           </Col>
         </Row>
       </div>
+      
       <ColumnToggleModal
         show={columnModalShow}
         handleClose={() => setColumnModalShow(false)}
