@@ -1497,10 +1497,10 @@ const ProjectDetailsTable = ({
 
   return (
     <>
-      <div className="" style={{}}>
+      <div className=" " style={{ position: "sticky", top: 57, zIndex: 1000}} >
         <Row className={`${customLight} mb-2 p-2 rounded`}>
           {/* Funnel filters */}
-          <Col lg={1} md={1} xs={2} className="d-flex justify-content- mt-md-1 mt-xs-1 mb-md-1 mb-xs-1">
+          <Col lg={1} md={1} xs={2} className="d-flex justify-content- mt-md-1 mt-xs-1 mb-md-1 mb-xs-1 ">
             {hasFeaturePermission(6) && (
               <Dropdown
                 overlay={
