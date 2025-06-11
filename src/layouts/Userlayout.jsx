@@ -23,6 +23,7 @@ import CuDashboard from '../pages/CuDashboard';
 import AddProjectProcess from '../pages/ProjectMaster/Tabs/AddProjectProcess';
 import { hasPermission } from '../CustomHooks/Services/permissionUtils';
 import { ToastContainer } from 'react-toastify';
+import UserSettings from '../user/UserSettings/UserSettings';
 
 const UserLayout = () => {
   const { getCssClasses } = useStore(themeStore);
@@ -60,7 +61,7 @@ const UserLayout = () => {
               {/* --------------- User Menu Routes -------------- */}
               <Route path="/profile" element={<Profile />} />
               <Route path="/change-password" element={<ChangePassword />} />
-
+              <Route path="/settings" element={<UserSettings />} />
               <Route path="/quantity-sheet-uploads/:encryptedProjectId" element={checkPermissionAndRender("6", QtySheetUpload)} />
               <Route path="/project-details/:encryptedProjectId" element={<ProcessTable />} />
               <Route path="/labels" element={checkPermissionAndRender("3", Labels)} />
