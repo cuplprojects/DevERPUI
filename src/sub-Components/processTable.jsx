@@ -121,6 +121,10 @@ const ProcessTable = () => {
   const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
+    setModalVisible(false);
+  }, [processId]);
+
+  useEffect(() => {
     fetchCombinedPercentages();
   }, [selectedLot, previousProcess]);
 
