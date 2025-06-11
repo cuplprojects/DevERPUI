@@ -10,16 +10,12 @@ const TooltipSection = ({ title, children }) => (
   </Popover>
 );
 
-const ProcessProgressTrain = ({ ProjectID, lotNumber, previousProcess, showProcessTrain, setShowProcessTrain, processTrainData, setProcessTrainData, setSelectedStatus, setSelectedProcessId, setModalVisible }) => {
+const ProcessProgressTrain = ({ ProjectID, lotNumber, previousProcess, setSelectedStatus, setSelectedProcessId, setModalVisible }) => {
   const [visibleSections, setVisibleSections] = useState(2);
   const [sectionsData, setsectionsData] = useState([]);
   const { processId, processName } = useCurrentProcessStore();
   const [isDispatched, setIsDispatched] = useState(false);
-  // const [modalVisible, setModalVisible] = useState(false);
-  // const [selectedStatus, setSelectedStatus] = useState(null);
-  // const [selectedProcessId, setSelectedProcessId] = useState(null);
 
-  // console.log(ProjectID, lotNumber);
   useEffect(() => {
     const fetchDispatch = async () =>{
       if(ProjectID && lotNumber)
@@ -38,8 +34,6 @@ const ProcessProgressTrain = ({ ProjectID, lotNumber, previousProcess, showProce
 
     fetchDispatch()
   },[ProjectID,lotNumber])
-  
-  
   
   useEffect(() => {
     const fetchData = async () => {
@@ -79,13 +73,6 @@ const ProcessProgressTrain = ({ ProjectID, lotNumber, previousProcess, showProce
     setSelectedStatus(status);
     setSelectedProcessId(processId);
   };
-
-  const handleModalClose = () => {
-    setModalVisible(false);
-    setSelectedStatus(null);
-    setSelectedProcessId(null);
-  };
-
   // Find the previous process data in sectionsData
   const previousProcessData = sectionsData.find(
     (section) => section.processId === previousProcess?.processId
@@ -231,14 +218,6 @@ const ProcessProgressTrain = ({ ProjectID, lotNumber, previousProcess, showProce
           )}
         </>
       )}
-      {/* <ProcessTrainModals
-        ProjectID={ProjectID}
-        lotNumber={lotNumber}
-        ProcessID={selectedProcessId}
-        status={selectedStatus}
-        visible={modalVisible}
-        onClose={handleModalClose}
-      /> */}
     </div>
   );
 };
