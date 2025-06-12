@@ -6,10 +6,11 @@ import ScreenLockPin from './Components/ScreenLockPin'
 const SecuritySettings = ({ t }) => {
     return (
         <div>
-            <Row>
-                <Col xs={12}>
-
+            <Row className='d-flex align-items-center'>
+                <Col md={6} xs={12}>
                     <ChangePassword/>
+                </Col>
+                <Col md={6} xs={12}>
                     <ScreenLockPin/>
                 </Col>
             </Row>

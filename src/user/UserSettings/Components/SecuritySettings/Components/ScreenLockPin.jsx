@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { Modal, Form, Button, Alert, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { Form, Button, Alert, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import { useStore } from 'zustand';
 import themeStore from '../../../../../store/themeStore';
 import API from '../../../../../CustomHooks/MasterApiHooks/api';
 import { FaEye, FaEyeSlash, FaInfoCircle } from 'react-icons/fa';
 
-const ScreenLockPin = ({ show, onHide }) => {
+const ScreenLockPin = () => {
   const [oldPin, setOldPin] = useState('');
   const [newPin, setNewPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
@@ -60,7 +60,6 @@ const ScreenLockPin = ({ show, onHide }) => {
       });
       setSuccess(t('pinUpdateSuccess'));
       setTimeout(() => {
-        onHide();
         setOldPin('');
         setNewPin('');
         setConfirmPin('');
@@ -86,14 +85,12 @@ const ScreenLockPin = ({ show, onHide }) => {
   };
 
   return (
-    <Modal show={show} onHide={onHide} centered>
-      <Modal.Header className={customDark}>
-        <Modal.Title className={customLightText}>{t('changeScreenLockPin')}</Modal.Title>
-      </Modal.Header>
-      <Modal.Body className={customLight}>
+    <div className="screen-lock-pin-container">
+      <div className={`p-4 rounded ${customLight}`}>
+        <h2 className={customDarkText}>{t('changeScreenLockPin')}</h2>
         {error && <Alert variant="danger">{error}</Alert>}
         {success && <Alert variant="success">{success}</Alert>}
-        
+
         <Form onSubmit={handleSubmit}>
           <Form.Group className="mb-3">
             <Form.Label className={`d-flex align-items-center ${customDarkText}`}>
@@ -119,7 +116,7 @@ const ScreenLockPin = ({ show, onHide }) => {
                 required
                 inputMode="numeric"
               />
-              <Button 
+              <Button
                 variant="outline-secondary"
                 onClick={() => setShowOldPin(!showOldPin)}
               >
@@ -139,7 +136,7 @@ const ScreenLockPin = ({ show, onHide }) => {
                 required
                 inputMode="numeric"
               />
-              <Button 
+              <Button
                 variant="outline-secondary"
                 onClick={() => setShowNewPin(!showNewPin)}
               >
@@ -159,7 +156,7 @@ const ScreenLockPin = ({ show, onHide }) => {
                 required
                 inputMode="numeric"
               />
-              <Button 
+              <Button
                 variant="outline-secondary"
                 onClick={() => setShowConfirmPin(!showConfirmPin)}
               >
@@ -167,19 +164,18 @@ const ScreenLockPin = ({ show, onHide }) => {
               </Button>
             </div>
           </Form.Group>
+
+          <div className="d-flex justify-content-end gap-2">
+            <Button variant="secondary" type="button">
+              {t('cancel')}
+            </Button>
+            <Button type="submit" className={customBtn}>
+              {t('save')}
+            </Button>
+          </div>
         </Form>
-      </Modal.Body>
-      <Modal.Footer className={customDark}>
-        <div className="d-flex justify-content-end gap-2">
-          <Button variant="secondary" onClick={onHide}>
-            {t('cancel')}
-          </Button>
-          <Button type="submit" className={customBtn} onClick={handleSubmit}>
-            {t('save')}
-          </Button>
-        </div>
-      </Modal.Footer>
-    </Modal>
+      </div>
+    </div>
   );
 };
 
