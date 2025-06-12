@@ -8,6 +8,9 @@ import './UserSettings.css';
 import { useTranslation } from "react-i18next";
 import SecuritySettings from './Components/SecuritySettings/SecuritySettings';
 import { Dropdown } from 'react-bootstrap';
+import themeStore from '../../store/themeStore';
+import { useStore } from 'zustand';
+
 
 const UserSettings = () => {
   const { t } = useTranslation();
@@ -15,7 +18,17 @@ const UserSettings = () => {
   const generalRef = useRef(null);
   const processRef = useRef(null);
   const securityRef = useRef(null);
-
+  const { getCssClasses } = useStore(themeStore);
+  const [
+    customDark,
+    customMid,
+    customLight,
+    customBtn,
+    customDarkText,
+    customLightText,
+    customLightBorder,
+    customDarkBorder
+  ] = getCssClasses();
   const scrollToSection = (ref) => {
     ref.current.scrollIntoView({ behavior: 'smooth' });
   };
@@ -30,7 +43,7 @@ const UserSettings = () => {
               <h2 className="mb-0">{t('userSettings')}</h2>
             </div>
 
-            <Nav variant="tabs" className="user-settings-tabs sticky-top bg-light border rounded-2"  style={{ position: "sticky", top: 60, zIndex: 1000}}>
+            <Nav variant="tabs" className="user-settings-tabs sticky-top bg-light border rounded-2" style={{ position: "sticky", top: 60, zIndex: 1000 }}>
               <Nav.Item>
                 <Nav.Link onClick={() => scrollToSection(dashboardRef)}>{t('dashboardSettings')}</Nav.Link>
               </Nav.Item>
@@ -48,28 +61,28 @@ const UserSettings = () => {
             <div className="container-fluid p-4">
               <div ref={dashboardRef} className="mb-4">
                 <h2>{t('dashboardSettings')}</h2>
-                <CuDashboardSettings t={t} />
+                <CuDashboardSettings t={t} getCssClasses={getCssClasses} />
               </div>
               <div className="my-4">
                 <hr className="my-2" />
               </div>
               <div ref={generalRef} className="mb-4">
                 <h2>{t('generalSettings')}</h2>
-                <GeneralSettings t={t} />
+                <GeneralSettings t={t} getCssClasses={getCssClasses} />
               </div>
               <div className="my-4">
                 <hr className="my-2" />
               </div>
               <div ref={processRef} className="mb-4">
                 <h2>{t('processSettings')}</h2>
-                <ProcessScreenSettings t={t} />
+                <ProcessScreenSettings t={t} getCssClasses={getCssClasses} />
               </div>
               <div className="my-4">
                 <hr className="my-2" />
               </div>
               <div ref={securityRef} className="mb-4">
                 <h2>{t('securitySettings')}</h2>
-                <SecuritySettings t={t} />
+                <SecuritySettings t={t} getCssClasses={getCssClasses} />
               </div>
             </div>
           </div>

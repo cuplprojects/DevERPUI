@@ -9,11 +9,22 @@ import {
   Button
 } from 'react-bootstrap';
 
-const CuDashboardSettings = ({ t }) => {
+const CuDashboardSettings = ({ t , getCssClasses}) => {
   const [showDashboardTable, setShowDashboardTable] = useState(true);
   const [showBarChart, setShowBarChart] = useState(true);
   const [numberOfProjects, setNumberOfProjects] = useState('5');
   const [viewType, setViewType] = useState('project');
+
+    const [
+    customDark,
+    customMid,
+    customLight,
+    customBtn,
+    customDarkText,
+    customLightText,
+    customLightBorder,
+    customDarkBorder
+  ] = getCssClasses();
 
   const handleSubmit = (event) => {
     event.preventDefault();

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card, Row, Col, Form, Button } from 'react-bootstrap';
 
-const ProcessScreenSettings = ({ t }) => {
+const ProcessScreenSettings = ({ t , getCssClasses}) => {
   const [selectedColumns, setSelectedColumns] = useState({
     interimQuantity: true,
     remarks: true,
@@ -26,6 +26,17 @@ const ProcessScreenSettings = ({ t }) => {
     showCatchData: false,
     showCompletionPercentage: false,
   });
+
+    const [
+    customDark,
+    customMid,
+    customLight,
+    customBtn,
+    customDarkText,
+    customLightText,
+    customLightBorder,
+    customDarkBorder
+  ] = getCssClasses();
 
   const handleColumnChange = (key) => {
     setSelectedColumns({ ...selectedColumns, [key]: !selectedColumns[key] });

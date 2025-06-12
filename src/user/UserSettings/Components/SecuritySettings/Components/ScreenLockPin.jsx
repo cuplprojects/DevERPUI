@@ -10,6 +10,7 @@ const ScreenLockPin = () => {
   const [oldPin, setOldPin] = useState('');
   const [newPin, setNewPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
+  const [screenLockTime, setScreenLockTime] = useState('5'); // Default: 5 minutes
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [showOldPin, setShowOldPin] = useState(false);
@@ -24,6 +25,7 @@ const ScreenLockPin = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
 
     if (!oldPin || !newPin || !confirmPin) {
       setError(t('pinRequired'));
@@ -56,13 +58,17 @@ const ScreenLockPin = () => {
     try {
       await API.put('/User/ChangeScreenLockPin', {
         oldPin: oldPinNum,
-        newPin: newPinNum
+        newPin: newPinNum,
+        screenLockTime: parseInt(screenLockTime), // Pass selected timeout
       });
+
       setSuccess(t('pinUpdateSuccess'));
+
       setTimeout(() => {
         setOldPin('');
         setNewPin('');
         setConfirmPin('');
+        setScreenLockTime('5');
         setError('');
         setSuccess('');
       }, 2000);
@@ -99,10 +105,7 @@ const ScreenLockPin = () => {
                 placement="right"
                 overlay={<Tooltip>{t('If new user pin is 123')}</Tooltip>}
               >
-                <Button
-                  variant="link"
-                  className="p-0 ms-2"
-                >
+                <Button variant="link" className="p-0 ms-2">
                   <FaInfoCircle />
                 </Button>
               </OverlayTrigger>
@@ -163,6 +166,20 @@ const ScreenLockPin = () => {
                 {showConfirmPin ? <FaEyeSlash /> : <FaEye />}
               </Button>
             </div>
+          </Form.Group>
+
+          <Form.Group className="mb-3">
+            <Form.Label className={customDarkText}>{t('screenLockTimeout')}</Form.Label>
+            <Form.Select
+              value={screenLockTime}
+              onChange={(e) => setScreenLockTime(e.target.value)}
+              required
+            >
+              <option value="2">2 {t('minutes')}</option>
+              <option value="5">5 {t('minutes')}</option>
+              <option value="10">10 {t('minutes')}</option>
+              <option value="30">30 {t('minutes')}</option>
+            </Form.Select>
           </Form.Group>
 
           <div className="d-flex justify-content-end gap-2">

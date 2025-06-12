@@ -9,10 +9,21 @@ import {
   Button
 } from 'react-bootstrap';
 
-const GeneralSettings = ({ t }) => {
+const GeneralSettings = ({ t , getCssClasses}) => {
   const [language, setLanguage] = useState('english');
   const [fontSize, setFontSize] = useState('medium');
   const [pageLimit, setPageLimit] = useState('10');
+
+    const [
+    customDark,
+    customMid,
+    customLight,
+    customBtn,
+    customDarkText,
+    customLightText,
+    customLightBorder,
+    customDarkBorder
+  ] = getCssClasses();
 
   const handleSubmit = (event) => {
     event.preventDefault();
