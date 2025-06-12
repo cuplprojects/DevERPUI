@@ -38,7 +38,7 @@ const DispatchPage = ({ projectId, processId, lotNo, fetchTransactions , project
         .map(process => ({
           id: process.id,
           name: process.name,
-          weightage: proprojectIdcess.weightage,
+          weightage: process.weightage,
           status: process.status,
           installedFeatures: process.installedFeatures,
           featureNames: process.featureNames,
@@ -86,7 +86,16 @@ const DispatchPage = ({ projectId, processId, lotNo, fetchTransactions , project
       console.error("Error fetching dispatch data:", error);
     }
   };
-  // console.log(...dispatchData)
+  
+  const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  const day = ("0" + date.getDate()).slice(-2);
+  const month = ("0" + (date.getMonth() + 1)).slice(-2); // Months are zero-indexed
+  const year = date.getFullYear();
+  
+  return `${day}-${month}-${year}`;
+};
+
 
   useEffect(() => {
     if (projectId && processId && lotNo) {
@@ -136,7 +145,8 @@ const DispatchPage = ({ projectId, processId, lotNo, fetchTransactions , project
               { label: t("driverName"), value: dispatch.driverName || "N/A"},
               { label: t("lotNo"), value: dispatch.lotNo },
              // { label: t("dispatchId"), value: dispatch.id },
-              { label: t("boxCount"), value: dispatch.boxCount }
+              { label: t("boxCount"), value: dispatch.boxCount },
+              { label: t("dispatchDate"), value: formatDate(dispatch.dispatchDate) },
             ]}
             columns={[
               { title: t("field"), dataIndex: "label", key: "label" },
@@ -230,6 +240,7 @@ const DispatchPage = ({ projectId, processId, lotNo, fetchTransactions , project
                   { label: t("messenger"), value: dispatch.messengerName },
                   { label: t("messengerMobile"), value: dispatch.messengerMobile },
                   { label: t("dispatchMode"), value: dispatch.dispatchMode },
+                  { label: t("dispatchDate"), value: formatDate(dispatch.dispatchDate) },
                   { label: t("vehicleNumber"), value: dispatch.vehicleNumber || '-' },
                   { label: t("driver"), value: dispatch.driverName || '-' },
                   { label: t("driverMobile"), value: dispatch.driverMobile || '-' },

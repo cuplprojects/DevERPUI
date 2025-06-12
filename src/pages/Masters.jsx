@@ -43,6 +43,7 @@ import { SiCoursera } from "react-icons/si";
 import { FaBook } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import ABCDMaster from "./ABCDMaster";
+import TaskScheduledToday from "./DailyTask/TaskScheduledToday";
 
 
 
@@ -151,6 +152,8 @@ const Sidebar = () => {
     { key: 'course', icon: <SiCoursera />, label: t('course'), permission: '2.8' },
     {key: "display-panel",icon: <FaBell />,label: t("displayPanel"),permission: "2.11", },
     {key: "abcd", icon:<PiExamFill/>, label: t("abcd"), permission: "2.8" },
+    {key: "DailyTask", icon:<PiExamFill/>, label: t("DailyTask"), permission: "2.12" },
+
 
 
 
@@ -344,6 +347,7 @@ const Sidebar = () => {
           {hasPermission('2.8') && selectedMenu === 'course' && <CourseManager />}
           {hasPermission('2.8') && selectedMenu === 'abcd' && <ABCDMaster/>}
           {hasPermission("2.11") && selectedMenu === "display-panel" && (<DisplayPanel />)}
+          {hasPermission("2.12") && selectedMenu === "DailyTask" && (<TaskScheduledToday />)}
         </Col>
       </Row>
     </Container>

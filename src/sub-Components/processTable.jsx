@@ -617,6 +617,7 @@ const ProcessTable = () => {
         const response = await API.get(
           `/Dispatch/project/${selectedProject.value}`
         );
+        console.log(response)
         const dispatchedLotNos = response.data
           .filter((dispatch) => dispatch.status === true) // Filter by status
           .map((dispatch) => dispatch.lotNo);
