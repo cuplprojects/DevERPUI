@@ -30,7 +30,7 @@ const UserSettings = () => {
               <h2 className="mb-0">{t('userSettings')}</h2>
             </div>
 
-            <Nav variant="tabs" className="user-settings-tabs">
+            <Nav variant="tabs" className="user-settings-tabs sticky-top bg-light border rounded-2"  style={{ position: "sticky", top: 60, zIndex: 1000}}>
               <Nav.Item>
                 <Nav.Link onClick={() => scrollToSection(dashboardRef)}>{t('dashboardSettings')}</Nav.Link>
               </Nav.Item>

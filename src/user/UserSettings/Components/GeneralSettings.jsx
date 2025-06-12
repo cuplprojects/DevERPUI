@@ -1,35 +1,114 @@
-import React from 'react'
-import { Card, Row, Col } from 'react-bootstrap'
+import React, { useState } from 'react';
+import {
+  Card,
+  Row,
+  Col,
+  Form,
+  ToggleButton,
+  ToggleButtonGroup,
+  Button
+} from 'react-bootstrap';
 
-const GeneralSettings = ({t}) => {
+const GeneralSettings = ({ t }) => {
+  const [language, setLanguage] = useState('english');
+  const [fontSize, setFontSize] = useState('medium');
+  const [pageLimit, setPageLimit] = useState('10');
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    console.log({
+      language,
+      fontSize,
+      pageLimit
+    });
+  };
+
   return (
-    <div>
-      <Row>
-        <Col xs={12}>
-          <Card className="settings-card">
-            <Card.Header>
-              <div className="d-flex align-items-center">
-                <i className="bi bi-gear-fill me-2 text-primary"></i>
-                <h5 className="mb-0">{t('generalSettings')}</h5>
-              </div>
-            </Card.Header>
-            <Card.Body>
-              <p className="text-muted mb-4">
-                Manage your general application preferences and account settings.
-              </p>
-              {/* General settings content will be added here */}
-              <div className="alert alert-info border-0">
-                <div className="d-flex align-items-center">
-                  <i className="bi bi-gear me-2"></i>
-                  <span>General settings configuration coming soon...</span>
-                </div>
-              </div>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-    </div>
-  )
-}
+    <Card className="shadow-sm border-0">
+      <Card.Header className="bg-white border-bottom">
+        <div className="d-flex align-items-center">
+          <i className="bi bi-gear-fill me-2 text-primary"></i>
+          <h5 className="mb-0">{t('generalSettings')}</h5>
+        </div>
+      </Card.Header>
 
-export default GeneralSettings
+      <Card.Body>
+        <p className="text-muted mb-4">
+          Manage your general application preferences and account settings.
+        </p>
+
+        <Form onSubmit={handleSubmit}>
+          <Row className="g-4">
+            {/* Language Toggle with Flags */}
+            <Col xs={12} md={6}>
+              <Form.Group controlId="language-select">
+                <Form.Label>Language</Form.Label>
+                <ToggleButtonGroup
+                  type="radio"
+                  name="language"
+                  value={language}
+                  onChange={setLanguage}
+                  className="d-flex gap-2"
+                >
+                  <ToggleButton
+                    id="lang-en"
+                    value="english"
+                    variant={language === 'english' ? 'primary' : 'outline-primary'}
+                    className="d-flex align-items-center justify-content-center gap-2 px-3"
+                  >
+                    🇬🇧 <span>English</span>
+                  </ToggleButton>
+                  <ToggleButton
+                    id="lang-hi"
+                    value="hindi"
+                    variant={language === 'hindi' ? 'primary' : 'outline-primary'}
+                    className="d-flex align-items-center justify-content-center gap-2 px-3"
+                  >
+                    🇮🇳 <span>Hindi</span>
+                  </ToggleButton>
+                </ToggleButtonGroup>
+              </Form.Group>
+            </Col>
+
+            {/* Font Size */}
+            <Col xs={12} md={6}>
+              <Form.Group controlId="font-size-select">
+                <Form.Label>Font Size</Form.Label>
+                <Form.Select value={fontSize} onChange={(e) => setFontSize(e.target.value)}>
+                  <option value="small">Small</option>
+                  <option value="medium">Medium</option>
+                  <option value="large">Large</option>
+                </Form.Select>
+              </Form.Group>
+            </Col>
+
+            {/* Page Limit */}
+            <Col xs={12} md={6}>
+              <Form.Group controlId="page-limit-select">
+                <Form.Label>Default Page Limit</Form.Label>
+                <Form.Select value={pageLimit} onChange={(e) => setPageLimit(e.target.value)}>
+                  <option value="5">5</option>
+                  <option value="10">10</option>
+                  <option value="20">20</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                </Form.Select>
+              </Form.Group>
+            </Col>
+
+            {/* Submit Button */}
+            <Col xs={12}>
+              <div className="text-end">
+                <Button variant="primary" type="submit">
+                  Save Settings
+                </Button>
+              </div>
+            </Col>
+          </Row>
+        </Form>
+      </Card.Body>
+    </Card>
+  );
+};
+
+export default GeneralSettings;
