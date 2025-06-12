@@ -1,7 +1,7 @@
 import React from 'react'
 import { Card, Row, Col } from 'react-bootstrap'
 
-const GeneralSettings = () => {
+const GeneralSettings = ({t}) => {
   return (
     <div>
       <Row>
@@ -10,7 +10,7 @@ const GeneralSettings = () => {
             <Card.Header>
               <div className="d-flex align-items-center">
                 <i className="bi bi-gear-fill me-2 text-primary"></i>
-                <h5 className="mb-0">General Settings</h5>
+                <h5 className="mb-0">{t('generalSettings')}</h5>
               </div>
             </Card.Header>
             <Card.Body>

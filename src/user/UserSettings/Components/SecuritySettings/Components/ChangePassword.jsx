@@ -9,9 +9,9 @@ import { jwtDecode } from 'jwt-decode';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
-import themeStore from './../store/themeStore';
+import themeStore from '../../../../../store/themeStore';
 import { useStore } from 'zustand';
-import API from '../CustomHooks/MasterApiHooks/api';
+import API from '../../../../../CustomHooks/MasterApiHooks/api';
 
 const ChangePassword = () => {
   const navigate = useNavigate();

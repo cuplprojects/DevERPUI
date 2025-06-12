@@ -48,7 +48,7 @@ const UserMenu = ({ onClose }) => {
 
   const handleLogoutClick = () => setShowModal(true);
   const handleProfileClick = () => navigate('/profile');
-  const handleChangePasswordClick = () => navigate('/change-password');
+  const handleChangePasswordClick = () => navigate('/settings');
 
   const handleLogoutConfirm = () => {
     clearUserData();
@@ -107,7 +107,7 @@ const UserMenu = ({ onClose }) => {
         {[/* eslint-disable */
           { icon: <ImProfile />, text: 'profile', route: '/profile', onClick: handleProfileClick },
           { icon: <IoSettingsSharp />, text: 'mySettings', onClick: openCustomUiSidebar },
-          { icon: <RiLockPasswordFill />, text: 'changePassword', route: '/change-password', onClick: handleChangePasswordClick },
+          { icon: <IoSettingsSharp />, text: 'mySettings', route: '/settings', onClick: handleChangePasswordClick },
           { icon: <FaPowerOff />, text: 'logout', onClick: handleLogoutClick },
         ].map((item, index) => (
           <li key={index} className={`p-2 ${index !== 3 ? 'border-bottom' : ''} d-flex align-items-center custom-zoom-btn`}>

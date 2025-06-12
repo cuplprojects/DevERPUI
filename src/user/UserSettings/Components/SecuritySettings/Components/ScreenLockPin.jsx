@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Modal, Form, Button, Alert, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import { useStore } from 'zustand';
-import themeStore from '../store/themeStore';
-import API from '../CustomHooks/MasterApiHooks/api';
+import themeStore from '../../../../../store/themeStore';
+import API from '../../../../../CustomHooks/MasterApiHooks/api';
 import { FaEye, FaEyeSlash, FaInfoCircle } from 'react-icons/fa';
 
 const ScreenLockPin = ({ show, onHide }) => {

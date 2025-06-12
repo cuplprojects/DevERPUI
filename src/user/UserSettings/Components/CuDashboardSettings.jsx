@@ -1,7 +1,7 @@
 import React from 'react'
 import { Card, Row, Col } from 'react-bootstrap'
 
-const CuDashboardSettings = () => {
+const CuDashboardSettings = ({t}) => {
   return (
     <div>
       <Row>
@@ -10,7 +10,7 @@ const CuDashboardSettings = () => {
             <Card.Header>
               <div className="d-flex align-items-center">
                 <i className="bi bi-speedometer2 me-2 text-primary"></i>
-                <h5 className="mb-0">Dashboard Settings</h5>
+                <h5 className="mb-0">{t('dashboardSettings')}</h5>
               </div>
             </Card.Header>
             <Card.Body>

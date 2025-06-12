@@ -1,7 +1,7 @@
 import React from 'react'
 import { Card, Row, Col } from 'react-bootstrap'
 
-const ProcessScreenSettings = () => {
+const ProcessScreenSettings = ({t}) => {
   return (
     <div>
       <Row>
@@ -10,7 +10,7 @@ const ProcessScreenSettings = () => {
             <Card.Header>
               <div className="d-flex align-items-center">
                 <i className="bi bi-diagram-3-fill me-2 text-primary"></i>
-                <h5 className="mb-0">Process Settings</h5>
+                <h5 className="mb-0">{t('processSettings')}</h5>
               </div>
             </Card.Header>
             <Card.Body>
