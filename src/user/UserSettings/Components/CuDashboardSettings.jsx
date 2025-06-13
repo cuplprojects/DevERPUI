@@ -114,7 +114,7 @@ const CuDashboardSettings = ({ t, getCssClasses, IoSave }) => {
             {/* Submit Button */}
             <Col xs={12} lg={12} md={12} className=''>
               <div className="text-end">
-                <Button variant="primary" type="submit" className={`${customBtn} border-0 ${customLightText}`}>
+                <Button type="submit" className={`${customBtn}  ${customLightText} ${customLightBorder} border-1`}>
                   <IoSave /> <span className="d-none d-md-inline">Save Settings</span>
                 </Button>
               </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Form, Button, Alert, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { Form, Button, Alert, OverlayTrigger, Tooltip ,Row,Col} from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import { useStore } from 'zustand';
 import themeStore from '../../../../../store/themeStore';
@@ -92,8 +92,8 @@ const ScreenLockPin = () => {
 
   return (
     <div className="screen-lock-pin-container">
-      <div className={`p-4 rounded ${customLight}`}>
-        <h2 className={customDarkText}>{t('changeScreenLockPin')}</h2>
+      <div className={`p-2 rounded ${customLight}`}>
+        <h2 className={`${customDarkText} text-center fw-bold`}>{t('changeScreenLockPin')}</h2>
         {error && <Alert variant="danger">{error}</Alert>}
         {success && <Alert variant="success">{success}</Alert>}
 

@@ -5,7 +5,7 @@ import ScreenLockPin from './Components/ScreenLockPin';
 import { useStore } from 'zustand';
 
 
-const SecuritySettings = ({getCssClasses}) => {
+const SecuritySettings = ({t,getCssClasses,oSave}) => {
 
   const [
     customDark,
@@ -19,15 +19,13 @@ const SecuritySettings = ({getCssClasses}) => {
   ] = getCssClasses();
 
   return (
-    <Container fluid className={`mt-4`}>
-      <Row className="gy-4">
+    <Container className={`mt-4`}>
+      <Row className="">
         <Col md={6}>
-          <Card className={`shadow-lg rounded-4 p-4 ${customLightBorder} ${customLight}`}>
             <ChangePassword />
-          </Card>
         </Col>
         <Col md={6}>
-          <Card className={`shadow-lg rounded-4 p-4 ${customLightBorder} ${customLight}`}>
+          <Card className={`shadow-lg rounded-4 p-1 ${customLightBorder} ${customLight}`}>
             <ScreenLockPin />
           </Card>
         </Col>

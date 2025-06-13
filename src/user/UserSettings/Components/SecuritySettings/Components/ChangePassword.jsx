@@ -155,7 +155,7 @@ const ChangePassword = () => {
   
   return (
     <Container
-      className={`mt-5 w-100 p-4 shadow-lg rounded-5 ${customLightBorder} ${customLight}`}
+      className={`w-100 p-4 shadow-lg rounded-4 ${customLightBorder} ${customLight}`}
       style={{ maxWidth: '800px',zIndex:"0" }}
     >
       <Row>

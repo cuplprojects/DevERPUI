@@ -107,7 +107,7 @@ const GeneralSettings = ({ t, getCssClasses, IoSave }) => {
             {/* Submit Button */}
             <Col xs={12} lg={6} md={6} className='d-flex justify-content-end'>
               <div className="text-end">
-                <Button variant="primary" type="submit" className={`${customBtn} border-0 ${customLightText}`}>
+                <Button variant="primary" type="submit" className={`${customBtn} border-1 ${customLightText} ${customLightBorder}`}>
                   <IoSave /> <span className="d-none d-md-inline">Save Settings</span>
                 </Button>
               </div>

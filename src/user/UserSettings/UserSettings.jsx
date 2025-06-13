@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Container, Nav, Row,
-  Col, } from 'react-bootstrap';
+import {
+  Container, Nav, Row,
+  Col,
+} from 'react-bootstrap';
 import CuDashboardSettings from './Components/CuDashboardSettings';
 import GeneralSettings from './Components/GeneralSettings';
 import ProcessScreenSettings from './Components/ProcessScreenSettings';
@@ -94,34 +96,36 @@ const UserSettings = () => {
             </Nav> */}
 
 
-          {/* <hr className="my-2" /> */}
+            {/* <hr className="my-2" /> */}
             <Row className='mt-5'>
-              <Col lg={6} md={12}>
-                <div ref={dashboardRef} className="mb-4">
+              <Col lg={6} md={12} className={``}>
+                <div className={`${customLightBorder} rounded-2 p-1`}>
                   <h3 className={`${customDarkText}`}>{t('dashboardSettings')}</h3>
                   <CuDashboardSettings t={t} getCssClasses={getCssClasses} IoSave={IoSave} />
                 </div>
               </Col>
-              <Col lg={6} md={12}>
-                <h3 className={`${customDarkText}`}>{t('generalSettings')}</h3>
-                <GeneralSettings t={t} getCssClasses={getCssClasses} IoSave={IoSave} />
+              <Col lg={6} md={12} className={``}>
+                <div className={`${customLightBorder} rounded-2 p-2`} >
+                  <h3 className={`${customDarkText}`}>{t('generalSettings')}</h3>
+                  <GeneralSettings t={t} getCssClasses={getCssClasses} IoSave={IoSave} />
+                </div>
               </Col>
             </Row>
-            <div className="container-fluid p-4">
 
- 
-              <div ref={processRef} className="mb-4">
+            <Row className='mt-3'>
+              <Col lg={12} md={12} className={``}>
                 <h3 className={`${customDarkText}`}>{t('processSettings')}</h3>
                 <ProcessScreenSettings t={t} getCssClasses={getCssClasses} IoSave={IoSave} />
-              </div>
-              <div className="my-4">
-                <hr className="my-2" />
-              </div>
-              <div ref={securityRef} className="mb-4">
-                <h3 className={`${customDarkText}`}>{t('securitySettings')}</h3>
-                <SecuritySettings t={t} getCssClasses={getCssClasses} IoSave={IoSave} />
-              </div>
-            </div>
+              </Col>
+            </Row>
+            <Row className='mt-3'>
+              <Col lg={12} md={6}>
+                <div className="">
+                  <h3 className={`${customDarkText}`}>{t('securitySettings')}</h3>
+                  <SecuritySettings t={t} getCssClasses={getCssClasses} IoSave={IoSave} />
+                </div>
+              </Col>
+            </Row>
           </div>
         </div>
       </Container>
