@@ -57,7 +57,7 @@ const UserSettings = () => {
             <div className="d-flex align-items-center justify-content-center mb-4">
               <h2 className={`${customDarkText} mb-0 text-center d-flex align-items-center justify-content-center`}>
                 <span>
-                  <IoSettingsSharp className='me-2' />
+                  <IoSettingsSharp className='me-2 settings-icon-rotate ' />
                 </span>
                 <span>
                   {t('userSettings')}
