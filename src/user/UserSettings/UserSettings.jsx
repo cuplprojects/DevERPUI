@@ -119,7 +119,7 @@ const UserSettings = () => {
               </Col>
             </Row>
             <Row className='mt-3'>
-              <Col lg={12} md={6}>
+              <Col lg={12} md={12}>
                 <div className="">
                   <h3 className={`${customDarkText}`}>{t('securitySettings')}</h3>
                   <SecuritySettings t={t} getCssClasses={getCssClasses} IoSave={IoSave} />

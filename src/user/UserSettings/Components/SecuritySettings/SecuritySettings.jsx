@@ -21,10 +21,10 @@ const SecuritySettings = ({t,getCssClasses,oSave}) => {
   return (
     <Container className={`mt-4`}>
       <Row className="">
-        <Col md={6}>
+        <Col md={6} sm={12}>
             <ChangePassword />
         </Col>
-        <Col md={6}>
+        <Col md={6} sm={12}>
           <Card className={`shadow-lg rounded-4 p-1 ${customLightBorder} ${customLight}`}>
             <ScreenLockPin />
           </Card>

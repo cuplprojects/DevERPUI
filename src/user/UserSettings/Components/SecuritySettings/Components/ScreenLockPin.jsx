@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Form, Button, Alert, OverlayTrigger, Tooltip ,Row,Col} from 'react-bootstrap';
+import { Form, Button, Alert, OverlayTrigger, Tooltip, Row, Col } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import { useStore } from 'zustand';
 import themeStore from '../../../../../store/themeStore';
@@ -92,42 +92,43 @@ const ScreenLockPin = () => {
 
   return (
     <div className="screen-lock-pin-container">
-      <div className={`p-2 rounded ${customLight}`}>
-        <h2 className={`${customDarkText} text-center fw-bold`}>{t('changeScreenLockPin')}</h2>
-        {error && <Alert variant="danger">{error}</Alert>}
-        {success && <Alert variant="success">{success}</Alert>}
+  <div className={`p-2 rounded ${customLight}`}>
+    <h4 className={`${customDarkText} text-center fw-bold mb-4`}>{t('changeScreenLockPin')}</h4>
+    {error && <Alert variant="danger">{error}</Alert>}
+    {success && <Alert variant="success">{success}</Alert>}
 
-        <Form onSubmit={handleSubmit}>
-          <Form.Group className="mb-3">
-            <Form.Label className={`d-flex align-items-center ${customDarkText}`}>
-              {t('currentPin')}
-              <OverlayTrigger
-                placement="right"
-                overlay={<Tooltip>{t('If new user pin is 123')}</Tooltip>}
-              >
-                <Button variant="link" className="p-0 ms-2">
-                  <FaInfoCircle />
-                </Button>
-              </OverlayTrigger>
-            </Form.Label>
-            <div className="input-group">
-              <Form.Control
-                type={showOldPin ? "text" : "password"}
-                maxLength={4}
-                value={oldPin}
-                onChange={(e) => handlePinChange(e.target.value, setOldPin)}
-                required
-                inputMode="numeric"
-              />
-              <Button
-                variant="outline-secondary"
-                onClick={() => setShowOldPin(!showOldPin)}
-              >
-                {showOldPin ? <FaEyeSlash /> : <FaEye />}
-              </Button>
-            </div>
-          </Form.Group>
-
+    <Form onSubmit={handleSubmit}>
+      <Form.Group className="mb-3">
+        <Form.Label className={`d-flex align-items-center ${customDarkText}`}>
+          {t('currentPin')}
+          <OverlayTrigger
+            placement="right"
+            overlay={<Tooltip>{t('If new user pin is 123')}</Tooltip>}
+          >
+            <Button variant="link" className="p-0 ms-2">
+              <FaInfoCircle />
+            </Button>
+          </OverlayTrigger>
+        </Form.Label>
+        <div className="input-group">
+          <Form.Control
+            type={showOldPin ? "text" : "password"}
+            maxLength={4}
+            value={oldPin}
+            onChange={(e) => handlePinChange(e.target.value, setOldPin)}
+            required
+            inputMode="numeric"
+          />
+          <Button
+            variant="outline-secondary"
+            onClick={() => setShowOldPin(!showOldPin)}
+          >
+            {showOldPin ? <FaEyeSlash /> : <FaEye />}
+          </Button>
+        </div>
+      </Form.Group>
+      <Row>
+        <Col md={6}>
           <Form.Group className="mb-3">
             <Form.Label className={customDarkText}>{t('newPin')}</Form.Label>
             <div className="input-group">
@@ -147,7 +148,8 @@ const ScreenLockPin = () => {
               </Button>
             </div>
           </Form.Group>
-
+        </Col>
+        <Col md={6}>
           <Form.Group className="mb-3">
             <Form.Label className={customDarkText}>{t('confirmPin')}</Form.Label>
             <div className="input-group">
@@ -167,7 +169,10 @@ const ScreenLockPin = () => {
               </Button>
             </div>
           </Form.Group>
-
+        </Col>
+      </Row>
+      <Row className='d-flex align-items-center'>
+        <Col md={12} lg={6}>
           <Form.Group className="mb-3">
             <Form.Label className={customDarkText}>{t('screenLockTimeout')}</Form.Label>
             <Form.Select
@@ -181,18 +186,22 @@ const ScreenLockPin = () => {
               <option value="30">30 {t('minutes')}</option>
             </Form.Select>
           </Form.Group>
-
+        </Col>
+        <Col md={12} lg={6} className='mt-3'>
           <div className="d-flex justify-content-end gap-2">
             <Button variant="secondary" type="button">
               {t('cancel')}
             </Button>
-            <Button type="submit" className={customBtn}>
+            <Button type="submit" className={`${customBtn} border-1 ${customLightBorder}`}>
               {t('save')}
             </Button>
           </div>
-        </Form>
-      </div>
-    </div>
+        </Col>
+      </Row>
+    </Form>
+  </div>
+</div>
+
   );
 };
 
