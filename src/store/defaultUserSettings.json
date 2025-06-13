@@ -9,7 +9,7 @@
         "showBarChart":true,
         "numberOfProjects":5,
         "viewType":"project"
-    },
+    },  
     "processScreenSettings":{
         "defaultColumns":{
            "interimQuantity": true,
