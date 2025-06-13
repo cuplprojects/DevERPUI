@@ -9,12 +9,12 @@ import {
   Button
 } from 'react-bootstrap';
 
-const GeneralSettings = ({ t , getCssClasses}) => {
+const GeneralSettings = ({ t, getCssClasses, IoSave }) => {
   const [language, setLanguage] = useState('english');
   const [fontSize, setFontSize] = useState('medium');
   const [pageLimit, setPageLimit] = useState('10');
 
-    const [
+  const [
     customDark,
     customMid,
     customLight,
@@ -35,21 +35,17 @@ const GeneralSettings = ({ t , getCssClasses}) => {
   };
 
   return (
-    <Card className="shadow-sm border-0">
-      <Card.Header className="bg-white border-bottom">
+    <Card className={`shadow-lg p-2 border-0 ${customLight} ${customLightBorder} ${customDarkText} `}>
+      {/* <Card.Header className="bg-white border-bottom">
         <div className="d-flex align-items-center">
           <i className="bi bi-gear-fill me-2 text-primary"></i>
           <h5 className="mb-0">{t('generalSettings')}</h5>
         </div>
-      </Card.Header>
+      </Card.Header> */}
 
       <Card.Body>
-        <p className="text-muted mb-4">
-          Manage your general application preferences and account settings.
-        </p>
-
         <Form onSubmit={handleSubmit}>
-          <Row className="g-4">
+          <Row className="g-4 mb-3">
             {/* Language Toggle with Flags */}
             <Col xs={12} md={6}>
               <Form.Group controlId="language-select">
@@ -92,7 +88,8 @@ const GeneralSettings = ({ t , getCssClasses}) => {
                 </Form.Select>
               </Form.Group>
             </Col>
-
+          </Row>
+          <Row className={`g-4 d-flex align-items-end`}>
             {/* Page Limit */}
             <Col xs={12} md={6}>
               <Form.Group controlId="page-limit-select">
@@ -108,10 +105,10 @@ const GeneralSettings = ({ t , getCssClasses}) => {
             </Col>
 
             {/* Submit Button */}
-            <Col xs={12}>
+            <Col xs={12} lg={6} md={6} className='d-flex justify-content-end'>
               <div className="text-end">
-                <Button variant="primary" type="submit">
-                  Save Settings
+                <Button variant="primary" type="submit" className={`${customBtn} border-0 ${customLightText}`}>
+                  <IoSave /> <span className="d-none d-md-inline">Save Settings</span>
                 </Button>
               </div>
             </Col>

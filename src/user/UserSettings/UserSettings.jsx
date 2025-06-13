@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Container, Nav } from 'react-bootstrap';
+import { Container, Nav, Row,
+  Col, } from 'react-bootstrap';
 import CuDashboardSettings from './Components/CuDashboardSettings';
 import GeneralSettings from './Components/GeneralSettings';
 import ProcessScreenSettings from './Components/ProcessScreenSettings';
@@ -11,6 +12,7 @@ import { Dropdown } from 'react-bootstrap';
 import themeStore from '../../store/themeStore';
 import { useStore } from 'zustand';
 import { IoSave } from "react-icons/io5";
+import { IoSettingsSharp } from "react-icons/io5";
 
 const UserSettings = () => {
   const { t } = useTranslation();
@@ -52,11 +54,17 @@ const UserSettings = () => {
       <Container className="py-4">
         <div className="row">
           <div className="col-12">
-            <div className="d-flex align-items-center mb-4">
-              <i className="bi bi-gear-fill me-3 text-primary" style={{ fontSize: '1.5rem' }}></i>
-              <h2 className={`${customDarkText} mb-0`}>{t('userSettings')}</h2>
+            <div className="d-flex align-items-center justify-content-center mb-4">
+              <h2 className={`${customDarkText} mb-0 text-center d-flex align-items-center justify-content-center`}>
+                <span>
+                  <IoSettingsSharp className='me-2' />
+                </span>
+                <span>
+                  {t('userSettings')}
+                </span>
+              </h2>
             </div>
-            <Nav
+            {/* <Nav
               variant="pills"
               className={`user-settings-tabs shadow-sm py-2 px-3 rounded-2 gap-2 flex-wrap ${isSticky ? 'sticky-on' : 'sticky-off'
                 } ${customLightBorder} shadow-lg`}
@@ -83,33 +91,34 @@ const UserSettings = () => {
                   {t('securitySettings')}
                 </Nav.Link>
               </Nav.Item>
-            </Nav>
+            </Nav> */}
 
 
-            <div className="container-fluid p-4">
-              <div ref={dashboardRef} className="mb-4">
-                <h2 className={`${customDarkText}`}>{t('dashboardSettings')}</h2>
-                <CuDashboardSettings t={t} getCssClasses={getCssClasses} IoSave={IoSave} />
-              </div>
-              <div className="my-4">
-                <hr className="my-2" />
-              </div>
-              <div ref={generalRef} className="mb-4">
-                <h2 className={`${customDarkText}`}>{t('generalSettings')}</h2>
+          {/* <hr className="my-2" /> */}
+            <Row className='mt-5'>
+              <Col lg={6} md={12}>
+                <div ref={dashboardRef} className="mb-4">
+                  <h3 className={`${customDarkText}`}>{t('dashboardSettings')}</h3>
+                  <CuDashboardSettings t={t} getCssClasses={getCssClasses} IoSave={IoSave} />
+                </div>
+              </Col>
+              <Col lg={6} md={12}>
+                <h3 className={`${customDarkText}`}>{t('generalSettings')}</h3>
                 <GeneralSettings t={t} getCssClasses={getCssClasses} IoSave={IoSave} />
-              </div>
-              <div className="my-4">
-                <hr className="my-2" />
-              </div>
+              </Col>
+            </Row>
+            <div className="container-fluid p-4">
+
+ 
               <div ref={processRef} className="mb-4">
-                <h2 className={`${customDarkText}`}>{t('processSettings')}</h2>
+                <h3 className={`${customDarkText}`}>{t('processSettings')}</h3>
                 <ProcessScreenSettings t={t} getCssClasses={getCssClasses} IoSave={IoSave} />
               </div>
               <div className="my-4">
                 <hr className="my-2" />
               </div>
               <div ref={securityRef} className="mb-4">
-                <h2 className={`${customDarkText}`}>{t('securitySettings')}</h2>
+                <h3 className={`${customDarkText}`}>{t('securitySettings')}</h3>
                 <SecuritySettings t={t} getCssClasses={getCssClasses} IoSave={IoSave} />
               </div>
             </div>
