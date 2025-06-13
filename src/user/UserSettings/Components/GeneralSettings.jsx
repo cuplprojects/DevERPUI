@@ -36,13 +36,6 @@ const GeneralSettings = ({ t, getCssClasses, IoSave }) => {
 
   return (
     <Card className={`shadow-lg p-2 border-0 ${customLight} ${customLightBorder} ${customDarkText} `}>
-      {/* <Card.Header className="bg-white border-bottom">
-        <div className="d-flex align-items-center">
-          <i className="bi bi-gear-fill me-2 text-primary"></i>
-          <h5 className="mb-0">{t('generalSettings')}</h5>
-        </div>
-      </Card.Header> */}
-
       <Card.Body>
         <Form onSubmit={handleSubmit}>
           <Row className="g-4 mb-3">

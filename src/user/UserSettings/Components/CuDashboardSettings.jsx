@@ -12,7 +12,7 @@ import {
 const CuDashboardSettings = ({ t, getCssClasses, IoSave }) => {
   const [showDashboardTable, setShowDashboardTable] = useState(true);
   const [showBarChart, setShowBarChart] = useState(true);
-  const [numberOfProjects, setNumberOfProjects] = useState('5');
+  const [numberOfProjects, setNumberOfProjects] = useState(5);
   const [viewType, setViewType] = useState('project');
 
   const [

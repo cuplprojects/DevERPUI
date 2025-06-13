@@ -66,58 +66,35 @@ const UserSettings = () => {
                 </span>
               </h2>
             </div>
-            {/* <Nav
-              variant="pills"
-              className={`user-settings-tabs shadow-sm py-2 px-3 rounded-2 gap-2 flex-wrap ${isSticky ? 'sticky-on' : 'sticky-off'
-                } ${customLightBorder} shadow-lg`}
-              style={{ top: 60, zIndex: 1020 }}
-            >
 
-              <Nav.Item>
-                <Nav.Link onClick={() => scrollToSection(dashboardRef)} className={`${customDarkText} fw-medium`}>
-                  {t('dashboardSettings')}
-                </Nav.Link>
-              </Nav.Item>
-              <Nav.Item>
-                <Nav.Link onClick={() => scrollToSection(generalRef)} className={`${customDarkText} fw-medium`}>
-                  {t('generalSettings')}
-                </Nav.Link>
-              </Nav.Item>
-              <Nav.Item>
-                <Nav.Link onClick={() => scrollToSection(processRef)} className={`${customDarkText} fw-medium`}>
-                  {t('processSettings')}
-                </Nav.Link>
-              </Nav.Item>
-              <Nav.Item>
-                <Nav.Link onClick={() => scrollToSection(securityRef)} className={`${customDarkText} fw-medium`}>
-                  {t('securitySettings')}
-                </Nav.Link>
-              </Nav.Item>
-            </Nav> */}
-
-
-            {/* <hr className="my-2" /> */}
+            {/* General & Dashbaord Settings */}
             <Row className='mt-5'>
-              <Col lg={6} md={12} className={``}>
-                <div className={`${customLightBorder} rounded-2 p-1`}>
-                  <h3 className={`${customDarkText}`}>{t('dashboardSettings')}</h3>
-                  <CuDashboardSettings t={t} getCssClasses={getCssClasses} IoSave={IoSave} />
-                </div>
-              </Col>
+              {/* General Settings */}
               <Col lg={6} md={12} className={``}>
                 <div className={`${customLightBorder} rounded-2 p-2`} >
                   <h3 className={`${customDarkText}`}>{t('generalSettings')}</h3>
                   <GeneralSettings t={t} getCssClasses={getCssClasses} IoSave={IoSave} />
                 </div>
               </Col>
+              {/* CuDashboard Settings  */}
+              <Col lg={6} md={12} className={``}>
+                <div className={`${customLightBorder} rounded-2 p-1`}>
+                  <h3 className={`${customDarkText}`}>{t('dashboardSettings')}</h3>
+                  <CuDashboardSettings t={t} getCssClasses={getCssClasses} IoSave={IoSave} />
+                </div>
+              </Col>
+
             </Row>
 
+            {/* Process Screen Settings */}
             <Row className='mt-3'>
               <Col lg={12} md={12} className={``}>
                 <h3 className={`${customDarkText}`}>{t('processSettings')}</h3>
                 <ProcessScreenSettings t={t} getCssClasses={getCssClasses} IoSave={IoSave} />
               </Col>
             </Row>
+
+            {/* Security Settings */}
             <Row className='mt-3'>
               <Col lg={12} md={12}>
                 <div className="">
