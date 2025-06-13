@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Container, Nav } from 'react-bootstrap';
 import CuDashboardSettings from './Components/CuDashboardSettings';
 import GeneralSettings from './Components/GeneralSettings';
@@ -10,7 +10,7 @@ import SecuritySettings from './Components/SecuritySettings/SecuritySettings';
 import { Dropdown } from 'react-bootstrap';
 import themeStore from '../../store/themeStore';
 import { useStore } from 'zustand';
-
+import { IoSave } from "react-icons/io5";
 
 const UserSettings = () => {
   const { t } = useTranslation();
@@ -29,60 +29,88 @@ const UserSettings = () => {
     customLightBorder,
     customDarkBorder
   ] = getCssClasses();
+  const [isSticky, setIsSticky] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollThreshold = 100;
+      if (window.scrollY > scrollThreshold) {
+        setIsSticky(true);
+      } else {
+        setIsSticky(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
   const scrollToSection = (ref) => {
     ref.current.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
-    <div className="user-settings-container rounded-4">
-      <Container fluid className="py-4">
+    <div className={` ${customLight} user-settings-container rounded-4 shadow-lg`}>
+      <Container className="py-4">
         <div className="row">
           <div className="col-12">
             <div className="d-flex align-items-center mb-4">
               <i className="bi bi-gear-fill me-3 text-primary" style={{ fontSize: '1.5rem' }}></i>
-              <h2 className="mb-0">{t('userSettings')}</h2>
+              <h2 className={`${customDarkText} mb-0`}>{t('userSettings')}</h2>
             </div>
+            <Nav
+              variant="pills"
+              className={`user-settings-tabs shadow-sm py-2 px-3 rounded-2 gap-2 flex-wrap ${isSticky ? 'sticky-on' : 'sticky-off'
+                } ${customLightBorder} shadow-lg`}
+              style={{ top: 60, zIndex: 1020 }}
+            >
 
-            <Nav variant="tabs" className="user-settings-tabs sticky-top bg-light border rounded-2" style={{ position: "sticky", top: 60, zIndex: 1000 }}>
               <Nav.Item>
-                <Nav.Link onClick={() => scrollToSection(dashboardRef)}>{t('dashboardSettings')}</Nav.Link>
+                <Nav.Link onClick={() => scrollToSection(dashboardRef)} className={`${customDarkText} fw-medium`}>
+                  {t('dashboardSettings')}
+                </Nav.Link>
               </Nav.Item>
               <Nav.Item>
-                <Nav.Link onClick={() => scrollToSection(generalRef)}>{t('generalSettings')}</Nav.Link>
+                <Nav.Link onClick={() => scrollToSection(generalRef)} className={`${customDarkText} fw-medium`}>
+                  {t('generalSettings')}
+                </Nav.Link>
               </Nav.Item>
               <Nav.Item>
-                <Nav.Link onClick={() => scrollToSection(processRef)}>{t('processSettings')}</Nav.Link>
+                <Nav.Link onClick={() => scrollToSection(processRef)} className={`${customDarkText} fw-medium`}>
+                  {t('processSettings')}
+                </Nav.Link>
               </Nav.Item>
               <Nav.Item>
-                <Nav.Link onClick={() => scrollToSection(securityRef)}>{t('securitySettings')}</Nav.Link>
+                <Nav.Link onClick={() => scrollToSection(securityRef)} className={`${customDarkText} fw-medium`}>
+                  {t('securitySettings')}
+                </Nav.Link>
               </Nav.Item>
             </Nav>
 
+
             <div className="container-fluid p-4">
               <div ref={dashboardRef} className="mb-4">
-                <h2>{t('dashboardSettings')}</h2>
-                <CuDashboardSettings t={t} getCssClasses={getCssClasses} />
+                <h2 className={`${customDarkText}`}>{t('dashboardSettings')}</h2>
+                <CuDashboardSettings t={t} getCssClasses={getCssClasses} IoSave={IoSave} />
               </div>
               <div className="my-4">
                 <hr className="my-2" />
               </div>
               <div ref={generalRef} className="mb-4">
-                <h2>{t('generalSettings')}</h2>
-                <GeneralSettings t={t} getCssClasses={getCssClasses} />
+                <h2 className={`${customDarkText}`}>{t('generalSettings')}</h2>
+                <GeneralSettings t={t} getCssClasses={getCssClasses} IoSave={IoSave} />
               </div>
               <div className="my-4">
                 <hr className="my-2" />
               </div>
               <div ref={processRef} className="mb-4">
-                <h2>{t('processSettings')}</h2>
-                <ProcessScreenSettings t={t} getCssClasses={getCssClasses} />
+                <h2 className={`${customDarkText}`}>{t('processSettings')}</h2>
+                <ProcessScreenSettings t={t} getCssClasses={getCssClasses} IoSave={IoSave} />
               </div>
               <div className="my-4">
                 <hr className="my-2" />
               </div>
               <div ref={securityRef} className="mb-4">
-                <h2>{t('securitySettings')}</h2>
-                <SecuritySettings t={t} getCssClasses={getCssClasses} />
+                <h2 className={`${customDarkText}`}>{t('securitySettings')}</h2>
+                <SecuritySettings t={t} getCssClasses={getCssClasses} IoSave={IoSave} />
               </div>
             </div>
           </div>

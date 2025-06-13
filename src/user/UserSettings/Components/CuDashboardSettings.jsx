@@ -9,13 +9,13 @@ import {
   Button
 } from 'react-bootstrap';
 
-const CuDashboardSettings = ({ t , getCssClasses}) => {
+const CuDashboardSettings = ({ t, getCssClasses, IoSave }) => {
   const [showDashboardTable, setShowDashboardTable] = useState(true);
   const [showBarChart, setShowBarChart] = useState(true);
   const [numberOfProjects, setNumberOfProjects] = useState('5');
   const [viewType, setViewType] = useState('project');
 
-    const [
+  const [
     customDark,
     customMid,
     customLight,
@@ -37,19 +37,19 @@ const CuDashboardSettings = ({ t , getCssClasses}) => {
   };
 
   return (
-    <Card className="shadow-sm border-0">
-      <Card.Header className="bg-white border-bottom">
+    <Card className={`shadow-lg border-0 ${customLight} ${customLightBorder} ${customDarkText} `}>
+      {/* <Card.Header className="bg-white border-bottom">
         <div className="d-flex align-items-center">
           <i className="bi bi-speedometer2 me-2 text-primary"></i>
           <h5 className="mb-0">{t('dashboardSettings')}</h5>
         </div>
-      </Card.Header>
+      </Card.Header> */}
 
       <Card.Body>
         <Form onSubmit={handleSubmit}>
-          <Row className="g-3">
+          <Row className="g-3 mb-3">
             {/* Dashboard Table Toggle */}
-            <Col xs={12} md={6}>
+            <Col xs={12} lg={4} md={6}>
               <Form.Check
                 type="switch"
                 id="toggle-dashboard-table"
@@ -69,9 +69,10 @@ const CuDashboardSettings = ({ t , getCssClasses}) => {
                 onChange={() => setShowBarChart(!showBarChart)}
               />
             </Col>
-
+          </Row>
+          <Row className="g-3">
             {/* Number of Project Cards */}
-            <Col xs={12} md={6}>
+            <Col xs={12} lg={4} md={6}>
               <Form.Group controlId="select-number-projects">
                 <Form.Label>Number of Project Cards</Form.Label>
                 <Form.Select
@@ -87,8 +88,8 @@ const CuDashboardSettings = ({ t , getCssClasses}) => {
             </Col>
 
             {/* Custom Project Input */}
-            {numberOfProjects === 'custom' && (
-              <Col xs={12} md={6}>
+            {/* {numberOfProjects === 'custom' && (
+              <Col xs={12} lg={4} md={6}>
                 <Form.Group controlId="custom-number-projects">
                   <Form.Label>Custom Number</Form.Label>
                   <Form.Control
@@ -100,10 +101,10 @@ const CuDashboardSettings = ({ t , getCssClasses}) => {
                   />
                 </Form.Group>
               </Col>
-            )}
+            )} */}
 
             {/* View Type Selector */}
-            <Col xs={12} md={6}>
+            <Col xs={12} lg={4} md={6}>
               <Form.Group>
                 <Form.Label>Default View Type</Form.Label>
                 <ToggleButtonGroup
@@ -124,13 +125,14 @@ const CuDashboardSettings = ({ t , getCssClasses}) => {
             </Col>
 
             {/* Submit Button */}
-            <Col xs={12}>
+            <Col xs={12} lg={4} md={12} className=''>
               <div className="text-end">
-                <Button variant="primary" type="submit">
-                  Save Settings
+                <Button variant="primary" type="submit" className={`${customBtn} border-0 ${customLightText}`}>
+                  <IoSave /> <span className="d-none d-md-inline">Save Settings</span>
                 </Button>
               </div>
             </Col>
+           
           </Row>
         </Form>
       </Card.Body>
