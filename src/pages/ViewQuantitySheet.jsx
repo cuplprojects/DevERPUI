@@ -281,14 +281,14 @@ const ViewQuantitySheet = ({ selectedLotNo, showBtn, showTable, lots }) => {
 
         return dateA - dateB;
       },
-      render: (text, record) => (
-        <span>
-          {text}
-          {record.isExamDateOverlapped && (
-            <WarningOutlined style={{ color: "#ff4d4f", marginLeft: "5px" }} />
-          )}
-        </span>
-      ),
+      // render: (text, record) => (
+      //   <span>
+      //     {text}
+      //     {record.isExamDateOverlapped && (
+      //       <WarningOutlined style={{ color: "#ff4d4f", marginLeft: "5px" }} />
+      //     )}
+      //   </span>
+      // ),
       render: (text, record) => {
 
         if (editableRowKey === record.key) {

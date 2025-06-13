@@ -16,6 +16,7 @@ import { useMediaQuery } from 'react-responsive';
 import { useTranslation } from 'react-i18next';
 import AuthService from '../CustomHooks/ApiServices/AuthService';
 import { openCustomUiSidebar } from './CustomUi';
+import { VscSettings } from "react-icons/vsc";
 
 const UserMenu = ({ onClose }) => {
   const { t, i18n } = useTranslation();
@@ -106,7 +107,7 @@ const UserMenu = ({ onClose }) => {
       <ul className="list-unstyled">
         {[/* eslint-disable */
           { icon: <ImProfile />, text: 'profile', route: '/profile', onClick: handleProfileClick },
-          { icon: <IoSettingsSharp />, text: 'mySettings', onClick: openCustomUiSidebar },
+          { icon: <VscSettings />, text: 'utilitySettings', onClick: openCustomUiSidebar },
           { icon: <IoSettingsSharp />, text: 'mySettings', route: '/settings', onClick: handleChangePasswordClick },
           { icon: <FaPowerOff />, text: 'logout', onClick: handleLogoutClick },
         ].map((item, index) => (
