@@ -40,6 +40,7 @@ import { success } from "../CustomHooks/Services/AlertMessageService";
 import TransferToFactoryModal from "../menus/TransferTofactoryModal";
 
 
+
 const { Option } = Select;
 
 const ProjectDetailsTable = ({
@@ -93,7 +94,56 @@ const ProjectDetailsTable = ({
   const [remarksModalShow, setRemarksModalShow] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [showOptions, setShowOptions] = useState(false);
+
+  // Limit Rows settings
   const [pageSize, setPageSize] = useState(100);
+
+  useEffect(() => {
+    const userSettings = localStorage.getItem('userSettings');
+
+    if (userSettings) {
+      try {
+        const parsedSettings = JSON.parse(userSettings);
+        const pageLimit = parsedSettings?.settings?.general?.pageLimit;
+
+        if (typeof pageLimit === 'number') {
+          setPageSize(pageLimit);
+        }
+      } catch (error) {
+        console.error('Failed to parse userSettings from localStorage:', error);
+      }
+    }
+  }, []);
+
+  // Function to update page size in localStorage (DO NOT update database)
+  const updatePageSizeInLocalStorage = (newPageSize) => {
+    try {
+      const userSettings = localStorage.getItem('userSettings');
+      if (userSettings) {
+        const parsedSettings = JSON.parse(userSettings);
+
+        // Update the pageLimit in general settings
+        if (parsedSettings.settings && parsedSettings.settings.general) {
+          parsedSettings.settings.general.pageLimit = newPageSize;
+
+          // Save back to localStorage only (not to database as per requirement)
+          localStorage.setItem('userSettings', JSON.stringify(parsedSettings));
+          console.log('Page limit updated in localStorage:', newPageSize);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to update page limit in localStorage:', error);
+    }
+  };
+
+  // Enhanced setPageSize function that also updates localStorage
+  const handlePageSizeChange = (newPageSize) => {
+    setPageSize(newPageSize);
+    updatePageSizeInLocalStorage(newPageSize);
+    setCurrentPage(1); // Reset to first page when page size changes
+  };
+
+
   const [currentPage, setCurrentPage] = useState(1);
   const [alarmModalData, setAlarmModalData] = useState(null);
   const [interimQuantityModalData, setInterimQuantityModalData] =
@@ -1428,9 +1478,9 @@ const ProjectDetailsTable = ({
       }`,
     current: currentPage,
     pageSize,
-    pageSizeOptions: [5, 10, 25, 50, 100],
+    pageSizeOptions: [5, 10, 20,25, 50, 100],
     showSizeChanger: true,
-    onShowSizeChange: (current, size) => setPageSize(size),
+    onShowSizeChange: (current, size) => handlePageSizeChange(size),
     onChange: (page) => setCurrentPage(page),
     showTotal: (total) => `${t("total")} ${total} ${t("items")}`,
     locale: { items_per_page: `${t("rows")}` }, // Removes the "/page" text
@@ -1497,7 +1547,7 @@ const ProjectDetailsTable = ({
 
   return (
     <>
-      <div className=" " style={{ position: "sticky", top: 57, zIndex: 1000}} >
+      <div className=" " style={{ position: "sticky", top: 57, zIndex: 1000 }} >
         <Row className={`${customLight} mb-2 p-2 rounded`}>
           {/* Funnel filters */}
           <Col lg={1} md={1} xs={2} className="d-flex justify-content- mt-md-1 mt-xs-1 mb-md-1 mb-xs-1 ">
@@ -1555,11 +1605,12 @@ const ProjectDetailsTable = ({
                       <Select
                         value={pageSize}
                         style={{ width: 60 }}
-                        onChange={(value) => setPageSize(value)}
+                        onChange={(value) => handlePageSizeChange(value)}
                         className="ms-4"
                       >
                         <Option value={5}>5</Option>
                         <Option value={10}>10</Option>
+                        <Option value={20}>20</Option>
                         <Option value={25}>25</Option>
                         <Option value={50}>50</Option>
                         <Option value={100}>100</Option>
@@ -1724,8 +1775,8 @@ const ProjectDetailsTable = ({
                 <button
                   key={index}
                   className={`btn btn-sm ${lotNo === lot.lotNo
-                      ? "bg-white text-dark border-dark"
-                      : customBtn
+                    ? "bg-white text-dark border-dark"
+                    : customBtn
                     } ${customDark === "dark-dark" ? "border" : "custom-light-border"
                     } 
                 d-flex align-items-center justify-content-center p-2 rounded-2 ${customDark === "dark-dark"
@@ -1847,7 +1898,7 @@ const ProjectDetailsTable = ({
           </Col>
         </Row>
       </div>
-      
+
       <ColumnToggleModal
         show={columnModalShow}
         handleClose={() => setColumnModalShow(false)}
