@@ -12,25 +12,43 @@ class ErrorBoundary extends React.Component {
     }
 
     static getDerivedStateFromError(error) {
+        console.error('Error caught by boundary:', error);
         return { hasError: true, error };
     }
 
     componentDidCatch(error, errorInfo) {
         console.error('Error caught by boundary:', error, errorInfo);
-        // Check if error is related to undefined property access
+
+        // If it's a toggle-related error, try to recover gracefully
+        if (error instanceof TypeError && error.message.includes('toggle')) {
+            console.warn('Toggle-related error detected, attempting recovery...');
+            // Don't redirect, just log and try to recover
+            return;
+        }
+
+        // For other auth-related errors, redirect to login
         if (error instanceof TypeError && error.message.includes('Cannot read properties of undefined')) {
-            // Redirect to login for auth-related errors
-            return <Navigate to="/login" replace />;
+            console.warn('Auth-related error detected, redirecting to login...');
         }
     }
 
     render() {
         if (this.state.hasError) {
-            // Handle TypeError specifically
-            if (this.state.error instanceof TypeError && 
+            // For toggle errors, try to render children anyway (recovery attempt)
+            if (this.state.error instanceof TypeError && this.state.error.message.includes('toggle')) {
+                console.warn('Attempting to recover from toggle error...');
+                // Reset error state and try to render children
+                this.setState({ hasError: false, error: null });
+                return this.props.children;
+            }
+
+            // Handle other TypeError specifically
+            if (this.state.error instanceof TypeError &&
                 this.state.error.message.includes('Cannot read properties of undefined')) {
                 return <Navigate to="/login" replace />;
             }
+
+            // For other errors, redirect to dashboard
             return <Navigate to="/cudashboard" replace />;
         }
 
@@ -40,7 +58,6 @@ class ErrorBoundary extends React.Component {
 
 const ProtectedRoute = ({ component: Component }) => {
     const token = useUserToken();
-    const { logout } = AuthService;
 
     const isTokenValid = (token) => {
         if (!token) return false;
@@ -58,11 +75,11 @@ const ProtectedRoute = ({ component: Component }) => {
         const handleInvalidToken = async () => {
             if (!token || !isTokenValid(token)) {
                 // console.log('Invalid or expired token - redirecting to login');
-                await logout();
+                AuthService.logout();
             }
         };
         handleInvalidToken();
-    }, [token, logout]);
+    }, [token]);
 
     if (!token || !isTokenValid(token)) {
         return <Navigate to="/login" replace />;
