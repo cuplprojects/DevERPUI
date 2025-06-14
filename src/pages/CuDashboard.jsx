@@ -83,9 +83,8 @@ const CuDashboard = () => {
 
         if (dashboardSettings) {
           return {
-            pieChart: dashboardSettings.showBarChart ?? true,      // showBarChart controls pieChart
             agGrid: dashboardSettings.showDashboardTable ?? true, // showDashboardTable controls agGrid
-            barChart: true, // Keep barChart as is
+            barChart: dashboardSettings.showBarChart ?? true,     // showBarChart controls barChart
           };
         }
       }
@@ -98,15 +97,12 @@ const CuDashboard = () => {
     return savedState
       ? JSON.parse(savedState)
       : {
-        // lineChart: true,
-        // pieChart: true,
         agGrid: true,
         barChart: true,
       };
   });
   const [visiblecardsIcon] = useState({
     lineChart: LineChartIcon,
-    // pieChart: PieChartIcon,
     agGrid: Grid,
     barChart: statisticsImage,
   });
@@ -145,8 +141,8 @@ const CuDashboard = () => {
           if (dashboardSettings) {
             setVisibleCards(prev => ({
               ...prev,
-              pieChart: dashboardSettings.showBarChart ?? prev.pieChart,      // showBarChart controls pieChart
               agGrid: dashboardSettings.showDashboardTable ?? prev.agGrid,   // showDashboardTable controls agGrid
+              barChart: dashboardSettings.showBarChart ?? prev.barChart,     // showBarChart controls barChart
             }));
           }
         }
@@ -306,7 +302,7 @@ const CuDashboard = () => {
 
           if (parsedSettings.settings && parsedSettings.settings.dashboardSettings) {
             // Map component names to localStorage settings
-            if (card === 'pieChart') {
+            if (card === 'barChart') {
               parsedSettings.settings.dashboardSettings.showBarChart = newState[card];
             } else if (card === 'agGrid') {
               parsedSettings.settings.dashboardSettings.showDashboardTable = newState[card];
@@ -540,7 +536,6 @@ const CuDashboard = () => {
                 >
                   <Row className="g-3 p-1">
                     {Object.entries(visibleCards)
-                      .filter(([key]) => key !== 'pieChart') // Remove pie chart icon from options
                       .slice(0, 4)
                       .map(([key, value], index) => (
                         <Col key={key} xs={6}>
