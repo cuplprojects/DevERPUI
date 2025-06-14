@@ -74,6 +74,26 @@ const CuDashboard = () => {
   const [hasquantitySheet, setHasquantitySheet] = useState([]);
   const [activeCard, setActiveCard] = useState(null);
   const [visibleCards, setVisibleCards] = useState(() => {
+    // Load from userSettings in localStorage
+    try {
+      const userSettings = localStorage.getItem('userSettings');
+      if (userSettings) {
+        const parsedSettings = JSON.parse(userSettings);
+        const dashboardSettings = parsedSettings?.settings?.dashboardSettings;
+
+        if (dashboardSettings) {
+          return {
+            pieChart: dashboardSettings.showBarChart ?? true,      // showBarChart controls pieChart
+            agGrid: dashboardSettings.showDashboardTable ?? true, // showDashboardTable controls agGrid
+            barChart: true, // Keep barChart as is
+          };
+        }
+      }
+    } catch (error) {
+      console.error('Failed to parse userSettings:', error);
+    }
+
+    // Fallback to default
     const savedState = localStorage.getItem("visibleCards");
     return savedState
       ? JSON.parse(savedState)
@@ -112,6 +132,36 @@ const CuDashboard = () => {
     fetchProjects(1); // Load initial set of projects
     fetchHasQuantitySheet();
   }, [userData.userId]);
+
+  // Sync visibleCards when userSettings change in localStorage
+  useEffect(() => {
+    const syncDashboardSettings = () => {
+      try {
+        const userSettings = localStorage.getItem('userSettings');
+        if (userSettings) {
+          const parsedSettings = JSON.parse(userSettings);
+          const dashboardSettings = parsedSettings?.settings?.dashboardSettings;
+
+          if (dashboardSettings) {
+            setVisibleCards(prev => ({
+              ...prev,
+              pieChart: dashboardSettings.showBarChart ?? prev.pieChart,      // showBarChart controls pieChart
+              agGrid: dashboardSettings.showDashboardTable ?? prev.agGrid,   // showDashboardTable controls agGrid
+            }));
+          }
+        }
+      } catch (error) {
+        console.error('Failed to sync dashboard settings:', error);
+      }
+    };
+
+    // Listen for storage changes (when settings updated from Settings page)
+    window.addEventListener('storage', syncDashboardSettings);
+
+    return () => {
+      window.removeEventListener('storage', syncDashboardSettings);
+    };
+  }, []);
 
   const fetchProjects = async (pageNumber) => {
     setIsLoading(true);
@@ -247,6 +297,31 @@ const CuDashboard = () => {
   const toggleCardVisibility = (card) => {
     setVisibleCards((prev) => {
       const newState = { ...prev, [card]: !prev[card] };
+
+      // Update userSettings in localStorage when toggle buttons are used
+      try {
+        const userSettings = localStorage.getItem('userSettings');
+        if (userSettings) {
+          const parsedSettings = JSON.parse(userSettings);
+
+          if (parsedSettings.settings && parsedSettings.settings.dashboardSettings) {
+            // Map component names to localStorage settings
+            if (card === 'pieChart') {
+              parsedSettings.settings.dashboardSettings.showBarChart = newState[card];
+            } else if (card === 'agGrid') {
+              parsedSettings.settings.dashboardSettings.showDashboardTable = newState[card];
+            }
+
+            // Save back to localStorage
+            localStorage.setItem('userSettings', JSON.stringify(parsedSettings));
+            console.log(`Dashboard setting updated: ${card} = ${newState[card]}`);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to update userSettings:', error);
+      }
+
+      // Keep the old visibleCards for backward compatibility
       localStorage.setItem("visibleCards", JSON.stringify(newState));
       return newState;
     });
@@ -506,45 +581,6 @@ const CuDashboard = () => {
 
       {renderCards()}
 
-      <Row className="gx-3 mt-4">
-        {visibleCards.lineChart && (
-          <Col lg={visibleCards.pieChart ? 8 : 12}>
-            <Card
-              className="dcard shadow-lg mb-3"
-              style={{ height: "400px", background: "rgba(255,255,255,0.6)" }}
-            >
-              {isLoading.projects ? (
-                <div className="d-flex justify-content-center align-items-center h-100">
-                  <Spinner animation="border" role="status" className={customDarkText}>
-                    <span className="visually-hidden">{t("loading")}</span>
-                  </Spinner>
-                </div>
-              ) : (
-                <LineChart data={data} onProjectClick={handleProjectClick} />
-              )}
-            </Card>
-          </Col>
-        )}
-
-        {visibleCards.pieChart && (
-          <Col lg={4}>
-            <Card
-              className="dcard shadow-lg mb-3"
-              style={{ height: "400px", background: "rgba(255,255,255,0.6)" }}
-            >
-              {isLoading.projects ? (
-                <div className="d-flex justify-content-center align-items-center h-100">
-                  <Spinner animation="border" role="status" className={customDarkText}>
-                    <span className="visually-hidden">{t("loading")}</span>
-                  </Spinner>
-                </div>
-              ) : (
-                <PieChart data={pieData} />
-              )}
-            </Card>
-          </Col>
-        )}
-      </Row>
 
       <Row className="gx-3 mt-4">
         {visibleCards.agGrid && (
