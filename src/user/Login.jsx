@@ -22,9 +22,12 @@ import IndianFlag from './../assets/Icons/Hindi.png';
 import UKFlag from './../assets/Icons/English.png';
 import languageStore from './../store/languageStore';
 import { success, error, info } from '../CustomHooks/Services/AlertMessageService';
+import useSettingStore, { useSettingsActions }  from './../store/useSettingsStore'; 
 
 
 const Login = () => {
+    const { fetchSettings } = useSettingsActions(); // Access the actions correctly
+
   const isLoggedIn = AuthService.isLoggedIn();
   const [userName, setUserName] = useState('');
   const [password, setPassword] = useState('');
@@ -71,7 +74,6 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
       info(t("processing..."), true);
 
@@ -80,8 +82,17 @@ const Login = () => {
       if (response.status === 200) {
         success(t('loginSuccessful'));
 
-        const { autogenPass } = response.data;
-        
+        const { autogenPass, userId } = response.data;
+
+        // Fetch or set default settings for the user after successful login
+        if (userId) {
+          try {
+            await fetchSettings(userId);
+          } catch (settingsError) {
+            console.warn('Failed to load user settings, will use defaults:', settingsError);
+          }
+        }
+
         if (autogenPass) {
           setTimeout(() => {
             navigate('/setpassword');

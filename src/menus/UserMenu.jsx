@@ -52,9 +52,9 @@ const UserMenu = ({ onClose }) => {
   const handleChangePasswordClick = () => navigate('/settings');
 
   const handleLogoutConfirm = () => {
+    // Clear user data and perform logout (AuthService.logout() now handles all cleanup including settings)
     clearUserData();
     AuthService.logout();
-    localStorage.setItem('loggedOut', 'true');
     navigate('/');
     setShowModal(false);
     onClose();

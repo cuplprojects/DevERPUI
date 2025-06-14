@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { Card, Row, Col, Form, Button } from 'react-bootstrap';
+import { useSettingsActions } from '../../../store/useSettingsStore';
+import { useUserData } from '../../../store/userDataStore';
+import { success, error } from '../../../CustomHooks/Services/AlertMessageService';
 
-const ProcessScreenSettings = ({ t, getCssClasses, IoSave }) => {
+const ProcessScreenSettings = forwardRef(({ t, getCssClasses, IoSave, settings, getCurrentSettings }, ref) => {
   const [selectedColumns, setSelectedColumns] = useState({
     interimQuantity: true,
     remarks: true,
@@ -27,6 +30,19 @@ const ProcessScreenSettings = ({ t, getCssClasses, IoSave }) => {
     showCompletionPercentage: false,
   });
 
+  const [loading, setLoading] = useState(false);
+
+  const { updateSettingSection } = useSettingsActions();
+  const userData = useUserData();
+
+  // Expose getSettings method to parent component
+  useImperativeHandle(ref, () => ({
+    getSettings: () => ({
+      defaultColumns: selectedColumns,
+      defaultFilters: funnelFilters
+    })
+  }));
+
   const [
     customDark,
     customMid,
@@ -38,6 +54,39 @@ const ProcessScreenSettings = ({ t, getCssClasses, IoSave }) => {
     customDarkBorder
   ] = getCssClasses();
 
+  // Load current settings when component mounts or settings change
+  useEffect(() => {
+    if (getCurrentSettings) {
+      const currentSettings = getCurrentSettings();
+      const processSettings = currentSettings.processScreenSettings || {};
+
+      setSelectedColumns(processSettings.defaultColumns || {
+        interimQuantity: true,
+        remarks: true,
+        teamAssigned: true,
+        paperTitle: true,
+        paperDetails: true,
+        envelopes: true,
+        course: true,
+        machine: true,
+        zone: true,
+        subject: true,
+        examDate: true,
+        examTime: true,
+        pages: true,
+      });
+
+      setFunnelFilters(processSettings.defaultFilters || {
+        hideCompleted: false,
+        previousCompleted: false,
+        catchesWithAlerts: false,
+        catchesWithRemarks: false,
+        showCatchData: false,
+        showCompletionPercentage: false,
+      });
+    }
+  }, [getCurrentSettings, settings]);
+
   const handleColumnChange = (key) => {
     setSelectedColumns({ ...selectedColumns, [key]: !selectedColumns[key] });
   };
@@ -46,9 +95,34 @@ const ProcessScreenSettings = ({ t, getCssClasses, IoSave }) => {
     setFunnelFilters({ ...funnelFilters, [key]: !funnelFilters[key] });
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log({ selectedColumns, funnelFilters });
+
+    if (!userData?.userId) {
+      error(t('userNotFound'));
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const processScreenSettings = {
+        defaultColumns: selectedColumns,
+        defaultFilters: funnelFilters
+      };
+
+      const success_result = await updateSettingSection(userData.userId, 'processScreenSettings', processScreenSettings);
+
+      if (success_result) {
+        success(t('processSettingsSavedSuccessfully'));
+      } else {
+        error(t('failedToSaveProcessSettings'));
+      }
+    } catch (err) {
+      console.error('Error saving process settings:', err);
+      error(t('failedToSaveProcessSettings'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const columns = [
@@ -108,8 +182,14 @@ const ProcessScreenSettings = ({ t, getCssClasses, IoSave }) => {
 
                 {/* Submit Button */}
                 <div className="text-end">
-                  <Button type="submit" className={`${customBtn}  ${customLightText} ${customLightBorder} border-1`}>
-                    <IoSave /> <span className="d-none d-md-inline">Save Settings</span>
+                  <Button
+                    type="submit"
+                    className={`${customBtn}  ${customLightText} ${customLightBorder} border-1`}
+                    disabled={loading}
+                  >
+                    <IoSave /> <span className="d-none d-md-inline">
+                      {loading ? t('saving...') : t('saveSettings')}
+                    </span>
                   </Button>
                 </div>
               </Form>
@@ -120,6 +200,6 @@ const ProcessScreenSettings = ({ t, getCssClasses, IoSave }) => {
     </div>
   );
 
-};
+});
 
 export default ProcessScreenSettings;

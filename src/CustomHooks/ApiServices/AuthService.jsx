@@ -9,6 +9,7 @@
 import API from '../MasterApiHooks/api';
 import useUserTokenStore from '../../store/useUserToken';
 import useUserDataStore from '../../store/userDataStore';
+import useSettingStore from '../../store/useSettingsStore';
 
 const AuthService = {
   login: async (username, password) => {
@@ -31,10 +32,19 @@ const AuthService = {
   logout: () => {
     const { clearToken } = useUserTokenStore.getState();
     const { actions } = useUserDataStore.getState();
-    
+    const { clearSettings } = useSettingStore.getState();
+
+    // Clear all user-related data
     clearToken();
-    localStorage.removeItem('isLocked');
+    clearSettings();
     actions.clearUserData();
+
+    // Clear additional localStorage items
+    localStorage.removeItem('isLocked');
+    localStorage.removeItem('loggedOut');
+
+    // Set logout flag for login page notification
+    localStorage.setItem('loggedOut', 'true');
   },
 
   isLoggedIn: () => {

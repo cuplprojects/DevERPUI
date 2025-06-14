@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import {
   Card,
   Row,
@@ -8,11 +8,27 @@ import {
   ToggleButtonGroup,
   Button
 } from 'react-bootstrap';
+import { useSettingsActions } from '../../../store/useSettingsStore';
+import { useUserData } from '../../../store/userDataStore';
+import { success, error } from '../../../CustomHooks/Services/AlertMessageService';
 
-const GeneralSettings = ({ t, getCssClasses, IoSave }) => {
+const GeneralSettings = forwardRef(({ t, getCssClasses, IoSave, settings, getCurrentSettings }, ref) => {
   const [language, setLanguage] = useState('english');
   const [fontSize, setFontSize] = useState('medium');
   const [pageLimit, setPageLimit] = useState('10');
+  const [loading, setLoading] = useState(false);
+
+  const { updateSettingSection } = useSettingsActions();
+  const userData = useUserData();
+
+  // Expose getSettings method to parent component
+  useImperativeHandle(ref, () => ({
+    getSettings: () => ({
+      language,
+      fontSize,
+      pageLimit: parseInt(pageLimit)
+    })
+  }));
 
   const [
     customDark,
@@ -25,13 +41,47 @@ const GeneralSettings = ({ t, getCssClasses, IoSave }) => {
     customDarkBorder
   ] = getCssClasses();
 
-  const handleSubmit = (event) => {
+  // Load current settings when component mounts or settings change
+  useEffect(() => {
+    if (getCurrentSettings) {
+      const currentSettings = getCurrentSettings();
+      const generalSettings = currentSettings.general || {};
+
+      setLanguage(generalSettings.language || 'english');
+      setFontSize(generalSettings.fontSize || 'medium');
+      setPageLimit(generalSettings.pageLimit?.toString() || '10');
+    }
+  }, [getCurrentSettings, settings]);
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log({
-      language,
-      fontSize,
-      pageLimit
-    });
+
+    if (!userData?.userId) {
+      error(t('userNotFound'));
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const generalSettings = {
+        language,
+        fontSize,
+        pageLimit: parseInt(pageLimit)
+      };
+
+      const success_result = await updateSettingSection(userData.userId, 'general', generalSettings);
+
+      if (success_result) {
+        success(t('generalSettingsSavedSuccessfully'));
+      } else {
+        error(t('failedToSaveGeneralSettings'));
+      }
+    } catch (err) {
+      console.error('Error saving general settings:', err);
+      error(t('failedToSaveGeneralSettings'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -100,8 +150,15 @@ const GeneralSettings = ({ t, getCssClasses, IoSave }) => {
             {/* Submit Button */}
             <Col xs={12} lg={6} md={6} className='d-flex justify-content-end'>
               <div className="text-end">
-                <Button variant="primary" type="submit" className={`${customBtn} border-1 ${customLightText} ${customLightBorder}`}>
-                  <IoSave /> <span className="d-none d-md-inline">Save Settings</span>
+                <Button
+                  variant="primary"
+                  type="submit"
+                  className={`${customBtn} border-1 ${customLightText} ${customLightBorder}`}
+                  disabled={loading}
+                >
+                  <IoSave /> <span className="d-none d-md-inline">
+                    {loading ? t('saving...') : t('saveSettings')}
+                  </span>
                 </Button>
               </div>
             </Col>
@@ -110,6 +167,6 @@ const GeneralSettings = ({ t, getCssClasses, IoSave }) => {
       </Card.Body>
     </Card>
   );
-};
+});
 
 export default GeneralSettings;

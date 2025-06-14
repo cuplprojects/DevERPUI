@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import {
   Card,
   Row,
@@ -8,12 +8,29 @@ import {
   ToggleButtonGroup,
   Button
 } from 'react-bootstrap';
+import { useSettingsActions } from '../../../store/useSettingsStore';
+import { useUserData } from '../../../store/userDataStore';
+import { success, error } from '../../../CustomHooks/Services/AlertMessageService';
 
-const CuDashboardSettings = ({ t, getCssClasses, IoSave }) => {
+const CuDashboardSettings = forwardRef(({ t, getCssClasses, IoSave, settings, getCurrentSettings }, ref) => {
   const [showDashboardTable, setShowDashboardTable] = useState(true);
   const [showBarChart, setShowBarChart] = useState(true);
   const [numberOfProjects, setNumberOfProjects] = useState(5);
   const [viewType, setViewType] = useState('project');
+  const [loading, setLoading] = useState(false);
+
+  const { updateSettingSection } = useSettingsActions();
+  const userData = useUserData();
+
+  // Expose getSettings method to parent component
+  useImperativeHandle(ref, () => ({
+    getSettings: () => ({
+      showDashboardTable,
+      showBarChart,
+      numberOfProjects: parseInt(numberOfProjects),
+      viewType
+    })
+  }));
 
   const [
     customDark,
@@ -26,14 +43,49 @@ const CuDashboardSettings = ({ t, getCssClasses, IoSave }) => {
     customDarkBorder
   ] = getCssClasses();
 
-  const handleSubmit = (event) => {
+  // Load current settings when component mounts or settings change
+  useEffect(() => {
+    if (getCurrentSettings) {
+      const currentSettings = getCurrentSettings();
+      const dashboardSettings = currentSettings.dashboardSettings || {};
+
+      setShowDashboardTable(dashboardSettings.showDashboardTable ?? true);
+      setShowBarChart(dashboardSettings.showBarChart ?? true);
+      setNumberOfProjects(dashboardSettings.numberOfProjects || 5);
+      setViewType(dashboardSettings.viewType || 'project');
+    }
+  }, [getCurrentSettings, settings]);
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log({
-      showDashboardTable,
-      showBarChart,
-      numberOfProjects,
-      viewType
-    });
+
+    if (!userData?.userId) {
+      error(t('userNotFound'));
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const dashboardSettings = {
+        showDashboardTable,
+        showBarChart,
+        numberOfProjects: parseInt(numberOfProjects),
+        viewType
+      };
+
+      const success_result = await updateSettingSection(userData.userId, 'dashboardSettings', dashboardSettings);
+
+      if (success_result) {
+        success(t('dashboardSettingsSavedSuccessfully'));
+      } else {
+        error(t('failedToSaveDashboardSettings'));
+      }
+    } catch (err) {
+      console.error('Error saving dashboard settings:', err);
+      error(t('failedToSaveDashboardSettings'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -114,8 +166,14 @@ const CuDashboardSettings = ({ t, getCssClasses, IoSave }) => {
             {/* Submit Button */}
             <Col xs={12} lg={12} md={12} className=''>
               <div className="text-end">
-                <Button type="submit" className={`${customBtn}  ${customLightText} ${customLightBorder} border-1`}>
-                  <IoSave /> <span className="d-none d-md-inline">Save Settings</span>
+                <Button
+                  type="submit"
+                  className={`${customBtn}  ${customLightText} ${customLightBorder} border-1`}
+                  disabled={loading}
+                >
+                  <IoSave /> <span className="d-none d-md-inline">
+                    {loading ? t('saving...') : t('saveSettings')}
+                  </span>
                 </Button>
               </div>
             </Col>
@@ -125,6 +183,6 @@ const CuDashboardSettings = ({ t, getCssClasses, IoSave }) => {
       </Card.Body>
     </Card>
   );
-};
+});
 
 export default CuDashboardSettings;
