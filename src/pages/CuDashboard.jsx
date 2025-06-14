@@ -106,7 +106,7 @@ const CuDashboard = () => {
   });
   const [visiblecardsIcon] = useState({
     lineChart: LineChartIcon,
-    pieChart: PieChartIcon,
+    // pieChart: PieChartIcon,
     agGrid: Grid,
     barChart: statisticsImage,
   });
@@ -540,6 +540,7 @@ const CuDashboard = () => {
                 >
                   <Row className="g-3 p-1">
                     {Object.entries(visibleCards)
+                      .filter(([key]) => key !== 'pieChart') // Remove pie chart icon from options
                       .slice(0, 4)
                       .map(([key, value], index) => (
                         <Col key={key} xs={6}>
