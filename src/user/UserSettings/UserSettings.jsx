@@ -142,7 +142,7 @@ const UserSettings = () => {
                   disabled={saveAllLoading || loading}
                 >
                   <IoSave />
-                  {saveAllLoading ? t('saving...') : t('saveAll')}
+                  <span className='d-none d-lg-inline'>{saveAllLoading ? t('saving...') : t('saveAll')}</span>
                 </Button>
                 <Button
                   variant="outline-danger"
@@ -152,7 +152,7 @@ const UserSettings = () => {
                   disabled={loading || saveAllLoading}
                 >
                   <LuTimerReset />
-                  {t('reset')}
+                 <span className='d-none d-lg-inline'>{t('reset')}</span> 
                 </Button>
               </Col>
             </Row>
