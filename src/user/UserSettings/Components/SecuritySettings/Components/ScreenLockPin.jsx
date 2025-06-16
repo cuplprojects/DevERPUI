@@ -146,7 +146,7 @@ const ScreenLockPin = forwardRef(({ t, getCssClasses, IoSave, settings, getCurre
     {successMsg && <Alert variant="success">{successMsg}</Alert>}
 
     <Form onSubmit={handleSubmit}>
-      <Form.Group className="mb-3">
+      <Form.Group className="mb-2">
         <Form.Label className={`d-flex align-items-center ${customDarkText}`}>
           {t('currentPin')}
           <OverlayTrigger
@@ -220,6 +220,22 @@ const ScreenLockPin = forwardRef(({ t, getCssClasses, IoSave, settings, getCurre
         </Col>
       </Row>
       <Row className='d-flex align-items-center'>
+        <Col md={12} lg={6} className=' mb-3'>
+          <div className="d-flex justify-content-center gap-2">
+            <Button variant="secondary" type="button">
+              {t('cancel')}
+            </Button>
+            <Button
+              type="submit"
+              className={`${customBtn} border-1 ${customLightBorder}`}
+              disabled={loading}
+            >
+              <IoSave /> <span className="d-none d-md-inline">
+                {loading ? t('saving...') : t('save')}
+              </span>
+            </Button>
+          </div>
+        </Col>
         <Col md={12} lg={6}>
           <Form.Group className="mb-3">
             <Form.Label className={customDarkText}>{t('screenLockTimeout')}</Form.Label>
@@ -235,22 +251,7 @@ const ScreenLockPin = forwardRef(({ t, getCssClasses, IoSave, settings, getCurre
             </Form.Select>
           </Form.Group>
         </Col>
-        <Col md={12} lg={6} className='mt-3'>
-          <div className="d-flex justify-content-end gap-2">
-            <Button variant="secondary" type="button">
-              {t('cancel')}
-            </Button>
-            <Button
-              type="submit"
-              className={`${customBtn} border-1 ${customLightBorder}`}
-              disabled={loading}
-            >
-              <IoSave /> <span className="d-none d-md-inline">
-                {loading ? t('saving...') : t('save')}
-              </span>
-            </Button>
-          </div>
-        </Col>
+        
       </Row>
     </Form>
   </div>

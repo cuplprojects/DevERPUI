@@ -154,102 +154,103 @@ const ChangePassword = () => {
   };
 
   return (
-  <Container className={`w-100 p-3 shadow-lg rounded-4 ${customLightBorder} ${customLight}`} style={{ maxWidth: '800px', zIndex: "0" }}>
-  <Row>
-    <Col lg={12} className="mb-2">
-      <div className="d-flex justify-content-center align-items-center gap-2">
-        <h className={`fw-bold mb-0 ${customBtn === 'btn-dark' ? "text-white" : customDarkText}`}>
-          {t('changePassword')}
-        </h>
-      </div>
-    </Col>
-  </Row>
-  <Row className="align-items-center justify-content-center">
-    <Col md={12} lg={12}>
-      <Form onSubmit={handleSubmit}>
-        <Form.Group className="mb-3" controlId="formOldPassword">
-          <Form.Label className={`${customBtn === 'btn-dark' ? "text-white" : customDarkText}`}>
-            {t('currentPassword')}
-          </Form.Label>
-          <InputGroup>
-            <FormControl
-              type={showPasswords.showOldPassword ? 'text' : 'password'}
-              placeholder={t('enterCurrentPassword')}
-              name="oldPassword"
-              value={formData.oldPassword}
-              onChange={handleInputChange}
-              required
-              minLength={8}
-            />
-            <InputGroup.Text
-              className={`password-eye-icon ${customBtn}`}
-              onClick={() => togglePasswordVisibility('showOldPassword')}
-              style={{ cursor: 'pointer' }}
-            >
-              {showPasswords.showOldPassword ? <AiOutlineEye /> : <AiOutlineEyeInvisible />}
-            </InputGroup.Text>
-          </InputGroup>
-        </Form.Group>
+    <Container className={`w-100 p-3 shadow-lg rounded-4 ${customLightBorder} ${customLight}`} style={{ maxWidth: '800px', zIndex: "0" }}>
+      <Row>
+        <Col lg={12} className="mb-2">
+          <div className="d-flex justify-content-center align-items-center gap-2">
+            <h className={`fw-bold mb-0 ${customBtn === 'btn-dark' ? "text-white" : customDarkText}`}>
+              {t('changePassword')}
+            </h>
+          </div>
+        </Col>
+      </Row>
+      <Row className="align-items-center justify-content-center">
+        <Col md={12} lg={12}>
+          <Form onSubmit={handleSubmit}>
+            <Form.Group className="mb-3" controlId="formOldPassword">
+              <Form.Label className={`${customBtn === 'btn-dark' ? "text-white" : customDarkText}`}>
+                {t('currentPassword')}
+              </Form.Label>
+              <InputGroup>
+                <FormControl
+                  type={showPasswords.showOldPassword ? 'text' : 'password'}
+                  placeholder={t('enterCurrentPassword')}
+                  name="oldPassword"
+                  value={formData.oldPassword}
+                  onChange={handleInputChange}
+                  required
+                  minLength={8}
+                />
+                <InputGroup.Text
+                  className={`password-eye-icon ${customBtn}`}
+                  onClick={() => togglePasswordVisibility('showOldPassword')}
+                  style={{ cursor: 'pointer' }}
+                >
+                  {showPasswords.showOldPassword ? <AiOutlineEye /> : <AiOutlineEyeInvisible />}
+                </InputGroup.Text>
+              </InputGroup>
+            </Form.Group>
 
-        <Form.Group className="mb-3" controlId="formNewPassword">
-          <Form.Label className={`${customBtn === 'btn-dark' ? "text-white" : customDarkText}`}>
-            {t('newPassword')}
-          </Form.Label>
-          <InputGroup>
-            <FormControl
-              type={showPasswords.showNewPassword ? 'text' : 'password'}
-              placeholder={t('enterNewPassword')}
-              name="newPassword"
-              value={formData.newPassword}
-              onChange={handleInputChange}
-              required
-              minLength={8}
-            />
-            <InputGroup.Text
-              className={`password-eye-icon ${customBtn}`}
-              onClick={() => togglePasswordVisibility('showNewPassword')}
-              style={{ cursor: 'pointer' }}
-            >
-              {showPasswords.showNewPassword ? <AiOutlineEye /> : <AiOutlineEyeInvisible />}
-            </InputGroup.Text>
-          </InputGroup>
-        </Form.Group>
+            <Form.Group className="mb-3" controlId="formNewPassword">
+              <Form.Label className={`${customBtn === 'btn-dark' ? "text-white" : customDarkText}`}>
+                {t('newPassword')}
+              </Form.Label>
+              <InputGroup>
+                <FormControl
+                  type={showPasswords.showNewPassword ? 'text' : 'password'}
+                  placeholder={t('enterNewPassword')}
+                  name="newPassword"
+                  value={formData.newPassword}
+                  onChange={handleInputChange}
+                  required
+                  minLength={8}
+                />
+                <InputGroup.Text
+                  className={`password-eye-icon ${customBtn}`}
+                  onClick={() => togglePasswordVisibility('showNewPassword')}
+                  style={{ cursor: 'pointer' }}
+                >
+                  {showPasswords.showNewPassword ? <AiOutlineEye /> : <AiOutlineEyeInvisible />}
+                </InputGroup.Text>
+              </InputGroup>
+            </Form.Group>
 
-        <Form.Group className="mb-3" controlId="formConfirmPassword">
-          <Form.Label className={`${customBtn === 'btn-dark' ? "text-white" : customDarkText}`}>
-            {t('confirmNewPassword')}
-          </Form.Label>
-          <InputGroup>
-            <FormControl
-              type={showPasswords.showConfirmPassword ? 'text' : 'password'}
-              placeholder={t('confirmNewPassword')}
-              value={confirmPassword}
-              onChange={handleConfirmPasswordChange}
-              required
-              minLength={8}
-            />
-            <InputGroup.Text
-              className={`password-eye-icon ${customBtn}`}
-              onClick={() => togglePasswordVisibility('showConfirmPassword')}
-              style={{ cursor: 'pointer' }}
-            >
-              {showPasswords.showConfirmPassword ? <AiOutlineEye /> : <AiOutlineEyeInvisible />}
-            </InputGroup.Text>
-          </InputGroup>
-        </Form.Group>
-
-        <Button
-          type="submit"
-          disabled={false}
-          className={`${customBtn} ${customDark === "dark-dark" ? "border border-white" : "border-0"} custom-zoom-btn w-100`}
-        >
-          {t('submit')}
-        </Button>
-      </Form>
-      <ToastContainer style={{ marginTop: "50px" }} autoClose={1500} />
-    </Col>
-  </Row>
-</Container>
+            <Form.Group className="mb-3" controlId="formConfirmPassword">
+              <Form.Label className={`${customBtn === 'btn-dark' ? "text-white" : customDarkText}`}>
+                {t('confirmNewPassword')}
+              </Form.Label>
+              <InputGroup>
+                <FormControl
+                  type={showPasswords.showConfirmPassword ? 'text' : 'password'}
+                  placeholder={t('confirmNewPassword')}
+                  value={confirmPassword}
+                  onChange={handleConfirmPasswordChange}
+                  required
+                  minLength={8}
+                />
+                <InputGroup.Text
+                  className={`password-eye-icon ${customBtn}`}
+                  onClick={() => togglePasswordVisibility('showConfirmPassword')}
+                  style={{ cursor: 'pointer' }}
+                >
+                  {showPasswords.showConfirmPassword ? <AiOutlineEye /> : <AiOutlineEyeInvisible />}
+                </InputGroup.Text>
+              </InputGroup>
+            </Form.Group>
+            <div className="d-flex justify-content-end gap-2">
+              <Button
+                type="submit"
+                disabled={false}
+                className={`${customBtn} ${customDark === "dark-dark" ? "border border-white" : "border-0"} custom-zoom-btn btn-small`}
+              >
+                {t('submit')}
+              </Button>
+            </div>
+          </Form>
+          <ToastContainer style={{ marginTop: "50px" }} autoClose={1500} />
+        </Col>
+      </Row>
+    </Container>
 
   );
 };
