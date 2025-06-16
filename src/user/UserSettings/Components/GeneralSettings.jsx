@@ -13,15 +13,16 @@ import { useUserData } from '../../../store/userDataStore';
 import { success, error } from '../../../CustomHooks/Services/AlertMessageService';
 import EnglishIcon from "./../../../assets/Icons/English.png";
 import HindiIcon from "./../../../assets/Icons/Hindi.png";
+import useLanguageStore from '../../../store/languageStore';
 
 const GeneralSettings = forwardRef(({ t, getCssClasses, IoSave, settings, getCurrentSettings }, ref) => {
-  const [language, setLanguage] = useState('english');
   const [fontSize, setFontSize] = useState('medium');
   const [pageLimit, setPageLimit] = useState('10');
   const [loading, setLoading] = useState(false);
 
   const { updateSettingSection } = useSettingsActions();
   const userData = useUserData();
+  const { language, setLanguage } = useLanguageStore();
 
   // Expose getSettings method to parent component
   useImperativeHandle(ref, () => ({
@@ -49,7 +50,7 @@ const GeneralSettings = forwardRef(({ t, getCssClasses, IoSave, settings, getCur
       const currentSettings = getCurrentSettings();
       const generalSettings = currentSettings.general || {};
 
-      setLanguage(generalSettings.language || 'english');
+      // Language is handled by the language store, so we don't set it here
       setFontSize(generalSettings.fontSize || 'medium');
       setPageLimit(generalSettings.pageLimit?.toString() || '10');
     }
@@ -74,6 +75,16 @@ const GeneralSettings = forwardRef(({ t, getCssClasses, IoSave, settings, getCur
       const success_result = await updateSettingSection(userData.userId, 'general', generalSettings);
 
       if (success_result) {
+        // Update userSettings localStorage to ensure synchronization
+        const userSettings = JSON.parse(localStorage.getItem('userSettings') || '{}');
+        if (userSettings.settings) {
+          userSettings.settings.general = userSettings.settings.general || {};
+          userSettings.settings.general.language = language;
+          userSettings.settings.general.fontSize = fontSize;
+          userSettings.settings.general.pageLimit = parseInt(pageLimit);
+          localStorage.setItem('userSettings', JSON.stringify(userSettings));
+        }
+
         success(t('generalSettingsSavedSuccessfully'));
       } else {
         error(t('failedToSaveGeneralSettings'));
@@ -104,19 +115,19 @@ const GeneralSettings = forwardRef(({ t, getCssClasses, IoSave, settings, getCur
                 >
                   <ToggleButton
                     id="lang-en"
-                    value="english"
-                    variant={language === 'english' ? 'primary' : 'outline-primary'}
+                    value="en"
+                    variant={language === 'en' ? 'primary' : 'outline-primary'}
                     className="d-flex align-items-center justify-content-center gap-2 px-3"
                   >
                     <img src={EnglishIcon} alt="English" style={{ width: '20px' }} /> <span>English</span>
                   </ToggleButton>
                   <ToggleButton
                     id="lang-hi"
-                    value="hindi"
-                    variant={language === 'hindi' ? 'primary' : 'outline-primary'}
+                    value="hi"
+                    variant={language === 'hi' ? 'primary' : 'outline-primary'}
                     className="d-flex align-items-center justify-content-center gap-2 px-3"
                   >
-                    <img src={HindiIcon} alt="Hindi" style={{ width: '20px' }} /> <span>Hindi</span>
+                    <img src={HindiIcon} alt="Hindi" style={{ width: '20px' }} /> <span>हिन्दी</span>
                   </ToggleButton>
                 </ToggleButtonGroup>
               </Form.Group>

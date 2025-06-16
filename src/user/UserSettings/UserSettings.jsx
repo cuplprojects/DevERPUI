@@ -98,6 +98,11 @@ const UserSettings = () => {
       if (response.data) {
         success(t('allSettingsSavedSuccessfully'));
 
+        // Update userSettings localStorage to ensure synchronization
+        const userSettings = JSON.parse(localStorage.getItem('userSettings') || '{}');
+        userSettings.settings = allSettings;
+        localStorage.setItem('userSettings', JSON.stringify(userSettings));
+
         // Dispatch custom event to notify other components about settings update
         window.dispatchEvent(new CustomEvent('userSettingsUpdated', {
           detail: { settings: allSettings }
