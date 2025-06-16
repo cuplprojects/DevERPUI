@@ -1,39 +1,69 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { Form, Button, Alert, OverlayTrigger, Tooltip, Row, Col } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import { useStore } from 'zustand';
 import themeStore from '../../../../../store/themeStore';
 import API from '../../../../../CustomHooks/MasterApiHooks/api';
 import { FaEye, FaEyeSlash, FaInfoCircle } from 'react-icons/fa';
+import { useSettingsActions } from '../../../../../store/useSettingsStore';
+import { useUserData } from '../../../../../store/userDataStore';
+import { success, error } from '../../../../../CustomHooks/Services/AlertMessageService';
 
-const ScreenLockPin = () => {
+const ScreenLockPin = forwardRef(({ t, getCssClasses, IoSave, settings, getCurrentSettings }, ref) => {
   const [oldPin, setOldPin] = useState('');
   const [newPin, setNewPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
   const [screenLockTime, setScreenLockTime] = useState('5'); // Default: 5 minutes
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
   const [showOldPin, setShowOldPin] = useState(false);
   const [showNewPin, setShowNewPin] = useState(false);
   const [showConfirmPin, setShowConfirmPin] = useState(false);
-  const { t } = useTranslation();
+  const [loading, setLoading] = useState(false);
 
-  const { getCssClasses } = useStore(themeStore);
-  const cssClasses = getCssClasses();
-  const [customDark, customMid, customLight, customBtn, customDarkText, customLightText, customLightBorder, customDarkBorder] = cssClasses;
+  const { updateSettingSection } = useSettingsActions();
+  const userData = useUserData();
+
+  // Expose getSettings method to parent component
+  useImperativeHandle(ref, () => ({
+    getSettings: () => ({
+      screenLockTime: parseInt(screenLockTime)
+    })
+  }));
+
+  const [
+    customDark,
+    customMid,
+    customLight,
+    customBtn,
+    customDarkText,
+    customLightText,
+    customLightBorder,
+    customDarkBorder
+  ] = getCssClasses();
+
+  // Load current settings when component mounts or settings change
+  useEffect(() => {
+    if (getCurrentSettings) {
+      const currentSettings = getCurrentSettings();
+      const securitySettings = currentSettings.securitySettings || {};
+
+      setScreenLockTime(securitySettings.screenLockTime?.toString() || '5');
+    }
+  }, [getCurrentSettings, settings]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    setErrorMsg('');
+    setSuccessMsg('');
 
     if (!oldPin || !newPin || !confirmPin) {
-      setError(t('pinRequired'));
+      setErrorMsg(t('pinRequired'));
       return;
     }
 
     if (newPin !== confirmPin) {
-      setError(t('pinMismatch'));
+      setErrorMsg(t('pinMismatch'));
       return;
     }
 
@@ -41,47 +71,68 @@ const ScreenLockPin = () => {
     const newPinNum = parseInt(newPin);
 
     if (isNaN(oldPinNum) || isNaN(newPinNum) || oldPinNum <= 0 || newPinNum <= 0) {
-      setError(t('pinMustBePositive'));
+      setErrorMsg(t('pinMustBePositive'));
       return;
     }
 
     if (newPin.length < 3 || newPin.length > 4) {
-      setError(t('pinLengthError'));
+      setErrorMsg(t('pinLengthError'));
       return;
     }
 
     if (oldPinNum === newPinNum) {
-      setError(t('pinMustBeDifferent'));
+      setErrorMsg(t('pinMustBeDifferent'));
       return;
     }
 
+    if (!userData?.userId) {
+      setErrorMsg(t('userNotFound'));
+      return;
+    }
+
+    setLoading(true);
     try {
+      // Update PIN via existing API
       await API.put('/User/ChangeScreenLockPin', {
         oldPin: oldPinNum,
         newPin: newPinNum,
         screenLockTime: parseInt(screenLockTime), // Pass selected timeout
       });
 
-      setSuccess(t('pinUpdateSuccess'));
+      // Also update the settings store with the new screen lock time
+      const securitySettings = {
+        screenLockTime: parseInt(screenLockTime)
+      };
+
+      const success_result = await updateSettingSection(userData.userId, 'securitySettings', securitySettings);
+
+      if (success_result) {
+        setSuccessMsg(t('pinUpdateSuccess'));
+        success(t('securitySettingsSavedSuccessfully'));
+      } else {
+        setErrorMsg(t('failedToSaveSecuritySettings'));
+      }
 
       setTimeout(() => {
         setOldPin('');
         setNewPin('');
         setConfirmPin('');
-        setScreenLockTime('5');
-        setError('');
-        setSuccess('');
+        setErrorMsg('');
+        setSuccessMsg('');
       }, 2000);
-    } catch (error) {
-      if (error.response?.status === 400) {
-        setError(error.response.data.message || t('pinUpdateError'));
-      } else if (error.response?.status === 401) {
-        setError(t('userNotAuthenticated'));
-      } else if (error.response?.status === 404) {
-        setError(t('userNotFound'));
+    } catch (err) {
+      console.error('Error updating security settings:', err);
+      if (err.response?.status === 400) {
+        setErrorMsg(err.response.data.message || t('pinUpdateError'));
+      } else if (err.response?.status === 401) {
+        setErrorMsg(t('userNotAuthenticated'));
+      } else if (err.response?.status === 404) {
+        setErrorMsg(t('userNotFound'));
       } else {
-        setError(t('pinUpdateError'));
+        setErrorMsg(t('pinUpdateError'));
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -94,8 +145,8 @@ const ScreenLockPin = () => {
     <div className="screen-lock-pin-container">
   <div className={`p-2 rounded ${customLight}`}>
     <h4 className={`${customDarkText} text-center fw-bold mb-4`}>{t('changeScreenLockPin')}</h4>
-    {error && <Alert variant="danger">{error}</Alert>}
-    {success && <Alert variant="success">{success}</Alert>}
+    {errorMsg && <Alert variant="danger">{errorMsg}</Alert>}
+    {successMsg && <Alert variant="success">{successMsg}</Alert>}
 
     <Form onSubmit={handleSubmit}>
       <Form.Group className="mb-3">
@@ -192,8 +243,14 @@ const ScreenLockPin = () => {
             <Button variant="secondary" type="button">
               {t('cancel')}
             </Button>
-            <Button type="submit" className={`${customBtn} border-1 ${customLightBorder}`}>
-              {t('save')}
+            <Button
+              type="submit"
+              className={`${customBtn} border-1 ${customLightBorder}`}
+              disabled={loading}
+            >
+              <IoSave /> <span className="d-none d-md-inline">
+                {loading ? t('saving...') : t('save')}
+              </span>
             </Button>
           </div>
         </Col>
@@ -203,6 +260,6 @@ const ScreenLockPin = () => {
 </div>
 
   );
-};
+});
 
 export default ScreenLockPin;

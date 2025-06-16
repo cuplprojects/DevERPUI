@@ -95,6 +95,12 @@ const useSettingStore = create((set, get) => ({
 
         set({ settings: settingsData, loading: false, error: null });
         localStorage.setItem(USER_SETTING_KEY, JSON.stringify(settingsData));
+
+        // Dispatch custom event to notify other components about settings update
+        window.dispatchEvent(new CustomEvent('userSettingsUpdated', {
+          detail: { settings: newSettings }
+        }));
+
         return true;
       }
     } catch (error) {

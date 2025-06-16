@@ -47,6 +47,7 @@ const UserSettings = () => {
   const generalSettingsRef = useRef();
   const dashboardSettingsRef = useRef();
   const processSettingsRef = useRef();
+  const securitySettingsRef = useRef();
 
   // Reset all settings to default
   const handleResetAll = async () => {
@@ -73,12 +74,14 @@ const UserSettings = () => {
       const generalData = generalSettingsRef.current?.getSettings();
       const dashboardData = dashboardSettingsRef.current?.getSettings();
       const processData = processSettingsRef.current?.getSettings();
+      const securityData = securitySettingsRef.current?.getSettings();
 
       // Combine all settings
       const allSettings = {
         general: generalData || {},
         dashboardSettings: dashboardData || {},
-        processScreenSettings: processData || {}
+        processScreenSettings: processData || {},
+        securitySettings: securityData || {}
       };
 
       // Prepare payload for backend
@@ -94,6 +97,12 @@ const UserSettings = () => {
 
       if (response.data) {
         success(t('allSettingsSavedSuccessfully'));
+
+        // Dispatch custom event to notify other components about settings update
+        window.dispatchEvent(new CustomEvent('userSettingsUpdated', {
+          detail: { settings: allSettings }
+        }));
+
         // Optionally refresh settings in store
         // await fetchSettings(userData.userId);
       }
@@ -199,7 +208,14 @@ const UserSettings = () => {
               <Col lg={12} md={12}>
                 <div className="">
                   <h3 className={`${customDarkText}`}>{t('securitySettings')}</h3>
-                  <SecuritySettings t={t} getCssClasses={getCssClasses} IoSave={IoSave} />
+                  <SecuritySettings
+                    ref={securitySettingsRef}
+                    t={t}
+                    getCssClasses={getCssClasses}
+                    IoSave={IoSave}
+                    settings={settings}
+                    getCurrentSettings={getCurrentSettings}
+                  />
                 </div>
               </Col>
             </Row>

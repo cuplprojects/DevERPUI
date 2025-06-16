@@ -34,5 +34,8 @@
             "showCatchData": false,
             "showCompletionPercentage": false
         }
+    },
+    "securitySettings": {
+        "screenLockTime": 5
     }
 }

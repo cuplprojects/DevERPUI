@@ -9,7 +9,6 @@ import { useTranslation } from 'react-i18next';
 import AuthService from '../CustomHooks/ApiServices/AuthService';
 
 // Configure inactivity timeout in milliseconds
-const INACTIVITY_TIMEOUT = 15 * 60 * 1000; 
 
 const LockOverlay = () => {
     const { t } = useTranslation();
@@ -25,16 +24,74 @@ const LockOverlay = () => {
         customDarkBorder,
         customThead
     ] = getCssClasses();
-
+    
     const [showModal, setShowModal] = useState(false);
     const [password, setPassword] = useState('');
     const timerRef = useRef(null);
     const inputRef = useRef(null);
+    const [screenLockTime, setScreenLockTime] = useState(5);
+
+    // Function to load screen lock time from localStorage
+    const loadScreenLockTimeFromStorage = () => {
+        try {
+            const userSettings = localStorage.getItem('userSettings');
+            if (userSettings) {
+                const parsedSettings = JSON.parse(userSettings);
+                const lockTime = parsedSettings?.settings?.securitySettings?.screenLockTime;
+                if (lockTime && typeof lockTime === 'number') {
+                    setScreenLockTime(lockTime);
+                    console.log('Screen lock time loaded from localStorage:', lockTime, 'minutes');
+                } else {
+                    console.log('Using default screen lock time: 5 minutes');
+                }
+            } else {
+                console.log('No userSettings found, using default screen lock time: 5 minutes');
+            }
+        } catch (error) {
+            console.error('Failed to parse userSettings for screenLockTime:', error);
+        }
+    };
+
+    //User settings for lock screen timer
+    useEffect(() => {
+        // Load on component mount
+        loadScreenLockTimeFromStorage();
+
+        // Listen for storage changes (when settings updated from Settings page)
+        const handleStorageChange = (e) => {
+            if (e.key === 'userSettings') {
+                console.log('Storage change detected, reloading screen lock time');
+                loadScreenLockTimeFromStorage();
+            }
+        };
+
+        // Listen for custom storage events (for same-tab updates)
+        const handleCustomStorageChange = () => {
+            console.log('Custom storage change detected, reloading screen lock time');
+            loadScreenLockTimeFromStorage();
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+        window.addEventListener('userSettingsUpdated', handleCustomStorageChange);
+
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+            window.removeEventListener('userSettingsUpdated', handleCustomStorageChange);
+        };
+    }, []);
+
+    // Calculate timeout dynamically based on current screenLockTime
+    const INACTIVITY_TIMEOUT = screenLockTime * 60 * 1000;
+
+    // Log timeout changes for debugging
+    useEffect(() => {
+        console.log(`Screen lock timeout updated: ${screenLockTime} minutes (${INACTIVITY_TIMEOUT}ms)`);
+    }, [screenLockTime, INACTIVITY_TIMEOUT]);
     const [isLocked, setIsLocked] = useState(() => {
         return JSON.parse(localStorage.getItem('isLocked') || 'false');
     });
     const [lastActivity, setLastActivity] = useState(Date.now());
-
+    
     useEffect(() => {
         localStorage.setItem('isLocked', JSON.stringify(isLocked));
     }, [isLocked]);
@@ -119,14 +176,14 @@ const LockOverlay = () => {
             });
             document.removeEventListener('visibilitychange', handleVisibilityChange);
         };
-    }, [isLocked, lastActivity]);
+    }, [isLocked, lastActivity, INACTIVITY_TIMEOUT]); // Added INACTIVITY_TIMEOUT dependency
 
     const handleLock = useCallback(() => {
         setIsLocked(true);
         setShowModal(false);
         setLastActivity(Date.now() - INACTIVITY_TIMEOUT); // Set last activity to trigger immediate lock
         if (timerRef.current) clearTimeout(timerRef.current);
-    }, []);
+    }, [INACTIVITY_TIMEOUT]); // Added INACTIVITY_TIMEOUT dependency
 
     const handleUnlock = useCallback(() => {
         setShowModal(true);
