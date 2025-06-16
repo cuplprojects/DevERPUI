@@ -7,7 +7,8 @@ import API from '../../../../../CustomHooks/MasterApiHooks/api';
 import { FaEye, FaEyeSlash, FaInfoCircle } from 'react-icons/fa';
 import { useSettingsActions } from '../../../../../store/useSettingsStore';
 import { useUserData } from '../../../../../store/userDataStore';
-import { success, error } from '../../../../../CustomHooks/Services/AlertMessageService';
+// import { success, error } from '../../../../../CustomHooks/Services/AlertMessageService';
+import { success, error } from './../../../../../CustomHooks/Services/AlertMessageService';
 
 const ScreenLockPin = forwardRef(({ t, getCssClasses, IoSave, settings, getCurrentSettings }, ref) => {
   const [oldPin, setOldPin] = useState('');
@@ -95,23 +96,12 @@ const ScreenLockPin = forwardRef(({ t, getCssClasses, IoSave, settings, getCurre
       // Update PIN via existing API
       await API.put('/User/ChangeScreenLockPin', {
         oldPin: oldPinNum,
-        newPin: newPinNum,
-        // screenLockTime: parseInt(screenLockTime), // Pass selected timeout
+        newPin: newPinNum
       });
 
-      // Also update the settings store with the new screen lock time
-      const securitySettings = {
-        screenLockTime: parseInt(screenLockTime)
-      };
-
-      const success_result = await updateSettingSection(userData.userId, 'securitySettings', securitySettings);
-
-      if (success_result) {
-        setSuccessMsg(t('pinUpdateSuccess'));
-        success(t('securitySettingsSavedSuccessfully'));
-      } else {
-        setErrorMsg(t('failedToSaveSecuritySettings'));
-      }
+      // Show success alerts
+      setSuccessMsg(t('pinUpdateSuccess'));
+      success(t('pinUpdateSuccess') || 'PIN updated successfully!');
 
       setTimeout(() => {
         setOldPin('');
@@ -121,16 +111,22 @@ const ScreenLockPin = forwardRef(({ t, getCssClasses, IoSave, settings, getCurre
         setSuccessMsg('');
       }, 2000);
     } catch (err) {
-      console.error('Error updating security settings:', err);
+      console.error('Error updating PIN:', err);
+      let errorMessage = '';
+
       if (err.response?.status === 400) {
-        setErrorMsg(err.response.data.message || t('pinUpdateError'));
+        errorMessage = err.response.data.message || t('pinUpdateError');
       } else if (err.response?.status === 401) {
-        setErrorMsg(t('userNotAuthenticated'));
+        errorMessage = t('userNotAuthenticated');
       } else if (err.response?.status === 404) {
-        setErrorMsg(t('userNotFound'));
+        errorMessage = t('userNotFound');
       } else {
-        setErrorMsg(t('pinUpdateError'));
+        errorMessage = t('pinUpdateError');
       }
+
+      // Show error alerts
+      setErrorMsg(errorMessage);
+      error(errorMessage);
     } finally {
       setLoading(false);
     }
