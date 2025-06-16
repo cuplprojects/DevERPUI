@@ -1,12 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FaUserCircle, FaBars } from 'react-icons/fa';
-import { Container, Row, Col } from 'react-bootstrap';
+import { Container, Row, Col, Tooltip, OverlayTrigger } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import NavigationBar from '../menus/NavigationBar';
 import UserMenu from '../menus/UserMenu';
-import Notification from '../menus/Notification';
 import "./../styles/navbar.css";
-import { RiNotification2Fill } from "react-icons/ri";
 import themeStore from './../store/themeStore';
 import { useStore } from 'zustand';
 import { Link } from 'react-router-dom';
@@ -14,9 +12,12 @@ import useUserDataStore, { useUserData, useUserDataActions } from '../store/user
 import { NoticeBoard, NoticeBoardButton } from './../pages/DailyTask/TodayTaskIcon';
 import API from './../CustomHooks/MasterApiHooks/api';
 import SampleUser1 from "./../assets/sampleUsers/defaultUser.jpg";
+import { MdViewModule, MdViewList } from "react-icons/md";
+import { useTranslation } from 'react-i18next';
 const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
 const Navbar = () => {
+  const { t } = useTranslation();
 
   //Theme Change Section
   const { getCssClasses } = useStore(themeStore);
@@ -35,6 +36,9 @@ const Navbar = () => {
   const [userMenu, setUserMenu] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
 
+  // State for dashboard view toggle (project-wise vs lot-wise)
+  const [dashboardViewMode, setDashboardViewMode] = useState('project'); // 'project' or 'lot'
+
   const navRef = useRef(null);
   const userMenuRef = useRef(null);
   const notificationRef = useRef(null);
@@ -49,7 +53,7 @@ const Navbar = () => {
     fetchUserData();
   }, [fetchUserData]);
 
-    useEffect(() => {
+  useEffect(() => {
     API.get('/Dispatch/dispatch-summary-today')
       .then(response => {
         setDispatchData(response.data);
@@ -76,6 +80,11 @@ const Navbar = () => {
     setShowNotification(prev => !prev);
     setShowNav(false);
     setUserMenu(false);
+  };
+
+  // Toggle function for dashboard view
+  const toggleDashboardView = () => {
+    setDashboardViewMode(prev => prev === 'project' ? 'lot' : 'project');
   };
 
   const handleClickOutside = (event) => {
@@ -125,10 +134,6 @@ const Navbar = () => {
     setUserMenu(false);
   };
 
-  const closeNotification = () => {
-    setShowNotification(false);
-  };
-
   const isValidImageUrl = (url) => {
     return url && url.match(/\.(jpeg|jpg|gif|png)$/) != null;
   };
@@ -144,7 +149,8 @@ const Navbar = () => {
     <div ref={containerRef} className='sticky-to'>
       <Container fluid className={`border-bottom py-2 text-white ${customDark}`}>
         <Row className="align-items-center">
-          <Col xs={1} md={1} lg={1} className="d-flex align-items-center">
+          {/* Menu Button */}
+          <Col xs={1} md={2} lg={1} className="d-flex align-items-center">
             <button
               onClick={toggleNav}
               className="btn p-0 border-0 bg-transparent"
@@ -154,28 +160,104 @@ const Navbar = () => {
               <FaBars className="fs-3 text-light custom-zoom-btn" />
             </button>
           </Col>
-          <Col xs={9} md={10} lg={10} className="d-flex align-items-center justify-content-center">
-            <Link to="/" className="ms-2 fw-bold fs-4 text-light " style={{textDecoration:"none"}}>CUPL | ApexERP</Link>
+
+          {/* Title */}
+          <Col xs={9} md={7} lg={9} className="d-flex align-items-center justify-content-center position-relative">
+            <Link to="/" className="ms-2 fw-bold fs-4 text-light " style={{ textDecoration: "none" }}>CUPL | ApexERP</Link>
+
+
           </Col>
-          <Col xs={2} md={1} lg={1} className="d-flex align-items-center justify-content-end">
-          {/* used for notification */}
-            {/* <button
-              onClick={toggleNotificationMenu}
-              className="btn p-0 border-0 bg-transparent me-2"
-              aria-label="Toggle notification menu"
-              style={{ 
-                cursor: 'pointer',
-                width: '40px',
-                height: '40px',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center'
+
+          {/* Innovative Dashboard View Toggle */}
+          <Col xs={2} md={2} lg={1} >
+            <div
+              className="position-relative d-flex align-items-center justify-content-end"
+              style={{
+                right: '20px',
+                zIndex: 1000
               }}
             >
-              <RiNotification2Fill className="text-light custom-zoom-btn" style={{ fontSize: '24px' }} />
-            </button> */}
+              <OverlayTrigger
+                placement="bottom"
+                overlay={
+                  <Tooltip id="dashboard-view-tooltip">
+                    {dashboardViewMode === 'project'
+                      ? t('switchToLotView') || 'Switch to Lot View'
+                      : t('switchToProjectView') || 'Switch to Project View'
+                    }
+                  </Tooltip>
+                }
+              >
+                <div
+                  onClick={toggleDashboardView}
+                  className="d-flex align-items-center justify-content-center rounded-pill shadow-sm"
+                  style={{
+                    width: '88px',
+                    height: '40px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    padding: '4px 0px'
+                  }}
+                >
+                  {/* Sliding Background Indicator */}
+                  <div
+                    className="position-absolute rounded-pill"
+                    style={{
+                      width: '38px',
+                      height: '32px',
+                      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                      top: '4px',
+                      left: dashboardViewMode === 'project' ? '4px' : '46px',
+                      transition: 'left 0.3s ease',
+                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)'
+                    }}
+                  />
 
-                        <NoticeBoardButton
+                  {/* Icons */}
+                  <div className="d-flex align-items-center justify-content-center w-100 position-relative">
+                    <div
+                      className="d-flex align-items-center justify-content-center"
+                      style={{
+                        width: '38px',
+                        height: '32px',
+                        zIndex: 1,
+                        padding: '2px'
+                      }}
+                    >
+                      <MdViewModule
+                        size={18}
+                        color={dashboardViewMode === 'project' ? '#333' : 'rgba(255, 255, 255, 0.8)'}
+                        style={{ transition: 'color 0.3s ease' }}
+                      />
+                    </div>
+                    <div
+                      className="d-flex align-items-center justify-content-center"
+                      style={{
+                        width: '38px',
+                        height: '32px',
+                        zIndex: 1,
+                        padding: '2px'
+                      }}
+                    >
+                      <MdViewList
+                        size={18}
+                        color={dashboardViewMode === 'lot' ? '#333' : 'rgba(255, 255, 255, 0.8)'}
+                        style={{ transition: 'color 0.3s ease' }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </OverlayTrigger>
+            </div>
+          </Col>
+
+          <Col xs={2} md={1} lg={1} className="d-flex align-items-center justify-content-end">
+            <NoticeBoardButton
               onClick={() => setShowNoticeBoard(!showNoticeBoard)}
               showNoticeBoard={showNoticeBoard}
               customDark={customDark}
@@ -186,10 +268,10 @@ const Navbar = () => {
               onClick={toggleUserMenu}
               className="btn p-0 border-0 bg-transparent"
               aria-label="Toggle user menu"
-              style={{ 
-                cursor: 'pointer', 
-                width: '40px', 
-                height: '40px', 
+              style={{
+                cursor: 'pointer',
+                width: '40px',
+                height: '40px',
                 overflow: 'hidden',
                 padding: 0,
                 borderRadius: '50%',
@@ -198,7 +280,7 @@ const Navbar = () => {
                 alignItems: 'center',
                 flexShrink: 0
               }}
-              >
+            >
               <img
                 src={getProfileImageSrc()}
                 alt={`${userData?.firstName} ${userData?.lastName}`}
@@ -207,7 +289,7 @@ const Navbar = () => {
                   height: '100%',
                   objectFit: 'cover'
                 }}
-                />
+              />
             </button>
           </Col>
         </Row>
@@ -224,7 +306,7 @@ const Navbar = () => {
           opacity: showNav ? 1 : 0,
           // zIndex: 1,
         }}
-        >
+      >
         <NavigationBar onLinkClick={closeNav} onClose={closeNav} />
       </div>
 
@@ -241,29 +323,11 @@ const Navbar = () => {
           opacity: userMenu ? 1 : 0,
           // zIndex: 999,
         }}
-        >
+      >
         <UserMenu onClose={closeUserMenu} />
       </div>
 
-      {/* used for notification */}
-      {/* <div
-        ref={notificationRef}
-        className='m-1'
-        style={{
-          width: 'auto',
-          position: 'absolute',
-          top: '53px',
-          right: '40px',
-          overflow: 'hidden',
-          transition: '500ms ease-in-out, opacity 500ms ease-in-out',
-          opacity: showNotification ? 1 : 0,
-          // zIndex: 999,
-        }}
-      >
-        <Notification onClose={closeNotification} />
-      </div> */}
-
-            {/* Notice Board Component */}
+      {/* Notice Board Component */}
       <NoticeBoard
         show={showNoticeBoard}
         onHide={() => setShowNoticeBoard(false)}
