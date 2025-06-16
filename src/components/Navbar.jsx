@@ -82,9 +82,60 @@ const Navbar = () => {
     setUserMenu(false);
   };
 
+  // Load viewType from localStorage on component mount
+  useEffect(() => {
+    const loadViewTypeFromStorage = () => {
+      try {
+        const userSettings = localStorage.getItem('userSettings');
+        if (userSettings) {
+          const parsedSettings = JSON.parse(userSettings);
+          const viewType = parsedSettings?.settings?.dashboardSettings?.viewType;
+
+          if (viewType && (viewType === 'project' || viewType === 'lot')) {
+            setDashboardViewMode(viewType);
+            console.log('Dashboard viewType loaded from localStorage:', viewType);
+          } else {
+            console.log('Using default viewType: project');
+          }
+        } else {
+          console.log('No userSettings found, using default viewType: project');
+        }
+      } catch (error) {
+        console.error('Failed to parse userSettings for viewType:', error);
+      }
+    };
+
+    // Load on component mount
+    loadViewTypeFromStorage();
+
+    // Listen for storage changes (when settings updated from Settings page)
+    window.addEventListener('storage', loadViewTypeFromStorage);
+
+    return () => {
+      window.removeEventListener('storage', loadViewTypeFromStorage);
+    };
+  }, []);
+
   // Toggle function for dashboard view
   const toggleDashboardView = () => {
-    setDashboardViewMode(prev => prev === 'project' ? 'lot' : 'project');
+    const newViewType = dashboardViewMode === 'project' ? 'lot' : 'project';
+    setDashboardViewMode(newViewType);
+
+    // Update localStorage when toggle is used
+    try {
+      const userSettings = localStorage.getItem('userSettings');
+      if (userSettings) {
+        const parsedSettings = JSON.parse(userSettings);
+
+        if (parsedSettings.settings && parsedSettings.settings.dashboardSettings) {
+          parsedSettings.settings.dashboardSettings.viewType = newViewType;
+          localStorage.setItem('userSettings', JSON.stringify(parsedSettings));
+          console.log('Dashboard viewType updated in localStorage:', newViewType);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to update viewType in localStorage:', error);
+    }
   };
 
   const handleClickOutside = (event) => {
