@@ -96,7 +96,7 @@ const ScreenLockPin = forwardRef(({ t, getCssClasses, IoSave, settings, getCurre
       await API.put('/User/ChangeScreenLockPin', {
         oldPin: oldPinNum,
         newPin: newPinNum,
-        screenLockTime: parseInt(screenLockTime), // Pass selected timeout
+        // screenLockTime: parseInt(screenLockTime), // Pass selected timeout
       });
 
       // Also update the settings store with the new screen lock time
