@@ -11,6 +11,8 @@ import {
 import { useSettingsActions } from '../../../store/useSettingsStore';
 import { useUserData } from '../../../store/userDataStore';
 import { success, error } from '../../../CustomHooks/Services/AlertMessageService';
+import EnglishIcon from "./../../../assets/Icons/English.png";
+import HindiIcon from "./../../../assets/Icons/Hindi.png";
 
 const GeneralSettings = forwardRef(({ t, getCssClasses, IoSave, settings, getCurrentSettings }, ref) => {
   const [language, setLanguage] = useState('english');
@@ -106,7 +108,7 @@ const GeneralSettings = forwardRef(({ t, getCssClasses, IoSave, settings, getCur
                     variant={language === 'english' ? 'primary' : 'outline-primary'}
                     className="d-flex align-items-center justify-content-center gap-2 px-3"
                   >
-                    🇬🇧 <span>English</span>
+                    <img src={EnglishIcon} alt="English" style={{ width: '20px' }} /> <span>English</span>
                   </ToggleButton>
                   <ToggleButton
                     id="lang-hi"
@@ -114,7 +116,7 @@ const GeneralSettings = forwardRef(({ t, getCssClasses, IoSave, settings, getCur
                     variant={language === 'hindi' ? 'primary' : 'outline-primary'}
                     className="d-flex align-items-center justify-content-center gap-2 px-3"
                   >
-                    🇮🇳 <span>Hindi</span>
+                    <img src={HindiIcon} alt="Hindi" style={{ width: '20px' }} /> <span>Hindi</span>
                   </ToggleButton>
                 </ToggleButtonGroup>
               </Form.Group>
