@@ -113,7 +113,7 @@ const CuDashboard = () => {
     quantitySheet: true
   });
   const [page, setPage] = useState(1);
-  const pageSize = 5; // Number of projects per page
+  const [pageSize, setPageSize] = useState(5); // Number of projects per page - will be loaded from localStorage
   const [hasMore, setHasMore] = useState(true);
 
   const hasDisable = (projectid) => {
@@ -124,10 +124,32 @@ const CuDashboard = () => {
   };
 
 
+  // Load pageSize from localStorage on component mount
+  useEffect(() => {
+    try {
+      const userSettings = localStorage.getItem('userSettings');
+      if (userSettings) {
+        const parsedSettings = JSON.parse(userSettings);
+        const numberOfProjects = parsedSettings?.settings?.dashboardSettings?.numberOfProjects;
+
+        if (numberOfProjects && typeof numberOfProjects === 'number') {
+          setPageSize(numberOfProjects);
+          console.log('Dashboard pageSize loaded from localStorage:', numberOfProjects);
+        } else {
+          console.log('Using default pageSize: 5');
+        }
+      } else {
+        console.log('No userSettings found, using default pageSize: 5');
+      }
+    } catch (error) {
+      console.error('Failed to parse userSettings for pageSize:', error);
+    }
+  }, []);
+
   useEffect(() => {
     fetchProjects(1); // Load initial set of projects
     fetchHasQuantitySheet();
-  }, [userData.userId]);
+  }, [userData.userId, pageSize]); // Added pageSize as dependency
 
   // Sync visibleCards when userSettings change in localStorage
   useEffect(() => {
