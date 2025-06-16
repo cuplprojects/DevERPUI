@@ -156,7 +156,7 @@ const ChangePassword = () => {
   return (
   <Container className={`w-100 p-3 shadow-lg rounded-4 ${customLightBorder} ${customLight}`} style={{ maxWidth: '800px', zIndex: "0" }}>
   <Row>
-    <Col lg={12} className="mb-4">
+    <Col lg={12} className="mb-2">
       <div className="d-flex justify-content-center align-items-center gap-2">
         <h className={`fw-bold mb-0 ${customBtn === 'btn-dark' ? "text-white" : customDarkText}`}>
           {t('changePassword')}

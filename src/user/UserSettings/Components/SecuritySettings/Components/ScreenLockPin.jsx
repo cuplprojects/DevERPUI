@@ -144,7 +144,8 @@ const ScreenLockPin = forwardRef(({ t, getCssClasses, IoSave, settings, getCurre
   return (
     <div className="screen-lock-pin-container">
   <div className={`p-2 rounded ${customLight}`}>
-    <h4 className={`${customDarkText} text-center fw-bold mb-4`}>{t('changeScreenLockPin')}</h4>
+     <div className="d-flex justify-content-center align-items-center gap-2">
+    <h className={`${customDarkText} text-center fw-bold mb-2`}>{t('changeScreenLockPin')}</h></div>
     {errorMsg && <Alert variant="danger">{errorMsg}</Alert>}
     {successMsg && <Alert variant="success">{successMsg}</Alert>}
 
