@@ -89,6 +89,7 @@ const ProjectDetailsTable = ({
     Machine: false, // Add Machine visibility
     Pages: false,
   });
+  //default column user settings 
 
   const [hideCompleted, setHideCompleted] = useState(false);
   const [columnModalShow, setColumnModalShow] = useState(false);
