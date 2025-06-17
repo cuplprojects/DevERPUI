@@ -76,60 +76,145 @@ const ProjectDetailsTable = ({
   const [initialTableData, setInitialTableData] = useState(tableData);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 
+  const loadDefaultFilters = () => {
+    const userSettings = localStorage.getItem('userSettings');
+    if (userSettings) {
+      try {
+        const parsedSettings = JSON.parse(userSettings);
+        const defaultFilters = parsedSettings?.settings?.processScreenSettings?.defaultFilters;
+        if (defaultFilters) {
+          return {
+            hideCompleted: defaultFilters.hideCompleted,
+            previousCompleted: defaultFilters.previousCompleted,
+            catchesWithAlerts: defaultFilters.catchesWithAlerts,
+            catchesWithRemarks: defaultFilters.catchesWithRemarks,
+            showCatchData: defaultFilters.showCatchData,
+            showCompletionPercentage: defaultFilters.showCompletionPercentage,
+          };
+        }
+      } catch (error) {
+        console.error('Failed to parse userSettings from localStorage:', error);
+      }
+    }
+    // Return default filter settings if none are found in localStorage
+    return {
+      hideCompleted: false,
+      previousCompleted: false,
+      catchesWithAlerts: false,
+      catchesWithRemarks: false,
+      showCatchData: false,
+      showCompletionPercentage: false,
+    };
+  };
+
+
+  const updateFilterSettingsInLocalStorage = (filterKey, value) => {
+    try {
+      const userSettings = JSON.parse(localStorage.getItem('userSettings') || '{}');
+      if (!userSettings.settings) {
+        userSettings.settings = {};
+      }
+      if (!userSettings.settings.processScreenSettings) {
+        userSettings.settings.processScreenSettings = { defaultFilters: {} };
+      }
+      userSettings.settings.processScreenSettings.defaultFilters[filterKey] = value;
+      localStorage.setItem('userSettings', JSON.stringify(userSettings));
+    } catch (error) {
+      console.error('Failed to update filter settings in localStorage:', error);
+    }
+  };
+
+  const handleToggleChange = (checked) => {
+    setHideCompleted(checked);
+    updateFilterSettingsInLocalStorage('hideCompleted', checked);
+  };
+
+  const handleShowOnlyCompletedPreviousProcessChange = (checked) => {
+    setShowOnlyCompletedPreviousProcess(checked);
+    updateFilterSettingsInLocalStorage('previousCompleted', checked);
+  };
+
+  const handleShowOnlyAlertsChange = (checked) => {
+    setShowOnlyAlerts(checked);
+    updateFilterSettingsInLocalStorage('catchesWithAlerts', checked);
+  };
+
+  const handleShowOnlyRemarksChange = (checked) => {
+    setShowOnlyRemarks(checked);
+    updateFilterSettingsInLocalStorage('catchesWithRemarks', checked);
+  };
+
+  const handleShowBarChartChange = (checked) => {
+    setShowBarChart(checked);
+    updateFilterSettingsInLocalStorage('showCatchData', checked);
+  };
+
+  const handleShowPieChartChange = (checked) => {
+    setShowPieChart(checked);
+    updateFilterSettingsInLocalStorage('showCompletionPercentage', checked);
+  };
+
+
+  const [hideCompleted, setHideCompleted] = useState(loadDefaultFilters().hideCompleted);
+  const [showOnlyCompletedPreviousProcess, setShowOnlyCompletedPreviousProcess] = useState(loadDefaultFilters().previousCompleted);
+  const [showOnlyAlerts, setShowOnlyAlerts] = useState(loadDefaultFilters().catchesWithAlerts);
+  const [showOnlyRemarks, setShowOnlyRemarks] = useState(loadDefaultFilters().catchesWithRemarks);
+  const [showBarChart, setShowBarChart] = useState(loadDefaultFilters().showCatchData);
+  const [showPieChart, setShowPieChart] = useState(loadDefaultFilters().showCompletionPercentage);
+
 
   // this function is to load column visibility settings from localStorage
   const loadColumnVisibilitySettings = () => {
     const userSettings = localStorage.getItem('userSettings');
     if (userSettings) {
-        try {
-            const parsedSettings = JSON.parse(userSettings);
-            const defaultColumns = parsedSettings?.settings?.processScreenSettings?.defaultColumns;
+      try {
+        const parsedSettings = JSON.parse(userSettings);
+        const defaultColumns = parsedSettings?.settings?.processScreenSettings?.defaultColumns;
 
-            if (defaultColumns) {
-                return {
-                    "Interim Quantity": defaultColumns.interimquantity ?? defaultColumns.interimQuantity,
-                    "Remarks": defaultColumns.remarks,
-                    "Team Assigned": defaultColumns.teamassigned ?? defaultColumns.teamAssigned,
-                    "PaperTitle": defaultColumns.papertitle ?? defaultColumns.paperTitle,
-                    "Paper Details": defaultColumns.paperdetails ?? defaultColumns.paperDetails,
-                    "Envelopes": defaultColumns.envelopes,
-                    "Course": defaultColumns.course,
-                    "Machine": defaultColumns.machine,
-                    "Zone": defaultColumns.zone,
-                    "Subject": defaultColumns.subject,
-                    "Exam Date": defaultColumns.examdate ?? defaultColumns.examDate,
-                    "Exam Time": defaultColumns.examtime ?? defaultColumns.examTime,
-                    "Pages": defaultColumns.pages
-                };
-            }
-        } catch (error) {
-            console.error('Failed to parse userSettings from localStorage:', error);
+        if (defaultColumns) {
+          return {
+            "Interim Quantity": defaultColumns.interimquantity ?? defaultColumns.interimQuantity,
+            "Remarks": defaultColumns.remarks,
+            "Team Assigned": defaultColumns.teamassigned ?? defaultColumns.teamAssigned,
+            "PaperTitle": defaultColumns.papertitle ?? defaultColumns.paperTitle,
+            "Paper Details": defaultColumns.paperdetails ?? defaultColumns.paperDetails,
+            "Envelopes": defaultColumns.envelopes,
+            "Course": defaultColumns.course,
+            "Machine": defaultColumns.machine,
+            "Zone": defaultColumns.zone,
+            "Subject": defaultColumns.subject,
+            "Exam Date": defaultColumns.examdate ?? defaultColumns.examDate,
+            "Exam Time": defaultColumns.examtime ?? defaultColumns.examTime,
+            "Pages": defaultColumns.pages
+          };
         }
+      } catch (error) {
+        console.error('Failed to parse userSettings from localStorage:', error);
+      }
     }
 
     // Return default visibility settings if none are found in localStorage
     return {
-        "Interim Quantity": false,
-        "Remarks": false,
-        "Team Assigned": false,
-        "PaperTitle": false,
-        "Paper Details": false,
-        "Envelopes": false,
-        "Course": false,
-        "Machine": false,
-        "Zone": false,
-        "Subject": false,
-        "Exam Date": false,
-        "Exam Time": false,
-        "Pages": false
+      "Interim Quantity": false,
+      "Remarks": false,
+      "Team Assigned": false,
+      "PaperTitle": false,
+      "Paper Details": false,
+      "Envelopes": false,
+      "Course": false,
+      "Machine": false,
+      "Zone": false,
+      "Subject": false,
+      "Exam Date": false,
+      "Exam Time": false,
+      "Pages": false
     };
-};
+  };
 
 
   //default hide and unhide
   // Initialize columnVisibility state with the loaded settings
   const [columnVisibility, setColumnVisibility] = useState(loadColumnVisibilitySettings);
-  const [hideCompleted, setHideCompleted] = useState(false);
   const [columnModalShow, setColumnModalShow] = useState(false);
   const [alarmModalShow, setAlarmModalShow] = useState(false);
   const [interimQuantityModalShow, setInterimQuantityModalShow] =
@@ -205,12 +290,6 @@ const ProjectDetailsTable = ({
   const [transfertoFactoryModalData, setTransferToFactoryModalData] = useState(null);
   const [selectMachineModalData, setSelectMachineModalData] = useState(null);
   const [assignTeamModalData, setAssignTeamModalData] = useState(null);
-  const [showOnlyAlerts, setShowOnlyAlerts] = useState(false);
-  const [
-    showOnlyCompletedPreviousProcess,
-    setShowOnlyCompletedPreviousProcess,
-  ] = useState(true);
-  const [showOnlyRemarks, setShowOnlyRemarks] = useState(false);
   const [paperData, setPaperData] = useState([]);
   const [courseData, setCourseData] = useState([]);
   const [subjectData, setSubjectData] = useState([]);
@@ -1209,10 +1288,6 @@ const ProjectDetailsTable = ({
     return null;
   };
 
-  const handleToggleChange = (checked) => {
-    setHideCompleted(checked);
-  };
-
   const handleDropdownSelect = (action) => {
     if (selectedRowKeys.length > 0) {
       // Get all selected rows
@@ -1599,70 +1674,36 @@ const ProjectDetailsTable = ({
                 overlay={
                   <Menu>
                     <Menu.Item className="d-flex align-items-center">
-                      <Switch
-                        checked={hideCompleted}
-                        onChange={handleToggleChange}
-                      />
+                      <Switch checked={hideCompleted} onChange={handleToggleChange} />
                       <span className="ms-2">{t("hideCompleted")}</span>
                     </Menu.Item>
 
-                    <Menu.Divider />
                     <Menu.Item className="d-flex align-items-center">
-                      <Switch
-                        checked={showOnlyCompletedPreviousProcess}
-                        onChange={() =>
-                          setShowOnlyCompletedPreviousProcess(
-                            !showOnlyCompletedPreviousProcess
-                          )
-                        }
-                      />
-                      {/* <span className='ms-2'>{previousProcess} Completed</span> */}
+                      <Switch checked={showOnlyCompletedPreviousProcess} onChange={handleShowOnlyCompletedPreviousProcessChange} />
                       <span className="ms-2">{t("previousCompleted")}</span>
                     </Menu.Item>
-                    <Menu.Divider />
 
                     <Menu.Item className="d-flex align-items-center">
-                      <Switch
-                        checked={showOnlyAlerts}
-                        onChange={() => setShowOnlyAlerts(!showOnlyAlerts)}
-                      />
+                      <Switch checked={showOnlyAlerts} onChange={handleShowOnlyAlertsChange} />
                       <span className="ms-2">{t("catchesWithAlerts")}</span>
                     </Menu.Item>
 
-                    <Menu.Divider />
                     <Menu.Item className="d-flex align-items-center">
-                      <Switch
-                        checked={showOnlyRemarks}
-                        onChange={() => setShowOnlyRemarks(!showOnlyRemarks)}
-                      />
+                      <Switch checked={showOnlyRemarks} onChange={handleShowOnlyRemarksChange} />
                       <span className="ms-2">{t("catchesWithRemarks")}</span>
                     </Menu.Item>
 
-
-                    <Menu.Divider />
                     <Menu.Item>
                       <div>
-                        <Switch
-                          checked={showBarChart}
-                          onChange={() => setShowBarChart(!showBarChart)}
-                        />
-                        <span className={`ms-2 ${customDarkText}`}>
-                          {t("showCatchData")}
-                        </span>
+                        <Switch checked={showBarChart} onChange={handleShowBarChartChange} />
+                        <span className={`ms-2 ${customDarkText}`}>{t("showCatchData")}</span>
                       </div>
                     </Menu.Item>
 
-                    <Menu.Divider />
-
                     <Menu.Item>
                       <div>
-                        <Switch
-                          checked={showPieChart}
-                          onChange={() => setShowPieChart(!showPieChart)}
-                        />
-                        <span className={`ms-2 ${customDarkText}`}>
-                          {t("showCompletionPercentage")}
-                        </span>
+                        <Switch checked={showPieChart} onChange={handleShowPieChartChange} />
+                        <span className={`ms-2 ${customDarkText}`}>{t("showCompletionPercentage")}</span>
                       </div>
                     </Menu.Item>
 
