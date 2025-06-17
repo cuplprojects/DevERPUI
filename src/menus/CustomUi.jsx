@@ -31,21 +31,24 @@ const loadFontSizeFromLocalStorage = () => {
     try {
       const parsedSettings = JSON.parse(userSettings);
       const fontSize = parsedSettings?.settings?.general?.fontSize;
+
       if (fontSize) {
-        // Convert font size from string to integer if it's in px format
-        if (typeof fontSize === 'string' && fontSize.endsWith('px')) {
-          return parseInt(fontSize, 10);
-        }
-        // Handle predefined sizes like "small", "medium", "large"
+        // If it's a string number like "18", convert it to number
+        const parsedSize = parseInt(fontSize, 10);
+        if (!isNaN(parsedSize)) return parsedSize;
+
+        // Handle fallback named sizes
         const sizeMap = { small: 12, medium: 16, large: 20 };
-        return sizeMap[fontSize] || 16; // Default to 16 if not found
+        return sizeMap[fontSize] || 16;
       }
     } catch (error) {
-      console.error('Failed to parse userSettings from localStorage:', error);
+      console.error('Failed to parse fontSize from userSettings:', error);
     }
   }
-  return 16; // Default font size
+  return 16;
 };
+
+
 
 const CustomUi = () => {
   const { t } = useTranslation();
