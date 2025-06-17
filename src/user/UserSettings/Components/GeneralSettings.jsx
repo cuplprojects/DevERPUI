@@ -16,7 +16,7 @@ import HindiIcon from "./../../../assets/Icons/Hindi.png";
 import useLanguageStore from '../../../store/languageStore';
 
 const GeneralSettings = forwardRef(({ t, getCssClasses, IoSave, settings, getCurrentSettings }, ref) => {
-  const [fontSize, setFontSize] = useState('medium');
+  const [fontSize, setFontSize] = useState('16'); // default to 16px instead of 'medium'
   const [pageLimit, setPageLimit] = useState('10');
   const [loading, setLoading] = useState(false);
 
@@ -28,9 +28,10 @@ const GeneralSettings = forwardRef(({ t, getCssClasses, IoSave, settings, getCur
   useImperativeHandle(ref, () => ({
     getSettings: () => ({
       language,
-      fontSize,
+      fontSize: `${fontSize}`, // if you want to store it with px
       pageLimit: parseInt(pageLimit)
     })
+
   }));
 
   const [
@@ -134,7 +135,7 @@ const GeneralSettings = forwardRef(({ t, getCssClasses, IoSave, settings, getCur
             </Col>
 
             {/* Font Size */}
-            <Col xs={12} md={6}>
+            {/* <Col xs={12} md={6}>
               <Form.Group controlId="font-size-select">
                 <Form.Label>{t('fontSize')}</Form.Label>
                 <Form.Select value={fontSize} onChange={(e) => setFontSize(e.target.value)}>
@@ -142,6 +143,20 @@ const GeneralSettings = forwardRef(({ t, getCssClasses, IoSave, settings, getCur
                   <option value="medium">Medium</option>
                   <option value="large">Large</option>
                 </Form.Select>
+              </Form.Group>
+            </Col> */}
+            <Col xs={12} md={6}>
+              <Form.Group controlId="font-size-slider">
+                <Form.Label>
+                  {t('fontSize')} ({fontSize}px)
+                </Form.Label>
+                <Form.Range
+                  min={12}
+                  max={24}
+                  step={1}
+                  value={parseInt(fontSize)}
+                  onChange={(e) => setFontSize(e.target.value)}
+                />
               </Form.Group>
             </Col>
           </Row>
