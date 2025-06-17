@@ -1087,6 +1087,10 @@ const ProcessTable = () => {
                     processId={processId}
                     projectLots={projectLots}
                     handleLotClick={handleLotClick}
+                     setShowBarChart={setShowBarChart}
+                    showBarChart={showBarChart}
+                    setShowPieChart={setShowPieChart}
+                    showPieChart={showPieChart}
                   />
                 )}
               </Col>
@@ -1102,7 +1106,7 @@ const ProcessTable = () => {
           <></>
         ) : (
           <>
-            <Col lg={8} md={12} className="mb-1">
+            {/* <Col lg={8} md={12} className="mb-1">
               <div className="d-flex align-items-center gap-4">
                 <div>
                   <Switch
@@ -1123,7 +1127,7 @@ const ProcessTable = () => {
                   </span>
                 </div>
               </div>
-            </Col>
+            </Col> */}
           </>
         )}
 

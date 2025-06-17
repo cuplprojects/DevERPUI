@@ -228,28 +228,38 @@ const EditProjectModal = ({
                   </Select>
                 </Form.Item>
               </Col>
-              <Col xs={24} sm={12}>
-                <Form.Item
-                  name="seriesNames"
-                  label={<span className={customDarkText}>{t('seriesName')}</span>}
-                  rules={[
-                    { required: true, message: t('pleaseEnterSeriesName') },
-                    { validator: validateSeriesInput }
-                  ]}
-                >
-                  <Input
-                    placeholder={t('ENTERSERIESNAME')}
-                    maxLength={numberOfSeries}
-                    style={{ textTransform: 'uppercase' }}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (value.length > numberOfSeries) {
-                        // Optionally handle the case where input exceeds limit
-                      }
-                    }}
-                  />
-                </Form.Item>
-              </Col>
+              {numberOfSeries > 1 && (
+                <Col xs={6}>
+                  <Form.Group controlId="seriesNames">
+                    <Form.Label className={customDarkText}>{t('seriesNames')}
+                      <span className='text-danger ms-2 fs-6'>*</span>
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      placeholder={t('ENTERSERIESNAME')}
+                      maxLength={numberOfSeries}
+                      style={{ textTransform: 'uppercase' }}
+                      value={seriesNames}
+                      onChange={(e) => {
+                        const value = e.target.value.toUpperCase();
+                        setSeriesNames(value);
+                        // Validate the series name
+                        if (validateSeriesInput) {
+                          validateSeriesInput(null, value)
+                            .catch(error => {
+                              // Handle validation error if needed
+                              console.log("Series validation error:", error.message);
+                            });
+                        }
+                      }}
+                      required
+                    />
+                    <Form.Text className="text-danger">
+                      {form.getFieldError('seriesName')?.[0]}
+                    </Form.Text>
+                  </Form.Group>
+                </Col>
+              )}
             </Row>
           )}
           <Row gutter={[16, 0]}>
@@ -263,7 +273,7 @@ const EditProjectModal = ({
                   placeholder={t('enterProjectName')}
                   value={projectName}
                   onChange={(e) => setProjectName(e.target.value)}
-                  disabled={!selectedGroup || !selectedType || !selectedSession || !selectedExamType}
+                  //disabled={!selectedGroup || !selectedType || !selectedSession || !selectedExamType}
                 />
               </Form.Item>
             </Col>
