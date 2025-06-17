@@ -105,7 +105,7 @@ const GeneralSettings = forwardRef(({ t, getCssClasses, IoSave, settings, getCur
             {/* Language Toggle with Flags */}
             <Col xs={12} md={6}>
               <Form.Group controlId="language-select">
-                <Form.Label>Language</Form.Label>
+                <Form.Label>{t('language')}</Form.Label>
                 <ToggleButtonGroup
                   type="radio"
                   name="language"
@@ -136,7 +136,7 @@ const GeneralSettings = forwardRef(({ t, getCssClasses, IoSave, settings, getCur
             {/* Font Size */}
             <Col xs={12} md={6}>
               <Form.Group controlId="font-size-select">
-                <Form.Label>Font Size</Form.Label>
+                <Form.Label>{t('fontSize')}</Form.Label>
                 <Form.Select value={fontSize} onChange={(e) => setFontSize(e.target.value)}>
                   <option value="small">Small</option>
                   <option value="medium">Medium</option>
@@ -149,7 +149,7 @@ const GeneralSettings = forwardRef(({ t, getCssClasses, IoSave, settings, getCur
             {/* Page Limit */}
             <Col xs={12} md={6}>
               <Form.Group controlId="page-limit-select">
-                <Form.Label>Default Page Limit</Form.Label>
+                <Form.Label>{t('defaultPageLimit')}</Form.Label>
                 <Form.Select value={pageLimit} onChange={(e) => setPageLimit(e.target.value)}>
                   <option value="5">5</option>
                   <option value="10">10</option>

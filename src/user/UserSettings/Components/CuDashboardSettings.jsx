@@ -105,7 +105,7 @@ const CuDashboardSettings = forwardRef(({ t, getCssClasses, IoSave, settings, ge
               <Form.Check
                 type="switch"
                 id="toggle-dashboard-table"
-                label="Show Dashboard Table"
+                label={t("showDashboardTable")}
                 checked={showDashboardTable}
                 onChange={() => setShowDashboardTable(!showDashboardTable)}
               />
@@ -116,7 +116,7 @@ const CuDashboardSettings = forwardRef(({ t, getCssClasses, IoSave, settings, ge
               <Form.Check
                 type="switch"
                 id="toggle-bar-chart"
-                label="Show Bar Chart"
+                label={t('showBarChart')}
                 checked={showBarChart}
                 onChange={() => setShowBarChart(!showBarChart)}
               />
@@ -127,7 +127,7 @@ const CuDashboardSettings = forwardRef(({ t, getCssClasses, IoSave, settings, ge
             {/* Number of Project Cards */}
             <Col xs={12} lg={6} md={6}>
               <Form.Group controlId="select-number-projects">
-                <Form.Label>Deafult Project Cards</Form.Label>
+                <Form.Label>{t('defaultProjectCards')}</Form.Label>
                 <Form.Select
                   value={numberOfProjects}
                   onChange={(e) => setNumberOfProjects(e.target.value)}
@@ -144,7 +144,7 @@ const CuDashboardSettings = forwardRef(({ t, getCssClasses, IoSave, settings, ge
             {/* View Type Selector */}
             <Col xs={12} lg={6} md={6}>
               <Form.Group>
-                <Form.Label>Default View Type</Form.Label>
+                <Form.Label>{t('defaultViewType')}</Form.Label>
                 <ToggleButtonGroup
                   type="radio"
                   name="viewType"
