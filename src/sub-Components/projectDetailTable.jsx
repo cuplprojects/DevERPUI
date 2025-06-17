@@ -76,21 +76,59 @@ const ProjectDetailsTable = ({
   const [initialTableData, setInitialTableData] = useState(tableData);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 
-  //default hide and unhide
-  const [columnVisibility, setColumnVisibility] = useState({
-    Alerts: false,
-    "Interim Quantity": false,
-    Remarks: false,
-    Envelopes: false,
-    Paper: false, // Enable by default on large screens
-    Course: false,
-    Subject: false,
-    Zone: false, // Add Zone visibility
-    Machine: false, // Add Machine visibility
-    Pages: false,
-  });
-  //default column user settings 
 
+  // this function is to load column visibility settings from localStorage
+  const loadColumnVisibilitySettings = () => {
+    const userSettings = localStorage.getItem('userSettings');
+    if (userSettings) {
+        try {
+            const parsedSettings = JSON.parse(userSettings);
+            const defaultColumns = parsedSettings?.settings?.processScreenSettings?.defaultColumns;
+
+            if (defaultColumns) {
+                return {
+                    "Interim Quantity": defaultColumns.interimquantity ?? defaultColumns.interimQuantity,
+                    "Remarks": defaultColumns.remarks,
+                    "Team Assigned": defaultColumns.teamassigned ?? defaultColumns.teamAssigned,
+                    "PaperTitle": defaultColumns.papertitle ?? defaultColumns.paperTitle,
+                    "Paper Details": defaultColumns.paperdetails ?? defaultColumns.paperDetails,
+                    "Envelopes": defaultColumns.envelopes,
+                    "Course": defaultColumns.course,
+                    "Machine": defaultColumns.machine,
+                    "Zone": defaultColumns.zone,
+                    "Subject": defaultColumns.subject,
+                    "Exam Date": defaultColumns.examdate ?? defaultColumns.examDate,
+                    "Exam Time": defaultColumns.examtime ?? defaultColumns.examTime,
+                    "Pages": defaultColumns.pages
+                };
+            }
+        } catch (error) {
+            console.error('Failed to parse userSettings from localStorage:', error);
+        }
+    }
+
+    // Return default visibility settings if none are found in localStorage
+    return {
+        "Interim Quantity": false,
+        "Remarks": false,
+        "Team Assigned": false,
+        "PaperTitle": false,
+        "Paper Details": false,
+        "Envelopes": false,
+        "Course": false,
+        "Machine": false,
+        "Zone": false,
+        "Subject": false,
+        "Exam Date": false,
+        "Exam Time": false,
+        "Pages": false
+    };
+};
+
+
+  //default hide and unhide
+  // Initialize columnVisibility state with the loaded settings
+  const [columnVisibility, setColumnVisibility] = useState(loadColumnVisibilitySettings);
   const [hideCompleted, setHideCompleted] = useState(false);
   const [columnModalShow, setColumnModalShow] = useState(false);
   const [alarmModalShow, setAlarmModalShow] = useState(false);
@@ -1483,7 +1521,7 @@ const ProjectDetailsTable = ({
       }`,
     current: currentPage,
     pageSize,
-    pageSizeOptions: [5, 10, 20,25, 50, 100],
+    pageSizeOptions: [5, 10, 20, 25, 50, 100],
     showSizeChanger: true,
     onShowSizeChange: (current, size) => handlePageSizeChange(size),
     onChange: (page) => setCurrentPage(page),
@@ -1602,11 +1640,11 @@ const ProjectDetailsTable = ({
 
 
                     <Menu.Divider />
-                     <Menu.Item>
+                    <Menu.Item>
                       <div>
                         <Switch
-                        checked={showBarChart}
-                        onChange={() => setShowBarChart(!showBarChart)}
+                          checked={showBarChart}
+                          onChange={() => setShowBarChart(!showBarChart)}
                         />
                         <span className={`ms-2 ${customDarkText}`}>
                           {t("showCatchData")}
@@ -1619,8 +1657,8 @@ const ProjectDetailsTable = ({
                     <Menu.Item>
                       <div>
                         <Switch
-                        checked={showPieChart}
-                        onChange={() => setShowPieChart(!showPieChart)}
+                          checked={showPieChart}
+                          onChange={() => setShowPieChart(!showPieChart)}
                         />
                         <span className={`ms-2 ${customDarkText}`}>
                           {t("showCompletionPercentage")}
