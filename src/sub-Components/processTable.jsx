@@ -433,8 +433,8 @@ const ProcessTable = () => {
     srNo: item.quantitySheetId,
     catchNumber: item.quantitySheetId,
     paper: "",
-    courseId : item.courseId,
-    subjectId : item.subjectId,
+    courseId: item.courseId,
+    subjectId: item.subjectId,
     outerEnvelope: "",
     innerEnvelope: "",
     lotNo: item.lotNo,
@@ -642,143 +642,143 @@ const ProcessTable = () => {
         // console.log(previousProcess?.processId)
         if (Array.isArray(transactionsData)) {
           // If the previous process is ID 21, fetch from quantitySheet and skip previous transactions mapping
-          
-            // Continue with your original logic for previous process transactions
-            const validTransactions = transactionsData.filter((item) =>
-              item.processIds?.includes(Number(processId))
+
+          // Continue with your original logic for previous process transactions
+          const validTransactions = transactionsData.filter((item) =>
+            item.processIds?.includes(Number(processId))
+          );
+
+          let formDataGet = validTransactions.map((item) => {
+            let previousProcessData = previousProcessTransactions.find(
+              (prevTrans) => prevTrans.quantitySheetId === item.quantitySheetId
             );
 
-            let formDataGet = validTransactions.map((item) => {
-              let previousProcessData = previousProcessTransactions.find(
-                (prevTrans) => prevTrans.quantitySheetId === item.quantitySheetId
-              );
-
-              if (previousProcessData) {
-                if (
-                  !previousProcessData.transactions?.length &&
-                  (previousProcess?.processId === 3 ||
-                    previousProcess?.processId === 4) &&
-                  digitalandOffsetData
-                ) {
-                  previousProcessData = digitalandOffsetData.find(
-                    (data) => data.quantitySheetId === item.quantitySheetId
-                  );
-                }
+            if (previousProcessData) {
+              if (
+                !previousProcessData.transactions?.length &&
+                (previousProcess?.processId === 3 ||
+                  previousProcess?.processId === 4) &&
+                digitalandOffsetData
+              ) {
+                previousProcessData = digitalandOffsetData.find(
+                  (data) => data.quantitySheetId === item.quantitySheetId
+                );
               }
+            }
 
-              const independentData = previousIndependent.transactions.find(
-                (indTrans) => indTrans.quantitySheetId === item.quantitySheetId
-              );
+            const independentData = previousIndependent.transactions.find(
+              (indTrans) => indTrans.quantitySheetId === item.quantitySheetId
+            );
 
-              return {
-                catchNumber: item.catchNo,
-                srNo: item.quantitySheetId,
-                seriesName: item.seriesName,
-                lotNo: item.lotNo,
-                paperTitle: item.paperTitle,
-                paperNumber: item.paperNumber,
-                examDate: item.examDate,
-                examTime: item.examTime,
-                courseId: item.courseId,
-                subjectId : item.subjectId,
-                courseName: item.courseName,
-                subjectName: item.subjectName,
-                a: item.a,
-                b: item.b,
-                c:item.c,
-                d: item.d,
-                innerEnvelope: item.innerEnvelope,
-                outerEnvelope: item.outerEnvelope,
-                pages: item.pages,
-                quantity: item.quantity,
-                percentageCatch: item.percentageCatch,
-                projectId: selectedProject?.value || id,
-                processId: processId,
-                ttfStatus: item.ttfStatus,
-                status: item.transactions[0]?.status || 0,
-                alerts: item.transactions[0]?.alarmId || "",
-                interimQuantity: item.transactions[0]?.interimQuantity || 0,
-                remarks: item.transactions[0]?.remarks || "",
-                previousProcessData:
-                  previousProcessData && previousProcess
-                    ? {
-                      status:
-                        previousProcessData.transactions?.[0]?.status || 0,
-                      interimQuantity:
-                        previousProcessData.transactions?.[0]
-                          ?.interimQuantity || 0,
-                      remarks:
-                        previousProcessData.transactions?.[0]?.remarks || "",
-                      alarmId:
-                        previousProcessData.transactions?.[0]?.alarmId || "",
-                      teamUserNames:
-                        previousProcessData.transactions?.[0]?.teamUserNames ||
-                        [],
-                      machinename:
-                        previousProcessData.transactions?.[0]?.machinename ||
-                        [],
-                      alarmMessage:
-                        previousProcessData.transactions?.[0]?.alarmMessage ||
-                        null,
-                      thresholdQty: previousProcess?.thresholdQty || 0,
-                    }
-                    : null,
-                voiceRecording: item.transactions[0]?.voiceRecording || "",
-                transactionId: item.transactions[0]?.transactionId || null,
-                machineId: item.transactions[0]?.machineId || 0,
-                machinename:
-                  item.transactions[0]?.machinename || "No Machine Assigned",
-                zoneNo: item.transactions?.[0]?.zoneNo || "No Zone Assigned",
-                zoneId: item.transactions?.[0]?.zoneId || 0,
-                teamId: item.transactions[0]?.teamId || [],
-                teamUserNames: item.transactions[0]?.teamUserNames || [
-                  "No Team Assigned",
-                ],
-                alarmMessage: item.transactions[0]?.alarmMessage || null,
-                processIds: item.processIds || [],
-                independentProcessData: independentData
+            return {
+              catchNumber: item.catchNo,
+              srNo: item.quantitySheetId,
+              seriesName: item.seriesName,
+              lotNo: item.lotNo,
+              paperTitle: item.paperTitle,
+              paperNumber: item.paperNumber,
+              examDate: item.examDate,
+              examTime: item.examTime,
+              courseId: item.courseId,
+              subjectId: item.subjectId,
+              courseName: item.courseName,
+              subjectName: item.subjectName,
+              a: item.a,
+              b: item.b,
+              c: item.c,
+              d: item.d,
+              innerEnvelope: item.innerEnvelope,
+              outerEnvelope: item.outerEnvelope,
+              pages: item.pages,
+              quantity: item.quantity,
+              percentageCatch: item.percentageCatch,
+              projectId: selectedProject?.value || id,
+              processId: processId,
+              ttfStatus: item.ttfStatus,
+              status: item.transactions[0]?.status || 0,
+              alerts: item.transactions[0]?.alarmId || "",
+              interimQuantity: item.transactions[0]?.interimQuantity || 0,
+              remarks: item.transactions[0]?.remarks || "",
+              previousProcessData:
+                previousProcessData && previousProcess
                   ? {
-                    status: independentData.transactions[0]?.status || 0,
+                    status:
+                      previousProcessData.transactions?.[0]?.status || 0,
                     interimQuantity:
-                      independentData.transactions[0]?.interimQuantity || 0,
-                    remarks: independentData.transactions[0]?.remarks || "",
-                    alarmId: independentData.transactions[0]?.alarmId || "",
+                      previousProcessData.transactions?.[0]
+                        ?.interimQuantity || 0,
+                    remarks:
+                      previousProcessData.transactions?.[0]?.remarks || "",
+                    alarmId:
+                      previousProcessData.transactions?.[0]?.alarmId || "",
                     teamUserNames:
-                      independentData.transactions[0]?.teamUserNames || [],
+                      previousProcessData.transactions?.[0]?.teamUserNames ||
+                      [],
                     machinename:
-                      independentData.transactions[0]?.machinename || [],
+                      previousProcessData.transactions?.[0]?.machinename ||
+                      [],
                     alarmMessage:
-                      independentData.transactions[0]?.alarmMessage || null,
-                    processName: previousIndependent.process?.processName || "",
+                      previousProcessData.transactions?.[0]?.alarmMessage ||
+                      null,
+                    thresholdQty: previousProcess?.thresholdQty || 0,
                   }
                   : null,
-              };
-            });
-            if (supervisor) {
-              // console.log(supervisor.locationId)
-              formDataGet = formDataGet.filter((item) =>
-                supervisor.locationId === 1
-                  ? item.ttfStatus === 0
-                  : item.ttfStatus === 1
-              );
-            }
-            const filteredData = selectedLot
-              ? formDataGet.filter(
-                (item) => Number(item.lotNo) === Number(selectedLot)
-              )
-              : formDataGet;
-
-            setTableData(filteredData);
-
-            const uniqueLots = [
-              ...new Set(validTransactions.map((item) => item.lotNo)),
-            ].sort((a, b) => a - b);
-            const filteredUniqueLots = uniqueLots.filter(
-              (lotNo) => !dispatchedLots.includes(lotNo)
+              voiceRecording: item.transactions[0]?.voiceRecording || "",
+              transactionId: item.transactions[0]?.transactionId || null,
+              machineId: item.transactions[0]?.machineId || 0,
+              machinename:
+                item.transactions[0]?.machinename || "No Machine Assigned",
+              zoneNo: item.transactions?.[0]?.zoneNo || "No Zone Assigned",
+              zoneId: item.transactions?.[0]?.zoneId || 0,
+              teamId: item.transactions[0]?.teamId || [],
+              teamUserNames: item.transactions[0]?.teamUserNames || [
+                "No Team Assigned",
+              ],
+              alarmMessage: item.transactions[0]?.alarmMessage || null,
+              processIds: item.processIds || [],
+              independentProcessData: independentData
+                ? {
+                  status: independentData.transactions[0]?.status || 0,
+                  interimQuantity:
+                    independentData.transactions[0]?.interimQuantity || 0,
+                  remarks: independentData.transactions[0]?.remarks || "",
+                  alarmId: independentData.transactions[0]?.alarmId || "",
+                  teamUserNames:
+                    independentData.transactions[0]?.teamUserNames || [],
+                  machinename:
+                    independentData.transactions[0]?.machinename || [],
+                  alarmMessage:
+                    independentData.transactions[0]?.alarmMessage || null,
+                  processName: previousIndependent.process?.processName || "",
+                }
+                : null,
+            };
+          });
+          if (supervisor) {
+            // console.log(supervisor.locationId)
+            formDataGet = formDataGet.filter((item) =>
+              supervisor.locationId === 1
+                ? item.ttfStatus === 0
+                : item.ttfStatus === 1
             );
+          }
+          const filteredData = selectedLot
+            ? formDataGet.filter(
+              (item) => Number(item.lotNo) === Number(selectedLot)
+            )
+            : formDataGet;
 
-            setProjectLots(filteredUniqueLots.map((lotNo) => ({ lotNo })));
-          
+          setTableData(filteredData);
+
+          const uniqueLots = [
+            ...new Set(validTransactions.map((item) => item.lotNo)),
+          ].sort((a, b) => a - b);
+          const filteredUniqueLots = uniqueLots.filter(
+            (lotNo) => !dispatchedLots.includes(lotNo)
+          );
+
+          setProjectLots(filteredUniqueLots.map((lotNo) => ({ lotNo })));
+
         }
       } catch (error) {
         console.error("Error fetching transactions data:", error);
@@ -966,8 +966,8 @@ const ProcessTable = () => {
                 <Card.Header
                   as="h3"
                   className={`${customDark === "dark-dark"
-                      ? `${customDark} text-white`
-                      : `${customDark} text-white`
+                    ? `${customDark} text-white`
+                    : `${customDark} text-white`
                     }`}
                 >
                   <Row className="d-flex align-items-center">
@@ -1091,7 +1091,7 @@ const ProcessTable = () => {
                     processId={processId}
                     projectLots={projectLots}
                     handleLotClick={handleLotClick}
-                     setShowBarChart={setShowBarChart}
+                    setShowBarChart={setShowBarChart}
                     showBarChart={showBarChart}
                     setShowPieChart={setShowPieChart}
                     showPieChart={showPieChart}
