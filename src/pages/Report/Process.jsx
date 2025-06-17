@@ -83,7 +83,7 @@ const ProcessDetails = ({ catchData, projectName, groupName }) => {
                   {getProcessName(process.processId)}
                 </td>
                 <td className="text-center text-secondary">
-                  {transaction.zoneName || 'N/A'}
+                  {transaction.zoneName || ''}
                 </td>
                 <td className="text-center">
                   <div className="d-flex flex-wrap gap-1 justify-content-center align-items-center">
@@ -99,7 +99,7 @@ const ProcessDetails = ({ catchData, projectName, groupName }) => {
                   </div>
                 </td>
                 <td className="text-center text-secondary text-nowrap">
-                  {transaction.machineName || 'N/A'}
+                  {transaction.machineName || ''}
                 </td>
                 <td className="text-center text-nowrap">
                   <div className="small">
