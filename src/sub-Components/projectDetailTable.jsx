@@ -38,7 +38,8 @@ import Tippy from "@tippyjs/react";
 import InputPages from "../menus/InputPages";
 import { success } from "../CustomHooks/Services/AlertMessageService";
 import TransferToFactoryModal from "../menus/TransferTofactoryModal";
-
+import StatusBarChart from "./StatusBarChart";
+import StatusPieChart from "./StatusPieChart";
 
 
 const { Option } = Select;
@@ -54,10 +55,12 @@ const ProjectDetailsTable = ({
   fetchTransactions,
   handleLotClick,
   projectLots,
-  setShowBarChart,
-  showBarChart,
-  setShowPieChart,
-  showPieChart
+  data,
+  catchNumbers
+  // setShowBarChart,
+  // showBarChart,
+  // setShowPieChart,
+  // showPieChart
 }) => {
   //Theme Change Section
   const { t } = useTranslation();
@@ -2007,7 +2010,30 @@ const ProjectDetailsTable = ({
           </Col>
         </Row>
       </div>
+      {showBarChart && (
+        <Col
+          lg={12}
+          md={12}
+          sm={12}
+          className="mt-1 d-fle justify-content-center"
+        >
+          <StatusBarChart
+            data={data}
+            catchNumbers={catchNumbers}
+          />
+        </Col>
+      )}
 
+      {showPieChart && (
+        <Col
+          lg={12}
+          md={12}
+          sm={12}
+          className={`mt-3 d-fle justify-content-center ${customLight} shadow rounded border`}
+        >
+          <StatusPieChart data={data} />
+        </Col>
+      )}
       <ColumnToggleModal
         show={columnModalShow}
         handleClose={() => setColumnModalShow(false)}

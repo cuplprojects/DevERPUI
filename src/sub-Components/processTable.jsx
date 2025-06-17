@@ -1,18 +1,14 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { Card, Spinner, Row, Col } from "react-bootstrap";
 import ProjectDetailsTable from "./projectDetailTable";
-import StatusPieChart from "./StatusPieChart";
-import StatusBarChart from "./StatusBarChart";
 import "./../styles/processTable.css";
-import { Switch } from "antd";
 import CatchProgressBar from "./CatchProgressBar";
 import CatchDetailModal from "../menus/CatchDetailModal";
 import themeStore from "../store/themeStore";
 import { useStore } from "zustand";
 import { useTranslation } from "react-i18next";
 import API from "../CustomHooks/MasterApiHooks/api";
-// import quantitySheetService from "../CustomHooks/ApiServices/quantitySheetService";
 import { useUserData } from "../store/userDataStore";
 import {
   getProjectProcessAndFeature,
@@ -1095,6 +1091,8 @@ const ProcessTable = () => {
                     showBarChart={showBarChart}
                     setShowPieChart={setShowPieChart}
                     showPieChart={showPieChart}
+                    data={combinedTableData} 
+                    catchNumbers={catchNumbers}
                   />
                 )}
               </Col>
@@ -1102,65 +1100,6 @@ const ProcessTable = () => {
           )}
         </>
       )}
-
-      <Row className="mb-4 d-flex justify-content-between">
-        {processName === "QC" ? (
-          <></>
-        ) : processName === "MSS" ? (
-          <></>
-        ) : (
-          <>
-            {/* <Col lg={8} md={12} className="mb-1">
-              <div className="d-flex align-items-center gap-4">
-                <div>
-                  <Switch
-                    checked={showBarChart}
-                    onChange={() => setShowBarChart(!showBarChart)}
-                  />
-                  <span className={`ms-2 ${customDarkText}`}>
-                    {t("showCatchData")}
-                  </span>
-                </div>
-                <div>
-                  <Switch
-                    checked={showPieChart}
-                    onChange={() => setShowPieChart(!showPieChart)}
-                  />
-                  <span className={`ms-2 ${customDarkText}`}>
-                    {t("showCatchData")}
-                  </span>
-                </div>
-              </div>
-            </Col> */}
-          </>
-        )}
-
-
-        {showBarChart && (
-          <Col
-            lg={12}
-            md={12}
-            sm={12}
-            className="mt-1 d-fle justify-content-center"
-          >
-            <StatusBarChart
-              data={combinedTableData}
-              catchNumbers={catchNumbers}
-            />
-          </Col>
-        )}
-
-        {showPieChart && (
-          <Col
-            lg={12}
-            md={12}
-            sm={12}
-            className={`mt-3 d-fle justify-content-center ${customLight} shadow rounded border`}
-          >
-            <StatusPieChart data={combinedTableData} />
-          </Col>
-        )}
-      </Row>
 
       <CatchDetailModal
         show={catchDetailModalShow}
