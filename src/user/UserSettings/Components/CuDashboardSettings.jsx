@@ -8,9 +8,9 @@ import {
   ToggleButtonGroup,
   Button
 } from 'react-bootstrap';
-import { useSettingsActions } from '../../../store/useSettingsStore';
 import { useUserData } from '../../../store/userDataStore';
 import { success, error } from '../../../CustomHooks/Services/AlertMessageService';
+import API from '../../../CustomHooks/MasterApiHooks/api';
 
 const CuDashboardSettings = forwardRef(({ t, getCssClasses, IoSave, settings, getCurrentSettings }, ref) => {
   const [showDashboardTable, setShowDashboardTable] = useState(true);
@@ -19,10 +19,8 @@ const CuDashboardSettings = forwardRef(({ t, getCssClasses, IoSave, settings, ge
   const [viewType, setViewType] = useState('project');
   const [loading, setLoading] = useState(false);
 
-  const { updateSettingSection } = useSettingsActions();
   const userData = useUserData();
 
-  // Expose getSettings method to parent component
   useImperativeHandle(ref, () => ({
     getSettings: () => ({
       showDashboardTable,
@@ -43,7 +41,6 @@ const CuDashboardSettings = forwardRef(({ t, getCssClasses, IoSave, settings, ge
     customDarkBorder
   ] = getCssClasses();
 
-  // Load current settings when component mounts or settings change
   useEffect(() => {
     if (getCurrentSettings) {
       const currentSettings = getCurrentSettings();
@@ -73,12 +70,27 @@ const CuDashboardSettings = forwardRef(({ t, getCssClasses, IoSave, settings, ge
         viewType
       };
 
-      const success_result = await updateSettingSection(userData.userId, 'dashboardSettings', dashboardSettings);
+      // Prepare payload for backend
+      const payload = {
+        UserId: userData.userId,
+        Settings: JSON.stringify({ dashboardSettings })
+      };
 
-      if (success_result) {
+      // Send to backend
+      const response = await API.post('/Settings', payload);
+
+      if (response.data) {
         success(t('dashboardSettingsSavedSuccessfully'));
-      } else {
-        error(t('failedToSaveDashboardSettings'));
+
+        // Update userSettings localStorage to ensure synchronization
+        const userSettings = JSON.parse(localStorage.getItem('userSettings') || '{}');
+        userSettings.settings = { ...userSettings.settings, dashboardSettings };
+        localStorage.setItem('userSettings', JSON.stringify(userSettings));
+
+        // Dispatch custom event to notify other components about settings update
+        window.dispatchEvent(new CustomEvent('userSettingsUpdated', {
+          detail: { settings: { ...userSettings.settings, dashboardSettings } }
+        }));
       }
     } catch (err) {
       console.error('Error saving dashboard settings:', err);
@@ -89,18 +101,10 @@ const CuDashboardSettings = forwardRef(({ t, getCssClasses, IoSave, settings, ge
   };
 
   return (
-    <Card className={`shadow-lg p-1 border-0 ${customLight} ${customLightBorder} ${customDarkText} `}>
-      {/* <Card.Header className="bg-white border-bottom">
-        <div className="d-flex align-items-center">
-          <i className="bi bi-speedometer2 me-2 text-primary"></i>
-          <h5 className="mb-0">{t('dashboardSettings')}</h5>
-        </div>
-      </Card.Header> */}
-
+    <Card className={`shadow-lg p-1 border-0 ${customLight} ${customLightBorder} ${customDarkText}`}>
       <Card.Body>
         <Form onSubmit={handleSubmit}>
           <Row className="g-3 mb-3">
-            {/* Dashboard Table Toggle */}
             <Col xs={12} lg={6} md={6}>
               <Form.Check
                 type="switch"
@@ -111,7 +115,6 @@ const CuDashboardSettings = forwardRef(({ t, getCssClasses, IoSave, settings, ge
               />
             </Col>
 
-            {/* Bar Chart Toggle */}
             <Col xs={12} md={6} lg={6}>
               <Form.Check
                 type="switch"
@@ -124,7 +127,6 @@ const CuDashboardSettings = forwardRef(({ t, getCssClasses, IoSave, settings, ge
           </Row>
 
           <Row className="g-3">
-            {/* Number of Project Cards */}
             <Col xs={12} lg={6} md={6}>
               <Form.Group controlId="select-number-projects">
                 <Form.Label>{t('defaultProjectCards')}</Form.Label>
@@ -135,13 +137,10 @@ const CuDashboardSettings = forwardRef(({ t, getCssClasses, IoSave, settings, ge
                   <option value="5">5</option>
                   <option value="10">10</option>
                   <option value="15">15</option>
-                  {/* <option value="custom">Custom</option> */}
                 </Form.Select>
               </Form.Group>
             </Col>
 
-
-            {/* View Type Selector */}
             <Col xs={12} lg={6} md={6}>
               <Form.Group>
                 <Form.Label>{t('defaultViewType')}</Form.Label>
@@ -163,12 +162,11 @@ const CuDashboardSettings = forwardRef(({ t, getCssClasses, IoSave, settings, ge
             </Col>
           </Row>
           <Row className="g-3 mt-1">
-            {/* Submit Button */}
-            <Col xs={12} lg={12} md={12} className=''>
+            <Col xs={12} lg={12} md={12}>
               <div className="text-end">
                 <Button
                   type="submit"
-                  className={`${customBtn}  ${customLightText} ${customLightBorder} border-1`}
+                  className={`${customBtn} ${customLightText} ${customLightBorder} border-1`}
                   disabled={loading}
                 >
                   <IoSave /> <span className="d-none d-md-inline">
@@ -177,7 +175,6 @@ const CuDashboardSettings = forwardRef(({ t, getCssClasses, IoSave, settings, ge
                 </Button>
               </div>
             </Col>
-
           </Row>
         </Form>
       </Card.Body>
