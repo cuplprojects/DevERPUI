@@ -68,21 +68,38 @@ const ViewQuantitySheet = ({ selectedLotNo, showBtn, showTable, lots }) => {
   const [pageSize, setPageSize] = useState(100);
   //pagination settings
   useEffect(() => {
-    const userSettings = localStorage.getItem('userSettings');
-
-    if (userSettings) {
-      try {
-        const parsedSettings = JSON.parse(userSettings);
-        const pageLimit = parsedSettings?.settings?.general?.pageLimit;
-
-        if (typeof pageLimit === 'number') {
-          setPageSize(pageLimit);
-        }
-      } catch (error) {
-        console.error('Failed to parse userSettings from localStorage:', error);
+  const userSettings = localStorage.getItem('userSettings');
+  if (userSettings) {
+    try {
+      const parsedSettings = JSON.parse(userSettings);
+      const pageLimit = parsedSettings?.settings?.general?.pageLimit;
+      if (typeof pageLimit === 'number') {
+        setPageSize(pageLimit);
       }
+    } catch (error) {
+      console.error('Failed to parse userSettings from localStorage:', error);
     }
-  }, []);
+  }
+}, []);
+const savePageSizeToLocalStorage = (size) => {
+  const userSettings = localStorage.getItem('userSettings');
+  if (userSettings) {
+    try {
+      const parsedSettings = JSON.parse(userSettings);
+      if (!parsedSettings.settings) {
+        parsedSettings.settings = {};
+      }
+      if (!parsedSettings.settings.general) {
+        parsedSettings.settings.general = {};
+      }
+      parsedSettings.settings.general.pageLimit = size;
+      localStorage.setItem('userSettings', JSON.stringify(parsedSettings));
+    } catch (error) {
+      console.error('Failed to update userSettings in localStorage:', error);
+    }
+  }
+};
+
   const [dispatchedLots, setDispatchedLots] = useState([]);
   const [dates, setDates] = useState([]);
   const [minDate, setMinDate] = useState(null);
@@ -904,8 +921,10 @@ const ViewQuantitySheet = ({ selectedLotNo, showBtn, showTable, lots }) => {
   };
 
   const handlePageSizeChange = (current, size) => {
-    setPageSize(size);
-  };
+  setPageSize(size);
+  savePageSizeToLocalStorage(size);
+};
+
 
   const isProcessSwitchingAllowed = (selectedCatches) => {
     // Get first catch record
