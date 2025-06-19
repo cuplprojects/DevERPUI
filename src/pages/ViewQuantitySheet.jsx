@@ -68,21 +68,21 @@ const ViewQuantitySheet = ({ selectedLotNo, showBtn, showTable, lots }) => {
   const [pageSize, setPageSize] = useState(100);
   //pagination settings
   useEffect(() => {
-      const userSettings = localStorage.getItem('userSettings');
-  
-      if (userSettings) {
-        try {
-          const parsedSettings = JSON.parse(userSettings);
-          const pageLimit = parsedSettings?.settings?.general?.pageLimit;
-  
-          if (typeof pageLimit === 'number') {
-            setPageSize(pageLimit);
-          }
-        } catch (error) {
-          console.error('Failed to parse userSettings from localStorage:', error);
+    const userSettings = localStorage.getItem('userSettings');
+
+    if (userSettings) {
+      try {
+        const parsedSettings = JSON.parse(userSettings);
+        const pageLimit = parsedSettings?.settings?.general?.pageLimit;
+
+        if (typeof pageLimit === 'number') {
+          setPageSize(pageLimit);
         }
+      } catch (error) {
+        console.error('Failed to parse userSettings from localStorage:', error);
       }
-    }, []);
+    }
+  }, []);
   const [dispatchedLots, setDispatchedLots] = useState([]);
   const [dates, setDates] = useState([]);
   const [minDate, setMinDate] = useState(null);
@@ -745,14 +745,14 @@ const ViewQuantitySheet = ({ selectedLotNo, showBtn, showTable, lots }) => {
       ...prevData,
       [field]: value, // Update the specific field with the new value
     }));
-  
+
     // Clear error when user starts typing
     setFormErrors((prev) => ({
       ...prev,
       [field]: "",
     }));
   };
-  
+
 
   const validateForm = () => {
     const errors = {};
@@ -970,13 +970,13 @@ const ViewQuantitySheet = ({ selectedLotNo, showBtn, showTable, lots }) => {
                   </Button>
                 </>
               )}
-                  <Button
-                    type="primary"
-                    className={`${customBtn} ${customDark === "dark-dark" ? `border` : `border-0`} me-2`}
-                    onClick={() => setShowLotBiModal(true)}
-                  >
-                    {t('lotbiphurcation')}
-                  </Button>
+              <Button
+                type="primary"
+                className={`${customBtn} ${customDark === "dark-dark" ? `border` : `border-0`} me-2`}
+                onClick={() => setShowLotBiModal(true)}
+              >
+                {t('lotbiphurcation')}
+              </Button>
               <Button
                 onClick={() => setShowNewRow(prev => !prev)}
                 type="primary"
@@ -1168,7 +1168,7 @@ const ViewQuantitySheet = ({ selectedLotNo, showBtn, showTable, lots }) => {
                       onChange={(value) => handleNewRowChange(value, 'subjectId')}
                       placeholder={t('enterSubject')}
                     >
-                       {subject.map(subjects => (
+                      {subject.map(subjects => (
                         <Select.Option key={subjects.subjectId} value={subjects.subjectId}>
                           {subjects.subjectName}  {/* Or another field that describes the course */}
                         </Select.Option>
