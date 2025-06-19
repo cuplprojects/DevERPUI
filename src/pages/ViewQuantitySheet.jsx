@@ -65,7 +65,24 @@ const ViewQuantitySheet = ({ selectedLotNo, showBtn, showTable, lots }) => {
   ] = cssClasses;
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [searchText, setSearchText] = useState("");
-  const [pageSize, setPageSize] = useState(5);
+  const [pageSize, setPageSize] = useState(100);
+  //pagination settings
+  useEffect(() => {
+      const userSettings = localStorage.getItem('userSettings');
+  
+      if (userSettings) {
+        try {
+          const parsedSettings = JSON.parse(userSettings);
+          const pageLimit = parsedSettings?.settings?.general?.pageLimit;
+  
+          if (typeof pageLimit === 'number') {
+            setPageSize(pageLimit);
+          }
+        } catch (error) {
+          console.error('Failed to parse userSettings from localStorage:', error);
+        }
+      }
+    }, []);
   const [dispatchedLots, setDispatchedLots] = useState([]);
   const [dates, setDates] = useState([]);
   const [minDate, setMinDate] = useState(null);
@@ -678,8 +695,6 @@ const ViewQuantitySheet = ({ selectedLotNo, showBtn, showTable, lots }) => {
     }
 
   };
-
-
 
   const handleModalClose = () => {
     setShowTransferModal(false);
