@@ -29,7 +29,16 @@ const DispatchPage = ({ projectId, processId, lotNo, fetchTransactions, projectN
   const [selectedDispatch, setSelectedDispatch] = useState(null);
   const [processPercentages, setProcessPercentages] = useState([]);
   const [projectProcesses, setProjectProcesses] = useState([]);
+  const [editDispatch, setEditDispatch] = useState(null);
 
+
+
+
+
+  const handleEditDispatch = (dispatch) => {
+    setEditDispatch(dispatch);
+    setDispatchModalVisible(true);
+  }
   const fetchProjectProcesses = async () => {
     try {
       const response = await API.get(`/Processes`);
@@ -116,6 +125,7 @@ const DispatchPage = ({ projectId, processId, lotNo, fetchTransactions, projectN
 
   const handleCloseModal = async (success = false) => {
     setDispatchModalVisible(false);
+    setEditDispatch(null);
     if (success) {
       await fetchDispatchData();
       message.success(t("dispatchCreatedSuccess"));
@@ -218,7 +228,27 @@ const DispatchPage = ({ projectId, processId, lotNo, fetchTransactions, projectN
           <Col xs={12} md={12} lg={8} key={dispatch.id} className="">
             <Card className={`mb-3 ${customLight} shadow-lg`} bordered={false}>
               <div className="d-flex justify-content-end">
-                <FaInfoCircle className="text-primary" size={20} title={t("processDetails")} onClick={() => showProcessDetailsModal(dispatch)} />
+                <div className="d-flex justify-content-end gap-3">
+                  <FaInfoCircle
+                    className="text-primary"
+                    size={20}
+                    title={t("processDetails")}
+                    onClick={() => showProcessDetailsModal(dispatch)}
+                    style={{ cursor: "pointer" }}
+                  />
+
+                  <Tooltip title={t("editDispatch")}>
+                    <Button
+                      size="small"
+                      type="default"
+                      onClick={() => handleEditDispatch(dispatch)}
+                    >
+                      {t("edit")}
+                    </Button>
+                  </Tooltip>
+
+                </div>
+
               </div>
               <div className="mb-2 px-2">
                 <div className={`fw-bold ${customDarkText}`}>
@@ -295,6 +325,7 @@ const DispatchPage = ({ projectId, processId, lotNo, fetchTransactions, projectN
         projectId={projectId}
         lotNo={lotNo}
         fetchDispatchData={fetchDispatchData}
+        editData={editDispatch}
       />
 
       <BootstrapModal

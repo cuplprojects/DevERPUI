@@ -1,12 +1,40 @@
 import React, { useEffect, useState } from "react";
 import { Modal, Form, Input, Button, message, DatePicker, Select } from "antd";
 import API from "../CustomHooks/MasterApiHooks/api";
-import { createDispatch } from "../CustomHooks/ApiServices/dispatchService";
+import { createDispatch,updateDispatch } from "../CustomHooks/ApiServices/dispatchService";
+import dayjs from "dayjs";
 
-const DispatchFormModal = ({ show, handleClose, processId, projectId, lotNo, fetchDispatchData }) => {
+const DispatchFormModal = ({ show, editData, handleClose, processId, projectId, lotNo, fetchDispatchData }) => {
   const [form] = Form.useForm();
   const [modeCount, setModeCount] = useState(0);
   const [messengerList, setMessengerList] = useState([]);
+
+
+  useEffect(() => {
+  if (editData) {
+    setModeCount(editData.modeCount || 0); // update mode count first
+    const fields = {
+      boxCount: editData.boxCount,
+      dispatchDate: dayjs(editData.dispatchDate),
+      modeCount: editData.modeCount
+    };
+
+    editData.dispatchDetails?.forEach((item, index) => {
+      fields[`vehicleType_${index}`] = item.vehicleType;
+      fields[`vehicleNumber_${index}`] = item.vehicleNumber;
+      fields[`driverName_${index}`] = item.driverName;
+      fields[`driverMobile_${index}`] = item.driverMobile;
+      fields[`messengerName_${index}`] = item.messengerName;
+      fields[`messengerMobile_${index}`] = item.messengerMobile;
+    });
+
+    form.setFieldsValue(fields);
+  } else {
+    form.resetFields();
+    setModeCount(0);
+  }
+}, [editData, form]);
+
 
   useEffect(() => {
     const fetchMessengers= async () => {
@@ -22,40 +50,104 @@ const DispatchFormModal = ({ show, handleClose, processId, projectId, lotNo, fet
   fetchMessengers();
       }, []);
 
-  const onFinish = async (values) => {
-    const dispatchDetails = [];
+ 
+  //   const dispatchDetails = [];
 
-    for (let i = 0; i < modeCount; i++) {
-      dispatchDetails.push({
-        vehicleType: values[`vehicleType_${i}`],
-        vehicleNumber: values[`vehicleNumber_${i}`],
-        driverName: values[`driverName_${i}`],
-        driverMobile: values[`driverMobile_${i}`],
-        messengerName: values[`messengerName_${i}`],
-        messengerMobile: values[`messengerMobile_${i}`],
-      });
-    }
+  //   for (let i = 0; i < modeCount; i++) {
+  //     dispatchDetails.push({
+  //       vehicleType: values[`vehicleType_${i}`],
+  //       vehicleNumber: values[`vehicleNumber_${i}`],
+  //       driverName: values[`driverName_${i}`],
+  //       driverMobile: values[`driverMobile_${i}`],
+  //       messengerName: values[`messengerName_${i}`],
+  //       messengerMobile: values[`messengerMobile_${i}`],
+  //     });
+  //   }
 
-    const submitData = {
-      processId,
-      projectId,
-      lotNo,
-      boxCount: values.boxCount,
-      dispatchDate: values.dispatchDate,
-      modeCount,
-      dispatchDetails,
-      status: false
-    };
+  //   const submitData = {
+  //     processId,
+  //     projectId,
+  //     lotNo,
+  //     boxCount: values.boxCount,
+  //     dispatchDate: values.dispatchDate,
+  //     modeCount,
+  //     dispatchDetails,
+  //     status: false
+  //   };
 
-    try {
-      await createDispatch(submitData);
-      form.resetFields();
-      setModeCount(0);
-      handleClose(true);
-    } catch (error) {
-      message.error("Failed to create dispatch");
-    }
+  //   try {
+  //     if(editData?.id) {
+  //       await updateDispatch(editData.id, submitData);
+  //       message.success("Dispatch updated Successfully");
+  //     } else{
+  //       await createDispatch(submitData);
+  //       message.success("Dispatch created Successfully");
+
+  //     }
+      
+  //     form.resetFields();
+  //     setModeCount(0);
+  //     handleClose(true);
+  //   } catch (error) {
+  //     message.error("Failed to create dispatch");
+  //   }
+  // };
+const onFinish = async (values) => {
+  const dispatchDetails = [];
+
+  for (let i = 0; i < modeCount; i++) {
+    dispatchDetails.push({
+      vehicleType: values[`vehicleType_${i}`],
+      vehicleNumber: values[`vehicleNumber_${i}`],
+      driverName: values[`driverName_${i}`],
+      driverMobile: values[`driverMobile_${i}`],
+      messengerName: values[`messengerName_${i}`],
+      messengerMobile: values[`messengerMobile_${i}`],
+    });
+  }
+
+
+
+  const submitData = {
+    id: editData?.id,
+    processId,
+    projectId,
+    lotNo,
+    boxCount: values.boxCount,
+    dispatchDate: values.dispatchDate?.toISOString?.() || values.dispatchDate,
+    modeCount,
+    messengerName:  "",
+    messengerMobile: "",
+    dispatchMode: "", // If this field is expected but not in the form
+    vehicleNumber:  "",
+    driverName:  "",
+    driverMobile: "",
+
+    createdAt: editData?.createdAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    status: false,
+    dispatchDetails,
+    // Required top-level fields for update API
+    
   };
+
+  try {
+    if (editData?.id) {
+      await updateDispatch(editData.id, submitData);
+      message.success("Dispatch updated successfully");
+    } else {
+      await createDispatch(submitData);
+      message.success("Dispatch created successfully");
+    }
+
+    form.resetFields();
+    setModeCount(0);
+    handleClose(true);
+  } catch (error) {
+    console.error("Failed to submit dispatch", error);
+    message.error("Failed to submit dispatch");
+  }
+};
 
   return (
     <Modal
@@ -79,7 +171,7 @@ const DispatchFormModal = ({ show, handleClose, processId, projectId, lotNo, fet
         </Button>,
       ]}
     >
-      <Form form={form} layout="vertical" onFinish={onFinish}>
+      <Form key = {editData?.id || 'create'} form={form} layout="vertical" onFinish={onFinish}>
         <Form.Item
           label="Number of Boxes"
           name="boxCount"
