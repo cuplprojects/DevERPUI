@@ -211,7 +211,7 @@ const AssignZTMModal = ({ show, handleClose, data, processId, handleSave, hasFea
     return (
         <Modal show={show} onHide={handleClose}>
             <Modal.Header closeButton className={`${customDark} ${customDarkText}`}>
-                <Modal.Title className={customLightText}>{t('selectMachine')}</Modal.Title>
+                <Modal.Title className={customLightText}>{t('selectMachineZone&Team')}</Modal.Title>
             </Modal.Header>
             <Modal.Body className={`${customLight} ${customDarkText}`}>
                 {Array.isArray(data) && data.length > 0 ? (
