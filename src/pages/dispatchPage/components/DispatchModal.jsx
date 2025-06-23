@@ -1,17 +1,18 @@
 
 import React, { useEffect, useState } from "react";
 import { Form, Input, Button as AntButton, message, DatePicker, Select } from "antd";
-import { Modal as BootstrapModal, Button as BsButton } from "react-bootstrap";
+import { Modal as BootstrapModal, Button as BsButton, Row, Col } from "react-bootstrap";
 import API from "./../../../CustomHooks/MasterApiHooks/api";
 import { createDispatch, updateDispatch } from "./../../../CustomHooks/ApiServices/dispatchService";
 import dayjs from "dayjs";
 import { useTranslation } from 'react-i18next';
 
-const DispatchFormModal = ({ show, editData, handleClose, processId, projectId, lotNo, fetchDispatchData }) => {
+const DispatchFormModal = ({ show, editData, handleClose, processId, projectId, lotNo, cssClasses }) => {
     const [form] = Form.useForm();
     const [modeCount, setModeCount] = useState(0);
     const [messengerList, setMessengerList] = useState([]);
     const { t } = useTranslation();
+    const [customDark, customMid, customLight, customBtn, customDarkText, customLightText, customLightBorder, customDarkBorder] = cssClasses;
     useEffect(() => {
         if (editData) {
             setModeCount(editData.modeCount || 0);
@@ -110,46 +111,53 @@ const DispatchFormModal = ({ show, editData, handleClose, processId, projectId, 
 
     return (
         <BootstrapModal show={show} onHide={handleCancel} size="lg" centered>
-            <BootstrapModal.Header closeButton>
+            <BootstrapModal.Header closeButton className={`${customDark} ${customLightText}`}>
                 <BootstrapModal.Title>{t('dispatchDetails')}</BootstrapModal.Title>
             </BootstrapModal.Header>
-            <BootstrapModal.Body>
+            <BootstrapModal.Body className={`${customLight}`}>
+
                 <Form
                     key={editData?.id || "create"}
                     form={form}
                     layout="vertical"
                     onFinish={onFinish}
                 >
-                    <Form.Item
-                        label="Number of Boxes"
-                        name="boxCount"
-                        rules={[{ required: true, message: "Please enter number of boxes" }]}
-                    >
-                        <Input type="number" min={1} />
-                    </Form.Item>
-
-                    <Form.Item
-                        label="Dispatch Date"
-                        name="dispatchDate"
-                        rules={[{ required: true, message: "Please enter Dispatch date" }]}
-                    >
-                        <DatePicker style={{ width: "100%" }} />
-                    </Form.Item>
-
-                    <Form.Item
-                        label="Number of Modes of Transport"
-                        name="modeCount"
-                        rules={[{ required: true, message: "Please enter number of modes" }]}
-                    >
-                        <Input
-                            type="number"
-                            min={1}
-                            onChange={(e) =>
-                                setModeCount(parseInt(e.target.value || "0", 10))
-                            }
-                        />
-                    </Form.Item>
-
+                    <Row>
+                        <Col lg={4}>
+                            <Form.Item
+                                label="Number of Boxes"
+                                name="boxCount"
+                                rules={[{ required: true, message: "Please enter number of boxes" }]}
+                            >
+                                <Input type="number" min={1} />
+                            </Form.Item>
+                        </Col>
+                        <Col lg={4}>
+                            <Form.Item
+                                label="Dispatch Date"
+                                name="dispatchDate"
+                                rules={[{ required: true, message: "Please enter Dispatch date" }]}
+                            >
+                                <DatePicker style={{ width: "100%" }} />
+                            </Form.Item>
+                        </Col>
+                        <Col lg={4}>
+                            <Form.Item
+                                label="Number of Modes of Transport"
+                                name="modeCount"
+                                rules={[{ required: true, message: "Please enter number of modes" }]}
+                            >
+                                <Input
+                                    type="number"
+                                    min={1}
+                                    onChange={(e) =>
+                                        setModeCount(parseInt(e.target.value || "0", 10))
+                                    }
+                                />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+                    
                     {Array.from({ length: modeCount }, (_, index) => (
                         <div
                             key={index}
@@ -236,7 +244,7 @@ const DispatchFormModal = ({ show, editData, handleClose, processId, projectId, 
                     ))}
                 </Form>
             </BootstrapModal.Body>
-            <BootstrapModal.Footer>
+            <BootstrapModal.Footer className={`${customDark} `}>
                 <BsButton variant="secondary" onClick={handleCancel}>
                     Cancel
                 </BsButton>

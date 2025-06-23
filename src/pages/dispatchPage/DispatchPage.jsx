@@ -361,6 +361,7 @@ const DispatchPage = ({ projectId, processId, lotNo, fetchTransactions, projectN
         lotNo={lotNo}
         fetchDispatchData={fetchDispatchData}
         editData={editDispatch}
+        cssClasses={cssClasses}
       />
 
       <BootstrapModal
