@@ -16,9 +16,6 @@ import AlarmModal from "./../menus/AlarmModal";
 import InterimQuantityModal from "./../menus/InterimQuantityModal";
 import RemarksModal from "./../menus/RemarksModal";
 import CatchDetailModal from "./../menus/CatchDetailModal";
-import SelectZoneModal from "./../menus/SelectZoneModal";
-import SelectMachineModal from "../menus/SelectMachineModal";
-import AssignTeamModal from "./../menus/AssignTeamModal";
 import "./../styles/ProjectDetailsTable.css";
 import { IoCloseCircle } from "react-icons/io5";
 import StatusToggle from "../menus/StatusToggle";
@@ -40,6 +37,8 @@ import { success } from "../CustomHooks/Services/AlertMessageService";
 import TransferToFactoryModal from "../menus/TransferTofactoryModal";
 import StatusBarChart from "./StatusBarChart";
 import StatusPieChart from "./StatusPieChart";
+import AssignZTMModal from "../menus/AssignZTM";
+
 
 
 const { Option } = Select;
@@ -301,7 +300,9 @@ const ProjectDetailsTable = ({
   const [inputPagesModalData, setInputPagesModalData] = useState(null);
   const [inputPagesModalShow, setInputPagesModalShow] = useState(false);
   const [envelopeData, setEnvelopeData] = useState({});
-  // console.log(tableData)
+  const [selectAMZModalShow, setSelectAMZModalShow] = useState(false);
+  const [selectAMZModalData, setSelectAMZModalData] = useState(null);
+
   const showNotification = (type, messageKey, descriptionKey, details = "") => {
     notification[type]({
       message: t(messageKey),
@@ -1311,16 +1312,11 @@ const ProjectDetailsTable = ({
         setTransferToFactoryModalShow(true);
         setTransferToFactoryModalData(selectedRows);
       }
-      else if (action === "Select Zone" && hasFeaturePermission(1)) {
-        setSelectZoneModalShow(true);
-        setSelectZoneModalData(selectedRows); // Pass array of all selected rows
-      } else if (action === "Select Machine" && hasFeaturePermission(3)) {
-        setSelectMachineModalShow(true);
-        setSelectMachineModalData(selectedRows); // Pass array of all selected rows
-      } else if (action === "Assign Team" && hasFeaturePermission(2)) {
-        setAssignTeamModalShow(true);
-        setAssignTeamModalData(selectedRows); // Pass array of all selected rows
-      } else if (action === "Pages" && hasFeaturePermission(7)) {
+      else if (action === "Select Zone, Machine and Assign Team") {
+        setSelectAMZModalShow(true);
+        setSelectAMZModalData(selectedRows); // Pass array of all selected rows
+      }
+   else if (action === "Pages" && hasFeaturePermission(7)) {
         setInputPagesModalShow(true);
         setInputPagesModalData(selectedRows);
       }
@@ -1333,7 +1329,10 @@ const ProjectDetailsTable = ({
     }
   };
 
-  const handleSelectZoneSave = async (zone) => {
+
+
+
+  const handleSelectAMZSave = async (zone) => {
     try {
       const updatedData = tableData.map((row) => {
         if (selectedRowKeys.includes(row.srNo)) {
@@ -1352,50 +1351,20 @@ const ProjectDetailsTable = ({
         .join(", ");
       showNotification(
         "success",
-        "zoneUpdateSuccess",
-        "zoneUpdateDescription",
+        "zoneMachineTeamUpdateSuccess",
+        "zoneMachineTeamUpdateDescription",
         `(Catches: ${updatedCatches})`
       );
     } catch (error) {
       showNotification(
         "error",
-        "zoneUpdateError",
-        "zoneUpdateErrorDescription"
+        "zoneMachineTeamUpdateError",
+        "zoneMachineTeamUpdateErrorDescription"
       );
     }
   };
 
-  const handleSelectMachineSave = async (machine) => {
-    try {
-      const updatedData = tableData.map((row) => {
-        if (selectedRowKeys.includes(row.srNo)) {
-          return { ...row, machine };
-        }
-        return row;
-      });
-      setTableData(updatedData);
-      setSelectedRowKeys([]);
-      setSelectAll(false);
-      setShowOptions(false);
-      await fetchTransactions();
-      const updatedCatches = selectedRowKeys
-        .map((key) => tableData.find((row) => row.srNo === key)?.catchNumber)
-        .filter(Boolean)
-        .join(", ");
-      showNotification(
-        "success",
-        "machineUpdateSuccess",
-        "machineUpdateDescription",
-        `(Catches: ${updatedCatches})`
-      );
-    } catch (error) {
-      showNotification(
-        "error",
-        "machineUpdateError",
-        "machineUpdateErrorDescription"
-      );
-    }
-  };
+ 
 
   const handleAlarmSave = async (alarm) => {
     try {
@@ -1559,28 +1528,12 @@ const ProjectDetailsTable = ({
       <Menu.Item onClick={() => setColumnModalShow(true)}>
         {t("columns")}
       </Menu.Item>
-      {hasFeaturePermission(1) && allStatusZero && (
+      {allStatusZero &&(
         <Menu.Item
-          onClick={() => handleDropdownSelect("Select Zone")}
+          onClick={() => handleDropdownSelect("Select Zone, Machine and Assign Team")}
           disabled={selectedRowKeys.length === 0}
         >
-          {t("selectZone")}
-        </Menu.Item>
-      )}
-      {hasFeaturePermission(3) && allStatusZero && (
-        <Menu.Item
-          onClick={() => handleDropdownSelect("Select Machine")}
-          disabled={selectedRowKeys.length === 0}
-        >
-          {t("selectMachine")}
-        </Menu.Item>
-      )}
-      {hasFeaturePermission(2) && allStatusZero && (
-        <Menu.Item
-          onClick={() => handleDropdownSelect("Assign Team")}
-          disabled={selectedRowKeys.length === 0}
-        >
-          {t("assignTeam")}
+          {t("selectAMZ")}
         </Menu.Item>
       )}
       {hasFeaturePermission(7) && allStatusZero && (
@@ -1632,26 +1585,6 @@ const ProjectDetailsTable = ({
       default:
         return "";
     }
-  };
-
-  const handleAssignTeamSuccess = () => {
-    showNotification(
-      "success",
-      "Team Assigned",
-      "Team has been successfully assigned"
-    );
-    setSelectedRowKeys([]);
-    setSelectAll(false);
-    setShowOptions(false);
-  };
-
-  const handleAssignTeamError = (error) => {
-    showNotification(
-      "error",
-      "Assignment Failed",
-      "Failed to assign team. Please try again."
-    );
-    console.error("Error assigning team:", error);
   };
 
   const handleInputPagesSuccess = () => {
@@ -2079,28 +2012,13 @@ const ProjectDetailsTable = ({
         processId={processId}
 
       />
-      <SelectZoneModal
-        show={selectZoneModalShow}
-        handleClose={() => setSelectZoneModalShow(false)}
-        handleSave={handleSelectZoneSave}
-        data={selectZoneModalData}
+      <AssignZTMModal
+        show={selectAMZModalShow}
+        handleClose={() => setSelectAMZModalShow(false)}
+        handleSave={handleSelectAMZSave}
+        data={selectAMZModalData}
         processId={processId}
-      />
-      <SelectMachineModal
-        show={selectMachineModalShow}
-        handleClose={() => setSelectMachineModalShow(false)}
-        handleSave={handleSelectMachineSave}
-        data={selectMachineModalData}
-        processId={processId}
-      />
-      <AssignTeamModal
-        show={assignTeamModalShow}
-        handleClose={() => setAssignTeamModalShow(false)}
-        fetchTransactions={fetchTransactions}
-        data={assignTeamModalData}
-        processId={processId}
-        onSuccess={handleAssignTeamSuccess}
-        onError={handleAssignTeamError}
+        hasFeaturePermission={hasFeaturePermission}
       />
       <InputPages
         show={inputPagesModalShow}
