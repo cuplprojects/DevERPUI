@@ -283,7 +283,7 @@ const AssignZTMModal = ({ show, handleClose, data, processId, handleSave, hasFea
                                                 variant="danger"
                                                 size="sm"
                                                 onClick={() => handleRemoveUser(user.userId)}
-                                                className="ms-1"
+                                                className="m-1"
                                             >
                                                 Remove
                                             </Button>
