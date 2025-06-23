@@ -30,8 +30,46 @@ const DispatchPage = ({ projectId, processId, lotNo, fetchTransactions, projectN
   const [processPercentages, setProcessPercentages] = useState([]);
   const [projectProcesses, setProjectProcesses] = useState([]);
   const [editDispatch, setEditDispatch] = useState(null);
+  const [confirmModalVisible, setConfirmModalVisible] = useState(false);
+const [confirmDispatchData, setConfirmDispatchData] = useState(null);
 
 
+
+
+
+const showConfirmModal = (dispatch) => {
+  const allProcessesComplete = processPercentages.every(process => {
+    const lotData = process.lots.find(lot => lot.lotNumber === dispatch.lotNo);
+    return lotData?.percentage === 100;
+  });
+
+  if (!allProcessesComplete) {
+    message.error(t("cannotCompleteDispatchAllProcessesIncomplete"));
+    return;
+  }
+
+  setConfirmDispatchData(dispatch);
+  setConfirmModalVisible(true);
+};
+
+const handleConfirmStatusUpdate = async () => {
+  if (!confirmDispatchData) return;
+
+  try {
+    await updateDispatch(confirmDispatchData.id, {
+      ...confirmDispatchData,
+      status: true,
+      completedAt: new Date(new Date().getTime() + (5.5 * 60 * 60 * 1000)).toISOString(),
+      updatedAt: new Date(new Date().getTime() + (5.5 * 60 * 60 * 1000)).toISOString()
+    });
+    message.success(t("statusUpdateSuccess"));
+    setConfirmModalVisible(false);
+    fetchDispatchData();
+  } catch (error) {
+    console.error("Error updating status:", error);
+    message.error(t("statusUpdateFailed"));
+  }
+};
 
 
 
@@ -132,60 +170,60 @@ const DispatchPage = ({ projectId, processId, lotNo, fetchTransactions, projectN
     }
   };
 
-  const showConfirmModal = (dispatch) => {
-    const allProcessesComplete = processPercentages.every(process => {
-      const lotData = process.lots.find(lot => lot.lotNumber === dispatch.lotNo);
-      return lotData?.percentage === 100;
-    });
+  // const showConfirmModal = (dispatch) => {
+  //   const allProcessesComplete = processPercentages.every(process => {
+  //     const lotData = process.lots.find(lot => lot.lotNumber === dispatch.lotNo);
+  //     return lotData?.percentage === 100;
+  //   });
 
-    if (!allProcessesComplete) {
-      message.error(t("cannotCompleteDispatchAllProcessesIncomplete"));
-      return;
-    }
+  //   if (!allProcessesComplete) {
+  //     message.error(t("cannotCompleteDispatchAllProcessesIncomplete"));
+  //     return;
+  //   }
 
-    Modal.confirm({
-      title: t("confirmStatusUpdate"),
-      content: (
-        <div>
-          <p>{t("confirmDispatchComplete")}</p>
-          <Table
-            dataSource={[
-              { label: t("projectName"), value: projectName || "N/A" },
-              { label: t("lotNo"), value: dispatch.lotNo },
-              { label: t("boxCount"), value: dispatch.boxCount },
-              { label: t("dispatchDate"), value: formatDate(dispatch.dispatchDate) },
-            ]}
-            columns={[
-              { title: t("field"), dataIndex: "label", key: "label" },
-              { title: t("value"), dataIndex: "value", key: "value" },
-            ]}
-            pagination={false}
-            bordered
-            size="small"
-          />
-        </div>
-      ),
-      okText: t("yesComplete"),
-      cancelText: t("cancel"),
-      onOk: () => handleStatusUpdate(dispatch),
-    });
-  };
+  //   Modal.confirm({
+  //     title: t("confirmStatusUpdate"),
+  //     content: (
+  //       <div>
+  //         <p>{t("confirmDispatchComplete")}</p>
+  //         <Table
+  //           dataSource={[
+  //             { label: t("projectName"), value: projectName || "N/A" },
+  //             { label: t("lotNo"), value: dispatch.lotNo },
+  //             { label: t("boxCount"), value: dispatch.boxCount },
+  //             { label: t("dispatchDate"), value: formatDate(dispatch.dispatchDate) },
+  //           ]}
+  //           columns={[
+  //             { title: t("field"), dataIndex: "label", key: "label" },
+  //             { title: t("value"), dataIndex: "value", key: "value" },
+  //           ]}
+  //           pagination={false}
+  //           bordered
+  //           size="small"
+  //         />
+  //       </div>
+  //     ),
+  //     okText: t("yesComplete"),
+  //     cancelText: t("cancel"),
+  //     onOk: () => handleStatusUpdate(dispatch),
+  //   });
+  // };
 
-  const handleStatusUpdate = async (dispatch) => {
-    try {
-      await updateDispatch(dispatch.id, {
-        ...dispatch,
-        status: true,
-        completedAt: new Date(new Date().getTime() + (5.5 * 60 * 60 * 1000)).toISOString(),
-        updatedAt: new Date(new Date().getTime() + (5.5 * 60 * 60 * 1000)).toISOString()
-      });
-      message.success(t("statusUpdateSuccess"));
-      fetchDispatchData();
-    } catch (error) {
-      console.error("Error updating status:", error);
-      message.error(t("statusUpdateFailed"));
-    }
-  };
+  // const handleStatusUpdate = async (dispatch) => {
+  //   try {
+  //     await updateDispatch(dispatch.id, {
+  //       ...dispatch,
+  //       status: true,
+  //       completedAt: new Date(new Date().getTime() + (5.5 * 60 * 60 * 1000)).toISOString(),
+  //       updatedAt: new Date(new Date().getTime() + (5.5 * 60 * 60 * 1000)).toISOString()
+  //     });
+  //     message.success(t("statusUpdateSuccess"));
+  //     fetchDispatchData();
+  //   } catch (error) {
+  //     console.error("Error updating status:", error);
+  //     message.error(t("statusUpdateFailed"));
+  //   }
+  // };
 
   const showProcessDetailsModal = (dispatch) => {
     setSelectedDispatch(dispatch);
@@ -374,6 +412,48 @@ const DispatchPage = ({ projectId, processId, lotNo, fetchTransactions, projectN
           </div>
         </BootstrapModal.Body>
       </BootstrapModal>
+      <BootstrapModal
+  show={confirmModalVisible}
+  onHide={() => setConfirmModalVisible(false)}
+  size="md"
+  centered
+>
+  <BootstrapModal.Header className={`${customDark} ${customLightText}`}>
+    <BootstrapModal.Title>{t("confirmStatusUpdate")}</BootstrapModal.Title>
+    <Btn variant="link" className={customLightText} onClick={() => setConfirmModalVisible(false)}>
+      <IoClose size={30} />
+    </Btn>
+  </BootstrapModal.Header>
+
+  <BootstrapModal.Body className={`${customLight} p-3`}>
+    <p>{t("confirmDispatchComplete")}</p>
+    <Table
+      dataSource={[
+        { label: t("projectName"), value: projectName || "N/A" },
+        { label: t("lotNo"), value: confirmDispatchData?.lotNo },
+        { label: t("boxCount"), value: confirmDispatchData?.boxCount },
+        { label: t("dispatchDate"), value: formatDate(confirmDispatchData?.dispatchDate) }
+      ]}
+      columns={[
+        { title: t("field"), dataIndex: "label", key: "label" },
+        { title: t("value"), dataIndex: "value", key: "value" }
+      ]}
+      pagination={false}
+      bordered
+      size="small"
+    />
+  </BootstrapModal.Body>
+
+  <BootstrapModal.Footer className={`${customLight} d-flex justify-content-end`}>
+    <Btn variant="secondary" onClick={() => setConfirmModalVisible(false)}>
+      {t("cancel")}
+    </Btn>
+    <Btn variant="primary" onClick={handleConfirmStatusUpdate}>
+      {t("yesComplete")}
+    </Btn>
+  </BootstrapModal.Footer>
+</BootstrapModal>
+
     </Row>
   );
 };
