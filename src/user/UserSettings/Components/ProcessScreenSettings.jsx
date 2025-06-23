@@ -1,8 +1,8 @@
 import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { Card, Row, Col, Form, Button } from 'react-bootstrap';
-import { useSettingsActions } from '../../../store/useSettingsStore';
 import { useUserData } from '../../../store/userDataStore';
 import { success, error } from '../../../CustomHooks/Services/AlertMessageService';
+import API from '../../../CustomHooks/MasterApiHooks/api';
 
 const ProcessScreenSettings = forwardRef(({ t, getCssClasses, IoSave, settings, getCurrentSettings }, ref) => {
   const [selectedColumns, setSelectedColumns] = useState({
@@ -32,10 +32,8 @@ const ProcessScreenSettings = forwardRef(({ t, getCssClasses, IoSave, settings, 
 
   const [loading, setLoading] = useState(false);
 
-  const { updateSettingSection } = useSettingsActions();
   const userData = useUserData();
 
-  // Expose getSettings method to parent component
   useImperativeHandle(ref, () => ({
     getSettings: () => ({
       defaultColumns: selectedColumns,
@@ -54,7 +52,6 @@ const ProcessScreenSettings = forwardRef(({ t, getCssClasses, IoSave, settings, 
     customDarkBorder
   ] = getCssClasses();
 
-  // Load current settings when component mounts or settings change
   useEffect(() => {
     if (getCurrentSettings) {
       const currentSettings = getCurrentSettings();
@@ -110,12 +107,27 @@ const ProcessScreenSettings = forwardRef(({ t, getCssClasses, IoSave, settings, 
         defaultFilters: funnelFilters
       };
 
-      const success_result = await updateSettingSection(userData.userId, 'processScreenSettings', processScreenSettings);
+      // Prepare payload for backend
+      const payload = {
+        UserId: userData.userId,
+        Settings: JSON.stringify({ processScreenSettings })
+      };
 
-      if (success_result) {
+      // Send to backend
+      const response = await API.post('/Settings', payload);
+
+      if (response.data) {
         success(t('processSettingsSavedSuccessfully'));
-      } else {
-        error(t('failedToSaveProcessSettings'));
+
+        // Update userSettings localStorage to ensure synchronization
+        const userSettings = JSON.parse(localStorage.getItem('userSettings') || '{}');
+        userSettings.settings = { ...userSettings.settings, processScreenSettings };
+        localStorage.setItem('userSettings', JSON.stringify(userSettings));
+
+        // Dispatch custom event to notify other components about settings update
+        window.dispatchEvent(new CustomEvent('userSettingsUpdated', {
+          detail: { settings: { ...userSettings.settings, processScreenSettings } }
+        }));
       }
     } catch (err) {
       console.error('Error saving process settings:', err);
@@ -131,7 +143,7 @@ const ProcessScreenSettings = forwardRef(({ t, getCssClasses, IoSave, settings, 
     { key: 'teamAssigned', label: t('teamAssigned') },
     { key: 'paperTitle', label: t('paperTitle') },
     { key: 'paperDetails', label: t('paperDetails') },
-    { key: 'envelopes', label: t('envelopes') },
+    { key: 'envelopes', label: t('innerEnvelope') },
     { key: 'course', label: t('course') },
     { key: 'machine', label: t('machine') },
     { key: 'zone', label: t('zone') },
@@ -145,10 +157,9 @@ const ProcessScreenSettings = forwardRef(({ t, getCssClasses, IoSave, settings, 
     <div>
       <Row>
         <Col xs={12}>
-          <Card className={`shadow-lg p-1 border-0 ${customLight} ${customLightBorder} ${customDarkText} `}>
+          <Card className={`shadow-lg p-1 ${customLight} ${customLightBorder} ${customDarkText}`}>
             <Card.Body>
               <Form onSubmit={handleSubmit}>
-                {/* Default Columns Section */}
                 <h6 className="fw-semibold mb-2">{t('defaultColumns') || 'Default Columns'}</h6>
                 <Row className="g-2 mb-3 mt-1">
                   {columns.map((column) => (
@@ -164,7 +175,6 @@ const ProcessScreenSettings = forwardRef(({ t, getCssClasses, IoSave, settings, 
                   ))}
                 </Row>
 
-                {/* Funnel Filters Section */}
                 <h6 className="fw-semibold mb-2">{t('defaultFunnelFilters') || 'Default Funnel Filters'}</h6>
                 <Row className="g-2 mb-4 mt-1">
                   {Object.entries(funnelFilters).map(([key, value]) => (
@@ -180,11 +190,10 @@ const ProcessScreenSettings = forwardRef(({ t, getCssClasses, IoSave, settings, 
                   ))}
                 </Row>
 
-                {/* Submit Button */}
                 <div className="text-end">
                   <Button
                     type="submit"
-                    className={`${customBtn}  ${customLightText} ${customLightBorder} border-1`}
+                    className={`${customBtn} ${customLightText} ${customLightBorder} border-1`}
                     disabled={loading}
                   >
                     <IoSave /> <span className="d-none d-md-inline">
@@ -199,7 +208,6 @@ const ProcessScreenSettings = forwardRef(({ t, getCssClasses, IoSave, settings, 
       </Row>
     </div>
   );
-
 });
 
 export default ProcessScreenSettings;

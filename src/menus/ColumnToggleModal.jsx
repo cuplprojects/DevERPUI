@@ -4,24 +4,15 @@ import themeStore from '../store/themeStore';
 import { useStore } from 'zustand';
 import { useTranslation } from 'react-i18next';
 
-const ColumnToggleModal = ({ show, handleClose, columnVisibility, setColumnVisibility, featureData, hasFeaturePermission }) => {
+const ColumnToggleModal = ({ show, handleClose, columnVisibility, setColumnVisibility, hasFeaturePermission, featureData, processId }) => {
     const themeState = useStore(themeStore);
     const cssClasses = themeState.getCssClasses();
     const { t } = useTranslation();
     const [customDark, customMid, customLight, customBtn, customDarkText, customLightText, customLightBorder, customDarkBorder] = cssClasses;
 
-    // Force re-render when theme changes
     useEffect(() => {
         // This empty dependency array ensures cssClasses are always fresh
     }, [cssClasses]);
-
-    // Load saved column visibility from localStorage on initial render
-    useEffect(() => {
-        const savedVisibility = localStorage.getItem('columnVisibility');
-        if (savedVisibility) {
-            setColumnVisibility(JSON.parse(savedVisibility));
-        }
-    }, [setColumnVisibility]);
 
     const handleToggle = (column) => {
         setColumnVisibility((prevVisibility) => {
@@ -29,11 +20,32 @@ const ColumnToggleModal = ({ show, handleClose, columnVisibility, setColumnVisib
                 ...prevVisibility,
                 [column]: !prevVisibility[column],
             };
+
             // Save to localStorage whenever visibility changes
-            localStorage.setItem('columnVisibility', JSON.stringify(newVisibility));
+            const userSettings = JSON.parse(localStorage.getItem('userSettings') || '{}');
+
+            if (userSettings.settings && userSettings.settings.processScreenSettings) {
+                // Ensure the key is in the correct format
+                const key = column.replace(' ', '');
+                const camelCaseKey = key.charAt(0).toLowerCase() + key.slice(1);
+
+                // Remove any existing duplicate keys
+                const defaultColumns = userSettings.settings.processScreenSettings.defaultColumns;
+                Object.keys(defaultColumns).forEach(k => {
+                    if (k.toLowerCase() === camelCaseKey.toLowerCase() && k !== camelCaseKey) {
+                        delete defaultColumns[k];
+                    }
+                });
+
+                // Update the key in the correct format
+                userSettings.settings.processScreenSettings.defaultColumns[camelCaseKey] = newVisibility[column];
+                localStorage.setItem('userSettings', JSON.stringify(userSettings));
+            }
+
             return newVisibility;
         });
     };
+
 
     const columns = [
         { key: 'Interim Quantity', label: 'interimQuantity' },
@@ -58,22 +70,26 @@ const ColumnToggleModal = ({ show, handleClose, columnVisibility, setColumnVisib
             </Modal.Header>
             <Modal.Body className={`${customLight} ${customDarkText} p-4`}>
                 <Form>
-                    {columns.map(({ key, label }) => (
-                        <Form.Group key={key} className="mb-3">
-                            <Form.Check
-                                type="switch"
-                                id={`custom-switch-${key}`}
-                                label={t(label)}
-                                checked={columnVisibility[key]}
-                                onChange={() => handleToggle(key)}
-                            />
-                        </Form.Group>
-                    ))}
+                    <Row>
+                        {columns.map(({ key, label }) => (
+                            <Col key={key} xs={12} sm={6} md={4} lg={5}>
+                                <Form.Group className="mb-3">
+                                    <Form.Check
+                                        type="switch"
+                                        id={`custom-switch-${key}`}
+                                        label={t(label)}
+                                        checked={columnVisibility[key]}
+                                        onChange={() => handleToggle(key)}
+                                    />
+                                </Form.Group>
+                            </Col>
+                        ))}
+                    </Row>
                 </Form>
             </Modal.Body>
             <Modal.Footer className={`${customLight} justify-content-center`}>
-                <Button 
-                    className={`${customBtn} border-0 px-4 py-2 fs-5`} 
+                <Button
+                    className={`${customBtn} border-0 px-4 py-2 fs-5`}
                     onClick={handleClose}
                 >
                     {t('close')}

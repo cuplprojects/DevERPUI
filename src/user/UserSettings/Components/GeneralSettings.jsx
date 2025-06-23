@@ -14,9 +14,10 @@ import { success, error } from '../../../CustomHooks/Services/AlertMessageServic
 import EnglishIcon from "./../../../assets/Icons/English.png";
 import HindiIcon from "./../../../assets/Icons/Hindi.png";
 import useLanguageStore from '../../../store/languageStore';
+import API from '../../../CustomHooks/MasterApiHooks/api';
 
 const GeneralSettings = forwardRef(({ t, getCssClasses, IoSave, settings, getCurrentSettings }, ref) => {
-  const [fontSize, setFontSize] = useState('medium');
+  const [fontSize, setFontSize] = useState('16');
   const [pageLimit, setPageLimit] = useState('10');
   const [loading, setLoading] = useState(false);
 
@@ -24,11 +25,10 @@ const GeneralSettings = forwardRef(({ t, getCssClasses, IoSave, settings, getCur
   const userData = useUserData();
   const { language, setLanguage } = useLanguageStore();
 
-  // Expose getSettings method to parent component
   useImperativeHandle(ref, () => ({
     getSettings: () => ({
       language,
-      fontSize,
+      fontSize: `${fontSize}`,
       pageLimit: parseInt(pageLimit)
     })
   }));
@@ -44,17 +44,28 @@ const GeneralSettings = forwardRef(({ t, getCssClasses, IoSave, settings, getCur
     customDarkBorder
   ] = getCssClasses();
 
-  // Load current settings when component mounts or settings change
+  // Load initial settings
   useEffect(() => {
     if (getCurrentSettings) {
       const currentSettings = getCurrentSettings();
       const generalSettings = currentSettings.general || {};
-
-      // Language is handled by the language store, so we don't set it here
-      setFontSize(generalSettings.fontSize || 'medium');
+      setFontSize(generalSettings.fontSize || '16');
       setPageLimit(generalSettings.pageLimit?.toString() || '10');
     }
   }, [getCurrentSettings, settings]);
+
+  // Effect for immediate font size updates
+  useEffect(() => {
+    document.documentElement.style.fontSize = `${fontSize}px`;
+  }, [fontSize]);
+
+  // Effect for immediate language-based font family updates
+  useEffect(() => {
+    const fontFamily = language === 'hi'
+      ? "'Noto Sans Devanagari', sans-serif"
+      : "'Roboto', sans-serif";
+    document.documentElement.style.fontFamily = fontFamily;
+  }, [language]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -72,22 +83,23 @@ const GeneralSettings = forwardRef(({ t, getCssClasses, IoSave, settings, getCur
         pageLimit: parseInt(pageLimit)
       };
 
-      const success_result = await updateSettingSection(userData.userId, 'general', generalSettings);
+      const payload = {
+        UserId: userData.userId,
+        Settings: JSON.stringify({ general: generalSettings })
+      };
 
-      if (success_result) {
-        // Update userSettings localStorage to ensure synchronization
-        const userSettings = JSON.parse(localStorage.getItem('userSettings') || '{}');
-        if (userSettings.settings) {
-          userSettings.settings.general = userSettings.settings.general || {};
-          userSettings.settings.general.language = language;
-          userSettings.settings.general.fontSize = fontSize;
-          userSettings.settings.general.pageLimit = parseInt(pageLimit);
-          localStorage.setItem('userSettings', JSON.stringify(userSettings));
-        }
+      const response = await API.post('/Settings', payload);
 
+      if (response.data) {
         success(t('generalSettingsSavedSuccessfully'));
-      } else {
-        error(t('failedToSaveGeneralSettings'));
+
+        const userSettings = JSON.parse(localStorage.getItem('userSettings') || '{}');
+        userSettings.settings = { ...userSettings.settings, general: generalSettings };
+        localStorage.setItem('userSettings', JSON.stringify(userSettings));
+
+        window.dispatchEvent(new CustomEvent('userSettingsUpdated', {
+          detail: { settings: { ...userSettings.settings, general: generalSettings } }
+        }));
       }
     } catch (err) {
       console.error('Error saving general settings:', err);
@@ -98,11 +110,10 @@ const GeneralSettings = forwardRef(({ t, getCssClasses, IoSave, settings, getCur
   };
 
   return (
-    <Card className={`shadow-lg p-2 border-0 ${customLight} ${customLightBorder} ${customDarkText} `}>
+    <Card className={`shadow-lg p-2 border-0 ${customLight} ${customLightBorder} ${customDarkText}`}>
       <Card.Body>
         <Form onSubmit={handleSubmit}>
           <Row className="g-4 mb-3">
-            {/* Language Toggle with Flags */}
             <Col xs={12} md={6}>
               <Form.Group controlId="language-select">
                 <Form.Label>{t('language')}</Form.Label>
@@ -133,20 +144,22 @@ const GeneralSettings = forwardRef(({ t, getCssClasses, IoSave, settings, getCur
               </Form.Group>
             </Col>
 
-            {/* Font Size */}
             <Col xs={12} md={6}>
-              <Form.Group controlId="font-size-select">
-                <Form.Label>{t('fontSize')}</Form.Label>
-                <Form.Select value={fontSize} onChange={(e) => setFontSize(e.target.value)}>
-                  <option value="small">Small</option>
-                  <option value="medium">Medium</option>
-                  <option value="large">Large</option>
-                </Form.Select>
+              <Form.Group controlId="font-size-slider">
+                <Form.Label>
+                  {t('fontSize')} ({fontSize})
+                </Form.Label>
+                <Form.Range
+                  min={12}
+                  max={24}
+                  step={1}
+                  value={parseInt(fontSize)}
+                  onChange={(e) => setFontSize(e.target.value)}
+                />
               </Form.Group>
             </Col>
           </Row>
           <Row className={`g-4 d-flex align-items-end`}>
-            {/* Page Limit */}
             <Col xs={12} md={6}>
               <Form.Group controlId="page-limit-select">
                 <Form.Label>{t('defaultPageLimit')}</Form.Label>
@@ -160,7 +173,6 @@ const GeneralSettings = forwardRef(({ t, getCssClasses, IoSave, settings, getCur
               </Form.Group>
             </Col>
 
-            {/* Submit Button */}
             <Col xs={12} lg={6} md={6} className='d-flex justify-content-end'>
               <div className="text-end">
                 <Button

@@ -24,7 +24,9 @@ const AssignZTMModal = ({ show, handleClose, data, processId, handleSave, hasFea
     const [selectedTeam, setSelectedTeam] = useState('');
     const [usersInTeam, setUsersInTeam] = useState([]);
     const [userOptions, setUserOptions] = useState([]); // List of users to be added to the team
-    const [selectedUserToAdd, setSelectedUserToAdd] = useState(null);
+
+    const [selectedUsersToAdd, setSelectedUsersToAdd] = useState([]); // Changed to array for multi-select
+
     const [teams, setTeams] = useState([]);
 
     const getTeamsByProcess = async () => {
@@ -129,25 +131,12 @@ const AssignZTMModal = ({ show, handleClose, data, processId, handleSave, hasFea
         setUsersInTeam(usersInTeam.filter(user => user.userId !== userId));
     };
 
-    const handleAddUser = () => {
-        if (!selectedUserToAdd) {
-            notification.warning({
-                message: 'Warning',
-                description: 'Please select a user to add.',
-                placement: 'topRight',
-                duration: 3
-            });
-            return;
-        }
-
-        const userToAdd = userOptions.find((user) => user.userId === selectedUserToAdd);
-
-        if (userToAdd) {
-            setUsersInTeam([...usersInTeam, userToAdd]); // Add the new user to the team
-            setSelectedUserToAdd(null); // Reset the user selection
-        }
+    // Modified to handle multi-select
+    const handleUsersToAddChange = (selectedOptions) => {
+        setSelectedUsersToAdd(selectedOptions || []);
     };
 
+    // Filter out users that are already in the team
     const filteredUserOptions = userOptions.filter(user =>
         !usersInTeam.some(teamUser => teamUser.userId === user.userId)
     ).map(user => ({
@@ -163,6 +152,23 @@ const AssignZTMModal = ({ show, handleClose, data, processId, handleSave, hasFea
 
     const handleConfirm = async () => {
         try {
+            // Add selected users to the team before saving
+            if (selectedUsersToAdd.length > 0) {
+                const usersToAdd = selectedUsersToAdd.map(selectedUser =>
+                    userOptions.find(user => user.userId === selectedUser.value)
+                ).filter(Boolean);
+
+                setUsersInTeam(prevUsers => [...prevUsers, ...usersToAdd]);
+            }
+
+            // Get the final list of users (existing + newly added)
+            const finalUsersInTeam = [
+                ...usersInTeam,
+                ...selectedUsersToAdd.map(selectedUser =>
+                    userOptions.find(user => user.userId === selectedUser.value)
+                ).filter(Boolean)
+            ];
+
             const updatePromises = data.map(async (row) => {
                 let existingTransactionData;
                 if (row.transactionId) {
@@ -170,7 +176,7 @@ const AssignZTMModal = ({ show, handleClose, data, processId, handleSave, hasFea
                     existingTransactionData = response.data;
                 }
                 const allUserIds = [
-                    ...usersInTeam.map(user => user.userId),
+                    ...finalUsersInTeam.map(user => user.userId),
                 ];
 
                 const postData = {
@@ -197,6 +203,7 @@ const AssignZTMModal = ({ show, handleClose, data, processId, handleSave, hasFea
             setMachineId(null);
             setSelectedMachine(null);
             setSelectedZone(null); // Reset zone data
+            setSelectedUsersToAdd([]); // Reset selected users to add
             handleClose();
         } catch (error) {
             console.error('Error updating machine:', error);
@@ -206,7 +213,7 @@ const AssignZTMModal = ({ show, handleClose, data, processId, handleSave, hasFea
     return (
         <Modal show={show} onHide={handleClose}>
             <Modal.Header closeButton className={`${customDark} ${customDarkText}`}>
-                <Modal.Title className={customLightText}>{t('selectMachine')}</Modal.Title>
+                <Modal.Title className={customLightText}>{t('selectMachineZone&Team')}</Modal.Title>
             </Modal.Header>
             <Modal.Body className={`${customLight} ${customDarkText}`}>
                 {Array.isArray(data) && data.length > 0 ? (
@@ -278,7 +285,7 @@ const AssignZTMModal = ({ show, handleClose, data, processId, handleSave, hasFea
                                                 variant="danger"
                                                 size="sm"
                                                 onClick={() => handleRemoveUser(user.userId)}
-                                                className="ms-2"
+                                                className="m-1"
                                             >
                                                 Remove
                                             </Button>
@@ -289,20 +296,35 @@ const AssignZTMModal = ({ show, handleClose, data, processId, handleSave, hasFea
                         </Row>
 
                         <Row className="mb-3">
-                            <Col md={6}>
+                            <Col md={12}>
                                 <Form.Group className="mb-3">
-                                    <Form.Label>Select User to Add</Form.Label>
+                                    <Form.Label>Select Users to Add (Multiple Selection)</Form.Label>
                                     <Select
-                                        value={selectedUserToAdd ? { value: selectedUserToAdd, label: userOptions.find(user => user.userId === selectedUserToAdd)?.fullName } : null}
-                                        onChange={(selectedOption) => setSelectedUserToAdd(selectedOption?.value || null)}
+                                        value={selectedUsersToAdd}
+                                        onChange={handleUsersToAddChange}
                                         options={filteredUserOptions}
-                                        placeholder="Select a user..."
+                                        placeholder="Select users to add..."
                                         isClearable
+                                        isMulti={true}
+                                        closeMenuOnSelect={false}
+                                        hideSelectedOptions={false}
+                                        // menuIsOpen={true}
+                                        className={`${customDarkText}`}
+                                        styles={{
+                                            menu: (provided) => ({
+                                                ...provided,
+                                                zIndex: 9999
+                                            })
+                                        }}
                                     />
                                 </Form.Group>
-                                <Button variant="primary" onClick={handleAddUser}>
-                                    Add User
-                                </Button>
+                                {selectedUsersToAdd.length > 0 && (
+                                    <div className="mb-2">
+                                        <small className="text-muted">
+                                            Selected {selectedUsersToAdd.length} user(s) to add. Click "Save Changes" to add them to the team.
+                                        </small>
+                                    </div>
+                                )}
                             </Col>
                         </Row>
                     </>
