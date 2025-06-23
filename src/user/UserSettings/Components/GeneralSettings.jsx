@@ -44,14 +44,28 @@ const GeneralSettings = forwardRef(({ t, getCssClasses, IoSave, settings, getCur
     customDarkBorder
   ] = getCssClasses();
 
+  // Load initial settings
   useEffect(() => {
     if (getCurrentSettings) {
       const currentSettings = getCurrentSettings();
       const generalSettings = currentSettings.general || {};
-      setFontSize(generalSettings.fontSize || 'medium');
+      setFontSize(generalSettings.fontSize || '16');
       setPageLimit(generalSettings.pageLimit?.toString() || '10');
     }
   }, [getCurrentSettings, settings]);
+
+  // Effect for immediate font size updates
+  useEffect(() => {
+    document.documentElement.style.fontSize = `${fontSize}px`;
+  }, [fontSize]);
+
+  // Effect for immediate language-based font family updates
+  useEffect(() => {
+    const fontFamily = language === 'hi'
+      ? "'Noto Sans Devanagari', sans-serif"
+      : "'Roboto', sans-serif";
+    document.documentElement.style.fontFamily = fontFamily;
+  }, [language]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -69,24 +83,20 @@ const GeneralSettings = forwardRef(({ t, getCssClasses, IoSave, settings, getCur
         pageLimit: parseInt(pageLimit)
       };
 
-      // Prepare payload for backend
       const payload = {
         UserId: userData.userId,
         Settings: JSON.stringify({ general: generalSettings })
       };
 
-      // Send to backend
       const response = await API.post('/Settings', payload);
 
       if (response.data) {
         success(t('generalSettingsSavedSuccessfully'));
 
-        // Update userSettings localStorage to ensure synchronization
         const userSettings = JSON.parse(localStorage.getItem('userSettings') || '{}');
         userSettings.settings = { ...userSettings.settings, general: generalSettings };
         localStorage.setItem('userSettings', JSON.stringify(userSettings));
 
-        // Dispatch custom event to notify other components about settings update
         window.dispatchEvent(new CustomEvent('userSettingsUpdated', {
           detail: { settings: { ...userSettings.settings, general: generalSettings } }
         }));
@@ -137,7 +147,7 @@ const GeneralSettings = forwardRef(({ t, getCssClasses, IoSave, settings, getCur
             <Col xs={12} md={6}>
               <Form.Group controlId="font-size-slider">
                 <Form.Label>
-                  {t('fontSize')} ({fontSize}px)
+                  {t('fontSize')} ({fontSize})
                 </Form.Label>
                 <Form.Range
                   min={12}

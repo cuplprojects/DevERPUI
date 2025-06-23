@@ -183,17 +183,6 @@ const CustomUi = () => {
     };
   }, []);
 
-  const themeIcons = {
-    "purple-dark": UiIconPurple,
-    "blue-dark": UiIconBlue,
-    "green-dark": UiIconGreen,
-    "brown-dark": UiIconBrown,
-    "light-dark": UiIconLight,
-    "pink-dark": UiIconPink,
-    "red-dark": UiIconRed,
-    "dark-dark": UiIconDark,
-    "default": UiIconDefault
-  };
 
   return (
     <>
@@ -232,7 +221,6 @@ const CustomUi = () => {
               {t('currentFontSize')}: {fontSize}px
             </Form.Text>
           </Form.Group>
-
           <Row className="mt-4 align-items-center">
             <Col>
               <Form.Label>{t('fullScreenMode')}</Form.Label>

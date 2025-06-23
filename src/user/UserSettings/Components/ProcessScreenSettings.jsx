@@ -157,7 +157,7 @@ const ProcessScreenSettings = forwardRef(({ t, getCssClasses, IoSave, settings, 
     <div>
       <Row>
         <Col xs={12}>
-          <Card className={`shadow-lg p-1 border-0 ${customLight} ${customLightBorder} ${customDarkText}`}>
+          <Card className={`shadow-lg p-1 ${customLight} ${customLightBorder} ${customDarkText}`}>
             <Card.Body>
               <Form onSubmit={handleSubmit}>
                 <h6 className="fw-semibold mb-2">{t('defaultColumns') || 'Default Columns'}</h6>
