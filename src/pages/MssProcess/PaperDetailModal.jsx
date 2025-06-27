@@ -13,6 +13,7 @@ import moment from "moment";
 import API from "../../CustomHooks/MasterApiHooks/api";
 import { Row, Col } from "react-bootstrap";
 import Modal from "react-bootstrap/Modal";
+import TextArea from "antd/es/input/TextArea";
 
 // Add styles to head
 const style = document.createElement('style');
@@ -237,17 +238,6 @@ const PaperDetailModal = ({
   const handleConfirmedImport = async () => {
     try {
       const values = formValues;
-      // const selectedCourse = courses.find(
-      //   (course) => course.courseName === values.CourseId
-      // );
-      // const selectedExamType = examType.find(
-      //   (exam) => exam.examTypeId === values.ExamTypeId
-      // );
-      // const selectedLanguages = values.LanguageId?.length
-      //   ? values.LanguageId
-      //   : [0];
-
-      // Format the payload according to the API's requirements
       const selectedCourse = courses.find((c) => c.courseName === values.CourseId);
       const selectedExamType = examType.find((e) => e.examTypeId === values.ExamTypeId);
 
@@ -352,7 +342,7 @@ const PaperDetailModal = ({
         </Modal.Header>
         <Modal.Body className={`${customLight}`}>
           <Form form={form} layout="vertical">
-          <Row>
+            <Row>
               <Col md={2}>
                 <Form.Item name="CatchNo" label="Catch No" required>
                   <Input allowClear />
@@ -398,14 +388,22 @@ const PaperDetailModal = ({
                 </Form.Item>
               </Col>
 
-              <Col md={4}>
-                <Form.Item name="PaperTitle" label="Paper Title">
+              <Col md={3}>
+                <Form.Item name="UniqueCode" label="Unique Code">
                   <Input allowClear />
                 </Form.Item>
               </Col>
-              <Col md={2}>
+              <Col md={3}>
                 <Form.Item name="PaperNumber" label="Paper #">
                   <Input allowClear />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col md={12}>
+                <Form.Item name="PaperTitle" label="Paper Title">
+                  <Input.TextArea allowClear rows={2}/>
                 </Form.Item>
               </Col>
             </Row>
@@ -438,17 +436,13 @@ const PaperDetailModal = ({
                   <Input allowClear />
                 </Form.Item>
               </Col>
-              <Col md={2}>
-                <Form.Item name="UniqueCode" label="Unique Code">
-                  <Input allowClear />
-                </Form.Item>
-              </Col>
-              <Col md={2}>
+ 
+              <Col md={3}>
                 <Form.Item name="Duration" label="Duration">
                   <Input />
                 </Form.Item>
               </Col>
-              <Col md={2}>
+              <Col md={3}>
                 <Form.Item name="MaxMarks" label="Max Marks">
                   <Input type="number" allowClear />
                 </Form.Item>
@@ -508,33 +502,33 @@ const PaperDetailModal = ({
             </Row>
             <Row>
               <Col md={4}>
-              <Form.Item label="Select Paper Structure Template">
-                <Select
-                  allowClear
-                  showSearch
-                  optionFilterProp="children"
-                  filterOption={(input, option) =>
-                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                  }
-                  placeholder="Select a structure"
-                  onChange={handleStructureTemplateChange}
-                  value={selectedTemplate}
-                >
-                  {Object.keys(structureTemplates).map((key) => (
-                    <Option key={key} value={key}>
-                      {key}
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col md={8}>
+                <Form.Item label="Select Paper Structure Template">
+                  <Select
+                    allowClear
+                    showSearch
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                    }
+                    placeholder="Select a structure"
+                    onChange={handleStructureTemplateChange}
+                    value={selectedTemplate}
+                  >
+                    {Object.keys(structureTemplates).map((key) => (
+                      <Option key={key} value={key}>
+                        {key}
+                      </Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col md={8}>
                 <Form.Item name="StructureOfPaper" label="Structure of Paper">
                   <Input.TextArea
-                  rows={4}
-                  allowClear
-                  style={{ whiteSpace: "pre-wrap" }}
-                />
+                    rows={4}
+                    allowClear
+                    style={{ whiteSpace: "pre-wrap" }}
+                  />
                 </Form.Item>
               </Col>
             </Row>

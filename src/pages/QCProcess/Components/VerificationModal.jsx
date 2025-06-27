@@ -45,7 +45,7 @@ const VerificationModal = ({
       overflow: 'hidden',
     },
     '.modal-header': {
-      padding: '1.5rem 2rem',
+      // padding: '1.5rem 2rem',
       background: 'linear-gradient(to right, rgba(255,255,255,0.95), rgba(255,255,255,0.9))',
       backdropFilter: 'blur(10px)',
       borderBottom: '1px solid rgba(0,0,0,0.08)',
@@ -53,7 +53,7 @@ const VerificationModal = ({
     '.modal-body': {
       maxHeight: 'calc(100vh - 200px)',
       overflowY: 'auto',
-      padding: '2rem',
+      // padding: '2rem',
       '&::-webkit-scrollbar': {
         width: '8px',
       },
@@ -172,7 +172,7 @@ const VerificationModal = ({
       };
 
       return (
-        <div className="verification-item p-4 border-bottom hover-highlight" style={rowStyle}>
+        <div className="verification-item p-1 border-bottom hover-highlight" style={rowStyle}>
           <div className="d-flex align-items-center">
             {record.action === 'verify' && !isEditMode && (
               <div className="me-4">
