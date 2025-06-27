@@ -301,7 +301,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
             expandIconPosition="end"
             className="flex-grow-1 border-0"
           >
-            <div className="w-100 mb-2 border-0">
+            <div className="w-100  mb-2 border-0">
               <Select
                 showSearch
                 value={searchTerm}
@@ -314,11 +314,12 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
                 style={{ width: "100%" }}
                 allowClear={true}
                 defaultOpen={false}
+                // dropdownStyle={{ maxHeight: 800, overflow: 'auto' }} 
                 dropdownRender={(menu) => (
-                  <div>
+                  <div > 
                     {menu}
                     {hasMore && data.length > 0 && (
-                      <div className="text-center p-2">
+                      <div className="text-center p-1">
                         <Button
                           variant="outline-primary"
                           size="sm"
@@ -334,20 +335,18 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
                 {data.map((item) => (
                   <Option key={item.qpMasterId} value={item.paperTitle}>
                     <Row
-                      className="align-items-center p-2"
+                      className="align-items-center p-1 fs-"
                       onClick={() => setSelectedItem(item)}
-                      style={{ cursor: "pointer" }}
+                      style={{ cursor: "pointer", width: "100%" }}
                     >
                       <Col xs={12} md={8}>
                         <strong>{item.paperTitle}</strong>
                         <br />
-                        <big>
-                          <strong>Course Name:</strong> {item.courseName} &nbsp;
-                          | &nbsp;
-                          <strong>NEP Code:</strong> {item.nepCode} &nbsp; |
-                          &nbsp;
-                          <strong>Semester:</strong> {item.examTypeName}
-                        </big>
+                        Course Name: {item.courseName} &nbsp;
+                        | &nbsp;
+                        NEP Code: {item.nepCode} &nbsp; |
+                        &nbsp;
+                        Semester: {item.examTypeName}
                       </Col>
                     </Row>
                   </Option>
