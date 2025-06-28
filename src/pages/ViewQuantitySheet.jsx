@@ -68,37 +68,37 @@ const ViewQuantitySheet = ({ selectedLotNo, showBtn, showTable, lots }) => {
   const [pageSize, setPageSize] = useState(100);
   //pagination settings
   useEffect(() => {
-  const userSettings = localStorage.getItem('userSettings');
-  if (userSettings) {
-    try {
-      const parsedSettings = JSON.parse(userSettings);
-      const pageLimit = parsedSettings?.settings?.general?.pageLimit;
-      if (typeof pageLimit === 'number') {
-        setPageSize(pageLimit);
+    const userSettings = localStorage.getItem('userSettings');
+    if (userSettings) {
+      try {
+        const parsedSettings = JSON.parse(userSettings);
+        const pageLimit = parsedSettings?.settings?.general?.pageLimit;
+        if (typeof pageLimit === 'number') {
+          setPageSize(pageLimit);
+        }
+      } catch (error) {
+        console.error('Failed to parse userSettings from localStorage:', error);
       }
-    } catch (error) {
-      console.error('Failed to parse userSettings from localStorage:', error);
     }
-  }
-}, []);
-const savePageSizeToLocalStorage = (size) => {
-  const userSettings = localStorage.getItem('userSettings');
-  if (userSettings) {
-    try {
-      const parsedSettings = JSON.parse(userSettings);
-      if (!parsedSettings.settings) {
-        parsedSettings.settings = {};
+  }, []);
+  const savePageSizeToLocalStorage = (size) => {
+    const userSettings = localStorage.getItem('userSettings');
+    if (userSettings) {
+      try {
+        const parsedSettings = JSON.parse(userSettings);
+        if (!parsedSettings.settings) {
+          parsedSettings.settings = {};
+        }
+        if (!parsedSettings.settings.general) {
+          parsedSettings.settings.general = {};
+        }
+        parsedSettings.settings.general.pageLimit = size;
+        localStorage.setItem('userSettings', JSON.stringify(parsedSettings));
+      } catch (error) {
+        console.error('Failed to update userSettings in localStorage:', error);
       }
-      if (!parsedSettings.settings.general) {
-        parsedSettings.settings.general = {};
-      }
-      parsedSettings.settings.general.pageLimit = size;
-      localStorage.setItem('userSettings', JSON.stringify(parsedSettings));
-    } catch (error) {
-      console.error('Failed to update userSettings in localStorage:', error);
     }
-  }
-};
+  };
 
   const [dispatchedLots, setDispatchedLots] = useState([]);
   const [dates, setDates] = useState([]);
@@ -616,27 +616,72 @@ const savePageSizeToLocalStorage = (size) => {
     }
   };
 
+  // const handleSaveEdit = async () => {
+  //   try {
+  //     // Process all selected catches
+  //     const updatePromises = selectedCatches.map(async (selectedCatch) => {
+  //       const catchToUpdate = dataSource.find((item) => item.key === selectedCatch.id);
+  //       if (!catchToUpdate) return;
+
+  //       let updatedProcessIds = [...catchToUpdate.processId];
+
+  //       if (modalMessage === "switchToDigitalPrintingQuestion") {
+  //         updatedProcessIds = updatedProcessIds.filter(
+  //           (id) => id !== CTP_ID && id !== OFFSET_PRINTING_ID && id !== CUTTING_ID
+  //         );
+  //         updatedProcessIds.push(DIGITAL_PRINTING_ID);
+  //       } else if (modalMessage === "switchToOffsetPrintingQuestion") {
+  //         updatedProcessIds = updatedProcessIds.filter(
+  //           (id) => id !== DIGITAL_PRINTING_ID
+  //         );
+  //         updatedProcessIds.push(CTP_ID);
+  //         updatedProcessIds.push(OFFSET_PRINTING_ID);
+  //         updatedProcessIds.push(CUTTING_ID);
+  //       }
+
+  //       const payload = {
+  //         ...catchToUpdate,
+  //         processId: updatedProcessIds,
+  //         status: 1,
+  //       };
+
+  //       return API.put(`/QuantitySheet/${selectedCatch.id}`, payload);
+
+  //     });
+
+  //     await Promise.all(updatePromises);
+  //     handleModalClose();
+  //     fetchQuantity(selectedLotNo);
+  //   } catch (error) {
+  //     console.error(t("failedToSaveChanges"), error);
+  //   }
+  // };
+
+  const handleRemoveButtonClick = (key) => {
+    const record = dataSource.find((item) => item.key === key);
+    if (record) {
+      setItemToDelete(record);
+      setShowDeleteModal(true);
+    }
+  };
+
   const handleSaveEdit = async () => {
     try {
-      // Process all selected catches
       const updatePromises = selectedCatches.map(async (selectedCatch) => {
         const catchToUpdate = dataSource.find((item) => item.key === selectedCatch.id);
         if (!catchToUpdate) return;
 
         let updatedProcessIds = [...catchToUpdate.processId];
+        let removedProcessIds = [];
 
         if (modalMessage === "switchToDigitalPrintingQuestion") {
-          updatedProcessIds = updatedProcessIds.filter(
-            (id) => id !== CTP_ID && id !== OFFSET_PRINTING_ID && id !== CUTTING_ID
-          );
+          removedProcessIds = [CTP_ID, OFFSET_PRINTING_ID, CUTTING_ID];
+          updatedProcessIds = updatedProcessIds.filter(id => !removedProcessIds.includes(id));
           updatedProcessIds.push(DIGITAL_PRINTING_ID);
         } else if (modalMessage === "switchToOffsetPrintingQuestion") {
-          updatedProcessIds = updatedProcessIds.filter(
-            (id) => id !== DIGITAL_PRINTING_ID
-          );
-          updatedProcessIds.push(CTP_ID);
-          updatedProcessIds.push(OFFSET_PRINTING_ID);
-          updatedProcessIds.push(CUTTING_ID);
+          removedProcessIds = [DIGITAL_PRINTING_ID];
+          updatedProcessIds = updatedProcessIds.filter(id => !removedProcessIds.includes(id));
+          updatedProcessIds.push(CTP_ID, OFFSET_PRINTING_ID, CUTTING_ID);
         }
 
         const payload = {
@@ -645,7 +690,17 @@ const savePageSizeToLocalStorage = (size) => {
           status: 1,
         };
 
-        return API.put(`/QuantitySheet/${selectedCatch.id}`, payload);
+        // Step 1: Update QuantitySheet
+        await API.put(`/QuantitySheet/${selectedCatch.id}`, payload);
+
+        // Step 2: Call backend to delete transactions for removed process IDs
+        if (removedProcessIds.length > 0) {
+          const params = new URLSearchParams();
+          params.append("quantitysheetId", selectedCatch.id.toString());
+          removedProcessIds.forEach(id => params.append("ProcessId", id.toString()));
+
+          await API.get(`/Transactions/GetTransactionIdByQuantitySheetId?${params.toString()}`);
+        }
       });
 
       await Promise.all(updatePromises);
@@ -653,14 +708,6 @@ const savePageSizeToLocalStorage = (size) => {
       fetchQuantity(selectedLotNo);
     } catch (error) {
       console.error(t("failedToSaveChanges"), error);
-    }
-  };
-
-  const handleRemoveButtonClick = (key) => {
-    const record = dataSource.find((item) => item.key === key);
-    if (record) {
-      setItemToDelete(record);
-      setShowDeleteModal(true);
     }
   };
 
@@ -921,9 +968,9 @@ const savePageSizeToLocalStorage = (size) => {
   };
 
   const handlePageSizeChange = (current, size) => {
-  setPageSize(size);
-  savePageSizeToLocalStorage(size);
-};
+    setPageSize(size);
+    savePageSizeToLocalStorage(size);
+  };
 
 
   const isProcessSwitchingAllowed = (selectedCatches) => {

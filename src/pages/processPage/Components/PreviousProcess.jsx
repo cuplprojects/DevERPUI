@@ -1,6 +1,5 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { FaRegHourglassHalf } from "react-icons/fa6";
 import { useStore } from 'zustand';
 import themeStore from '../../../store/themeStore';
 
@@ -17,9 +16,7 @@ const PreviousProcess = ({ previousProcess, previousProcessCompletionPercentage 
         style={{ fontWeight: 900 }}
       >
         {previousProcess ? `${previousProcess.processName} - ${previousProcessCompletionPercentage}%` : 'N/A'}
-        <span className='ms-2'>
-          <FaRegHourglassHalf color='blue' size="20" />
-        </span>
+       
       </div>
     </div>
   );
