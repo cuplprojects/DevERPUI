@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Select,
   Spin,
@@ -8,21 +8,22 @@ import {
   Collapse,
   Input,
   Badge,
+  Tabs,
+  Table,
 } from "antd";
 import { Button, Col, Row } from "react-bootstrap";
 import { CloseCircleOutlined } from "@ant-design/icons";
 import API from "../../CustomHooks/MasterApiHooks/api";
 import MSSTable from "./MSSTable";
-import PaperDetailModal from "./PaperDetailModal";
 import "./mss.css";
 import themeStore from "../../store/themeStore";
 import { useStore } from "zustand";
 import { HiRefresh } from "react-icons/hi";
 import UpdateRejectedItemModal from "./Components/UpdateRejectedItemModal";
-import AddPaperForm from "../QPMaster/Components/AddPaperForm";
-
+import PaperDetailForm from "./PaperDetailForm";
 
 const { Option } = Select;
+const { TabPane } = Tabs;
 
 const Mss = ({ projectId, processId, lotNo, projectName }) => {
   const { getCssClasses } = useStore(themeStore);
@@ -38,25 +39,19 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
     customDarkBorder,
   ] = cssClasses;
 
-  const [searchTerm, setSearchTerm] = useState(null);
-  const [tableSearchTerm, setTableSearchTerm] = useState("");
+  // Search QP Master states
+  const [searchTerm, setSearchTerm] = useState("");
   const [data, setData] = useState([]);
-  const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [importing, setImporting] = useState(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
+
+  // Saved data (Quantity Sheet) states
   const [quantitySheetData, setQuantitySheetData] = useState([]);
   const [allQuantitySheetData, setAllQuantitySheetData] = useState([]); // Store all data for searching
-  const [rejectedQuantitySheetData, setRejectedQuantitySheetData] = useState(
-    []
-  );
+  const [rejectedQuantitySheetData, setRejectedQuantitySheetData] = useState([]);
   const [languageOptions, setLanguageOptions] = useState([]);
-  const [subjectOptions, setSubjectOptions] = useState([]);
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [selectedGroupId, setSelectedGroupId] = useState(null);
-  const [selectedGroupName, setSelectedGroupName] = useState(null);
-  const [selectedSemester, setSelectedSemester] = useState(1);
+  const [filteredData, setFilteredData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const [rejectedCount, setRejectedCount] = useState(0);
@@ -65,12 +60,20 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
   const [selectedRejectedItem, setSelectedRejectedItem] = useState(null);
   const [totalRecords, setTotalRecords] = useState(0);
   const [isSearchMode, setIsSearchMode] = useState(false);
-  const [showAddPaperModal, setShowAddPaperModal] = useState(false);
-  const [newPaperItem, setNewPaperItem] = useState(null);
+  const [savedSearchTerm, setSavedSearchTerm] = useState("");
+
+  // Group/Semester states used by QP search API
+  const [selectedGroupId, setSelectedGroupId] = useState(null);
+  const [selectedSemester, setSelectedSemester] = useState(1);
+  const searchDebounceRef = useRef(null);
+
+  // Tabs and Edit Import states
+  const [activeTab, setActiveTab] = useState("search");
+  const [editItem, setEditItem] = useState(null); // item selected to edit/import
+  const [editIsNew, setEditIsNew] = useState(false);
 
   useEffect(() => {
-    setSearchTerm(null);
-    setTableSearchTerm("");
+    setSearchTerm("");
   }, [projectId, processId, lotNo]);
 
   useEffect(() => {
@@ -79,14 +82,12 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
     }
   }, [currentPage, pageSize]);
 
-
   useEffect(() => {
     fetchQuantitySheetData();
-    fetchSubjectOptions();
     fetchLanguageOptions();
     fetchSelectedGroupAndSem();
 
-    // Also fetch all data for searching
+    // Also fetch all data for searching in saved data tab
     fetchAllQuantitySheetData();
   }, [projectId, processId, lotNo]);
 
@@ -95,22 +96,14 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
       const response = await API.get(`/Project/${projectId}`);
       setSelectedGroupId(response.data.groupId);
       setSelectedSemester(response.data.examTypeId);
+      return response.data; // return so callers can use values immediately
     } catch (error) {
       console.error("Error fetching selected group:", error);
+      return null;
     }
   };
 
-  const getGroupName = async () => {
-    try {
-      const response = await API.get(`/Groups/${selectedGroupId}`);
-      setSelectedGroupName(response.data.groupName);
-    }
-    catch (error) {
-      console.error("Error fetching group name:", error);
-    }
-  }
-
-  const fetchResults = async (value, newPage = 1, append = false) => {
+  const fetchResults = async (value, newPage = 1, append = false, groupIdOverride = null, semesterOverride = null) => {
     if (!value) {
       setData([]);
       setHasMore(false);
@@ -119,14 +112,15 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
 
     setLoading(true);
     try {
+      const gid = groupIdOverride ?? selectedGroupId;
+      const sem = semesterOverride ?? selectedSemester;
       const response = await API.get(
-        `/QPMasters/SearchInQpMaster?search=${value}&groupId=${selectedGroupId}&examTypeId=${selectedSemester}&pageSize=${newPage}`
+        `/QPMasters/SearchInQpMaster?search=${encodeURIComponent(value)}&groupId=${gid ?? 0}&examTypeId=${sem ?? 0}&pageSize=${newPage}`
       );
 
-      setHasMore(response.data.length > 0);
-      setData((prevData) =>
-        append ? [...prevData, ...response.data] : response.data
-      );
+      const items = Array.isArray(response.data) ? response.data : (response.data?.data ?? []);
+      setHasMore(items.length > 0);
+      setData((prevData) => (append ? [...prevData, ...items] : items));
       setPage(newPage);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -135,23 +129,28 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
     }
   };
 
-  const handleSearch = (value) => {
+  const handleSearch = async (value) => {
+    const trimmed = (value || '').trim();
     setSearchTerm(value);
+    if (!trimmed) {
+      setData([]);
+      setHasMore(false);
+      return;
+    }
     setHasMore(true);
-    fetchResults(value, 1);
+    // Ensure group/semester loaded before searching
+    if (!selectedGroupId || !selectedSemester) {
+      const proj = await fetchSelectedGroupAndSem();
+      const gid = proj?.groupId ?? selectedGroupId ?? 0;
+      const sem = proj?.examTypeId ?? selectedSemester ?? 0;
+      await fetchResults(trimmed, 1, false, gid, sem);
+      return;
+    }
+    await fetchResults(trimmed, 1);
   };
 
   const handleShowMore = () => {
     fetchResults(searchTerm, page + 1, true);
-  };
-
-  const fetchSubjectOptions = async () => {
-    try {
-      const response = await API.get("/Subject");
-      setSubjectOptions(response.data);
-    } catch (error) {
-      console.error("Error fetching subject options:", error);
-    }
   };
 
   const fetchLanguageOptions = async () => {
@@ -162,7 +161,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
       console.error("Error fetching language options:", error);
     }
   };
-  // console.log(languageOptions);
+
   const handleTableChange = (pagination) => {
     setCurrentPage(pagination.current);
     setPageSize(pagination.pageSize);
@@ -171,7 +170,6 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
   // Fetch all data for the project (used for searching)
   const fetchAllQuantitySheetData = async () => {
     try {
-      // Use a large page size to get all records in one request
       const response = await API.get(
         `/QuantitySheet/CatchByproject?ProjectId=${projectId}&pageSize=1000&currentpage=1`
       );
@@ -186,9 +184,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
   // Fetch paginated data (used for normal display)
   const fetchQuantitySheetData = async () => {
     try {
-      // If in search mode, use the all data
       if (isSearchMode) {
-        // If we don't have all data yet, fetch it
         if (allQuantitySheetData.length === 0) {
           const allData = await fetchAllQuantitySheetData();
           setQuantitySheetData(allData);
@@ -196,11 +192,9 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
           setQuantitySheetData(allQuantitySheetData);
         }
       } else {
-        // Normal paginated fetch
         const response = await API.get(
           `/QuantitySheet/CatchByproject?ProjectId=${projectId}&pageSize=${pageSize}&currentpage=${currentPage}`
         );
-        // console.log(response.data);
         setQuantitySheetData(response.data.data);
         setTotalRecords(response.data.totalrecords);
       }
@@ -209,12 +203,12 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
     }
   };
 
+  // QC filter data to compute rejected
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await API.get(`/QC/ByProject?projectId=${projectId}`);
         setFilteredData(response.data);
-        // console.log("Filtered Data -", response.data);
       } catch (error) {
         console.error("Failed to fetch data", error);
       }
@@ -223,10 +217,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
   }, []);
 
   const filterDataByStatus = () => {
-    // console.log(filteredData)
-    const rejectedItems = filteredData.filter(
-      (item) => item.mssStatus === 4
-    );
+    const rejectedItems = filteredData.filter((item) => item.mssStatus === 4);
     const rejectedIds = rejectedItems.map((item) => item.quantitysheetId);
     const matchedData = quantitySheetData.filter((item) =>
       rejectedIds.includes(item.quantitySheetId)
@@ -253,14 +244,8 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
 
   const handleUpdateSubmit = async (updatedItem) => {
     try {
-      // console.log("Payload Data -", updatedItem);
-      // Make an API call to update the item
-      await API.put(
-        `/QuantitySheet/update/${updatedItem.quantitySheetId}`,
-        updatedItem
-      );
+      await API.put(`/QuantitySheet/update/${updatedItem.quantitySheetId}`, updatedItem);
       message.success("Item updated successfully");
-      // Refresh the data
       fetchQuantitySheetData();
     } catch (error) {
       console.error("Failed to update item:", error);
@@ -281,174 +266,215 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
       uniqueCode: "",
       quantity: 0,
       languageIds: [],
-      isNewPaper: true // Flag to identify this is a new paper
+      isNewPaper: true,
     };
-
-    // Set the new paper item and show the modal
-    setNewPaperItem(dummyItem);
-    setShowAddPaperModal(true);
+    setEditItem(dummyItem);
+    setEditIsNew(true);
+    setActiveTab("edit");
   };
 
+  const handleImportFromSearch = (record) => {
+    setEditItem(record);
+    setEditIsNew(false);
+    setActiveTab("edit");
+  };
+
+  const handleImported = () => {
+    setActiveTab("saved");
+    // refresh saved data
+    fetchQuantitySheetData();
+    // clear edit state
+    setEditItem(null);
+    setEditIsNew(false);
+  };
+
+  // QP Master results table columns
+  const qpColumns = [
+    {
+      title: "Paper Title",
+      dataIndex: "paperTitle",
+      key: "paperTitle",
+      ellipsis: true,
+    },
+    {
+      title: "Course",
+      dataIndex: "courseName",
+      key: "courseName",
+      ellipsis: true,
+    },
+    {
+      title: "NEP Code",
+      dataIndex: "nepCode",
+      key: "nepCode",
+    },
+    {
+      title: "Semester",
+      dataIndex: "examTypeName",
+      key: "examTypeName",
+    },
+    {
+      title: "Action",
+      key: "action",
+      fixed: "right",
+      render: (_, record) => (
+        <Button
+          size="sm"
+          className={`${customBtn} border-0`}
+          onClick={() => handleImportFromSearch(record)}
+        >
+          Edit & Import
+        </Button>
+      ),
+    },
+  ];
+
   return (
-    <div className="mt-4" style={{ maxWidth: "100%", overflowX: "hidden" }}>
+    <div className="mt-1" style={{ maxWidth: "100%", overflowX: "hidden" }}>
 
-      <Row className="w-100 d-flex justify-content-between align-items-center">
 
-        {/* Search bar with buttons*/}
-        <Col xs={12} md={6} lg={6} className="d-flex align-items-center">
-          <Collapse
-            defaultActiveKey={["1"]}
-            expandIconPosition="end"
-            className="flex-grow-1 border-0"
-          >
-            <div className="w-100 mb-2 border-0">
-              <Select
-                showSearch
-                value={searchTerm}
+      <Tabs className="mss-tabs" activeKey={activeTab} onChange={setActiveTab}>
+        {/* Tab 1: Search Question Paper */}
+        <TabPane tab="Search question paper" key="search">
+          <Row className="w-100 d-flex align-items-center mb-3">
+            <Col xs={12} md={8} lg={8} className="d-flex align-items-center gap-2">
+              <Input.Search
                 placeholder="Search QP Master..."
+                value={searchTerm}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setSearchTerm(val);
+                  // Debounce live search
+                  if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+                  searchDebounceRef.current = setTimeout(() => handleSearch(val), 400);
+                }}
                 onSearch={handleSearch}
-                onChange={(value) => setSearchTerm(value || null)}
-                notFoundContent={
-                  loading ? <Spin size="small" /> : "No results found"
-                }
-                style={{ width: "100%" }}
-                allowClear={true}
-                defaultOpen={false}
-                dropdownRender={(menu) => (
-                  <div>
-                    {menu}
-                    {hasMore && data.length > 0 && (
-                      <div className="text-center p-2">
-                        <Button
-                          variant="outline-primary"
-                          size="sm"
-                          onClick={handleShowMore}
-                        >
-                          Show More
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              >
-                {data.map((item) => (
-                  <Option key={item.qpMasterId} value={item.paperTitle}>
-                    <Row
-                      className="align-items-center p-2"
-                      onClick={() => setSelectedItem(item)}
-                      style={{ cursor: "pointer" }}
-                    >
-                      <Col xs={12} md={8}>
-                        <strong>{item.paperTitle}</strong>
-                        <br />
-                        <big>
-                          <strong>Course Name:</strong> {item.courseName} &nbsp;
-                          | &nbsp;
-                          <strong>NEP Code:</strong> {item.nepCode} &nbsp; |
-                          &nbsp;
-                          <strong>Semester:</strong> {item.examTypeName}
-                        </big>
-                      </Col>
-                    </Row>
-                  </Option>
-                ))}
-              </Select>
-            </div>
-          </Collapse>
-          <Tooltip title="Rejected Items" className="ms-2">
-            <Badge color="#ff4d4f" count={rejectedCount}>
-              <CloseCircleOutlined
-                onClick={() => {
-                  if (rejectedCount > 0) {
-                    setRejectedActive(true);
+                enterButton
+                allowClear
+              />
+              <Button className={`${customBtn} border-0`} size="xs" onClick={handleAddPaper}>Add Paper</Button>
+            </Col>
+            {searchTerm && (
+              <Col xs={12} md={4} lg={4} className="mt-2 mt-md-0 d-flex justify-content-end">
+                <Tooltip title="Load more results">
+                  <Button
+                    variant="outline-primary"
+                    size="sm"
+                    onClick={handleShowMore}
+                    disabled={!hasMore || loading}
+                  >
+                    Show More
+                  </Button>
+                </Tooltip>
+              </Col>
+            )}
+          </Row>
 
-                    // If in search mode, make sure we fetch all rejected items
+          {data && data.length > 0 && (
+            <Table
+              rowKey={(r) => r.qpMasterId || r.paperTitle}
+              dataSource={data}
+              columns={qpColumns}
+              loading={loading}
+              pagination={false}
+              scroll={{ x: true }}
+            />
+          )}
+        </TabPane>
+
+        {/* Tab 2: Edit Import */}
+        <TabPane tab="Edit import" key="edit">
+          {editItem ? (
+            <PaperDetailForm
+              item={editItem}
+              cssClasses={cssClasses}
+              projectId={projectId}
+              onCancel={() => {
+                setEditItem(null);
+                setActiveTab("search");
+              }}
+              onImported={handleImported}
+              isNewPaper={editIsNew}
+            />
+          ) : (
+            <div className="p-3">Select a paper from the Search tab to edit/import.</div>
+          )}
+        </TabPane>
+
+        {/* Tab 3: Saved Data */}
+        <TabPane tab="Saved data" key="saved">
+          <Row className="w-100 d-flex justify-content-between align-items-center mb-3">
+            <Col xs={12} md={6} lg={6} className="d-flex align-items-center">
+              <Tooltip title="Rejected Items" className="me-2">
+                <Badge color="#ff4d4f" count={rejectedCount}>
+                  <CloseCircleOutlined
+                    onClick={() => {
+                      if (rejectedCount > 0) {
+                        setRejectedActive(true);
+                        if (isSearchMode) {
+                          const allRejectedItems = filteredData.filter((item) => item.mssStatus === 4);
+                          setRejectedQuantitySheetData(allRejectedItems);
+                        }
+                      }
+                    }}
+                    className="fs-2"
+                    style={{ color: "#ff4d4f", cursor: rejectedCount > 0 ? "pointer" : "not-allowed" }}
+                  />
+                </Badge>
+              </Tooltip>
+
+              <Tooltip title="Refresh" className="ms-2">
+                <HiRefresh
+                  onClick={() => {
+                    setRejectedActive(false);
                     if (isSearchMode) {
-                      const allRejectedItems = filteredData.filter(item => item.mssStatus === 4);
-                      setRejectedQuantitySheetData(allRejectedItems);
+                      fetchAllQuantitySheetData();
+                    } else {
+                      fetchQuantitySheetData();
+                    }
+                  }}
+                  className="fs-2"
+                  color="blue"
+                />
+              </Tooltip>
+            </Col>
+
+            <Col xs={12} md={6} lg={6} className="d-flex justify-content-end align-items-center gap-2">
+              <Input.Search
+                placeholder="Search within saved table..."
+                onChange={(e) => {
+                  const newSearchTerm = e.target.value;
+                  // Switch to search mode for saved data
+                  if (newSearchTerm && newSearchTerm.trim() !== "") {
+                    if (!isSearchMode) {
+                      setIsSearchMode(true);
+                      fetchAllQuantitySheetData().then((d) => setQuantitySheetData(d));
+                    }
+                  } else {
+                    if (isSearchMode) {
+                      setIsSearchMode(false);
+                      fetchQuantitySheetData();
                     }
                   }
                 }}
-                className="fs-2"
-                style={{
-                  color: "#ff4d4f",
-                  cursor: rejectedCount > 0 ? "pointer" : "not-allowed",
-                }}
+                style={{ width: 240, marginRight: 10 }}
+                allowClear
               />
-            </Badge>
-          </Tooltip>
 
-          <Tooltip title="Refresh" className="ms-2">
-            <HiRefresh
-              onClick={() => {
-                setRejectedActive(false);
-                // If in search mode, make sure we're showing the correct data
-                if (isSearchMode) {
-                  fetchAllQuantitySheetData();
-                } else {
-                  fetchQuantitySheetData();
-                }
-              }}
-              className="fs-2"
-              color="blue"
-            />
-          </Tooltip>
-        </Col>
-
-        {/* Pagination and Search */}
-        <Col xs={12} md={6} lg={6} className="d-flex justify-content-end align-items-center gap-2">
-          <Button className={`${customBtn} border-0`} size="sm" onClick={handleAddPaper}>Add Paper</Button>
-
-          <Input.Search
-            placeholder="Search within table..."
-            value={tableSearchTerm}
-            onChange={(e) => {
-              const newSearchTerm = e.target.value;
-              setTableSearchTerm(newSearchTerm);
-
-              // If search term is not empty, enter search mode and fetch all data
-              if (newSearchTerm && newSearchTerm.trim() !== '') {
-                if (!isSearchMode) {
-                  setIsSearchMode(true);
-                  fetchAllQuantitySheetData().then(data => {
-                    setQuantitySheetData(data);
-                  });
-                }
-              } else {
-                // If search term is cleared, exit search mode and fetch paginated data
-                if (isSearchMode) {
-                  setIsSearchMode(false);
-                  fetchQuantitySheetData();
-                }
-              }
-            }}
-            style={{ width: 200, marginRight: 10 }}
-          />
-
-          <Select value={pageSize} onChange={(value) => setPageSize(value)} style={{ width: 100 }}>
-            <Option value={5}>5</Option>
-            <Option value={10}>10</Option>
-            <Option value={20}>20</Option>
-            <Option value={50}>50</Option>
-            <Option value={100}>100</Option>
-          </Select>
-
-        </Col>
-      </Row>
-
-
-
-      {/* Table */}
-      <Row className="justify-content-center">
-        <Col xs={12} md={12} lg={12} className="">
+              <Select value={pageSize} onChange={(value) => setPageSize(value)} style={{ width: 100 }}>
+                <Option value={5}>5</Option>
+                <Option value={10}>10</Option>
+                <Option value={20}>20</Option>
+                <Option value={50}>50</Option>
+                <Option value={100}>100</Option>
+              </Select>
+            </Col>
+          </Row>
 
           <MSSTable
-            quantitySheetData={
-              rejectedActive ? rejectedQuantitySheetData : quantitySheetData
-            }
+            quantitySheetData={rejectedActive ? rejectedQuantitySheetData : quantitySheetData}
             fetchQuantitySheetData={fetchQuantitySheetData}
             languageOptions={languageOptions}
-            tableSearchTerm={tableSearchTerm}
+            tableSearchTerm={""}
             currentPage={currentPage}
             pageSize={pageSize}
             handleTableChange={handleTableChange}
@@ -469,40 +495,8 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
             onUpdate={handleUpdateSubmit}
             projectId={projectId}
           />
-
-        </Col>
-      </Row>
-
-      {/* Modal for existing paper */}
-      <PaperDetailModal
-        visible={!!selectedItem}
-        item={selectedItem}
-        onCancel={() => {
-          setSelectedItem(null);
-          setSearchTerm(null);
-        }}
-        importing={importing}
-        cssClasses={cssClasses}
-        projectId={projectId}
-        fetchQuantitySheetData={fetchQuantitySheetData}
-        setSearchTerm={setSearchTerm}
-      />
-
-      {/* Modal for adding new paper */}
-      <PaperDetailModal
-        visible={showAddPaperModal}
-        item={newPaperItem}
-        onCancel={() => {
-          setShowAddPaperModal(false);
-          setNewPaperItem(null);
-        }}
-        importing={importing}
-        cssClasses={cssClasses}
-        projectId={projectId}
-        fetchQuantitySheetData={fetchQuantitySheetData}
-        setSearchTerm={setSearchTerm}
-        isNewPaper={true}
-      />
+        </TabPane>
+      </Tabs>
     </div>
   );
 };

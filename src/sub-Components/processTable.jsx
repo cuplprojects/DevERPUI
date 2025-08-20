@@ -1012,7 +1012,7 @@ const ProcessTable = () => {
         </Col>
       </Row>
 
-      {processName !== "Dispatch" && (
+      {processName !== "Dispatch" && processName !== "MSS" && processName !== "QC" && (
         <Row className="mb-2">
           <div className="d-flex align-items-center justify-content-between">
             <Col lg={2} md={4} className="Progressbarcolor">
