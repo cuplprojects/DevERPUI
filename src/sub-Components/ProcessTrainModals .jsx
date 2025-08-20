@@ -7,6 +7,9 @@ import themeStore from '../store/themeStore';
 import { CloseOutlined, SearchOutlined } from '@ant-design/icons';
 
 const ProcessTrainModals = ({ ProjectID, lotNumber, ProcessID, status, setModalVisible }) => {
+
+
+
   // console.log(ProjectID, lotNumber, ProcessID, status );
   const { getCssClasses } = useStore(themeStore);
   const [
@@ -20,20 +23,6 @@ const ProcessTrainModals = ({ ProjectID, lotNumber, ProcessID, status, setModalV
     customDarkBorder,
     customThead,
   ] = getCssClasses();
-
-
-  const getModalTitle = () => {
-    switch (status) {
-      case 'Pending':
-        return 'Pending';
-      case 'WIP':
-        return 'Work In Progress';
-      case 'Completed':
-        return 'Completed';
-      default:
-        return '';
-    }
-  };
 
   const rowClassName = (record) => {
     switch (record.status) {
@@ -60,7 +49,6 @@ const ProcessTrainModals = ({ ProjectID, lotNumber, ProcessID, status, setModalV
   }
 
   const [data, setData]  = useState([]);
-  const [searchText, setSearchText] = useState('');
   const [filteredData, setFilteredData] = useState([]);
 
   const columns = [
@@ -130,7 +118,6 @@ const ProcessTrainModals = ({ ProjectID, lotNumber, ProcessID, status, setModalV
   }, [ ProjectID, lotNumber, ProcessID, status]);
 
   const handleSearch = (value) => {
-    setSearchText(value);
     const searchResult = data.filter((item) => {
       return Object.values(item).some((val) => 
         String(val).toLowerCase().includes(value.toLowerCase())

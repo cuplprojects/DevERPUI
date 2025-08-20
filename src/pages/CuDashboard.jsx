@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import LineChart from "./../sub-Components/LineChart";
 import BarChart from "./../sub-Components/BarChart";
-import { Card, Col,Row,Carousel,Container,OverlayTrigger,Tooltip,Dropdown,Spinner, Button} from "react-bootstrap";
+import { Card, Col, Row, Carousel, Container, OverlayTrigger, Tooltip, Dropdown, Spinner, Button } from "react-bootstrap";
 import CuDetailedAgGrid from "../sub-Components/CuDetailedAgGrid";
 import PieChart from "../sub-Components/PieChart";
 import Cards from "../sub-Components/Cards";
@@ -21,7 +21,6 @@ import Grid from "./../assets/images/table.png";
 import { useUserData } from "../store/userDataStore";
 import { CSSTransition } from "react-transition-group";
 import styled from "styled-components";
-import { getAllProjectCompletionPercentages } from "../CustomHooks/ApiServices/transacationService";
 import { useTranslation } from "react-i18next";
 
 const AnimatedDropdownMenu = styled(Dropdown.Menu)`
@@ -75,19 +74,35 @@ const CuDashboard = () => {
   const [hasquantitySheet, setHasquantitySheet] = useState([]);
   const [activeCard, setActiveCard] = useState(null);
   const [visibleCards, setVisibleCards] = useState(() => {
+    // Load from userSettings in localStorage
+    try {
+      const userSettings = localStorage.getItem('userSettings');
+      if (userSettings) {
+        const parsedSettings = JSON.parse(userSettings);
+        const dashboardSettings = parsedSettings?.settings?.dashboardSettings;
+
+        if (dashboardSettings) {
+          return {
+            agGrid: dashboardSettings.showDashboardTable ?? true, // showDashboardTable controls agGrid
+            barChart: dashboardSettings.showBarChart ?? true,     // showBarChart controls barChart
+          };
+        }
+      }
+    } catch (error) {
+      console.error('Failed to parse userSettings:', error);
+    }
+
+    // Fallback to default
     const savedState = localStorage.getItem("visibleCards");
     return savedState
       ? JSON.parse(savedState)
       : {
-        // lineChart: true,
-        // pieChart: true,
         agGrid: true,
         barChart: true,
       };
   });
   const [visiblecardsIcon] = useState({
     lineChart: LineChartIcon,
-    pieChart: PieChartIcon,
     agGrid: Grid,
     barChart: statisticsImage,
   });
@@ -98,7 +113,7 @@ const CuDashboard = () => {
     quantitySheet: true
   });
   const [page, setPage] = useState(1);
-  const pageSize = 5; // Number of projects per page
+  const [pageSize, setPageSize] = useState(5); // Number of projects per page - will be loaded from localStorage
   const [hasMore, setHasMore] = useState(true);
 
   const hasDisable = (projectid) => {
@@ -108,105 +123,63 @@ const CuDashboard = () => {
     return hasQuantitySheet ? hasQuantitySheet.quantitySheet : false;
   };
 
-  const generateQueryString = (projectIds) => {
-    return projectIds.map(id => `projectIds=${id}`).join('&');
-  };
 
-  // useEffect(() => {
-  //   const fetchPercentages = async () => {
-  //     setIsLoading(prev => ({ ...prev, projects: true }));
-  //     try {
-  //       // get percentage
-  //       //const projectCompletionPercentages = await getAllProjectCompletionPercentages();
-  //       // get project
-  //       const projectData = await API.get(
-  //         `/Project/GetDistinctProjectsForUser/${userData.userId}`
-  //       );
-  //       const projectIds = projectData.data.map(project => project.projectId); // Extract project IDs
-  //       // Convert the projectIds array into a query string like ?projectIds=7&projectIds=9&projectIds=11
-  //       const queryString = generateQueryString(projectIds);
+  // Load pageSize from localStorage on component mount
+  useEffect(() => {
+    try {
+      const userSettings = localStorage.getItem('userSettings');
+      if (userSettings) {
+        const parsedSettings = JSON.parse(userSettings);
+        const numberOfProjects = parsedSettings?.settings?.dashboardSettings?.numberOfProjects;
 
-  //       // Fetch the completion percentages for the specific projects with the correct query string
-  //       const projectCompletionPercentages = await API.get(`/Transactions/all-project-completion-percentages?${queryString}`);
-  //       console.log(projectCompletionPercentages)
-  //       // Check if the response is an array before using .find()
-
-  //       const mergedData = projectData.data.map((project) => {
-  //         const percentage = projectCompletionPercentages.data.find(
-  //           (p) => p.projectId === project.projectId
-  //         );
-  //         return {
-  //           ...project,
-  //           completionPercentage: percentage
-  //             ? percentage.completionPercentage
-  //             : 0,
-  //           remainingPercentage: percentage
-  //             ? 100 - percentage.completionPercentage
-  //             : 100,
-  //           isrecent: false, // Add the is recent field and set it to false by default
-  //         };
-  //       }); // Filter out projects with 100% completion
-
-  //       // Check if the selected project exists in the data
-  //       const selectedProject = JSON.parse(localStorage.getItem("selectedProject"));
-  //       if (selectedProject) {
-  //         const selectedProjectIndex = mergedData.findIndex(
-  //           (project) => project.projectId === selectedProject.value
-  //         );
-  //         if (selectedProjectIndex !== -1) {
-  //           const [selectedProjectData] = mergedData.splice(selectedProjectIndex, 1);
-  //           selectedProjectData.isrecent = true; // Set isrecent to true for the selected project
-  //           mergedData.unshift(selectedProjectData);
-  //         }
-  //       }
-
-  //       // Separate projects with and without quantity sheets
-  //       const projectsWithQtySheet = mergedData.filter(project => hasDisable(project.projectId));
-  //       const projectsWithoutQtySheet = mergedData.filter(project => !hasDisable(project.projectId));
-
-  //       // Combine the two arrays, keeping projects without quantity sheets at the end
-  //       const finalData = [...projectsWithQtySheet, ...projectsWithoutQtySheet];
-
-  //       setData(finalData);
-  //     } catch (error) {
-  //       console.error("Error fetching data:", error);
-  //     }
-  //     finally {
-
-  //       setIsLoading(prev => ({ ...prev, projects: false }))
-  //     }
-  //   };
-  //   fetchPercentages();
-  // }, [userData.userId, hasquantitySheet]);
-
-
-  // useEffect(() => {
-  //   const fetchHasQuantitySheet = async () => {
-  //     setIsLoading(prev => ({ ...prev, quantitySheet: true }));
-  //     try {
-  //       const projectData = await API.get(
-  //         `/Project/GetDistinctProjectsForUser/${userData.userId}`
-  //       );
-  //       const projectIds = projectData.data.map(project => project.projectId); // Extract project IDs
-  //       const queryString = generateQueryString(projectIds); // Use the function to generate the query string
-
-
-  //       const quantitySheetResponse = await API.get(`/QuantitySheet/check-all-quantity-sheets?${queryString}`);
-  //       setHasquantitySheet(quantitySheetResponse.data); // Store the result from quantity sheet API
-  //     } catch (error) {
-  //       console.error("Error fetching quantity sheet data:", error);
-  //     } finally {
-  //       setIsLoading(prev => ({ ...prev, quantitySheet: false }));
-  //     }
-  //   };
-  //   fetchHasQuantitySheet();
-  // }, []);
-
+        if (numberOfProjects && typeof numberOfProjects === 'number') {
+          setPageSize(numberOfProjects);
+          console.log('Dashboard pageSize loaded from localStorage:', numberOfProjects);
+        } else {
+          console.log('Using default pageSize: 5');
+        }
+      } else {
+        console.log('No userSettings found, using default pageSize: 5');
+      }
+    } catch (error) {
+      console.error('Failed to parse userSettings for pageSize:', error);
+    }
+  }, []);
 
   useEffect(() => {
     fetchProjects(1); // Load initial set of projects
     fetchHasQuantitySheet();
-  }, [userData.userId]);
+  }, [userData.userId, pageSize]); // Added pageSize as dependency
+
+  // Sync visibleCards when userSettings change in localStorage
+  useEffect(() => {
+    const syncDashboardSettings = () => {
+      try {
+        const userSettings = localStorage.getItem('userSettings');
+        if (userSettings) {
+          const parsedSettings = JSON.parse(userSettings);
+          const dashboardSettings = parsedSettings?.settings?.dashboardSettings;
+
+          if (dashboardSettings) {
+            setVisibleCards(prev => ({
+              ...prev,
+              agGrid: dashboardSettings.showDashboardTable ?? prev.agGrid,   // showDashboardTable controls agGrid
+              barChart: dashboardSettings.showBarChart ?? prev.barChart,     // showBarChart controls barChart
+            }));
+          }
+        }
+      } catch (error) {
+        console.error('Failed to sync dashboard settings:', error);
+      }
+    };
+
+    // Listen for storage changes (when settings updated from Settings page)
+    window.addEventListener('storage', syncDashboardSettings);
+
+    return () => {
+      window.removeEventListener('storage', syncDashboardSettings);
+    };
+  }, []);
 
   const fetchProjects = async (pageNumber) => {
     setIsLoading(true);
@@ -223,14 +196,6 @@ const CuDashboard = () => {
 
       // Fetch project completion percentages and quantity sheets in parallel
       const response = await API.get(apiUrl);
-
-      // const quantitySheetResponse = await API.get(
-      //   `/QuantitySheet/check-all-quantity-sheets?userId=${userData.userId}`
-      // );
-
-      // const quantitySheetMap = new Map(
-      //   quantitySheetResponse.data.map((item) => [item.projectId, item.quantitySheet])
-      // );
 
       // Merge project data with completion percentages and mark starred projects
       const mergedData = response.data.map((project) => {
@@ -350,6 +315,31 @@ const CuDashboard = () => {
   const toggleCardVisibility = (card) => {
     setVisibleCards((prev) => {
       const newState = { ...prev, [card]: !prev[card] };
+
+      // Update userSettings in localStorage when toggle buttons are used
+      try {
+        const userSettings = localStorage.getItem('userSettings');
+        if (userSettings) {
+          const parsedSettings = JSON.parse(userSettings);
+
+          if (parsedSettings.settings && parsedSettings.settings.dashboardSettings) {
+            // Map component names to localStorage settings
+            if (card === 'barChart') {
+              parsedSettings.settings.dashboardSettings.showBarChart = newState[card];
+            } else if (card === 'agGrid') {
+              parsedSettings.settings.dashboardSettings.showDashboardTable = newState[card];
+            }
+
+            // Save back to localStorage
+            localStorage.setItem('userSettings', JSON.stringify(parsedSettings));
+            console.log(`Dashboard setting updated: ${card} = ${newState[card]}`);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to update userSettings:', error);
+      }
+
+      // Keep the old visibleCards for backward compatibility
       localStorage.setItem("visibleCards", JSON.stringify(newState));
       return newState;
     });
@@ -382,30 +372,30 @@ const CuDashboard = () => {
     if (activeCards === 0) {
       return (
         <>
-        <Row className="g-4">
-          {data.map((item) => (
-            <Col key={item.projectId} xs={12} sm={12} md={6} lg={3}>
-              <Cards
-                item={item}
-                onclick={onclick}
-                disableProject={hasDisable(item.projectId)}
-                activeCardStyle={activeCard === item.projectId}
+          <Row className="g-4">
+            {data.map((item) => (
+              <Col key={item.projectId} xs={12} sm={12} md={6} lg={3}>
+                <Cards
+                  item={item}
+                  onclick={onclick}
+                  disableProject={hasDisable(item.projectId)}
+                  activeCardStyle={activeCard === item.projectId}
+                />
+              </Col>
+            ))}
+          </Row>
+          {hasMore && (
+            <div className="text-center mt-3">
+              <MdExpandMore
+                onClick={() => fetchProjects(page + 1)}
+                style={{
+                  cursor: isLoading ? 'not-allowed' : 'pointer',
+                  fontSize: '3rem',
+                }}
+                className={`${isLoading ? 'opacity-50' : ''} ${customDark} ${customLightText} rounded-5`}
               />
-            </Col>
-          ))}
-        </Row>
-        {hasMore && (
-          <div className="text-center mt-3">
-            <MdExpandMore
-              onClick={() => fetchProjects(page + 1)}
-              style={{
-                cursor: isLoading ? 'not-allowed' : 'pointer',
-                fontSize: '3rem',
-              }}
-              className={`${isLoading ? 'opacity-50' : ''} ${customDark} ${customLightText} rounded-5`}
-            />
-          </div>
-        )}
+            </div>
+          )}
         </>
       );
     }
@@ -443,92 +433,92 @@ const CuDashboard = () => {
 
       return (
         <>
-        <div className="position-relative mb-4">
-          <div className="d-none d-lg-block">
-            <div
-              className={`position-absolute top-50 start-0 translate-middle-y rounded-circle ${customDark}`}
-              style={{ zIndex: 9, left: "10px", cursor: "pointer" }}
-              onClick={() => handleCarouselControl("prev")}
-            >
-              <IoMdArrowDropleftCircle
-                size={40}
-                className={`${customBtn} rounded-circle custom-zoom-btn ${customLightBorder}`}
-              />
+          <div className="position-relative mb-4">
+            <div className="d-none d-lg-block">
+              <div
+                className={`position-absolute top-50 start-0 translate-middle-y rounded-circle ${customDark}`}
+                style={{ zIndex: 9, left: "10px", cursor: "pointer" }}
+                onClick={() => handleCarouselControl("prev")}
+              >
+                <IoMdArrowDropleftCircle
+                  size={40}
+                  className={`${customBtn} rounded-circle custom-zoom-btn ${customLightBorder}`}
+                />
+              </div>
+              <div
+                className={`position-absolute top-50 end-0 translate-middle-y rounded-circle ${customDark}`}
+                style={{ zIndex: 9, right: "10px", cursor: "pointer" }}
+                onClick={() => handleCarouselControl("next")}
+              >
+                <IoMdArrowDroprightCircle
+                  size={40}
+                  className={`${customBtn} rounded-circle custom-zoom-btn ${customLightBorder}`}
+                />
+              </div>
             </div>
-            <div
-              className={`position-absolute top-50 end-0 translate-middle-y rounded-circle ${customDark}`}
-              style={{ zIndex: 9, right: "10px", cursor: "pointer" }}
-              onClick={() => handleCarouselControl("next")}
+            <Carousel
+              ref={carouselRef}
+              interval={null}
+              indicators={false}
+              controls={false}
+              touch={true}
+              slide={true}
             >
-              <IoMdArrowDroprightCircle
-                size={40}
-                className={`${customBtn} rounded-circle custom-zoom-btn ${customLightBorder}`}
-              />
+              {carouselItems}
+            </Carousel>
+          </div>
+          {hasMore && (
+            <div className="text-center mt-3">
+              <Button
+                onClick={() => fetchProjects(page + 1)}
+                disabled={isLoading}
+                className={`${isLoading ? 'opacity-50' : ''} ${customDark} ${customLightText} rounded-5 border-0 d-flex `}
+              >
+                {isLoading ? (
+                  <Spinner size="sm" />
+                ) : (
+                  <MdExpandMore size={20} />
+                )}
+              </Button>
             </div>
-          </div>
-          <Carousel
-            ref={carouselRef}
-            interval={null}
-            indicators={false}
-            controls={false}
-            touch={true}
-            slide={true}
-          >
-            {carouselItems}
-          </Carousel>
-        </div>
-        {hasMore && (
-          <div className="text-center mt-3">
-            <Button
-              onClick={() => fetchProjects(page + 1)}
-              disabled={isLoading}
-              className={`${isLoading ? 'opacity-50' : ''} ${customDark} ${customLightText} rounded-5 border-0 d-flex `}
-            >
-              {isLoading ? (
-                <Spinner size="sm" />
-              ) : (
-                <MdExpandMore size={20} />
-              )}
-            </Button>
-          </div>
-        )}
-      </>
+          )}
+        </>
       );
     }
 
     // For medium and small screens, use scrollable container
     return (
       <>
-      <ScrollableContainer className="scrollable-container mb-4" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-        <div className="d-flex flex-nowrap px-2" style={{ gap: '8px' }}>
-          {data.map((item) => (
-            <div key={item.projectId} style={{
-              flex: '0 0 auto',
-              minWidth: window.innerWidth < 768 ? '280px' : '343px',
-              transition: 'min-width 0.3s ease'
-            }}>
-              <Cards
-                item={item}
-                onclick={onclick}
-                disableProject={hasDisable(item.projectId)}
-                activeCardStyle={activeCard === item.projectId}
-              />
-            </div>
-          ))}
-        </div>
-      </ScrollableContainer>
-      {hasMore && (
-        <div className="text-center mt-3">
-          <Button
-            onClick={() => fetchProjects(page + 1)}
-            disabled={isLoading}
-            variant="primary"
-          >
-            {isLoading ? t("loading") : t("showMore")}
-          </Button>
-        </div>
-      )}
-    </>
+        <ScrollableContainer className="scrollable-container mb-4" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          <div className="d-flex flex-nowrap px-2" style={{ gap: '8px' }}>
+            {data.map((item) => (
+              <div key={item.projectId} style={{
+                flex: '0 0 auto',
+                minWidth: window.innerWidth < 768 ? '280px' : '343px',
+                transition: 'min-width 0.3s ease'
+              }}>
+                <Cards
+                  item={item}
+                  onclick={onclick}
+                  disableProject={hasDisable(item.projectId)}
+                  activeCardStyle={activeCard === item.projectId}
+                />
+              </div>
+            ))}
+          </div>
+        </ScrollableContainer>
+        {hasMore && (
+          <div className="text-center mt-3">
+            <Button
+              onClick={() => fetchProjects(page + 1)}
+              disabled={isLoading}
+              variant="primary"
+            >
+              {isLoading ? t("loading") : t("showMore")}
+            </Button>
+          </div>
+        )}
+      </>
     );
   };
 
@@ -609,45 +599,6 @@ const CuDashboard = () => {
 
       {renderCards()}
 
-      <Row className="gx-3 mt-4">
-        {visibleCards.lineChart && (
-          <Col lg={visibleCards.pieChart ? 8 : 12}>
-            <Card
-              className="dcard shadow-lg mb-3"
-              style={{ height: "400px", background: "rgba(255,255,255,0.6)" }}
-            >
-              {isLoading.projects ? (
-                <div className="d-flex justify-content-center align-items-center h-100">
-                  <Spinner animation="border" role="status" className={customDarkText}>
-                    <span className="visually-hidden">{t("loading")}</span>
-                  </Spinner>
-                </div>
-              ) : (
-                <LineChart data={data} onProjectClick={handleProjectClick} />
-              )}
-            </Card>
-          </Col>
-        )}
-
-        {visibleCards.pieChart && (
-          <Col lg={4}>
-            <Card
-              className="dcard shadow-lg mb-3"
-              style={{ height: "400px", background: "rgba(255,255,255,0.6)" }}
-            >
-              {isLoading.projects ? (
-                <div className="d-flex justify-content-center align-items-center h-100">
-                  <Spinner animation="border" role="status" className={customDarkText}>
-                    <span className="visually-hidden">{t("loading")}</span>
-                  </Spinner>
-                </div>
-              ) : (
-                <PieChart data={pieData} />
-              )}
-            </Card>
-          </Col>
-        )}
-      </Row>
 
       <Row className="gx-3 mt-4">
         {visibleCards.agGrid && (

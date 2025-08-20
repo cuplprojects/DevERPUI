@@ -30,7 +30,7 @@ const NavigationBar = ({ onLinkClick, onClose }) => {
   // Get the CSS classes for theming
   const { getCssClasses } = useStore(themeStore);
   const [customDark] = getCssClasses();
-  
+
   // Ref for the navigation bar container
   const navRef = useRef(null);
 
@@ -67,9 +67,9 @@ const NavigationBar = ({ onLinkClick, onClose }) => {
           if (!item.permission || hasPermission(item.permission)) {
             return (
               <Col xs={6} sm={4} lg={2} key={item.id} className="text-center">
-                <Link 
-                  to={item.to} 
-                  className="text-white text-decoration-none d-flex flex-column align-items-center custom-zoom-btn" 
+                <Link
+                  to={item.to}
+                  className="text-white text-decoration-none d-flex flex-column align-items-center custom-zoom-btn"
                   onClick={onLinkClick}
                 >
                   <item.icon style={{ width: "40px", height: "40px" }} />

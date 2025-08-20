@@ -25,7 +25,6 @@ import DisplayPage from './pages/ZonalDisplay/DisplayPage';
 function App() {
   const { initializeLanguage } = useLanguageStore();
   const { token } = useUserTokenStore();
-  const { logout } = AuthService;
 
   useEffect(() => {
     initializeLanguage();
@@ -38,11 +37,11 @@ function App() {
           const decodedToken = jwtDecode(token);
           const currentTime = Date.now() / 1000;
           if (decodedToken.exp <= currentTime) {
-            logout();
+            AuthService.logout();
           }
         } catch (error) {
           console.error('Token validation error:', error);
-          logout();
+          AuthService.logout();
         }
       }
     };
@@ -51,7 +50,7 @@ function App() {
     const tokenCheckInterval = setInterval(checkTokenExpiration, 60000); // Check every minute
 
     return () => clearInterval(tokenCheckInterval);
-  }, [token, logout]);
+  }, [token]);
 
   return (
     <>

@@ -1,0 +1,41 @@
+{
+    "general":{
+        "language":"en",
+        "fontSize":"medium",
+        "pageLimit":10
+    },
+    "dashboardSettings":{
+        "showDashboardTable":true,
+        "showBarChart":true,
+        "numberOfProjects":5,
+        "viewType":"project"
+    },  
+    "processScreenSettings":{
+        "defaultColumns":{
+           "interimQuantity": true,
+            "remarks": true,
+            "teamAssigned": true,
+            "paperTitle": true,
+            "paperDetails": true,
+            "envelopes": true,
+            "course": true,
+            "machine": true,
+            "zone": true,
+            "subject": true,
+            "examDate": true,
+            "examTime": true,
+            "pages": true
+        },
+        "defaultFilters":{
+            "hideCompleted": false,
+            "previousCompleted": false,
+            "catchesWithAlerts": false,
+            "catchesWithRemarks": false,
+            "showCatchData": false,
+            "showCompletionPercentage": false
+        }
+    },
+    "securitySettings": {
+        "screenLockTime": 5
+    }
+}

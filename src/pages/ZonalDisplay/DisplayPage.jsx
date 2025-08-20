@@ -67,6 +67,7 @@ const DisplayPage = () => {
     const fetchNotifications = async () => {
       try {
         const response = await API.get(`/Notifications/today`);
+        // console.log(response)
         // console.clear()
         if(response?.data?.length > 0) {
           // console.log(response.data)
@@ -134,6 +135,7 @@ const DisplayPage = () => {
           const response = await API.get(
             `/Display/ZonalDisplay?id=${userData.displayIds[0]}`
           );
+          // console.log(response.data)
           setJsonData(response.data);
           setIsLoading(false);
         }

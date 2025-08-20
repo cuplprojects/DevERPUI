@@ -9,7 +9,7 @@ import "./../styles/Profile.css";
 import { useUserData, useUserDataActions } from '../store/userDataStore';
 import API from '../CustomHooks/MasterApiHooks/api';
 import { useTranslation } from 'react-i18next';
-import ScreenLockPin from './ScreenLockPin';
+// import ScreenLockPin from './ScreenLockPin';
 import { success } from '../CustomHooks/Services/AlertMessageService';
 
 const UserProfile = () => {
@@ -27,7 +27,7 @@ const UserProfile = () => {
   const [profileImageKey, setProfileImageKey] = useState(Date.now());
   const [roles, setRoles] = useState([]);
   const [userRole, setUserRole] = useState('');
-  const [showPinModal, setShowPinModal] = useState(false);
+  // const [showPinModal, setShowPinModal] = useState(false);
   const [location, setLocation] = useState([])
 
   const APIUrlBase = import.meta.env.VITE_API_BASE_URL;
@@ -202,7 +202,7 @@ const UserProfile = () => {
             }).format(currentDateTime)}
           </p>
         </div>
-        <OverlayTrigger
+        {/* <OverlayTrigger
           placement="top"
           overlay={<Tooltip>{t('changeScreenLockPin')}</Tooltip>}
         >
@@ -214,11 +214,11 @@ const UserProfile = () => {
           >
             <FaLock size={24} className={customDarkText} />
           </Button>
-        </OverlayTrigger>
-        <ScreenLockPin
+        </OverlayTrigger> */}
+        {/* <ScreenLockPin
           show={showPinModal}
           onHide={() => setShowPinModal(false)}
-        />
+        /> */}
       </div>
       <div className={`p-4 rounded-bottom shadow-lg ${customLight} ${customDark === 'dark-dark' ? `${customDarkBorder} border-1` : "border-light"}`}>
         <Row className="align-items-center mb-4">

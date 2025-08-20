@@ -16,6 +16,7 @@ import { useMediaQuery } from 'react-responsive';
 import { useTranslation } from 'react-i18next';
 import AuthService from '../CustomHooks/ApiServices/AuthService';
 import { openCustomUiSidebar } from './CustomUi';
+import { VscSettings } from "react-icons/vsc";
 
 const UserMenu = ({ onClose }) => {
   const { t, i18n } = useTranslation();
@@ -48,12 +49,12 @@ const UserMenu = ({ onClose }) => {
 
   const handleLogoutClick = () => setShowModal(true);
   const handleProfileClick = () => navigate('/profile');
-  const handleChangePasswordClick = () => navigate('/change-password');
+  const handleChangePasswordClick = () => navigate('/settings');
 
   const handleLogoutConfirm = () => {
+    // Clear user data and perform logout (AuthService.logout() now handles all cleanup including settings)
     clearUserData();
     AuthService.logout();
-    localStorage.setItem('loggedOut', 'true');
     navigate('/');
     setShowModal(false);
     onClose();
@@ -106,8 +107,8 @@ const UserMenu = ({ onClose }) => {
       <ul className="list-unstyled">
         {[/* eslint-disable */
           { icon: <ImProfile />, text: 'profile', route: '/profile', onClick: handleProfileClick },
-          { icon: <IoSettingsSharp />, text: 'mySettings', onClick: openCustomUiSidebar },
-          { icon: <RiLockPasswordFill />, text: 'changePassword', route: '/change-password', onClick: handleChangePasswordClick },
+          { icon: <VscSettings />, text: 'utilitySettings', onClick: openCustomUiSidebar },
+          { icon: <IoSettingsSharp />, text: 'mySettings', route: '/settings', onClick: handleChangePasswordClick },
           { icon: <FaPowerOff />, text: 'logout', onClick: handleLogoutClick },
         ].map((item, index) => (
           <li key={index} className={`p-2 ${index !== 3 ? 'border-bottom' : ''} d-flex align-items-center custom-zoom-btn`}>

@@ -25,6 +25,31 @@ export const openCustomUiSidebar = () => {
   window.dispatchEvent(event);
 };
 
+const loadFontSizeFromLocalStorage = () => {
+  const userSettings = localStorage.getItem('userSettings');
+  if (userSettings) {
+    try {
+      const parsedSettings = JSON.parse(userSettings);
+      const fontSize = parsedSettings?.settings?.general?.fontSize;
+
+      if (fontSize) {
+        // If it's a string number like "18", convert it to number
+        const parsedSize = parseInt(fontSize, 10);
+        if (!isNaN(parsedSize)) return parsedSize;
+
+        // Handle fallback named sizes
+        const sizeMap = { small: 12, medium: 16, large: 20 };
+        return sizeMap[fontSize] || 16;
+      }
+    } catch (error) {
+      console.error('Failed to parse fontSize from userSettings:', error);
+    }
+  }
+  return 16;
+};
+
+
+
 const CustomUi = () => {
   const { t } = useTranslation();
   const { getCssClasses } = useStore(themeStore);
@@ -34,10 +59,35 @@ const CustomUi = () => {
   const { showLabelId, toggleShowLabelId } = useShowLabelIdStore();
 
   const [show, setShow] = useState(false);
-  const [fontSize, setFontSize] = useState(() => {
-    const savedFontSize = localStorage.getItem('fontSize');
-    return savedFontSize ? parseInt(savedFontSize) : 16;
-  });
+
+  const updateFontSizeInLocalStorage = (newFontSize) => {
+    try {
+      const userSettings = JSON.parse(localStorage.getItem('userSettings') || '{}');
+
+      if (!userSettings.settings) {
+        userSettings.settings = {};
+      }
+
+      if (!userSettings.settings.general) {
+        userSettings.settings.general = {};
+      }
+
+      // Update the font size in general settings
+      userSettings.settings.general.fontSize = `${newFontSize}px`;
+      localStorage.setItem('userSettings', JSON.stringify(userSettings));
+    } catch (error) {
+      console.error('Failed to update font size in localStorage:', error);
+    }
+  };
+
+  const handleFontSizeChange = (e) => {
+    const newFontSize = parseInt(e.target.value, 10);
+    setFontSize(newFontSize);
+    updateFontSizeInLocalStorage(newFontSize);
+  };
+
+  const [fontSize, setFontSize] = useState(() => loadFontSizeFromLocalStorage());
+
   const [isFullScreen, setIsFullScreen] = useState(false);
 
   const dragRef = useRef(null);
@@ -55,7 +105,6 @@ const CustomUi = () => {
 
   useEffect(() => {
     document.documentElement.style.fontSize = `${fontSize}px`;
-    localStorage.setItem('fontSize', fontSize);
   }, [fontSize]);
 
   const handleReset = () => setFontSize(16);
@@ -134,27 +183,9 @@ const CustomUi = () => {
     };
   }, []);
 
-  const themeIcons = {
-    "purple-dark": UiIconPurple,
-    "blue-dark": UiIconBlue,
-    "green-dark": UiIconGreen,
-    "brown-dark": UiIconBrown,
-    "light-dark": UiIconLight,
-    "pink-dark": UiIconPink,
-    "red-dark": UiIconRed,
-    "dark-dark": UiIconDark,
-    "default": UiIconDefault
-  };
 
   return (
     <>
-      {/* <div className="user-interface-container" ref={dragRef} style={{ zIndex: "99999" }} onClick={handleShow}>
-        <div className="user-interface-icon" >
-          <IoSettings className={`settings-icon-ui ${customDark === 'dark-dark' ? "text-dark border-dark" : ''}`} />
-          <img src={themeIcons[customDark] || themeIcons["default"]} alt={t('themeIcon')} className='ui-icon-img' />
-        </div>
-      </div> */}
-
       <Offcanvas show={show} onHide={handleClose} placement="end" style={{ zIndex: "9999999" }}>
         <Offcanvas.Header closeButton={false} className={`${customDark} ${customLightText} d-flex justify-content-between`}>
           <Offcanvas.Title>{t('customUiMenu')}</Offcanvas.Title>
@@ -184,13 +215,12 @@ const CustomUi = () => {
               max={24}
               step={1}
               value={fontSize}
-              onChange={(e) => setFontSize(parseInt(e.target.value))}
+              onChange={handleFontSizeChange}
             />
             <Form.Text className="text-muted">
               {t('currentFontSize')}: {fontSize}px
             </Form.Text>
           </Form.Group>
-
           <Row className="mt-4 align-items-center">
             <Col>
               <Form.Label>{t('fullScreenMode')}</Form.Label>

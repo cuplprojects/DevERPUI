@@ -1,3 +1,158 @@
 /* .mss-search .ant-card-body{
     padding:0px !important
 } */
+
+/* Make Tabs occupy full width and divide tab labels equally */
+.mss-tabs .ant-tabs-nav {
+  margin: 0 !important;
+}
+.mss-tabs .ant-tabs-nav-wrap {
+  width: 100%;
+}
+.mss-tabs .ant-tabs-nav-list {
+  display: flex;
+  width: 100%;
+}
+.mss-tabs .ant-tabs-tab {
+  flex: 1 1 0;
+  display: flex;
+  justify-content: center;
+}
+.mss-tabs .ant-tabs-tab-btn {
+  width: 100%;
+  text-align: center;
+}
+
+/* Ensure tab content uses full width */
+.mss-tabs .ant-tabs-content-holder,
+.mss-tabs .ant-tabs-content {
+  width: 100%;
+}
+
+/* MSS Table Enhancements */
+.mss-table {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  /* Border variables (overridden by theme-specific classes below) */
+  --mss-border-color: #91d5ff;
+  --mss-border-hover-color: #40a9ff;
+  --mss-border-alt-color: #bae7ff;
+}
+
+.mss-table .ant-table-thead > tr > th {
+  font-weight: 600;
+  text-transform: none;
+}
+
+/* Header theming based on existing classes applied from theme */
+.mss-table.thead-default .ant-table-thead > tr > th { background: #f0f2f5; color: #1f1f1f; }
+.mss-table.thead-red .ant-table-thead > tr > th { background: #fff1f0; color: #a8071a; }
+.mss-table.thead-green .ant-table-thead > tr > th { background: #f6ffed; color: #135200; }
+.mss-table.thead-blue .ant-table-thead > tr > th { background: #e6f7ff; color: #003a8c; }
+.mss-table.thead-dark .ant-table-thead > tr > th { background: #141414; color: #f0f0f0; }
+.mss-table.thead-pink .ant-table-thead > tr > th { background: #fff0f6; color: #9e1068; }
+.mss-table.thead-purple .ant-table-thead > tr > th { background: #f9f0ff; color: #391085; }
+.mss-table.thead-light .ant-table-thead > tr > th { background: #ffffff; color: #1f1f1f; }
+.mss-table.thead-brown .ant-table-thead > tr > th { background: #fff7e6; color: #613400; }
+
+/* Themed border variables */
+.mss-table.thead-default { --mss-border-color: #d9d9d9; --mss-border-hover-color: #8c8c8c; --mss-border-alt-color: #bfbfbf; }
+.mss-table.thead-red { --mss-border-color: #ffccc7; --mss-border-hover-color: #ff7875; --mss-border-alt-color: #ffa39e; }
+.mss-table.thead-green { --mss-border-color: #b7eb8f; --mss-border-hover-color: #73d13d; --mss-border-alt-color: #d9f7be; }
+.mss-table.thead-blue { --mss-border-color: #91d5ff; --mss-border-hover-color: #40a9ff; --mss-border-alt-color: #69c0ff; }
+.mss-table.thead-dark { --mss-border-color: #595959; --mss-border-hover-color: #434343; --mss-border-alt-color: #8c8c8c; }
+.mss-table.thead-pink { --mss-border-color: #ffadd2; --mss-border-hover-color: #eb2f96; --mss-border-alt-color: #ff85c0; }
+.mss-table.thead-purple { --mss-border-color: #d3adf7; --mss-border-hover-color: #9254de; --mss-border-alt-color: #b37feb; }
+.mss-table.thead-light { --mss-border-color: #d9d9d9; --mss-border-hover-color: #8c8c8c; --mss-border-alt-color: #bfbfbf; }
+.mss-table.thead-brown { --mss-border-color: #ffd591; --mss-border-hover-color: #d48806; --mss-border-alt-color: #ffc069; }
+
+/* Strong outer border and cell borders */
+.mss-table.ant-table-bordered .ant-table-container {
+  border: 2px solid var(--mss-border-color);
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.02);
+}
+.mss-table.ant-table-bordered .ant-table-thead > tr > th,
+.mss-table.ant-table-bordered .ant-table-tbody > tr > td,
+.mss-table.ant-table-bordered .ant-table-summary > tr > td {
+  border-right-color: var(--mss-border-color);
+  border-bottom-color: var(--mss-border-color);
+}
+.mss-table:hover .ant-table-container {
+  border-color: var(--mss-border-hover-color);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08), inset 0 0 0 2px rgba(0, 0, 0, 0.02);
+}
+
+/* Striped border lines (rows and columns) */
+.mss-table.ant-table-bordered .ant-table-thead > tr > th:nth-child(odd) {
+  border-right-color: var(--mss-border-alt-color);
+}
+.mss-table.ant-table-bordered .ant-table-tbody > tr > td:nth-child(odd),
+.mss-table.ant-table-bordered .ant-table-summary > tr > td:nth-child(odd) {
+  border-right-color: var(--mss-border-alt-color);
+}
+.mss-table.ant-table-bordered .ant-table-tbody > tr:nth-child(odd) > td {
+  border-bottom-color: var(--mss-border-alt-color);
+}
+
+/* Row states */
+.mss-table .row-rejected td { background: #fff1f0 !important; color: #a8071a; }
+.mss-table .row-received td { background: #f6ffed !important; color: #135200; }
+.mss-table .row-pending td { background: #fffbe6 !important; color: #ad8b00; }
+
+/* Hover effect */
+.mss-table .ant-table-tbody > tr:hover > td { background: #e6f7ff !important; }
+
+/* Compact tags in cells */
+.mss-tag { margin-right: 4px; margin-bottom: 4px; }
+
+/* Zebra striping for untagged rows */
+.mss-table .ant-table-tbody > tr:nth-child(odd):not(.row-rejected):not(.row-received):not(.row-pending) > td {
+  background-color: #fafafa;
+}
+.mss-table .ant-table-tbody > tr:nth-child(even):not(.row-rejected):not(.row-received):not(.row-pending) > td {
+  background-color: #fafafa;
+}
+
+/* Make row separators crisper and more visible */
+.mss-table .ant-table-tbody > tr:not(.row-rejected):not(.row-received):not(.row-pending) > td {
+  border-bottom-color: var(--mss-border-hover-color);
+}
+
+/* Subtle top hairline on even rows for extra separation */
+.mss-table .ant-table-tbody > tr:nth-child(even):not(.row-rejected):not(.row-received):not(.row-pending) > td {
+  box-shadow: inset 0 1px 0 var(--mss-border-alt-color);
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  .mss-table .ant-table-thead > tr > th,
+  .mss-table .ant-table-tbody > tr > td {
+    padding: 8px 10px;
+  }
+  .mss-table .ant-tag {
+    font-size: 12px;
+    line-height: 20px;
+  }
+}
+
+@media (max-width: 576px) {
+  .mss-table .ant-table-thead > tr > th,
+  .mss-table .ant-table-tbody > tr > td {
+    padding: 6px 8px;
+  }
+  .mss-table .ant-table-container {
+    overflow-x: auto;
+  }
+}
+
+/* Add a small gap between tabs and their content where needed */
+.mss-tab-content-gap {
+  margin-top: 12px;
+}
+@media (max-width: 576px) {
+  .mss-tab-content-gap {
+    margin-top: 8px;
+  }
+}

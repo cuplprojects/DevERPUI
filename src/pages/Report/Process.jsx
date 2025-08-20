@@ -119,91 +119,44 @@ const ProcessDetails = ({ catchData, projectName }) => {
           </tr>
         </thead>
         <tbody>
-          {processData.map((process) => {
-            // For each process, create rows for each series (or just one row if not booklet type)
-            return (isBookletType ? activeSeries : [null]).map((series, seriesIndex) => {
-              // Find the transaction for this series, or use the first transaction as fallback
-              const transaction = process.transactions.find(t => t.series === series) || process.transactions[0] || {};
-
-              return (
-                <tr key={`${process.processId}-${series || 'no-series'}-${seriesIndex}`}>
-                  {/* Series Name column - only for booklet type */}
-                  {isBookletType && (
-                    <td className="text-center text-nowrap align-middle">
-                      <span className="text-primary">{catchData.catchNo} - {series}</span>
-                    </td>
-                  )}
-
-                  {/* Process Name column - use rowSpan for booklet type */}
-                  {seriesIndex === 0 && (
-                    <td
-                      className="text-center text-nowrap align-middle"
-                      rowSpan={isBookletType ? activeSeries.length : 1}
-                    >
-                      <span className="text-secondary">{getProcessName(process.processId)}</span>
-                    </td>
-                  )}
-
-                  {/* Zone column */}
-                  <td className="text-center text-nowrap align-middle text-muted">
-                    {transaction.zoneName || ''}
-                  </td>
-
-                  {/* Team & Supervisor column */}
-                  <td className="text-center align-middle">
-                    <div className="d-flex flex-wrap gap-1 justify-content-center align-items-center">
-                      {transaction.supervisor && (
-                        <span className="badge bg-warning text-dark text-truncate">
-                          👤 {transaction.supervisor}
-                        </span>
-                      )}
-
-                      {(transaction.teamMembers || []).map((member, idx) => (
-                        <span key={`member-${idx}`} className="badge bg-light text-dark text-truncate">
-                          {member.fullName}
-                        </span>
-                      ))}
+          {processData.map((process) => (
+            process.transactions.map((transaction, idx) => (
+              <tr key={`${process.processId}-${idx}`}>
+                <td className="text-center fw-medium text-nowrap">
+                  {getProcessName(process.processId)}
+                </td>
+                <td className="text-center text-secondary">
+                  {transaction.zoneName || ''}
+                </td>
+                <td className="text-center">
+                  <div className="d-flex flex-wrap gap-1 justify-content-center align-items-center">
+                    <span className="badge bg-warning text-dark text-truncate">
+                      👤 {transaction.supervisor}
+                    </span>
+                    
+                    {transaction.teamMembers?.map((member, index) => (
+                      <span key={`member-${index}`} className="badge bg-light text-dark text-truncate">
+                        {member.fullName}
+                      </span>
+                    ))}
+                  </div>
+                </td>
+                <td className="text-center text-secondary text-nowrap">
+                  {transaction.machineName || ''}
+                </td>
+                <td className="text-center text-nowrap">
+                  <div className="small">
+                    <div>
+                      <strong>Start:</strong> {new Date(transaction.startTime).toLocaleString()}
                     </div>
-                  </td>
-
-                  {/* Machine column */}
-                  <td className="text-center text-nowrap align-middle text-muted">
-                    {transaction.machineName || ''}
-                  </td>
-
-                  {/* Time column */}
-                  <td className="text-center align-middle">
-                    <div className="small">
-                      {transaction.startTime && (
-                        <div>
-                          <strong>Start:</strong> {new Date(transaction.startTime).toLocaleString('en-GB', {
-                            day: '2-digit',
-                            month: '2-digit',
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            hour12: true
-                          })}
-                        </div>
-                      )}
-                      {transaction.endTime && (
-                        <div>
-                          <strong>End:</strong> {new Date(transaction.endTime).toLocaleString('en-GB', {
-                            day: '2-digit',
-                            month: '2-digit',
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            hour12: true
-                          })}
-                        </div>
-                      )}
+                    <div>
+                      <strong>End:</strong> {new Date(transaction.endTime).toLocaleString()}
                     </div>
-                  </td>
-                </tr>
-              );
-            });
-          })}
+                  </div>
+                </td>
+              </tr>
+            ))
+          ))}
         </tbody>
       </Table>
     </div>

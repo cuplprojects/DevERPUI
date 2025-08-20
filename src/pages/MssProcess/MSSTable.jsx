@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Table, Input, Button, Space, message, DatePicker } from "antd";
+import { Table, Input, Button, Space, message, DatePicker, Tag } from "antd";
 import { Modal } from 'react-bootstrap';
 import { CheckCircleOutlined, EditOutlined } from "@ant-design/icons";
 import API from "../../CustomHooks/MasterApiHooks/api";
@@ -179,65 +179,106 @@ const MSSTable = ({
       title: "Catch No",
       dataIndex: "catchNo",
       key: "catchNo",
+      width: 110,
+      ellipsis: true,
+      responsive: ['xs'],
       sorter: (a, b) => a.catchNo.localeCompare(b.catchNo),
       ...getColumnSearchProps("catchNo"),
       editable: true,
+      render: (text) => (text ? <Tag color="blue">{text}</Tag> : ""),
     },
     {
       title: "NEP Code",
       dataIndex: "nepCode",
       key: "nepCode",
+      width: 120,
+      ellipsis: true,
+      responsive: ['md'],
       sorter: (a, b) => a.nepCode.localeCompare(b.nepCode),
       ...getColumnSearchProps("nepCode"),
       editable: true,
+      render: (text) => (text ? <Tag color="geekblue">{text}</Tag> : ""),
     },
     {
       title: "Course",
       dataIndex: "courseName",
       key: "courseName",
+      width: 160,
+      ellipsis: true,
+      responsive: ['sm'],
       sorter: (a, b) => a.courseName.localeCompare(b.courseName),
       ...getColumnSearchProps("courseName"),
-
+      render: (text) => (text ? <Tag color="purple">{text}</Tag> : ""),
     },
     {
       title: "Subject",
       dataIndex: "subjectName",
       key: "subjectName",
+      width: 160,
+      ellipsis: true,
+      responsive: ['sm'],
       sorter: (a, b) => a.subjectName.localeCompare(b.subjectName),
       ...getColumnSearchProps("subjectName"),
-
+      render: (text) => (text ? <Tag color="magenta">{text}</Tag> : ""),
     },
     {
       title: "Paper Title",
       dataIndex: "paperTitle",
       key: "paperTitle",
+      width: 220,
+      ellipsis: true,
+      responsive: ['md'],
       sorter: (a, b) => a.paperTitle.localeCompare(b.paperTitle),
       ...getColumnSearchProps("paperTitle"),
       editable: true,
+      render: (text) => {
+        if (!text) return "";
+        return (
+          <Tooltip title={text} placement="topLeft">
+            <span style={{ display: "inline-block", maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {text}
+            </span>
+          </Tooltip>
+        );
+      },
     },
     {
       title: "Duration",
       dataIndex: "duration",
       key: "duration",
+      width: 120,
+      ellipsis: true,
+      responsive: ['lg'],
       sorter: (a, b) => a.duration.localeCompare(b.duration),
       ...getColumnSearchProps("duration"),
       editable: true,
+      render: (text) => (text ? <Tag color="gold">{text}</Tag> : ""),
     },
     {
       title: "Language",
       dataIndex: "languageId",
       key: "languageId",
+      width: 200,
+      ellipsis: true,
+      responsive: ['lg'],
       render: (text) => {
         if (!text) return "";
         if (Array.isArray(text)) {
-          return text
+          const names = text
             .map((id) => {
               const language = languageOptions.find((l) => l.languageId === id);
               return language ? language.languages : id;
             })
-            .join(", ");
+            .filter(Boolean);
+          return (
+            <span>
+              {names.map((name) => (
+                <Tag color="green" key={name} className="mss-tag">{name}</Tag>
+              ))}
+            </span>
+          );
         }
-        return text;
+        return <Tag color="green">{text}</Tag>;
       },
       sorter: (a, b) => {
         const aLanguages = a.languageId.map(
@@ -248,56 +289,78 @@ const MSSTable = ({
         );
         return aLanguages.join(", ").localeCompare(bLanguages.join(", "));
       },
-
     },
     {
       title: "Paper#",
       dataIndex: "paperNumber", // Changed from paperNo to paperNumber to match API
       key: "paperNumber",
+      width: 120,
+      ellipsis: true,
+      responsive: ['xs'],
       sorter: (a, b) => (a.paperNumber || '').localeCompare(b.paperNumber || ''),
       ...getColumnSearchProps("paperNumber"),
-
+      render: (text) => (text ? <Tag color="volcano">{text}</Tag> : ""),
     },
     {
       title: "Quantity",
       dataIndex: "quantity",
       key: "quantity",
+      width: 120,
+      ellipsis: true,
+      responsive: ['xs'],
       sorter: (a, b) => a.quantity - b.quantity,
       ...getColumnSearchProps("quantity"),
-
+      render: (value) => {
+        const qty = Number(value) || 0;
+        const color = qty >= 1000 ? "green" : qty >= 500 ? "gold" : "red";
+        return <Tag color={color}>{qty}</Tag>;
+      },
     },
     {
       title: "Max Marks",
       dataIndex: "maxMarks",
       key: "maxMarks",
+      width: 120,
+      ellipsis: true,
+      responsive: ['lg'],
       sorter: (a, b) => a.maxMarks - b.maxMarks,
       ...getColumnSearchProps("maxMarks"),
-
-
+      render: (value) => (value !== undefined && value !== null ? <Tag color="cyan">{value}</Tag> : ""),
     },
     {
       title: "Unique Code",
       dataIndex: "uniqueCode",
       key: "uniqueCode",
+      width: 160,
+      ellipsis: true,
+      responsive: ['lg'],
       sorter: (a, b) => (a.uniqueCode || '').localeCompare(b.uniqueCode || ''),
       ...getColumnSearchProps("uniqueCode"),
       editable: true,
+      render: (text) => (text ? <Tag color="lime">{text}</Tag> : ""),
     },
     {
       title: "Exam Date",
       dataIndex: "examDate",
       key: "examDate",
+      width: 140,
+      ellipsis: true,
+      responsive: ['xs'],
       sorter: (a, b) => (a.examDate || '').localeCompare(b.examDate || ''),
       ...getColumnSearchProps("examDate"),
-
+      render: (text) => (text ? <Tag color="blue">{text}</Tag> : ""),
     },
     {
       title: "Exam Time",
       dataIndex: "examTime",
       key: "examTime",
+      width: 140,
+      ellipsis: true,
+      responsive: ['md'],
       sorter: (a, b) => (a.examTime || '').localeCompare(b.examTime || ''),
       ...getColumnSearchProps("examTime"),
       editable: true,
+      render: (text) => (text ? <Tag color="geekblue">{text}</Tag> : ""),
     },
 
 
@@ -305,6 +368,9 @@ const MSSTable = ({
       title: "Structure of Paper",
       dataIndex: "structureOfPaper",
       key: "structureOfPaper",
+      width: 260,
+      ellipsis: true,
+      responsive: ['xl'],
       sorter: (a, b) => (a.structureOfPaper || '').localeCompare(b.structureOfPaper || ''),
       ...getColumnSearchProps("structureOfPaper"),
       editable: true,
@@ -337,6 +403,7 @@ const MSSTable = ({
       title: "Actions",
       key: "actions",
       fixed: 'right',
+      width: 120,
       render: (_, record) => (
         <Space size="middle">
 
@@ -485,11 +552,25 @@ ${customDark === "dark-dark" ? "thead-dark" : ""}
 ${customDark === "pink-dark" ? "thead-pink" : ""}
 ${customDark === "purple-dark" ? "thead-purple" : ""}
 ${customDark === "light-dark" ? "thead-light" : ""}
-${customDark === "brown-dark" ? "thead-brown" : ""} `}
+${customDark === "brown-dark" ? "thead-brown" : ""} mss-table`}
         responsive={true}
+        scroll={{ x: 'max-content' }}
         columns={columns}
         dataSource={filteredData}
         rowKey="quantitySheetId"
+        bordered={true}
+        size="middle"
+        locale={{
+          emptyText: isSearchMode || tableSearchTerm
+            ? 'No results match your search.'
+            : 'No data'
+        }}
+        sticky
+        rowClassName={(record) => {
+          if (record.mssStatus === 4) return 'row-rejected';
+          if (record.mssStatus >= 2) return 'row-received';
+          return 'row-pending';
+        }}
         pagination={{
           current: isSearchMode || tableSearchTerm ? 1 : currentPage,
           pageSize: pageSize,

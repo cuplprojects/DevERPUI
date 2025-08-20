@@ -9,9 +9,9 @@ import { jwtDecode } from 'jwt-decode';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
-import themeStore from './../store/themeStore';
+import themeStore from '../../../../../store/themeStore';
 import { useStore } from 'zustand';
-import API from '../CustomHooks/MasterApiHooks/api';
+import API from '../../../../../CustomHooks/MasterApiHooks/api';
 
 const ChangePassword = () => {
   const navigate = useNavigate();
@@ -85,7 +85,7 @@ const ChangePassword = () => {
    */
   const handleSubmit = (event) => {
     event.preventDefault();
-  
+
     if (formData.newPassword !== confirmPassword) {
       toast.error(t('newPasswordsDoNotMatch'), {
         position: "top-right",
@@ -109,7 +109,7 @@ const ChangePassword = () => {
       });
       return;
     }
-  
+
     const userId = userIdApi; // extracted from the decoded token
 
     const apiUrl = `/Login/Changepassword/${userId}`;
@@ -118,7 +118,7 @@ const ChangePassword = () => {
       oldPassword: formData.oldPassword,
       newPassword: formData.newPassword,
     };
-  
+
 
     API.put(apiUrl, payload)
       .then((response) => {
@@ -128,7 +128,7 @@ const ChangePassword = () => {
           hideProgressBar: true,
           closeOnClick: false,
           draggable: true,
-          style: {  backgroundColor: 'green' , color:"white"  },
+          style: { backgroundColor: 'green', color: "white" },
           onClose: () => {
             navigate('/cudashboard');
           }
@@ -141,10 +141,10 @@ const ChangePassword = () => {
           hideProgressBar: true,
           closeOnClick: false,
           draggable: true,
-          style: { backgroundColor: '#dc3545', color: 'white'  },
+          style: { backgroundColor: '#dc3545', color: 'white' },
         });
       });
-  
+
     // Optionally reset the form fields
     setFormData({
       oldPassword: '',
@@ -152,33 +152,23 @@ const ChangePassword = () => {
     });
     setConfirmPassword('');
   };
-  
+
   return (
-    <Container
-      className={`mt-5 w-100 p-4 shadow-lg rounded-5 ${customLightBorder} ${customLight}`}
-      style={{ maxWidth: '800px',zIndex:"0" }}
-    >
+    <Container className={`w-100 p-3 shadow-lg rounded-4 ${customLightBorder} ${customLight}`} style={{ maxWidth: '800px', zIndex: "0" }}>
       <Row>
-        <Col lg={12}>
-          <div className="d-flex align-items-center justify-content-center mb-4">
-            <div className="icon me-2">
-              <FaLock size={25} className={`${customBtn === 'btn-dark' ? "text-white" : `${customDarkText}`}`} />
-            </div>
-            <h2 className={`text-center fw-bold ${customBtn === 'btn-dark' ? "text-white" : `${customDarkText}`}`}>
+        <Col lg={12} className="mb-2">
+          <div className="d-flex justify-content-center align-items-center gap-2">
+            <h className={`fw-bold mb-0 ${customBtn === 'btn-dark' ? "text-white" : customDarkText}`}>
               {t('changePassword')}
-            </h2>
+            </h>
           </div>
         </Col>
       </Row>
       <Row className="align-items-center justify-content-center">
-        <Col md={6} lg={5} className="text-center d-none d-md-block">
-          <IoMdLock size={250} className={`${customBtn === 'btn-dark' ? "text-white" : `${customDarkText}`}`} />
-        </Col>
-        <Col md={6} lg={7}>
+        <Col md={12} lg={12}>
           <Form onSubmit={handleSubmit}>
-            {/* Old Password Field */}
             <Form.Group className="mb-3" controlId="formOldPassword">
-              <Form.Label className={`${customBtn === 'btn-dark' ? "text-white" : `${customDarkText}`}`}>
+              <Form.Label className={`${customBtn === 'btn-dark' ? "text-white" : customDarkText}`}>
                 {t('currentPassword')}
               </Form.Label>
               <InputGroup>
@@ -201,9 +191,8 @@ const ChangePassword = () => {
               </InputGroup>
             </Form.Group>
 
-            {/* New Password Field */}
             <Form.Group className="mb-3" controlId="formNewPassword">
-              <Form.Label className={`${customBtn === 'btn-dark' ? "text-white" : `${customDarkText}`}`}>
+              <Form.Label className={`${customBtn === 'btn-dark' ? "text-white" : customDarkText}`}>
                 {t('newPassword')}
               </Form.Label>
               <InputGroup>
@@ -226,9 +215,8 @@ const ChangePassword = () => {
               </InputGroup>
             </Form.Group>
 
-            {/* Confirm New Password Field */}
             <Form.Group className="mb-3" controlId="formConfirmPassword">
-              <Form.Label className={`${customBtn === 'btn-dark' ? "text-white" : `${customDarkText}`}`}>
+              <Form.Label className={`${customBtn === 'btn-dark' ? "text-white" : customDarkText}`}>
                 {t('confirmNewPassword')}
               </Form.Label>
               <InputGroup>
@@ -249,20 +237,21 @@ const ChangePassword = () => {
                 </InputGroup.Text>
               </InputGroup>
             </Form.Group>
-
-            {/* Submit Button */}
-            <Button
-              type="submit"
-              disabled={false} // No submission logic, so always enabled
-              className={`${customBtn} ${customDark === "dark-dark" ? "border border-white" : "border-0"} custom-zoom-btn w-100`}
-            >
-              {t('submit')}
-            </Button>
+            <div className="d-flex justify-content-end gap-2">
+              <Button
+                type="submit"
+                disabled={false}
+                className={`${customBtn} ${customDark === "dark-dark" ? "border border-white" : "border-0"} custom-zoom-btn btn-small`}
+              >
+                {t('submit')}
+              </Button>
+            </div>
           </Form>
-          <ToastContainer style={{marginTop:"50px"}} autoClose={1500}/>
+          <ToastContainer style={{ marginTop: "50px" }} autoClose={1500} />
         </Col>
       </Row>
     </Container>
+
   );
 };
 

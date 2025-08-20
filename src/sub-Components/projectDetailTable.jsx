@@ -16,9 +16,6 @@ import AlarmModal from "./../menus/AlarmModal";
 import InterimQuantityModal from "./../menus/InterimQuantityModal";
 import RemarksModal from "./../menus/RemarksModal";
 import CatchDetailModal from "./../menus/CatchDetailModal";
-import SelectZoneModal from "./../menus/SelectZoneModal";
-import SelectMachineModal from "../menus/SelectMachineModal";
-import AssignTeamModal from "./../menus/AssignTeamModal";
 import "./../styles/ProjectDetailsTable.css";
 import { IoCloseCircle } from "react-icons/io5";
 import StatusToggle from "../menus/StatusToggle";
@@ -38,6 +35,11 @@ import Tippy from "@tippyjs/react";
 import InputPages from "../menus/InputPages";
 import { success } from "../CustomHooks/Services/AlertMessageService";
 import TransferToFactoryModal from "../menus/TransferTofactoryModal";
+import StatusBarChart from "./StatusBarChart";
+import StatusPieChart from "./StatusPieChart";
+
+import AssignZTMModal from "../menus/AssignZTM";
+
 
 
 const { Option } = Select;
@@ -52,7 +54,13 @@ const ProjectDetailsTable = ({
   lotNo,
   fetchTransactions,
   handleLotClick,
-  projectLots
+  projectLots,
+  data,
+  catchNumbers
+  // setShowBarChart,
+  // showBarChart,
+  // setShowPieChart,
+  // showPieChart
 }) => {
   //Theme Change Section
   const { t } = useTranslation();
@@ -71,21 +79,145 @@ const ProjectDetailsTable = ({
   const [initialTableData, setInitialTableData] = useState(tableData);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 
-  //default hide and unhide
-  const [columnVisibility, setColumnVisibility] = useState({
-    Alerts: false,
-    "Interim Quantity": false,
-    Remarks: false,
-    Envelopes: false,
-    Paper: false, // Enable by default on large screens
-    Course: false,
-    Subject: false,
-    Zone: false, // Add Zone visibility
-    Machine: false, // Add Machine visibility
-    Pages: false,
-  });
+  const loadDefaultFilters = () => {
+    const userSettings = localStorage.getItem('userSettings');
+    if (userSettings) {
+      try {
+        const parsedSettings = JSON.parse(userSettings);
+        const defaultFilters = parsedSettings?.settings?.processScreenSettings?.defaultFilters;
+        if (defaultFilters) {
+          return {
+            hideCompleted: defaultFilters.hideCompleted,
+            previousCompleted: defaultFilters.previousCompleted,
+            catchesWithAlerts: defaultFilters.catchesWithAlerts,
+            catchesWithRemarks: defaultFilters.catchesWithRemarks,
+            showCatchData: defaultFilters.showCatchData,
+            showCompletionPercentage: defaultFilters.showCompletionPercentage,
+          };
+        }
+      } catch (error) {
+        console.error('Failed to parse userSettings from localStorage:', error);
+      }
+    }
+    // Return default filter settings if none are found in localStorage
+    return {
+      hideCompleted: false,
+      previousCompleted: false,
+      catchesWithAlerts: false,
+      catchesWithRemarks: false,
+      showCatchData: false,
+      showCompletionPercentage: false,
+    };
+  };
 
-  const [hideCompleted, setHideCompleted] = useState(false);
+
+  const updateFilterSettingsInLocalStorage = (filterKey, value) => {
+    try {
+      const userSettings = JSON.parse(localStorage.getItem('userSettings') || '{}');
+      if (!userSettings.settings) {
+        userSettings.settings = {};
+      }
+      if (!userSettings.settings.processScreenSettings) {
+        userSettings.settings.processScreenSettings = { defaultFilters: {} };
+      }
+      userSettings.settings.processScreenSettings.defaultFilters[filterKey] = value;
+      localStorage.setItem('userSettings', JSON.stringify(userSettings));
+    } catch (error) {
+      console.error('Failed to update filter settings in localStorage:', error);
+    }
+  };
+
+  const handleToggleChange = (checked) => {
+    setHideCompleted(checked);
+    updateFilterSettingsInLocalStorage('hideCompleted', checked);
+  };
+
+  const handleShowOnlyCompletedPreviousProcessChange = (checked) => {
+    setShowOnlyCompletedPreviousProcess(checked);
+    updateFilterSettingsInLocalStorage('previousCompleted', checked);
+  };
+
+  const handleShowOnlyAlertsChange = (checked) => {
+    setShowOnlyAlerts(checked);
+    updateFilterSettingsInLocalStorage('catchesWithAlerts', checked);
+  };
+
+  const handleShowOnlyRemarksChange = (checked) => {
+    setShowOnlyRemarks(checked);
+    updateFilterSettingsInLocalStorage('catchesWithRemarks', checked);
+  };
+
+  const handleShowBarChartChange = (checked) => {
+    setShowBarChart(checked);
+    updateFilterSettingsInLocalStorage('showCatchData', checked);
+  };
+
+  const handleShowPieChartChange = (checked) => {
+    setShowPieChart(checked);
+    updateFilterSettingsInLocalStorage('showCompletionPercentage', checked);
+  };
+
+
+  const [hideCompleted, setHideCompleted] = useState(loadDefaultFilters().hideCompleted);
+  const [showOnlyCompletedPreviousProcess, setShowOnlyCompletedPreviousProcess] = useState(loadDefaultFilters().previousCompleted);
+  const [showOnlyAlerts, setShowOnlyAlerts] = useState(loadDefaultFilters().catchesWithAlerts);
+  const [showOnlyRemarks, setShowOnlyRemarks] = useState(loadDefaultFilters().catchesWithRemarks);
+  const [showBarChart, setShowBarChart] = useState(loadDefaultFilters().showCatchData);
+  const [showPieChart, setShowPieChart] = useState(loadDefaultFilters().showCompletionPercentage);
+
+
+  // this function is to load column visibility settings from localStorage
+  const loadColumnVisibilitySettings = () => {
+    const userSettings = localStorage.getItem('userSettings');
+    if (userSettings) {
+      try {
+        const parsedSettings = JSON.parse(userSettings);
+        const defaultColumns = parsedSettings?.settings?.processScreenSettings?.defaultColumns;
+
+        if (defaultColumns) {
+          return {
+            "Interim Quantity": defaultColumns.interimquantity ?? defaultColumns.interimQuantity,
+            "Remarks": defaultColumns.remarks,
+            "Team Assigned": defaultColumns.teamassigned ?? defaultColumns.teamAssigned,
+            "PaperTitle": defaultColumns.papertitle ?? defaultColumns.paperTitle,
+            "Paper Details": defaultColumns.paperdetails ?? defaultColumns.paperDetails,
+            "Envelopes": defaultColumns.envelopes,
+            "Course": defaultColumns.course,
+            "Machine": defaultColumns.machine,
+            "Zone": defaultColumns.zone,
+            "Subject": defaultColumns.subject,
+            "Exam Date": defaultColumns.examdate ?? defaultColumns.examDate,
+            "Exam Time": defaultColumns.examtime ?? defaultColumns.examTime,
+            "Pages": defaultColumns.pages
+          };
+        }
+      } catch (error) {
+        console.error('Failed to parse userSettings from localStorage:', error);
+      }
+    }
+
+    // Return default visibility settings if none are found in localStorage
+    return {
+      "Interim Quantity": false,
+      "Remarks": false,
+      "Team Assigned": false,
+      "PaperTitle": false,
+      "Paper Details": false,
+      "Envelopes": false,
+      "Course": false,
+      "Machine": false,
+      "Zone": false,
+      "Subject": false,
+      "Exam Date": false,
+      "Exam Time": false,
+      "Pages": false
+    };
+  };
+
+
+  //default hide and unhide
+  // Initialize columnVisibility state with the loaded settings
+  const [columnVisibility, setColumnVisibility] = useState(loadColumnVisibilitySettings);
   const [columnModalShow, setColumnModalShow] = useState(false);
   const [alarmModalShow, setAlarmModalShow] = useState(false);
   const [interimQuantityModalShow, setInterimQuantityModalShow] =
@@ -93,7 +225,56 @@ const ProjectDetailsTable = ({
   const [remarksModalShow, setRemarksModalShow] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [showOptions, setShowOptions] = useState(false);
-  const [pageSize, setPageSize] = useState(5);
+
+  // Limit Rows settings
+  const [pageSize, setPageSize] = useState(100);
+
+  useEffect(() => {
+    const userSettings = localStorage.getItem('userSettings');
+
+    if (userSettings) {
+      try {
+        const parsedSettings = JSON.parse(userSettings);
+        const pageLimit = parsedSettings?.settings?.general?.pageLimit;
+
+        if (typeof pageLimit === 'number') {
+          setPageSize(pageLimit);
+        }
+      } catch (error) {
+        console.error('Failed to parse userSettings from localStorage:', error);
+      }
+    }
+  }, []);
+
+  // Function to update page size in localStorage (DO NOT update database)
+  const updatePageSizeInLocalStorage = (newPageSize) => {
+    try {
+      const userSettings = localStorage.getItem('userSettings');
+      if (userSettings) {
+        const parsedSettings = JSON.parse(userSettings);
+
+        // Update the pageLimit in general settings
+        if (parsedSettings.settings && parsedSettings.settings.general) {
+          parsedSettings.settings.general.pageLimit = newPageSize;
+
+          // Save back to localStorage only (not to database as per requirement)
+          localStorage.setItem('userSettings', JSON.stringify(parsedSettings));
+          console.log('Page limit updated in localStorage:', newPageSize);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to update page limit in localStorage:', error);
+    }
+  };
+
+  // Enhanced setPageSize function that also updates localStorage
+  const handlePageSizeChange = (newPageSize) => {
+    setPageSize(newPageSize);
+    updatePageSizeInLocalStorage(newPageSize);
+    setCurrentPage(1); // Reset to first page when page size changes
+  };
+
+
   const [currentPage, setCurrentPage] = useState(1);
   const [alarmModalData, setAlarmModalData] = useState(null);
   const [interimQuantityModalData, setInterimQuantityModalData] =
@@ -112,12 +293,6 @@ const ProjectDetailsTable = ({
   const [transfertoFactoryModalData, setTransferToFactoryModalData] = useState(null);
   const [selectMachineModalData, setSelectMachineModalData] = useState(null);
   const [assignTeamModalData, setAssignTeamModalData] = useState(null);
-  const [showOnlyAlerts, setShowOnlyAlerts] = useState(false);
-  const [
-    showOnlyCompletedPreviousProcess,
-    setShowOnlyCompletedPreviousProcess,
-  ] = useState(true);
-  const [showOnlyRemarks, setShowOnlyRemarks] = useState(false);
   const [paperData, setPaperData] = useState([]);
   const [courseData, setCourseData] = useState([]);
   const [subjectData, setSubjectData] = useState([]);
@@ -126,7 +301,9 @@ const ProjectDetailsTable = ({
   const [inputPagesModalData, setInputPagesModalData] = useState(null);
   const [inputPagesModalShow, setInputPagesModalShow] = useState(false);
   const [envelopeData, setEnvelopeData] = useState({});
-  // console.log(tableData)
+  const [selectAMZModalShow, setSelectAMZModalShow] = useState(false);
+  const [selectAMZModalData, setSelectAMZModalData] = useState(null);
+
   const showNotification = (type, messageKey, descriptionKey, details = "") => {
     notification[type]({
       message: t(messageKey),
@@ -897,7 +1074,7 @@ const ProjectDetailsTable = ({
               <Tippy
                 duration={[300, 1]}
                 delay={10}
-                className={`${customMid} ${customLightText} p-2 border border-dark rounded-3`}
+                className={`${customLight} ${customDarkText} p-2 border fw-bold border-dark rounded-3`}
                 content={requirements.map((req, index) => (
                   <div key={index}>{req}</div>
                 ))}
@@ -1116,10 +1293,6 @@ const ProjectDetailsTable = ({
     return null;
   };
 
-  const handleToggleChange = (checked) => {
-    setHideCompleted(checked);
-  };
-
   const handleDropdownSelect = (action) => {
     if (selectedRowKeys.length > 0) {
       // Get all selected rows
@@ -1140,16 +1313,11 @@ const ProjectDetailsTable = ({
         setTransferToFactoryModalShow(true);
         setTransferToFactoryModalData(selectedRows);
       }
-      else if (action === "Select Zone" && hasFeaturePermission(1)) {
-        setSelectZoneModalShow(true);
-        setSelectZoneModalData(selectedRows); // Pass array of all selected rows
-      } else if (action === "Select Machine" && hasFeaturePermission(3)) {
-        setSelectMachineModalShow(true);
-        setSelectMachineModalData(selectedRows); // Pass array of all selected rows
-      } else if (action === "Assign Team" && hasFeaturePermission(2)) {
-        setAssignTeamModalShow(true);
-        setAssignTeamModalData(selectedRows); // Pass array of all selected rows
-      } else if (action === "Pages" && hasFeaturePermission(7)) {
+      else if (action === "Select Zone, Machine and Assign Team") {
+        setSelectAMZModalShow(true);
+        setSelectAMZModalData(selectedRows); // Pass array of all selected rows
+      }
+   else if (action === "Pages" && hasFeaturePermission(7)) {
         setInputPagesModalShow(true);
         setInputPagesModalData(selectedRows);
       }
@@ -1162,7 +1330,10 @@ const ProjectDetailsTable = ({
     }
   };
 
-  const handleSelectZoneSave = async (zone) => {
+
+
+
+  const handleSelectAMZSave = async (zone) => {
     try {
       const updatedData = tableData.map((row) => {
         if (selectedRowKeys.includes(row.srNo)) {
@@ -1181,50 +1352,20 @@ const ProjectDetailsTable = ({
         .join(", ");
       showNotification(
         "success",
-        "zoneUpdateSuccess",
-        "zoneUpdateDescription",
+        "zoneMachineTeamUpdateSuccess",
+        "zoneMachineTeamUpdateDescription",
         `(Catches: ${updatedCatches})`
       );
     } catch (error) {
       showNotification(
         "error",
-        "zoneUpdateError",
-        "zoneUpdateErrorDescription"
+        "zoneMachineTeamUpdateError",
+        "zoneMachineTeamUpdateErrorDescription"
       );
     }
   };
 
-  const handleSelectMachineSave = async (machine) => {
-    try {
-      const updatedData = tableData.map((row) => {
-        if (selectedRowKeys.includes(row.srNo)) {
-          return { ...row, machine };
-        }
-        return row;
-      });
-      setTableData(updatedData);
-      setSelectedRowKeys([]);
-      setSelectAll(false);
-      setShowOptions(false);
-      await fetchTransactions();
-      const updatedCatches = selectedRowKeys
-        .map((key) => tableData.find((row) => row.srNo === key)?.catchNumber)
-        .filter(Boolean)
-        .join(", ");
-      showNotification(
-        "success",
-        "machineUpdateSuccess",
-        "machineUpdateDescription",
-        `(Catches: ${updatedCatches})`
-      );
-    } catch (error) {
-      showNotification(
-        "error",
-        "machineUpdateError",
-        "machineUpdateErrorDescription"
-      );
-    }
-  };
+ 
 
   const handleAlarmSave = async (alarm) => {
     try {
@@ -1388,28 +1529,12 @@ const ProjectDetailsTable = ({
       <Menu.Item onClick={() => setColumnModalShow(true)}>
         {t("columns")}
       </Menu.Item>
-      {hasFeaturePermission(1) && allStatusZero && (
+      {allStatusZero &&(
         <Menu.Item
-          onClick={() => handleDropdownSelect("Select Zone")}
+          onClick={() => handleDropdownSelect("Select Zone, Machine and Assign Team")}
           disabled={selectedRowKeys.length === 0}
         >
-          {t("selectZone")}
-        </Menu.Item>
-      )}
-      {hasFeaturePermission(3) && allStatusZero && (
-        <Menu.Item
-          onClick={() => handleDropdownSelect("Select Machine")}
-          disabled={selectedRowKeys.length === 0}
-        >
-          {t("selectMachine")}
-        </Menu.Item>
-      )}
-      {hasFeaturePermission(2) && allStatusZero && (
-        <Menu.Item
-          onClick={() => handleDropdownSelect("Assign Team")}
-          disabled={selectedRowKeys.length === 0}
-        >
-          {t("assignTeam")}
+          {t("selectAMZ")}
         </Menu.Item>
       )}
       {hasFeaturePermission(7) && allStatusZero && (
@@ -1428,9 +1553,9 @@ const ProjectDetailsTable = ({
       }`,
     current: currentPage,
     pageSize,
-    pageSizeOptions: [5, 10, 25, 50, 100],
+    pageSizeOptions: [5, 10, 20, 25, 50, 100],
     showSizeChanger: true,
-    onShowSizeChange: (current, size) => setPageSize(size),
+    onShowSizeChange: (current, size) => handlePageSizeChange(size),
     onChange: (page) => setCurrentPage(page),
     showTotal: (total) => `${t("total")} ${total} ${t("items")}`,
     locale: { items_per_page: `${t("rows")}` }, // Removes the "/page" text
@@ -1463,26 +1588,6 @@ const ProjectDetailsTable = ({
     }
   };
 
-  const handleAssignTeamSuccess = () => {
-    showNotification(
-      "success",
-      "Team Assigned",
-      "Team has been successfully assigned"
-    );
-    setSelectedRowKeys([]);
-    setSelectAll(false);
-    setShowOptions(false);
-  };
-
-  const handleAssignTeamError = (error) => {
-    showNotification(
-      "error",
-      "Assignment Failed",
-      "Failed to assign team. Please try again."
-    );
-    console.error("Error assigning team:", error);
-  };
-
   const handleInputPagesSuccess = () => {
     success("Pages updated successfully");
     setSelectedRowKeys([]);
@@ -1497,60 +1602,47 @@ const ProjectDetailsTable = ({
 
   return (
     <>
-      <div className="">
+      <div className=" " style={{ position: "sticky", top: 57, zIndex: 1000 }} >
         <Row className={`${customLight} mb-2 p-2 rounded`}>
-          <Col
-            lg={1}
-            md={1}
-            xs={2}
-            className="d-flex justify-content- mt-md-1 mt-xs-1 mb-md-1 mb-xs-1"
-          >
+          {/* Funnel filters */}
+          <Col lg={1} md={1} xs={2} className="d-flex justify-content- mt-md-1 mt-xs-1 mb-md-1 mb-xs-1 ">
             {hasFeaturePermission(6) && (
               <Dropdown
                 overlay={
                   <Menu>
                     <Menu.Item className="d-flex align-items-center">
-                      <Switch
-                        checked={hideCompleted}
-                        onChange={handleToggleChange}
-                      />
+                      <Switch checked={hideCompleted} onChange={handleToggleChange} />
                       <span className="ms-2">{t("hideCompleted")}</span>
                     </Menu.Item>
 
-                    <Menu.Divider />
                     <Menu.Item className="d-flex align-items-center">
-                      <Switch
-                        checked={showOnlyCompletedPreviousProcess}
-                        onChange={() =>
-                          setShowOnlyCompletedPreviousProcess(
-                            !showOnlyCompletedPreviousProcess
-                          )
-                        }
-                      />
-                      {/* <span className='ms-2'>{previousProcess} Completed</span> */}
+                      <Switch checked={showOnlyCompletedPreviousProcess} onChange={handleShowOnlyCompletedPreviousProcessChange} />
                       <span className="ms-2">{t("previousCompleted")}</span>
                     </Menu.Item>
-                    <Menu.Divider />
 
                     <Menu.Item className="d-flex align-items-center">
-                      <Switch
-                        checked={showOnlyAlerts}
-                        onChange={() => setShowOnlyAlerts(!showOnlyAlerts)}
-                      />
+                      <Switch checked={showOnlyAlerts} onChange={handleShowOnlyAlertsChange} />
                       <span className="ms-2">{t("catchesWithAlerts")}</span>
                     </Menu.Item>
 
-                    <Menu.Divider />
                     <Menu.Item className="d-flex align-items-center">
-                      <Switch
-                        checked={showOnlyRemarks}
-                        onChange={() => setShowOnlyRemarks(!showOnlyRemarks)}
-                      />
+                      <Switch checked={showOnlyRemarks} onChange={handleShowOnlyRemarksChange} />
                       <span className="ms-2">{t("catchesWithRemarks")}</span>
                     </Menu.Item>
 
+                    <Menu.Item>
+                      <div>
+                        <Switch checked={showBarChart} onChange={handleShowBarChartChange} />
+                        <span className={`ms-2 ${customDarkText}`}>{t("showCatchData")}</span>
+                      </div>
+                    </Menu.Item>
 
-                    <Menu.Divider />
+                    <Menu.Item>
+                      <div>
+                        <Switch checked={showPieChart} onChange={handleShowPieChartChange} />
+                        <span className={`ms-2 ${customDarkText}`}>{t("showCompletionPercentage")}</span>
+                      </div>
+                    </Menu.Item>
 
                     <Menu.Item onClick={(e) => e.stopPropagation()}>
                       {" "}
@@ -1559,11 +1651,12 @@ const ProjectDetailsTable = ({
                       <Select
                         value={pageSize}
                         style={{ width: 60 }}
-                        onChange={(value) => setPageSize(value)}
+                        onChange={(value) => handlePageSizeChange(value)}
                         className="ms-4"
                       >
                         <Option value={5}>5</Option>
                         <Option value={10}>10</Option>
+                        <Option value={20}>20</Option>
                         <Option value={25}>25</Option>
                         <Option value={50}>50</Option>
                         <Option value={100}>100</Option>
@@ -1721,14 +1814,15 @@ const ProjectDetailsTable = ({
             )}
           </Col>
 
+          {/* Lot No */}
           <Col lg={6} md={8} className="pe-0">
             <div className="d-flex flex-wrap gap-2 justify-content-center">
               {projectLots.map((lot, index) => (
                 <button
                   key={index}
                   className={`btn btn-sm ${lotNo === lot.lotNo
-                      ? "bg-white text-dark border-dark"
-                      : customBtn
+                    ? "bg-white text-dark border-dark"
+                    : customBtn
                     } ${customDark === "dark-dark" ? "border" : "custom-light-border"
                     } 
                 d-flex align-items-center justify-content-center p-2 rounded-2 ${customDark === "dark-dark"
@@ -1816,8 +1910,10 @@ const ProjectDetailsTable = ({
               </Dropdown>
             </div>
           </Col>
+
         </Row>
       </div>
+
       <div>
         <Row>
           <Col lg={12} md={12}>
@@ -1848,6 +1944,30 @@ const ProjectDetailsTable = ({
           </Col>
         </Row>
       </div>
+      {showBarChart && (
+        <Col
+          lg={12}
+          md={12}
+          sm={12}
+          className="mt-1 d-fle justify-content-center"
+        >
+          <StatusBarChart
+            data={data}
+            catchNumbers={catchNumbers}
+          />
+        </Col>
+      )}
+
+      {showPieChart && (
+        <Col
+          lg={12}
+          md={12}
+          sm={12}
+          className={`mt-3 d-fle justify-content-center ${customLight} shadow rounded border`}
+        >
+          <StatusPieChart data={data} />
+        </Col>
+      )}
       <ColumnToggleModal
         show={columnModalShow}
         handleClose={() => setColumnModalShow(false)}
@@ -1893,28 +2013,13 @@ const ProjectDetailsTable = ({
         processId={processId}
 
       />
-      <SelectZoneModal
-        show={selectZoneModalShow}
-        handleClose={() => setSelectZoneModalShow(false)}
-        handleSave={handleSelectZoneSave}
-        data={selectZoneModalData}
+      <AssignZTMModal
+        show={selectAMZModalShow}
+        handleClose={() => setSelectAMZModalShow(false)}
+        handleSave={handleSelectAMZSave}
+        data={selectAMZModalData}
         processId={processId}
-      />
-      <SelectMachineModal
-        show={selectMachineModalShow}
-        handleClose={() => setSelectMachineModalShow(false)}
-        handleSave={handleSelectMachineSave}
-        data={selectMachineModalData}
-        processId={processId}
-      />
-      <AssignTeamModal
-        show={assignTeamModalShow}
-        handleClose={() => setAssignTeamModalShow(false)}
-        fetchTransactions={fetchTransactions}
-        data={assignTeamModalData}
-        processId={processId}
-        onSuccess={handleAssignTeamSuccess}
-        onError={handleAssignTeamError}
+        hasFeaturePermission={hasFeaturePermission}
       />
       <InputPages
         show={inputPagesModalShow}
