@@ -22,8 +22,10 @@ const MSSTable = ({
   cssClasses,
   isSearchMode
 }) => {
-  // console.log(quantitySheetData)
-  // console.log(totalRecords)
+  // console.log("quantitySheetData:", quantitySheetData)
+  // console.log("totalRecords:", totalRecords)
+  // console.log("First record structure:", quantitySheetData.length > 0 ? Object.keys(quantitySheetData[0]) : "No data")
+  // console.log("First record examDate:", quantitySheetData.length > 0 ? quantitySheetData[0]?.examDate : "No data")
   const [searchText] = useState("");
   const [searchedColumn] = useState("");
   const [selectedRows, setSelectedRows] = useState([]);
@@ -345,10 +347,28 @@ const MSSTable = ({
       key: "examDate",
       width: 140,
       ellipsis: true,
-      responsive: ['xs'],
       sorter: (a, b) => (a.examDate || '').localeCompare(b.examDate || ''),
       ...getColumnSearchProps("examDate"),
-      render: (text) => (text ? <Tag color="blue">{text}</Tag> : ""),
+      render: (text) => {
+        if (!text) return "";
+        
+        // Handle different date formats
+        let displayDate = text;
+        try {
+          // If it's an ISO date string, format it to DD-MM-YYYY
+          if (text.includes('T') || text.includes('-') && text.split('-')[0].length === 4) {
+            const date = new Date(text);
+            if (!isNaN(date.getTime())) {
+              displayDate = date.toLocaleDateString('en-GB'); // DD/MM/YYYY format
+            }
+          }
+        } catch (e) {
+          // If date parsing fails, use the original text
+          displayDate = text;
+        }
+        
+        return <Tag color="blue">{displayDate}</Tag>;
+      },
     },
     {
       title: "Exam Time",

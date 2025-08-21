@@ -171,11 +171,22 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
   // Fetch all data for the project (used for searching)
   const fetchAllQuantitySheetData = async () => {
     try {
-      const response = await API.get(
-        `/QuantitySheet/CatchByproject?ProjectId=${projectId}&pageSize=1000&currentpage=1`
-      );
-      setAllQuantitySheetData(response.data.data);
-      return response.data.data;
+      let response;
+      if (lotNo) {
+        // Use the same endpoint as ViewQuantitySheet.jsx if lotNo is available
+        response = await API.get(
+          `/QuantitySheet/Catches?ProjectId=${projectId}&lotNo=${lotNo}`
+        );
+        setAllQuantitySheetData(response.data);
+        return response.data;
+      } else {
+        // Fallback to the original endpoint if no lotNo
+        response = await API.get(
+          `/QuantitySheet/CatchByproject?ProjectId=${projectId}&pageSize=1000&currentpage=1`
+        );
+        setAllQuantitySheetData(response.data.data);
+        return response.data.data;
+      }
     } catch (error) {
       console.error("Error fetching all quantity sheet data:", error);
       return [];
@@ -193,11 +204,22 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
           setQuantitySheetData(allQuantitySheetData);
         }
       } else {
-        const response = await API.get(
-          `/QuantitySheet/CatchByproject?ProjectId=${projectId}&pageSize=${pageSize}&currentpage=${currentPage}`
-        );
-        setQuantitySheetData(response.data.data);
-        setTotalRecords(response.data.totalrecords);
+        let response;
+        if (lotNo) {
+          // Use the same endpoint as ViewQuantitySheet.jsx if lotNo is available
+          response = await API.get(
+            `/QuantitySheet/Catches?ProjectId=${projectId}&lotNo=${lotNo}`
+          );
+          setQuantitySheetData(response.data);
+          setTotalRecords(response.data.length);
+        } else {
+          // Fallback to the original endpoint if no lotNo
+          response = await API.get(
+            `/QuantitySheet/CatchByproject?ProjectId=${projectId}&pageSize=${pageSize}&currentpage=${currentPage}`
+          );
+          setQuantitySheetData(response.data.data);
+          setTotalRecords(response.data.totalrecords);
+        }
       }
     } catch (error) {
       console.error("Error fetching quantity sheet data:", error);
