@@ -290,9 +290,9 @@ const EditProjectModal = ({
             <Col xs={24}>
               <Form.Item
                 name="structureOfPaper"
-                label={<span className={customDarkText}>{t('structureOfPaper')}</span>}
+                label={<span className={customDarkText}>{t('StructureOfPaper')}</span>}
               >
-                <Input.TextArea rows={4} placeholder={t('enterStructureOfPaper')} />
+                <Input.TextArea rows={4} placeholder={t('EnterStructureOfPaper')} />
               </Form.Item>
             </Col>
             <Col xs={24}>
