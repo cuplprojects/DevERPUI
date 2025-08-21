@@ -350,7 +350,7 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
 
       <Tabs className="mss-tabs" activeKey={activeTab} onChange={setActiveTab}>
         {/* Tab 1: Search Question Paper */}
-        <TabPane tab={<span><SearchOutlined style={{ marginRight: 6 }} /> Search question paper</span>} key="search">
+        <TabPane tab={<span><SearchOutlined style={{ marginRight: 6 }} /> Search Question Paper</span>} key="search">
           <Row className="w-100 d-flex align-items-center mt-2 mb-3">
             <Col xs={12} md={8} lg={5} className="d-flex align-items-center gap-2">
               <Input.Search
@@ -411,8 +411,23 @@ ${customDark === "brown-dark" ? "thead-brown" : ""} mss-table`}
           )}
         </TabPane>
 
-        {/* Tab 2: Edit Import */}
-        <TabPane tab={<span><EditOutlined style={{ marginRight: 6 }} /> Edit import</span>} key="edit">
+        {/* Tab 2: Edit / Add New (dynamic title) */}
+        <TabPane
+          tab={
+            <span>
+              {editIsNew ? (
+                <>
+                  <PlusOutlined style={{ marginRight: 6 }} /> Add new 
+                </>
+              ) : (
+                <>
+                  <EditOutlined style={{ marginRight: 6 }} /> Edit 
+                </>
+              )}
+            </span>
+          }
+          key="edit"
+        >
           <div className="mss-tab-content-gap">
             {editItem ? (
               <PaperDetailForm
@@ -427,7 +442,7 @@ ${customDark === "brown-dark" ? "thead-brown" : ""} mss-table`}
                 isNewPaper={editIsNew}
               />
             ) : (
-              <div className="p-3">Select a paper from the Search tab to edit/import.</div>
+              <div className="p-3">{editIsNew ? "Fill the form to add a new paper." : "Select a paper from the Search tab to edit/import."}</div>
             )}
           </div>
         </TabPane>
@@ -437,7 +452,7 @@ ${customDark === "brown-dark" ? "thead-brown" : ""} mss-table`}
           tab={
             <span>
               <DatabaseOutlined style={{ marginRight: 6 }} />
-              Saved data
+              Saved Data
               {rejectedCount > 0 && (
                 <Badge
                   count={rejectedCount}
