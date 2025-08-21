@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Table, Input, Button, Space, message, DatePicker, Tag } from "antd";
 import { Modal } from 'react-bootstrap';
 import { CheckCircleOutlined, EditOutlined } from "@ant-design/icons";
@@ -20,7 +20,8 @@ const MSSTable = ({
   rejectedActive,
   handleUpdateItem,
   cssClasses,
-  isSearchMode
+  isSearchMode,
+  projectId
 }) => {
   // console.log("quantitySheetData:", quantitySheetData)
   // console.log("totalRecords:", totalRecords)
@@ -44,6 +45,33 @@ const MSSTable = ({
     customLightBorder,
     customDarkBorder,
   ] = cssClasses;
+
+  // Fallback: fetch StructureOfPaper from Project API when available
+  const [projectStructureOfPaper, setProjectStructureOfPaper] = useState("");
+
+  useEffect(() => {
+    const fetchProjectStructure = async () => {
+      try {
+        if (!projectId) return;
+        // Prefer direct project endpoint if available
+        const response = await API.get(`/Project/${projectId}`);
+        const structure = response?.data?.structureOfPaper;
+        if (typeof structure === 'string') {
+          setProjectStructureOfPaper(structure);
+        } else {
+          // Fallback: list endpoint then find
+          const listRes = await API.get('/Project');
+          const proj = (listRes?.data || []).find(p => p.projectId === projectId);
+          if (proj && typeof proj.structureOfPaper === 'string') {
+            setProjectStructureOfPaper(proj.structureOfPaper);
+          }
+        }
+      } catch (e) {
+        // Silently ignore; table will just use row value
+      }
+    };
+    fetchProjectStructure();
+  }, [projectId]);
 
   const handleMarkReceived = async (record) => {
     try {
@@ -391,14 +419,19 @@ const MSSTable = ({
       width: 260,
       ellipsis: true,
       responsive: ['xl'],
-      sorter: (a, b) => (a.structureOfPaper || '').localeCompare(b.structureOfPaper || ''),
+      sorter: (a, b) => {
+        const aVal = (a.structureOfPaper || projectStructureOfPaper || '');
+        const bVal = (b.structureOfPaper || projectStructureOfPaper || '');
+        return aVal.localeCompare(bVal);
+      },
       ...getColumnSearchProps("structureOfPaper"),
       editable: true,
       render: (text) => {
-        if (!text) return "";
+        const value = text || projectStructureOfPaper;
+        if (!value) return "";
 
         return (
-          <Tooltip title={text} placement="topLeft">
+          <Tooltip title={value} placement="topLeft">
             <div
               style={{
                 maxWidth: 200,
@@ -411,7 +444,7 @@ const MSSTable = ({
                 WebkitBoxOrient: "vertical",
               }}
             >
-              {text}
+              {value}
             </div>
           </Tooltip>
         );
