@@ -139,6 +139,7 @@ const ProjectTab = ({ setActiveTabKey, setSelectedProject }) => {
       name: projectName,
       status: values.status || true,
       description: values.description || '',
+      structureOfPaper: values.structureOfPaper || '',
       groupId: selectedGroup.id,
       typeId: selectedType.typeId,
       examTypeId: selectedExamTypeIds,
@@ -180,6 +181,7 @@ const ProjectTab = ({ setActiveTabKey, setSelectedProject }) => {
         ...editingProject,
         name: values.name,
         description: values.description,
+        structureOfPaper: values.structureOfPaper,
         status: values.status,
         quantityThreshold: values.quantityThreshold,
         groupId: values.group,
@@ -272,6 +274,7 @@ const ProjectTab = ({ setActiveTabKey, setSelectedProject }) => {
               editForm.setFieldsValue({
                 name: record.name,
                 description: record.description,
+                structureOfPaper: record.structureOfPaper,
                 status: record.status,
                 group: record.groupId,
                 type: record.typeId,

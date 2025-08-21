@@ -41,52 +41,7 @@ message.config({
 
 const { Option } = Select;
 
-const structureTemplates = {
-  1: `B.A./B.Com./B.Sc./B.H.Sc./BBA/BSC/BTM(First Year)
-Examination, March-2025
-Open Elective
-Paper: S1-COAP2G
-M.S. Office
-
-Section-A
-Very Short Answer Type Questions
-Attempt any three out of six questions  (3*2=6)
-Section-B
-Short Answer Type Questions
-Attempt any four questions out of eight questions. (4*9=36)
-Section-C
-Long Answer Type Questions
-Attempt any four questions out of four questions(4*2=8)`,
-
-  2: `M.Sc. Agriculture 2nd Semester Main Examination June-2024
-Subject: Horticulture
-Paper title: Production Technology of Vegetable Crops & Spices
-Code: J-2061
-Section-A
-Very Short Answer Type Questions
-Attempt all the five questions(5*2=10)
-Section-B
-Short Answer Type Questions
-Attempt any two questions out of following three questions(2*5=10)
-Section-C
-Detail Answer Type Questions
-Attempt any three questions out of following five questions(3*10=30)`,
-
-  3: `NP-2700
-M.A. IInd Year(Major) (X / IVth Semester May 2025)
-Course Code – A061006T
-Political Science
-Paper –- IV – a
-(international Law)
-Time :03 Hours
-Max. Marks: 75
-Section-A
-Attempt all questions
-Section-B
-Attempt any five questions out of eight questions
-Section-C
-Attempt any two questions out of four questions`,
-};
+// Using project API to populate Structure of Paper; local templates removed
 
 const PaperDetailModal = ({
   visible,
@@ -117,7 +72,7 @@ const PaperDetailModal = ({
   const [examType, setExamType] = useState();
   const [language, setLanguage] = useState();
   const [abcdData, setAbcdData] = useState([]);
-  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  // Removed template selection state
 
   // console.log(item);
   // console.log(importing)
@@ -209,7 +164,22 @@ const PaperDetailModal = ({
         });
       }
     }
-  }, [item, form]);
+    // Populate StructureOfPaper directly from Project API
+    (async () => {
+      try {
+        if (!projectId) return;
+        const projRes = await API.get("/Project");
+        const list = projRes.data || [];
+        const proj = list.find((p) => p.projectId === projectId);
+        const structure = proj && typeof proj.structureOfPaper === "string" ? proj.structureOfPaper : "";
+        if (structure) {
+          form.setFieldsValue({ StructureOfPaper: structure });
+        }
+      } catch (e) {
+        // ignore API errors here
+      }
+    })();
+  }, [item, form, projectId]);
 
   const showMessage = (type, content) => {
     message[type]({
@@ -335,10 +305,7 @@ const PaperDetailModal = ({
     return parts.filter(part => part).join(' - ');
   };
 
-  const handleStructureTemplateChange = (value) => {
-    setSelectedTemplate(value);
-    form.setFieldsValue({ StructureOfPaper: structureTemplates[value] });
-  };
+  // Removed template change handler
 
   if (!item) return null;
 
@@ -507,34 +474,9 @@ const PaperDetailModal = ({
               </Col>
             </Row>
             <Row>
-              <Col md={4}>
-              <Form.Item label="Select Paper Structure Template">
-                <Select
-                  allowClear
-                  showSearch
-                  optionFilterProp="children"
-                  filterOption={(input, option) =>
-                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                  }
-                  placeholder="Select a structure"
-                  onChange={handleStructureTemplateChange}
-                  value={selectedTemplate}
-                >
-                  {Object.keys(structureTemplates).map((key) => (
-                    <Option key={key} value={key}>
-                      {key}
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col md={8}>
+              <Col md={12}>
                 <Form.Item name="StructureOfPaper" label="Structure of Paper">
-                  <Input.TextArea
-                  rows={4}
-                  allowClear
-                  style={{ whiteSpace: "pre-wrap" }}
-                />
+                  <Input.TextArea rows={4} allowClear style={{ whiteSpace: "pre-wrap" }} />
                 </Form.Item>
               </Col>
             </Row>

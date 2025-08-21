@@ -6,23 +6,7 @@ import moment from "moment";
 
 const { Option } = Select;
 
-const structureTemplates = {
-  1: `B.A./B.Com./B.Sc./B.H.Sc./BBA/BSC/BTM(First Year)
-Examination, March-2025
-Open Elective
-Paper: S1-COAP2G
-M.S. Office`,
-  2: `B.A./B.Com./B.Sc./B.H.Sc./BBA/BSC/BTM(Second Year)
-Examination, March-2025
-Core Course
-Paper: S2-COAP2G
-Advanced M.S. Office`,
-  3: `B.A./B.Com./B.Sc./B.H.Sc./BBA/BSC/BTM(Third Year)
-Examination, March-2025
-Elective Course
-Paper: S3-COAP2G
-Programming Fundamentals`
-};
+// Using project API to populate Structure of Paper; local templates removed
 
 const EditQuantitySheetModal = ({
   show,
@@ -34,7 +18,7 @@ const EditQuantitySheetModal = ({
   fetchQuantitySheetData
 }) => {
   const [formData, setFormData] = useState({});
-  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  // Removed template selection state
   const [
     customDark,
     customMid,
@@ -102,13 +86,24 @@ const EditQuantitySheetModal = ({
     }));
   };
 
-  const handleStructureTemplateChange = (value) => {
-    setSelectedTemplate(value);
-    setFormData(prev => ({
-      ...prev,
-      structureOfPaper: structureTemplates[value]
-    }));
-  };
+  // Populate structureOfPaper directly from Project API when modal opens
+  useEffect(() => {
+    const populateFromProject = async () => {
+      try {
+        if (!record?.projectId) return;
+        const projRes = await API.get('/Project');
+        const list = projRes.data || [];
+        const proj = list.find(p => p.projectId === record.projectId);
+        const structure = proj && typeof proj.structureOfPaper === 'string' ? proj.structureOfPaper : '';
+        if (structure) {
+          setFormData(prev => ({ ...prev, structureOfPaper: structure }));
+        }
+      } catch (e) {
+        // ignore
+      }
+    };
+    populateFromProject();
+  }, [record]);
 
   const handleSave = async () => {
     try {
@@ -309,25 +304,7 @@ const EditQuantitySheetModal = ({
                 />
               </BootstrapForm.Group>
             </Col>
-            <Col md={4}>
-              <BootstrapForm.Group className="mb-3">
-                <BootstrapForm.Label>Select Paper Structure Template</BootstrapForm.Label>
-                <Select
-                  allowClear
-                  placeholder="Select a structure"
-                  onChange={handleStructureTemplateChange}
-                  value={selectedTemplate}
-                  style={{ width: '100%' }}
-                >
-                  {Object.keys(structureTemplates).map((key) => (
-                    <Option key={key} value={key}>
-                      {key}
-                    </Option>
-                  ))}
-                </Select>
-              </BootstrapForm.Group>
-            </Col>
-            <Col md={8}>
+            <Col md={12}>
               <BootstrapForm.Group className="mb-3">
                 <BootstrapForm.Label>Structure of Paper</BootstrapForm.Label>
                 <BootstrapForm.Control

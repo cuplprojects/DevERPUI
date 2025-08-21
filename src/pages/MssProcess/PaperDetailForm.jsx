@@ -76,16 +76,28 @@ const PaperDetailForm = ({
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [courseRes, subjectRes, examTypeRes, languageRes] = await Promise.all([
+        const [courseRes, subjectRes, examTypeRes, languageRes, projectsRes] = await Promise.all([
           API.get("/Course"),
           API.get("/Subject"),
           API.get("/ExamType"),
           API.get("/Language"),
+          API.get("/Project"),
         ]);
         setCourses(courseRes.data || []);
         setSubject(subjectRes.data || []);
         setExamType(examTypeRes.data || []);
         setLanguage(languageRes.data || []);
+        // Directly populate StructureOfPaper from Project API by projectId
+        try {
+          const list = projectsRes.data || [];
+          const proj = list.find((p) => p.projectId === projectId);
+          const structure = (proj && typeof proj.structureOfPaper === "string") ? proj.structureOfPaper : "";
+          if (structure) {
+            form.setFieldsValue({ StructureOfPaper: structure });
+          }
+        } catch (e) {
+          // ignore
+        }
       } catch (error) {
         console.error("Error loading initial data:", error);
       }
@@ -262,6 +274,8 @@ const PaperDetailForm = ({
     setSelectedTemplate(value);
     form.setFieldsValue({ StructureOfPaper: structureTemplates[value] || "" });
   };
+
+  
 
   if (!item) return <div style={{ padding: 12 }}>Select a record to edit.</div>;
 
@@ -541,25 +555,7 @@ const PaperDetailForm = ({
 
       {/* Final Row (textarea - full width) */}
       <Row gutter={16}>
-        <Col span={12} lg={9} sm={24} >
-              <Form.Item label={renderLabel("Select Paper Structure Template")}>
-                <Select
-                  allowClear
-                  showSearch
-                  optionFilterProp="children"
-                  placeholder="Select a structure template"
-                  onChange={handleStructureTemplateChange}
-                  value={selectedTemplate}
-                  style={controlStyle}
-                >
-                  {Object.keys(structureTemplates).map((key) => (
-                    <Option key={key} value={key}>
-                      Template {key}
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
+        
         <Col span={12}>
           <Form.Item name="StructureOfPaper" label={renderLabel("Structure of Paper")}>
             <Input.TextArea rows={6} allowClear style={{ whiteSpace: "pre-wrap", borderRadius: 6 }} placeholder="Paste or write the structure of the paper here" showCount maxLength={1200} />

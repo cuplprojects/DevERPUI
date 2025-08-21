@@ -29,6 +29,8 @@ const EditProjectModal = ({
   setNumberOfSeries,
   projectName,
   setProjectName,
+  seriesNames,
+  setSeriesNames,
   selectedGroup,
   selectedSession,
   selectedExamType,
@@ -283,6 +285,14 @@ const EditProjectModal = ({
                 label={<span className={customDarkText}>{t('description')}</span>}
               >
                 <Input.TextArea rows={4} placeholder={t('enterDescription')} />
+              </Form.Item>
+            </Col>
+            <Col xs={24}>
+              <Form.Item
+                name="structureOfPaper"
+                label={<span className={customDarkText}>{t('structureOfPaper')}</span>}
+              >
+                <Input.TextArea rows={4} placeholder={t('enterStructureOfPaper')} />
               </Form.Item>
             </Col>
             <Col xs={24}>

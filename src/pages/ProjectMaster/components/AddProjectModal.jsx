@@ -41,6 +41,7 @@ const AddProjectModal = ({
   const [loading, setLoading] = useState(false);
   const [pageQuantities, setPageQuantities] = useState([{ pages: '', quantity: '' }]);
   const [descriptionValue, setDescriptionValue] = useState(selectedProject?.description || '');
+  const [structureOfPaper, setStructureOfPaper] = useState(selectedProject?.structureOfPaper || '');
   const [projectNameSuffix, setProjectNameSuffix] = useState('');
   const [requiredFields, setRequiredFields] = useState([]);
 
@@ -114,6 +115,7 @@ const AddProjectModal = ({
       name: projectName,
       status: status,
       description: descriptionValue,
+      structureOfPaper: structureOfPaper,
       groupId: selectedGroup?.id,
       typeId: selectedType?.typeId,
       sessionId: selectedSession?.sessionId,
@@ -321,7 +323,7 @@ const AddProjectModal = ({
           </Row>
 
           <Row className="mb-3">
-            <Col xs={8}>
+            <Col xs={6}>
               <Form.Group controlId="description">
                 <Form.Label className={customDarkText}>{t('description')}</Form.Label>
                 <Form.Control
@@ -338,6 +340,25 @@ const AddProjectModal = ({
                 />
               </Form.Group>
             </Col>
+            <Col xs={6}>
+              <Form.Group controlId="structureOfPaper">
+                <Form.Label className={customDarkText}>{t('structureOfPaper')}</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  name="structureOfPaper"
+                  rows={2}
+                  placeholder={t('EnterStructureOfPaper')}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setStructureOfPaper(value);
+                    form.setFieldsValue({ structureOfPaper: value });
+                  }}
+                  value={structureOfPaper}
+                />
+              </Form.Group>
+            </Col>
+          </Row>
+          <Row className="mb-3">
             <Col xs={4}>
               <Form.Group controlId="requiredFields">
                 <Form.Label className={customDarkText}>Select Required Fields</Form.Label>

@@ -370,7 +370,16 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
     <div className="mt-1" style={{ maxWidth: "100%", overflowX: "hidden" }}>
 
 
-      <Tabs className="mss-tabs" activeKey={activeTab} onChange={setActiveTab}>
+      <Tabs
+        className="mss-tabs"
+        activeKey={activeTab}
+        onChange={(key) => {
+          if (key !== "edit") {
+            setEditIsNew(false);
+          }
+          setActiveTab(key);
+        }}
+      >
         {/* Tab 1: Search Question Paper */}
         <TabPane tab={<span><SearchOutlined style={{ marginRight: 6 }} /> Search Question Paper</span>} key="search">
           <Row className="w-100 d-flex align-items-center mt-2 mb-3">
@@ -458,6 +467,7 @@ ${customDark === "brown-dark" ? "thead-brown" : ""} mss-table`}
                 projectId={projectId}
                 onCancel={() => {
                   setEditItem(null);
+                  setEditIsNew(false);
                   setActiveTab("search");
                 }}
                 onImported={handleImported}
