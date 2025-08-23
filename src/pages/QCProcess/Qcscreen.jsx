@@ -1,19 +1,31 @@
-import React, { useEffect, useState } from 'react';
-import { Card, Button, Space, Row, Col, Table, Badge, Tooltip } from 'antd';
+import React, { useEffect, useState, useRef } from 'react';
+import { Card, Button, Space, Row, Col, Table, Badge, Tooltip, Input, Select, Progress, Checkbox, InputNumber } from 'antd';
 import {
   CheckCircleOutlined,
   CloseCircleOutlined,
   FileTextOutlined,
   ArrowLeftOutlined,
+  ArrowRightOutlined,
   CheckOutlined,
   SyncOutlined,
+  SearchOutlined,
+  ClockCircleOutlined,
+  StarOutlined,
+  GlobalOutlined,
+  UnorderedListOutlined,
+  EditOutlined,
+  SaveOutlined,
+  CloseOutlined,
 } from '@ant-design/icons';
 import API from '../../CustomHooks/MasterApiHooks/api';
 import { success, error } from '../../CustomHooks/Services/AlertMessageService';
 import { useTranslation } from 'react-i18next';
 import { useStore } from 'zustand';
 import themeStore from '../../store/themeStore';
-import VerificationModal from './Components/VerificationModal';
+import './QCProcess.css';
+
+const { Search } = Input;
+const { Option } = Select;
 
 const customCheckboxStyle = `
   .custom-checkbox .ant-checkbox-checked .ant-checkbox-inner {
@@ -40,12 +52,14 @@ const QcProcess = ({ projectId }) => {
   const [filteredData, setFilteredData] = useState([]);
   const [statusFilter, setStatusFilter] = useState('all');
   const [showback, setShowback] = useState(false);
-  const [isModalVisible, setIsModalVisible] = useState(false);
   const [projectType, setProjectType] = useState('');
   const [selectedRecordIndex, setSelectedRecordIndex] = useState(0);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editFormData, setEditFormData] = useState({});
   const [isSaving, setIsSaving] = useState(false);
+  const [searchText, setSearchText] = useState('');
+  const [languageFilter, setLanguageFilter] = useState('all');
+  const catchListRef = useRef(null);
 
   //state for fetching the compelte original data of the selected record
   const [ogData , setOgData] = useState([]);
@@ -201,7 +215,7 @@ const QcProcess = ({ projectId }) => {
       key: 'structureOfPaper',
       align: 'center',
       render: (_, record) => renderVerificationStatusOnly(record, 'structureOfPaper'),
-      sorter: (a, b) => String(a.structureOfPaper || '').localeCompare(String(b.structureOfPaper || '')),
+      sorter: (a, b) => String(a.structureOfPaper || '').localeCompare(String(a.structureOfPaper || '')),
     },
     {
       title: 'A',
@@ -264,11 +278,9 @@ const QcProcess = ({ projectId }) => {
     if (selectedRecord?.quantitysheetId === record.quantitysheetId) {
       setSelectedRecord(null);
       setTempVerification({});
-      setIsModalVisible(false);
     } else {
       setTempVerification(record.verified || {});
       setSelectedRecord({ ...record, action });
-      setIsModalVisible(true);
       const currentIndex = filteredData.findIndex(item => item.quantitysheetId === record.quantitysheetId);
       setSelectedRecordIndex(currentIndex);
     }
@@ -290,12 +302,6 @@ const QcProcess = ({ projectId }) => {
       setSelectedRecord({ ...nextRecord, action: 'verify' });
       setSelectedRecordIndex(selectedRecordIndex + 1);
     }
-  };
-
-  const handleModalClose = () => {
-    setIsModalVisible(false);
-    setSelectedRecord(null);
-    setTempVerification({});
   };
 
   const handleFinalVerification = async () => {
@@ -334,19 +340,10 @@ const QcProcess = ({ projectId }) => {
     }
   };
 
-
-
   const handleEditCancel = () => {
     setIsEditMode(false);
     setEditFormData({});
   };
-
-// useEffect(()=>{
-//   console.log("Selected Record -",selectedRecord)
-//   console.log("Edit Form Data -",editFormData)
-//   console.log("Is Edit Mode -",isEditMode)
-//   console.log("Table Data -",data)
-// },[editFormData,isEditMode,selectedRecord,data])
 
   const handleInputChange = (field, value) => {
     setEditFormData(prev => ({
@@ -370,7 +367,6 @@ const QcProcess = ({ projectId }) => {
       fetchOgData();
     }
   },[selectedRecord])
-
 
   const handleSaveChanges = async () => {
     try {
@@ -483,10 +479,9 @@ const QcProcess = ({ projectId }) => {
         // Refresh the data from the server to ensure we have the latest state
         await fetchData();
 
-        // Close the modal and reset state
+        // Reset state
         setSelectedRecord(null);
         setTempVerification({});
-        setIsModalVisible(false);
         success(t('recordSent'));
       }
     } catch (error) {
@@ -522,163 +517,538 @@ const QcProcess = ({ projectId }) => {
     setFilteredData(data); // Reset to show all data
   };
 
+  // Calculate counts for status cards
+  const pendingCount = data.filter((item) => Object.keys(item.verified).length === 0).length;
+  const verifiedCount = data.filter((item) => item.verified?.status === true).length;
+  const rejectedCount = data.filter((item) => item.verified?.status === false && item.mssStatus !== 5).length;
+  const inProgressCount = data.filter((item) => item.mssStatus == 5 && Object.values(item.verified).some(value => value === true)).length;
+  const reverifyCount = inProgressCount;
 
+  // Filter data based on search and language
+  const filteredCatchList = filteredData.filter(item => {
+    const matchesSearch = searchText === '' || 
+      item.catchNo?.toString().toLowerCase().includes(searchText.toLowerCase()) ||
+      item.paperTitle?.toLowerCase().includes(searchText.toLowerCase()) ||
+      item.subject?.toLowerCase().includes(searchText.toLowerCase());
+    
+    const matchesLanguage = languageFilter === 'all' || 
+      (Array.isArray(item.language) ? item.language.includes(languageFilter) : item.language === languageFilter);
+    
+    return matchesSearch && matchesLanguage;
+  });
 
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'pending': return '#1890ff';
+      case 'verified': return '#52c41a';
+      case 'rejected': return '#ff4d4f';
+      case 'inProgress': return '#faad14';
+      default: return '#8c8c8c';
+    }
+  };
 
+  const getStatusText = (record) => {
+    if (record.verified?.status === true) return 'Verified';
+    if (record.verified?.status === false) return 'Rejected';
+    if (record.mssStatus == 5 && Object.values(record.verified).some(value => value === true)) return 'In Progress';
+    return 'Pending QC';
+  };
+
+  const getStatusTagColor = (record) => {
+    const status = getStatusText(record);
+    switch (status) {
+      case 'Verified': return '#f6ffed';
+      case 'Rejected': return '#fff1f0';
+      case 'In Progress': return '#fff7e6';
+      default: return '#f0f9ff';
+    }
+  };
+
+  const getStatusTextColor = (record) => {
+    const status = getStatusText(record);
+    switch (status) {
+      case 'Verified': return '#52c41a';
+      case 'Rejected': return '#ff4d4f';
+      case 'In Progress': return '#faad14';
+      default: return '#1890ff';
+    }
+  };
+
+  const allFieldsVerified = () => {
+    // Required fields that must always be verified
+    const requiredFields = [
+      {
+        name: 'Language',
+        keyname: 'language'
+      },
+      {
+        name: 'Duration',
+        keyname: 'duration'
+      },
+      {
+        name: 'Structure',
+        keyname: 'structureOfPaper'
+      },
+      ...(projectType === 1 ? [{
+        name: 'Series',
+        keyname: 'series'
+      }] : []),
+      {
+        name: 'Max Marks',
+        keyname: 'maxMarks'
+      }
+    ];
+
+    // Optional fields that are only required if they have data
+    const optionalFields = [
+      { name: 'A', keyname: 'a' },
+      { name: 'B', keyname: 'b' },
+      { name: 'C', keyname: 'c' },
+      { name: 'D', keyname: 'd' }
+    ];
+
+    // Filter optional fields to only include those that have data
+    const optionalFieldsWithData = optionalFields.filter(field => {
+      const value = selectedRecord[field.keyname];
+      return value && (typeof value === 'string' ? value.trim() !== '' : true);
+    });
+
+    // Check if all required fields are verified
+    const verifiedFields = Object.keys(tempVerification).filter(key => tempVerification[key]);
+    const allRequiredVerified = requiredFields.every(field => verifiedFields.includes(field.keyname));
+
+    // Check if all optional fields with data are verified
+    const allOptionalWithDataVerified = optionalFieldsWithData.every(field =>
+      verifiedFields.includes(field.keyname)
+    );
+
+    return allRequiredVerified && allOptionalWithDataVerified && verifiedFields.length > 0;
+  };
+
+  const handleVerificationChange = (field) => {
+    setTempVerification((prev) => ({
+      ...prev,
+      [field]: !prev[field],
+    }));
+  };
+
+  const renderVerificationItem = (label, value, field) => {
+    if (!selectedRecord) return null;
+
+    const isValueEmpty = !value || (typeof value === 'string' && value.trim() === '') ||
+      (Array.isArray(value) && value.length === 0);
+
+    // Determine if this field is editable
+    const isEditable = ['catchNo', 'paperNumber', 'paperTitle', 'nepCode', 'uniqueCode', 'maxMarks', 'duration', 'structureOfPaper', 'quantity', 'language'].includes(field);
+
+    // Determine if this is an ABCD field
+    const isAbcdField = ['a', 'b', 'c', 'd'].includes(field);
+
+    // Apply disabled styling for empty ABCD fields
+    const rowStyle = {
+      transition: 'all 0.2s ease',
+      opacity: isValueEmpty && isAbcdField ? 0.6 : 1,
+      backgroundColor: isValueEmpty && isAbcdField ? '#f9f9f9' : 'transparent'
+    };
+
+    return (
+      <div key={field} className="col-12 col-lg-6 mb-3">
+        <div className={`p-4 border rounded h-100 checkpoint-item ${tempVerification[field] ? 'completed' : ''}`} style={rowStyle}>
+          <div className="d-flex align-items-start gap-3">
+            {selectedRecord.action === 'verify' && !isEditMode && (
+              <div className="mt-1">
+                <Checkbox
+                  checked={tempVerification[field] || selectedRecord.verified?.[field]}
+                  onChange={() => handleVerificationChange(field)}
+                  disabled={
+                    // Only disable if it's an ABCD field with no data
+                    (isValueEmpty && isAbcdField) ||
+                    // Or if the record is already verified and not in re-verify status
+                    (selectedRecord.verified?.status === true && selectedRecord.mssStatus !== 5)
+                  }
+                  className="custom-checkbox"
+                />
+              </div>
+            )}
+            <div className="flex-grow-1">
+              <h6 className="fw-semibold mb-2 text-capitalize">{label}</h6>
+              <p className="text-muted small mb-2 d-none d-md-block">
+                Verify the {field.toLowerCase()} field data.
+              </p>
+              <div className="mb-3">
+                {isEditMode && isEditable ? (
+                  field === 'maxMarks' || field === 'quantity' ? (
+                    <InputNumber
+                      value={editFormData[field]}
+                      onChange={(value) => handleInputChange(field, value)}
+                      style={{ width: '100%' }}
+                      min={0}
+                    />
+                  ) : field === 'structureOfPaper' ? (
+                    <Input.TextArea
+                      value={editFormData[field]}
+                      onChange={(e) => handleInputChange(field, e.target.value)}
+                      rows={3}
+                    />
+                  ) : (
+                    <Input
+                      value={editFormData[field]}
+                      onChange={(e) => handleInputChange(field, e.target.value)}
+                    />
+                  )
+                ) : (
+                  <div className="d-flex justify-content-between align-items-center">
+                    <span className={`${isValueEmpty ? 'text-muted fst-italic' : 'fw-medium'}`}>
+                      {isValueEmpty ? '' : value}
+                    </span>
+                    <span className="text-success small fw-semibold d-none d-sm-inline">
+                      {tempVerification[field] ? '✓ Verified' : 'Status: Pending'}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
-    <div className={` ${customLight} rounded py-2 shadow-lg ${customDark === "dark-dark" ? 'border' : ''}`}>
-      <Card>
-        <div className='d-flex align-items-center justify-content-between'>
-          <div className='d-flex align-items-center justify-content-between'>
-            {showback && (
-              <ArrowLeftOutlined className={`fs-5 p-1 rounded-3 ${customDark} ${customLightText}`} onClick={resetFilter} />
-            )}
+    <div className={`${customLight} min-vh-100 qc-container`}>
+      {/* Header */}
+      <div >
+        <div className="d-flex align-items-center justify-content-between">
+          
+          
+        </div>
+      </div>
+
+      <div className="d-flex flex-column flex-lg-row">
+        {/* Left Sidebar */}
+        <div className="col-12 col-lg-4 p-3 border-end qc-sidebar slide-in-left" style={{ minHeight: 'calc(100vh - 80px)' }}>
+          {/* Search and Filters */}
+          <div className="mb-4">
+            <div className="search-container mb-3">
+              <Search
+                placeholder="Search by Catch Number, Subject, Paper Title..."
+                allowClear
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                
+              />
+            </div>
+            <div className="filter-container">
+              <Select
+                value={statusFilter}
+                onChange={filterDataByStatus}
+                style={{ flex: 1 }}
+                placeholder="All Status"
+              >
+                <Option value="all">All Status</Option>
+                <Option value="pending">Pending QC</Option>
+                <Option value="verified">Verified</Option>
+                <Option value="rejected">Rejected</Option>
+                <Option value="reverify">Re-Verify</Option>
+              </Select>
+              <Select
+                value={languageFilter}
+                onChange={setLanguageFilter}
+                style={{ flex: 1 }}
+                placeholder="All Languages"
+              >
+                <Option value="all">All Languages</Option>
+                <Option value="English">English</Option>
+                <Option value="Hindi">Hindi</Option>
+              </Select>
+            </div>
           </div>
+
+          {/* Status Overview Cards */}
+          <div className="mb-4 status-overview">
+            <h6 className="mb-3 fw-semibold">QC Status Overview</h6>
+            <div className="row g-2">
+              <div className="col-6">
+                <div
+                  className="p-3 rounded text-center status-card pending"
+                  style={{ backgroundColor: '#f0f9ff', border: '1px solid #bae7ff', cursor: 'pointer' }}
+                  onClick={() => { filterDataByStatus('pending'); requestAnimationFrame(() => catchListRef?.current?.scrollTo({ top: 0, behavior: 'smooth' })); }}
+                >
+                  <div className="text-primary fw-bold fs-5">{pendingCount}</div>
+                  <div className="text-primary small">Pending QC</div>
+                </div>
+              </div>
+              <div className="col-6">
+                <div
+                  className="p-3 rounded text-center status-card verified"
+                  style={{ backgroundColor: '#f6ffed', border: '1px solid #b7eb8f', cursor: 'pointer' }}
+                  onClick={() => { filterDataByStatus('verified'); requestAnimationFrame(() => catchListRef?.current?.scrollTo({ top: 0, behavior: 'smooth' })); }}
+                >
+                  <div className="text-success fw-bold fs-5">{verifiedCount}</div>
+                  <div className="text-success small">Verified</div>
+                </div>
+              </div>
+              <div className="col-6">
+                <div
+                  className="p-3 rounded text-center status-card rejected"
+                  style={{ backgroundColor: '#fff1f0', border: '1px solid #ffccc7', cursor: 'pointer' }}
+                  onClick={() => { filterDataByStatus('rejected'); requestAnimationFrame(() => catchListRef?.current?.scrollTo({ top: 0, behavior: 'smooth' })); }}
+                >
+                  <div className="text-danger fw-bold fs-5">{rejectedCount}</div>
+                  <div className="text-danger small">Rejected</div>
+                </div>
+              </div>
+              <div className="col-6">
+                <div
+                  className="p-3 rounded text-center status-card in-progress"
+                  style={{ backgroundColor: '#fff7e6', border: '1px solid #ffd591', cursor: 'pointer' }}
+                  onClick={() => { filterDataByStatus('reverify'); requestAnimationFrame(() => catchListRef?.current?.scrollTo({ top: 0, behavior: 'smooth' })); }}
+                >
+                  <div className="text-warning fw-bold fs-5">{inProgressCount}</div>
+                  <div className="text-warning small">Re-Verify</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Catch List */}
           <div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
-              <Space size="large">
-                <Tooltip title="Verified Items">
-                  <Badge color='#52c41a' count={data.filter((item) => item.verified?.status === true).length}>
-                    <CheckCircleOutlined
-                      onClick={() => filterDataByStatus('verified')}
-                      className='fs-3'
+            <h6 className="mb-3 fw-semibold">Catch List</h6>
+            <div className="catch-list" ref={catchListRef} style={{ maxHeight: '400px', overflowY: 'auto' }}>
+              {filteredCatchList.map((item, index) => (
+                <div
+                  key={item.quantitysheetId}
+                  className={`p-3 mb-2 rounded cursor-pointer border catch-item ${
+                    selectedRecord?.quantitysheetId === item.quantitysheetId 
+                      ? 'selected' 
+                      : ''
+                  }`}
+                  onClick={() => handlePreview(item, 'verify')}
+                  style={{ transition: 'all 0.2s ease' }}
+                >
+                  <div className="d-flex justify-content-between align-items-start mb-2">
+                    <h6 className="mb-1 fw-bold">{item.catchNo}</h6>
+                    <span
+                      className="px-2 py-1 rounded-pill small status-tag"
                       style={{
-                        color: '#52c41a',
-                        padding: '8px',
-                        borderRadius: '50%',
-                        backgroundColor: statusFilter === 'verified' ? 'rgba(82, 196, 26, 0.3)' : 'transparent',
-                        cursor: 'pointer',
-                        transition: 'all 0.3s ease',
-                        boxShadow: statusFilter === 'verified' ? '0 0 8px rgba(82, 196, 26, 0.5)' : 'none'
+                        backgroundColor: getStatusTagColor(item),
+                        color: getStatusTextColor(item)
                       }}
-                    />
-                  </Badge>
-                </Tooltip>
-                <Tooltip title="Rejected Items">
-                  <Badge color='#ff4d4f' count={data.filter((item) => item.verified?.status === false && item.mssStatus !== 5).length}>
-                    <CloseCircleOutlined
-                      onClick={() => filterDataByStatus('rejected')}
-                      className='fs-3'
-                      style={{
-                        color: '#ff4d4f',
-                        padding: '8px',
-                        borderRadius: '50%',
-                        backgroundColor: statusFilter === 'rejected' ? 'rgba(255, 77, 79, 0.3)' : 'transparent',
-                        cursor: 'pointer',
-                        transition: 'all 0.3s ease',
-                        boxShadow: statusFilter === 'rejected' ? '0 0 8px rgba(255, 77, 79, 0.5)' : 'none'
-                      }}
-                    />
-                  </Badge>
-                </Tooltip>
-                <Tooltip title="Pending Items">
-                  <Badge color='#ffc107' count={data.filter((item) => Object.keys(item.verified).length === 0).length}>
-                    <FileTextOutlined
-                      onClick={() => filterDataByStatus('pending')}
-                      className='fs-3'
-                      style={{
-                        color: '#8c8c8c',
-                        padding: '8px',
-                        borderRadius: '50%',
-                        backgroundColor: statusFilter === 'pending' ? 'rgba(140, 140, 140, 0.3)' : 'transparent',
-                        cursor: 'pointer',
-                        transition: 'all 0.3s ease',
-                        boxShadow: statusFilter === 'pending' ? '0 0 8px rgba(140, 140, 140, 0.5)' : 'none'
-                      }}
-                    />
-                  </Badge>
-                </Tooltip>
-                <Tooltip title="Re-verify Items">
-                  <Badge color='#1890ff' count={data.filter((item) => item.mssStatus == 5 && Object.values(item.verified).some(value => value === true)).length}>
-                    <div style={{ position: 'relative', display: 'inline-block' }}>
-                      <SyncOutlined
-                        onClick={() => filterDataByStatus('reverify')}
-                        className='fs-2'
-                        style={{
-                          color: '#1890ff',
-                          padding: '8px',
-                          borderRadius: '50%',
-                          backgroundColor: statusFilter === 'reverify' ? 'rgba(24, 144, 255, 0.1)' : 'transparent',
-                          cursor: 'pointer',
-                          transition: 'all 0.3s ease'
-                        }}
-                      />
-                      <CheckOutlined
-                        style={{
-                          position: 'absolute',
-                          top: '50%',
-                          left: '50%',
-                          transform: 'translate(-50%, -50%)',
-                          fontSize: '12px',
-                          color: '#1890ff'
-                        }}
-                      />
-                    </div>
-                  </Badge>
-                </Tooltip>
-              </Space>
+                    >
+                      {getStatusText(item)}
+                    </span>
+                  </div>
+                  <div className="text-muted small mb-1">
+                    <span className="d-none d-md-inline">{item.paperTitle || ''} {item.paperNumber ? `- ${item.paperNumber}` : ''}</span>
+                    <span className="d-md-none">{item.paperTitle || ''}</span>
+                  </div>
+                  <div className="text-muted small mb-2">
+                    <span className="d-none d-lg-inline">
+                      {Array.isArray(item.language) ? item.language.join(', ') : item.language || ''} {item.duration ? `• ${item.duration} min` : ''} {item.maxMarks ? `• ${item.maxMarks} marks` : ''}
+                    </span>
+                    <span className="d-lg-none">
+                      {Array.isArray(item.language) ? item.language.join(', ') : item.language || ''} {item.duration ? `• ${item.duration} min` : ''}
+                    </span>
+                  </div>
+                  <div className="text-muted small d-none d-md-block">
+                    {item.createdDate || item.createdAt || ''}
+                  </div>
+                  {item.verified?.status === true && (
+                    <CheckCircleOutlined className="text-success position-absolute top-0 end-0 m-2" />
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         </div>
 
-        <Row gutter={16}>
-          <Col span={24}>
-            <Table
-              className={`${customDark === "default-dark" ? "thead-default" : ""}
-                ${customDark === "red-dark" ? "thead-red" : ""}
-                ${customDark === "green-dark" ? "thead-green" : ""}
-                ${customDark === "blue-dark" ? "thead-blue" : ""}
-                ${customDark === "dark-dark" ? "thead-dark" : ""}
-                ${customDark === "pink-dark" ? "thead-pink" : ""}
-                ${customDark === "purple-dark" ? "thead-purple" : ""}
-                ${customDark === "light-dark" ? "thead-light" : ""}
-                ${customDark === "brown-dark" ? "thead-brown" : ""}`}
-              columns={columns}
-              dataSource={filteredData}
-              pagination={{
-                pageSize: 5,
-                total: filteredData.length,
-                showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`
-              }}
-              bordered
-              scroll={{ x: 1300, y: 400 }}
-              rowClassName={(_, index) => index % 2 === 0 ? 'table-row-light' : 'table-row-dark'}
-              onRow={(record) => ({
-                onClick: () => handlePreview(record),
-              })}
-              rowKey="srNo"
-            />
-          </Col>
-        </Row>
+        {/* Main Content Area */}
+        <div className="col-12 col-lg-8 p-3 qc-main-content slide-in-right">
+          {selectedRecord ? (
+            <div className="h-100">
+              {/* Item Details Header */}
+              <div className="mb-4 p-4 bg-white rounded shadow-sm main-content-header">
+                <div className="d-flex justify-content-between align-items-start mb-3">
+                  <div>
+                    <h4 className="mb-2 fw-bold">{selectedRecord.catchNo}</h4>
+                    <h6 className="text-muted mb-2">{selectedRecord.paperTitle || ''} {selectedRecord.paperNumber ? `- ${selectedRecord.paperNumber}` : ''}</h6>
+                  </div>
+                  <div className="text-end">
+                    <span
+                      className="px-3 py-2 rounded-pill fw-semibold"
+                      style={{
+                        backgroundColor: getStatusTagColor(selectedRecord),
+                        color: getStatusTextColor(selectedRecord)
+                      }}
+                    >
+                      {getStatusText(selectedRecord)}
+                    </span>
+                    <div className="text-muted small mt-1">
+                      {selectedRecord.startDate || selectedRecord.createdAt || ''}
+                    </div>
+                  </div>
+                </div>
+                
+                                  <div className="d-flex flex-wrap gap-3 gap-md-4 text-muted">
+                    <div className="d-flex align-items-center gap-2">
+                      <GlobalOutlined />
+                      <span className="d-none d-sm-inline">{Array.isArray(selectedRecord.language) ? selectedRecord.language.join(', ') : selectedRecord.language || ''}</span>
+                      <span className="d-sm-none">{Array.isArray(selectedRecord.language) ? selectedRecord.language[0] : selectedRecord.language || ''}</span>
+                    </div>
+                    <div className="d-flex align-items-center gap-2">
+                      <ClockCircleOutlined />
+                      <span>{selectedRecord.duration || ''} {selectedRecord.duration ? 'min' : ''}</span>
+                    </div>
+                    <div className="d-flex align-items-center gap-2">
+                      <StarOutlined />
+                      <span>{selectedRecord.maxMarks || ''} {selectedRecord.maxMarks ? 'marks' : ''}</span>
+                    </div>
+                    <div className="d-flex align-items-center gap-2 d-none d-lg-flex">
+                      <UnorderedListOutlined />
+                      <span>{selectedRecord.series || ''}</span>
+                    </div>
+                  </div>
+              </div>
 
-        <VerificationModal
-          isModalVisible={isModalVisible}
-          handleModalClose={handleModalClose}
-          selectedRecord={selectedRecord}
-          tempVerification={tempVerification}
-          setTempVerification={setTempVerification}
-          handleFinalVerification={handleFinalVerification}
-          handleRejectVerification={handleRejectVerification}
-          handleEditClick={handleEditClick}
-          isEditMode={isEditMode}
-          editFormData={editFormData}
-          handleInputChange={handleInputChange}
-          handleSaveChanges={handleSaveChanges}
-          handleEditCancel={handleEditCancel}
-          isSaving={isSaving}
-          selectedRecordIndex={selectedRecordIndex}
-          filteredData={filteredData}
-          handlePreviousRecord={handlePreviousRecord}
-          handleNextRecord={handleNextRecord}
-          customDark={customDark}
-          customLight={customLight}
-          customBtn={customBtn}
-          customLightBorder={customLightBorder}
-          customLightText={customLightText}
-          projectType={projectType}
-        />
-      </Card>
+              {/* Quality Control Checkpoints */}
+              <div className="bg-white rounded shadow-sm p-4 checkpoints-section">
+                <h5 className="mb-3 fw-semibold">Quality Control Checkpoints</h5>
+                <p className="text-muted mb-4">
+                  Verify all required fields before proceeding with the QC process.
+                </p>
+                
+                {/* Progress Bar */}
+                <div className="mb-4">
+                  <div className="d-flex justify-content-between align-items-center mb-2">
+                    <span className="fw-medium">Verification Progress</span>
+                    <span className="text-muted">
+                      {Object.values(tempVerification).filter(Boolean).length} of {Object.keys(tempVerification).length} fields verified
+                    </span>
+                  </div>
+                  <Progress
+                    percent={Object.keys(tempVerification).length > 0 ? 
+                      (Object.values(tempVerification).filter(Boolean).length / Object.keys(tempVerification).length) * 100 : 0}
+                    strokeColor="#1890ff"
+                    showInfo={false}
+                  />
+                </div>
+
+                {/* Checkpoints Grid */}
+                <div className="row g-3">
+                  {renderVerificationItem('A', selectedRecord.a, 'a')}
+                  {renderVerificationItem('B', selectedRecord.b, 'b')}
+                  {renderVerificationItem('C', selectedRecord.c, 'c')}
+                  {renderVerificationItem('D', selectedRecord.d, 'd')}
+                  {renderVerificationItem('Language', Array.isArray(selectedRecord.language) ? selectedRecord.language.join(', ') : typeof selectedRecord.language === 'string' ? selectedRecord.language.replace(/\s+/g, ', ') : '', 'language')}
+                  {renderVerificationItem('Duration', selectedRecord.duration, 'duration')}
+                  {renderVerificationItem('Structure', selectedRecord.structureOfPaper, 'structureOfPaper')}
+                  {projectType === 1 && renderVerificationItem('Series', selectedRecord.series, 'series')}
+                  {renderVerificationItem('Max Marks', selectedRecord.maxMarks, 'maxMarks')}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="mt-4 p-4 bg-white rounded shadow-sm">
+                <div className="container-fluid p-0">
+                  {isEditMode ? (
+                    <div className="row g-3 justify-content-center">
+                      <div className="col-12 col-md-6 col-lg-4 d-flex justify-content-center">
+                        <Button
+                          variant="success"
+                          onClick={handleSaveChanges}
+                          className="d-flex align-items-center gap-2 px-3 py-2 fw-medium w-100"
+                          disabled={isSaving}
+                        >
+                          <SaveOutlined />
+                          {isSaving ? 'Saving...' : 'Save Changes'}
+                        </Button>
+                      </div>
+                      <div className="col-12 col-md-6 col-lg-4 d-flex justify-content-center">
+                        <Button
+                          variant="secondary"
+                          onClick={handleEditCancel}
+                          className="d-flex align-items-center gap-2 px-3 py-2 fw-medium w-100"
+                          disabled={isSaving}
+                        >
+                          <CloseOutlined />
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="row g-3 justify-content-center">
+                      {selectedRecord.action === 'verify' && (
+                        <>
+                          <div className="col-12 col-md-6 col-lg-3 d-flex justify-content-center">
+                            <Button
+                              variant="success"
+                              disabled={!allFieldsVerified() || selectedRecord.verified?.status === true}
+                              onClick={handleFinalVerification}
+                              className="d-flex align-items-center gap-2 px-3 py-2 fw-medium w-100"
+                            >
+                              <CheckCircleOutlined />
+                              {selectedRecord.verified?.status === true ? 'Already Verified' : 'Mark Verified'}
+                            </Button>
+                          </div>
+                          <div className="col-12 col-md-6 col-lg-3 d-flex justify-content-center">
+                            <Button
+                              variant="danger"
+                              onClick={handleRejectVerification}
+                              disabled={allFieldsVerified() || selectedRecord.verified?.status === true}
+                              className="d-flex align-items-center gap-2 px-3 py-2 fw-medium w-100"
+                            >
+                              <CloseCircleOutlined />
+                              {selectedRecord.verified?.status === true ? 'Cannot Reject' : 'Mark Rejected'}
+                            </Button>
+                          </div>
+                        </>
+                      )}
+
+                      <div className="col-12 col-md-6 col-lg-3 d-flex justify-content-center">
+                        <Button
+                          variant="primary"
+                          onClick={handleEditClick}
+                          className="d-flex align-items-center gap-2 px-3 py-2 fw-medium w-100"
+                        >
+                          <EditOutlined />
+                          Edit Details
+                        </Button>
+                      </div>
+
+                      <div className="col-12 col-md-6 col-lg-3 d-flex justify-content-center">
+                        <div className="d-flex gap-2 w-100">
+                          <Button
+                            className={`${customBtn} ${customLightBorder} flex-grow-1 p-0`}
+                            onClick={handlePreviousRecord}
+                            disabled={selectedRecordIndex === 0}
+                          >
+                            <ArrowLeftOutlined />
+                          </Button>
+                          <Button
+                            className={`${customBtn} ${customLightBorder} flex-grow-1 p-0`}
+                            onClick={handleNextRecord}
+                            disabled={selectedRecordIndex === filteredData.length - 1}
+                          >
+                            <ArrowRightOutlined />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="d-flex align-items-center justify-content-center h-100">
+              <div className="text-center text-muted empty-state">
+                <FileTextOutlined className="icon" />
+                <h5>Select a catch from the list to view details</h5>
+                <p>Choose any item from the left sidebar to start verification</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

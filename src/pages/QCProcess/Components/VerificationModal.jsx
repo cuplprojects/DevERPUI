@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Badge, Checkbox, InputNumber, Input } from 'antd';
+import { Button, Badge, Checkbox, InputNumber, Input, Progress } from 'antd';
 import { Modal } from 'react-bootstrap';
 import {
   CheckCircleOutlined,
@@ -9,6 +9,10 @@ import {
   CloseOutlined,
   ArrowLeftOutlined,
   ArrowRightOutlined,
+  ClockCircleOutlined,
+  StarOutlined,
+  GlobalOutlined,
+  UnorderedListOutlined,
 } from '@ant-design/icons';
 
 const VerificationModal = ({
@@ -129,9 +133,6 @@ const VerificationModal = ({
       return value && (typeof value === 'string' ? value.trim() !== '' : true);
     });
 
-    // Combine required fields with optional fields that have data
-    // const verificationKeys = [...requiredFields, ...optionalFieldsWithData];
-
     // Check if all required fields are verified
     const verifiedFields = Object.keys(tempVerification).filter(key => tempVerification[key]);
     const allRequiredVerified = requiredFields.every(field => verifiedFields.includes(field.keyname));
@@ -142,6 +143,33 @@ const VerificationModal = ({
     );
 
     return allRequiredVerified && allOptionalWithDataVerified && verifiedFields.length > 0;
+  };
+
+  const getStatusText = (record) => {
+    if (record.verified?.status === true) return 'Verified';
+    if (record.verified?.status === false) return 'Rejected';
+    if (record.mssStatus == 5 && Object.values(record.verified).some(value => value === true)) return 'In Progress';
+    return 'Pending QC';
+  };
+
+  const getStatusTagColor = (record) => {
+    const status = getStatusText(record);
+    switch (status) {
+      case 'Verified': return '#f6ffed';
+      case 'Rejected': return '#fff1f0';
+      case 'In Progress': return '#fff7e6';
+      default: return '#f0f9ff';
+    }
+  };
+
+  const getStatusTextColor = (record) => {
+    const status = getStatusText(record);
+    switch (status) {
+      case 'Verified': return '#52c41a';
+      case 'Rejected': return '#ff4d4f';
+      case 'In Progress': return '#faad14';
+      default: return '#1890ff';
+    }
   };
 
   const PreviewPanel = ({ record }) => {
@@ -280,8 +308,76 @@ const VerificationModal = ({
       }));
     };
 
+    // Calculate verification progress
+    const totalFields = Object.keys(tempVerification).length;
+    const verifiedFields = Object.values(tempVerification).filter(Boolean).length;
+    const progressPercent = totalFields > 0 ? (verifiedFields / totalFields) * 100 : 0;
+
     return (
       <div className="preview-panel bg-white rounded-3 shadow-sm">
+        {/* Header with catch details */}
+        <div className="p-4 border-bottom bg-light">
+          <div className="d-flex justify-content-between align-items-start mb-3">
+            <div>
+              <h4 className="mb-2 fw-bold">{record.catchNo}</h4>
+              <h6 className="text-muted mb-2">{record.paperTitle || 'Paper Title'} - {record.paperNumber || 'Paper 1'}</h6>
+            </div>
+            <div className="text-end">
+              <span
+                className="px-3 py-2 rounded-pill fw-semibold"
+                style={{
+                  backgroundColor: getStatusTagColor(record),
+                  color: getStatusTextColor(record)
+                }}
+              >
+                {getStatusText(record)}
+              </span>
+              <div className="text-muted small mt-1">
+                Started: Today, {new Date().getHours()}:{String(new Date().getMinutes()).padStart(2, '0')} AM
+              </div>
+            </div>
+          </div>
+          
+          <div className="d-flex flex-wrap gap-4 text-muted">
+            <div className="d-flex align-items-center gap-2">
+              <GlobalOutlined />
+              <span>{Array.isArray(record.language) ? record.language.join(', ') : record.language || 'English'}</span>
+            </div>
+            <div className="d-flex align-items-center gap-2">
+              <ClockCircleOutlined />
+              <span>{record.duration || '180'} minutes</span>
+            </div>
+            <div className="d-flex align-items-center gap-2">
+              <StarOutlined />
+              <span>{record.maxMarks || '300'} marks</span>
+            </div>
+            <div className="d-flex align-items-center gap-2">
+              <UnorderedListOutlined />
+              <span>Series: A, B, C, D</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Verification Progress */}
+        <div className="p-4 border-bottom">
+          <h6 className="mb-3 fw-semibold">Verification Progress</h6>
+          <div className="mb-3">
+            <div className="d-flex justify-content-between align-items-center mb-2">
+              <span className="fw-medium">Checkpoints Completed</span>
+              <span className="text-muted">
+                {verifiedFields} of {totalFields} checkpoints
+              </span>
+            </div>
+            <Progress
+              percent={progressPercent}
+              strokeColor="#1890ff"
+              showInfo={false}
+              size="large"
+            />
+          </div>
+        </div>
+
+        {/* Verification Items */}
         <div className="verification-items">
           {verificationItem('A', record.a, 'a')}
           {verificationItem('B', record.b, 'b')}
@@ -294,6 +390,7 @@ const VerificationModal = ({
           {verificationItem('Max Marks', record.maxMarks, 'maxMarks')}
         </div>
 
+        {/* Action Buttons */}
         <div className="action-buttons p-4 mt-2 bg-light rounded-bottom">
           <div className="container-fluid p-0">
             {isEditMode ? (
@@ -322,7 +419,7 @@ const VerificationModal = ({
                 </div>
               </div>
             ) : (
-              <div className="row g-3 justify-content-center">
+              <div>
                 {record.action === 'verify' && (
                   <>
                     <div className="col-12 col-md-6 col-lg-3 d-flex justify-content-center">
@@ -341,7 +438,7 @@ const VerificationModal = ({
                         variant="danger"
                         onClick={handleRejectVerification}
                         disabled={allFieldsVerified() || record.verified?.status === true}
-                        className="d-flex align-items-center gap-2 px-3 py-2 fw-medium w-100"
+                        className="d-flex align-items-center gap-2 px-3 py-2 fw-medium w-100 "
                       >
                         <CloseCircleOutlined />
                         {record.verified?.status === true ? 'Cannot Reject' : 'Mark Rejected'}
@@ -391,7 +488,7 @@ const VerificationModal = ({
     <Modal
       show={isModalVisible}
       onHide={handleModalClose}
-      size="lg"
+      size="xl"
       backdrop="static"
       keyboard={false}
       centered
@@ -405,7 +502,7 @@ const VerificationModal = ({
               <span className={`fs-4 ${selectedRecord?.action === 'verify' ? 'text-primary' :
                   selectedRecord?.action === 'verified' ? 'text-success' : 'text-danger'
                 }`}>
-                {selectedRecord?.action === 'verify' ? '' :
+                {selectedRecord?.action === 'verify' ? 'QC Verification' :
                   selectedRecord?.action === 'verified' ? 'MSS Verified Items' : 'MSS Rejected Items'}
               </span>
               <Badge
