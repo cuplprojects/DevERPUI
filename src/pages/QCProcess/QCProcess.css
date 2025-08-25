@@ -16,7 +16,7 @@
 }
 
 .qc-main-content {
-  background: #f8fafc;
+  
   min-height: calc(100vh - 80px);
   position: relative;
 }
@@ -220,13 +220,7 @@
   background: #ef4444;
 }
 
-/* Progress Bar */
-.progress-container {
-  background: #f1f5f9;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
-}
+
 
 /* Search and Filter Enhancements */
 .search-container {
@@ -283,7 +277,7 @@
   margin-bottom: 0.75rem;
   transition: all 0.3s ease;
   background: white;
-  border: 2px solid #e2e8f0;
+  border: 1px solid #e2e8f0;
 }
 
 .verification-item:hover {
@@ -521,12 +515,7 @@
 }
 
 /* Status Overview Enhancement */
-.status-overview {
-  background: #f8fafc;
-  border-radius: 16px;
-  padding: 1.5rem;
-  border: 1px solid #e2e8f0;
-}
+
 
 /* Catch List Enhancement */
 .catch-list {
@@ -548,15 +537,9 @@
   border: 1px solid #cbd5e1;
 }
 
-/* Progress Bar Enhancement */
-.ant-progress-bg {
-  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-}
 
-.ant-progress-inner {
-  background-color: #f1f5f9;
-  border-radius: 10px;
-}
+
+
 
 /* Checkbox Enhancement */
 .custom-checkbox .ant-checkbox-inner {

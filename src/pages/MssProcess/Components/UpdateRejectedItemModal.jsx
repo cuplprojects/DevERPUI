@@ -30,6 +30,7 @@ const UpdateRejectedItemModal = ({
   const [rejectionReasons, setRejectionReasons] = useState([]);
   const [examTypeOptions, setExamTypeOptions] = useState([]);
   const [projectType, setProjectType] = useState('')
+  const [projectStructureOfPaper, setProjectStructureOfPaper] = useState("");
   const [
     customDark,
     customMid,
@@ -43,17 +44,26 @@ const UpdateRejectedItemModal = ({
 
 
   useEffect(() => {
-    const fetchProjectType = async () => {
+    const fetchProjectTypeAndStructure = async () => {
       try {
         const response = await API.get(`/Project/${projectId}`);
         setProjectType(response.data.typeId);
+        if (typeof response.data.structureOfPaper === 'string') {
+          setProjectStructureOfPaper(response.data.structureOfPaper);
+        } else {
+          // fallback: try list endpoint
+          const listRes = await API.get('/Project');
+          const proj = (listRes?.data || []).find(p => p.projectId === projectId);
+          if (proj && typeof proj.structureOfPaper === 'string') {
+            setProjectStructureOfPaper(proj.structureOfPaper);
+          }
+        }
       } catch (error) {
-        console.error('Failed to fetch project type', error);
+        console.error('Failed to fetch project type or structure', error);
       }
     };
-    fetchProjectType();
-
-  })
+    fetchProjectTypeAndStructure();
+  }, [projectId]);
 
 
   useEffect(() => {
@@ -456,17 +466,17 @@ const UpdateRejectedItemModal = ({
               </Form.Group>
             </Col>
             <Col md={6}>
-  <Form.Group controlId="formStructureOfPaper" className="mb-3">
-    <Form.Label>Structure of Paper</Form.Label>
-    <Form.Control
-      as="textarea"
-      rows={4} // You can adjust the number of rows as needed
-      name="structureOfPaper"
-      value={formData.structureOfPaper || ""}
-      onChange={handleChange}
-    />
-  </Form.Group>
-</Col>
+              <Form.Group controlId="formStructureOfPaper" className="mb-3">
+                <Form.Label>Structure of Paper</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={4}
+                  name="structureOfPaper"
+                  value={formData.structureOfPaper || projectStructureOfPaper || ""}
+                  onChange={handleChange}
+                />
+              </Form.Group>
+            </Col>
 
           </Row>
 

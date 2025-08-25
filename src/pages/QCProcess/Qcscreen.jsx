@@ -549,8 +549,8 @@ const QcProcess = ({ projectId }) => {
 
   const getStatusText = (record) => {
     if (record.verified?.status === true) return 'Verified';
+    if (record.mssStatus == 5 && Object.values(record.verified).some(value => value === true)) return 'Re-Verify';
     if (record.verified?.status === false) return 'Rejected';
-    if (record.mssStatus == 5 && Object.values(record.verified).some(value => value === true)) return 'In Progress';
     return 'Pending QC';
   };
 
@@ -559,7 +559,7 @@ const QcProcess = ({ projectId }) => {
     switch (status) {
       case 'Verified': return '#f6ffed';
       case 'Rejected': return '#fff1f0';
-      case 'In Progress': return '#fff7e6';
+      case 'Re-Verify': return '#fff7e6';
       default: return '#f0f9ff';
     }
   };
@@ -569,7 +569,7 @@ const QcProcess = ({ projectId }) => {
     switch (status) {
       case 'Verified': return '#52c41a';
       case 'Rejected': return '#ff4d4f';
-      case 'In Progress': return '#faad14';
+      case 'Re-Verify': return '#faad14';
       default: return '#1890ff';
     }
   };
@@ -909,6 +909,16 @@ const QcProcess = ({ projectId }) => {
                       <UnorderedListOutlined />
                       <span>{selectedRecord.series || ''}</span>
                     </div>
+                    {/* Progress Bar */}
+                
+                  <div className="d-flex justify-content-between align-items-center mb-2">
+  <span className="text-green-900 fw-semibold">
+    {Object.values(tempVerification).filter(Boolean).length} of {Object.keys(tempVerification).length} fields verified
+  </span>
+</div>
+
+                 
+                
                   </div>
               </div>
 
@@ -916,24 +926,10 @@ const QcProcess = ({ projectId }) => {
               <div >
                 
                 
-                {/* Progress Bar */}
-                <div className="mb-4">
-                  <div className="d-flex justify-content-between align-items-center mb-2">
-                    <span className="fw-medium">Verification Progress</span>
-                    <span className="text-muted">
-                      {Object.values(tempVerification).filter(Boolean).length} of {Object.keys(tempVerification).length} fields verified
-                    </span>
-                  </div>
-                  <Progress
-                    percent={Object.keys(tempVerification).length > 0 ? 
-                      (Object.values(tempVerification).filter(Boolean).length / Object.keys(tempVerification).length) * 100 : 0}
-                    strokeColor="#1890ff"
-                    showInfo={false}
-                  />
-                </div>
+                
 
                 {/* Checkpoints Grid */}
-                <div className="row g-3">
+                <div className="row g-4 mb-4">
                   {renderVerificationItem('A', selectedRecord.a, 'a')}
                   {renderVerificationItem('B', selectedRecord.b, 'b')}
                   {renderVerificationItem('C', selectedRecord.c, 'c')}
