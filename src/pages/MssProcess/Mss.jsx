@@ -226,34 +226,40 @@ const Mss = ({ projectId, processId, lotNo, projectName }) => {
     }
   };
 
-  // QC filter data to compute rejected
+  // QC filter data to compute rejected - refetch when projectId changes
   useEffect(() => {
     const fetchData = async () => {
+      if (!projectId) return;
       try {
         const response = await API.get(`/QC/ByProject?projectId=${projectId}`);
-        setFilteredData(response.data);
+        // Ensure 'verified' exists as an object like in QC screen
+        const transformed = Array.isArray(response.data)
+          ? response.data.map(item => ({ ...item, verified: item.verified || {} }))
+          : [];
+        setFilteredData(transformed);
       } catch (error) {
         console.error("Failed to fetch data", error);
       }
     };
     fetchData();
-  }, []);
+  }, [projectId]);
 
   const filterDataByStatus = () => {
-    const rejectedItems = filteredData.filter((item) => item.mssStatus === 4);
+    // Match QC screen logic: rejected = verified.status === false and not in re-verify (mssStatus !== 5)
+    const rejectedItems = filteredData.filter((item) => item.verified?.status === false && item.mssStatus !== 5);
     const rejectedIds = rejectedItems.map((item) => item.quantitysheetId);
-    const matchedData = quantitySheetData.filter((item) =>
-      rejectedIds.includes(item.quantitySheetId)
-    );
+    // Use full saved dataset when available to ensure count and list are complete, not limited to current page
+    const baseList = allQuantitySheetData?.length ? allQuantitySheetData : quantitySheetData;
+    const matchedData = baseList.filter((item) => rejectedIds.includes(item.quantitySheetId));
     setRejectedQuantitySheetData(matchedData);
     setRejectedCount(matchedData.length);
   };
 
   useEffect(() => {
-    if (filteredData.length && quantitySheetData.length) {
+    if (filteredData.length) {
       filterDataByStatus();
     }
-  }, [filteredData, quantitySheetData]);
+  }, [filteredData, quantitySheetData, allQuantitySheetData]);
 
   const handleUpdateItem = (item) => {
     setSelectedRejectedItem({ item, filteredData });
@@ -554,11 +560,8 @@ ${customDark === "brown-dark" ? "thead-brown" : ""} mss-table`}
                   <CloseCircleOutlined
                     onClick={() => {
                       if (rejectedCount > 0) {
+                        // Just activate the rejected view; data is prepared by filterDataByStatus effect
                         setRejectedActive(true);
-                        if (isSearchMode) {
-                          const allRejectedItems = filteredData.filter((item) => item.mssStatus === 4);
-                          setRejectedQuantitySheetData(allRejectedItems);
-                        }
                       }
                     }}
                     className="fs-2"

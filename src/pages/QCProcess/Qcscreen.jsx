@@ -661,9 +661,7 @@ const QcProcess = ({ projectId }) => {
                   checked={tempVerification[field] || selectedRecord.verified?.[field]}
                   onChange={() => handleVerificationChange(field)}
                   disabled={
-                    // Only disable if it's an ABCD field with no data
-                    (isValueEmpty && isAbcdField) ||
-                    // Or if the record is already verified and not in re-verify status
+                    isValueEmpty ||
                     (selectedRecord.verified?.status === true && selectedRecord.mssStatus !== 5)
                   }
                   className="custom-checkbox"
@@ -672,9 +670,7 @@ const QcProcess = ({ projectId }) => {
             )}
             <div className="flex-grow-1">
               <h6 className="fw-semibold mb-2 text-capitalize">{label}</h6>
-              <p className="text-muted small mb-2 d-none d-md-block">
-                Verify the {field.toLowerCase()} field data.
-              </p>
+             
               <div className="mb-3">
                 {isEditMode && isEditable ? (
                   field === 'maxMarks' || field === 'quantity' ? (
@@ -705,8 +701,14 @@ const QcProcess = ({ projectId }) => {
                       {tempVerification[field] ? '✓ Verified' : 'Status: Pending'}
                     </span>
                   </div>
-                )}
-              </div>
+                )
+              }
+              {isAbcdField && isValueEmpty && (
+                <div className="text-warning small mt-2">
+                  Please configure {label} data in Master to enable this check.
+                </div>
+              )}
+            </div>
             </div>
           </div>
         </div>
@@ -911,11 +913,8 @@ const QcProcess = ({ projectId }) => {
               </div>
 
               {/* Quality Control Checkpoints */}
-              <div className="bg-white rounded shadow-sm p-4 checkpoints-section">
-                <h5 className="mb-3 fw-semibold">Quality Control Checkpoints</h5>
-                <p className="text-muted mb-4">
-                  Verify all required fields before proceeding with the QC process.
-                </p>
+              <div >
+                
                 
                 {/* Progress Bar */}
                 <div className="mb-4">
@@ -948,15 +947,15 @@ const QcProcess = ({ projectId }) => {
               </div>
 
               {/* Action Buttons */}
-              <div className="mt-4 p-4 bg-white rounded shadow-sm">
-                <div className="container-fluid p-0">
+              <div >
+                <div >
                   {isEditMode ? (
                     <div className="row g-3 justify-content-center">
-                      <div className="col-12 col-md-6 col-lg-4 d-flex justify-content-center">
+                      <div className="col-12 col-md-6 col-lg-1 d-flex justify-content-center">
                         <Button
                           variant="success"
                           onClick={handleSaveChanges}
-                          className="d-flex align-items-center gap-2 px-3 py-2 fw-medium w-100"
+                          className="d-flex align-items-center gap-1 px-3 py-2 fw-medium w-10"
                           disabled={isSaving}
                         >
                           <SaveOutlined />
@@ -967,7 +966,7 @@ const QcProcess = ({ projectId }) => {
                         <Button
                           variant="secondary"
                           onClick={handleEditCancel}
-                          className="d-flex align-items-center gap-2 px-3 py-2 fw-medium w-100"
+                          className="d-flex align-items-center gap-1 px-3 py-2 fw-medium w-10"
                           disabled={isSaving}
                         >
                           <CloseOutlined />
@@ -984,7 +983,7 @@ const QcProcess = ({ projectId }) => {
                               variant="success"
                               disabled={!allFieldsVerified() || selectedRecord.verified?.status === true}
                               onClick={handleFinalVerification}
-                              className="d-flex align-items-center gap-2 px-3 py-2 fw-medium w-100"
+                              className="d-flex align-items-center gap-2 px-3 py-2 fw-medium w-0"
                             >
                               <CheckCircleOutlined />
                               {selectedRecord.verified?.status === true ? 'Already Verified' : 'Mark Verified'}
@@ -995,7 +994,7 @@ const QcProcess = ({ projectId }) => {
                               variant="danger"
                               onClick={handleRejectVerification}
                               disabled={allFieldsVerified() || selectedRecord.verified?.status === true}
-                              className="d-flex align-items-center gap-2 px-3 py-2 fw-medium w-100"
+                              className="d-flex align-items-center gap-2 px-3 py-2 fw-medium w-10"
                             >
                               <CloseCircleOutlined />
                               {selectedRecord.verified?.status === true ? 'Cannot Reject' : 'Mark Rejected'}
@@ -1008,7 +1007,7 @@ const QcProcess = ({ projectId }) => {
                         <Button
                           variant="primary"
                           onClick={handleEditClick}
-                          className="d-flex align-items-center gap-2 px-3 py-2 fw-medium w-100"
+                          className="d-flex align-items-center gap-2 px-3 py-2 fw-medium "
                         >
                           <EditOutlined />
                           Edit Details
