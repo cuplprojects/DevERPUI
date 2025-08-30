@@ -30,7 +30,9 @@ import { Collapse } from "react-bootstrap";
 import ProcessProgressTrain from "./ProcessProgressTrain";
 import ProcessTrainModals from "./ProcessTrainModals ";
 import QcScreen from "./../pages/QCProcess/Qcscreen";
+
 import MSS from "./../pages/MssProcess/Mss";
+import TTF from "../pages/TTF/TTF";
 
 const ProcessTable = () => {
   const { encryptedProjectId } = useParams();
@@ -115,6 +117,7 @@ const ProcessTable = () => {
   const [selectedStatus, setSelectedStatus] = useState(null);
   const [selectedProcessId, setSelectedProcessId] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [showTTF, setShowTTF] = useState(false);
 
   useEffect(() => {
     setModalVisible(false);
@@ -1039,7 +1042,15 @@ const ProcessTable = () => {
         </Row>
       )}
 
-      {processName === "Dispatch" ? (
+      {showTTF ? (
+        <TTF
+          projectId={selectedProject?.value || id}
+          processId={processId}
+          lotNo={selectedLot}
+          projectName={projectName}
+          onClose={() => setShowTTF(false)}
+        />
+      ) : processName === "Dispatch" ? (
         <DispatchPage
           projectId={selectedProject?.value || id}
           processId={processId}
@@ -1047,12 +1058,23 @@ const ProcessTable = () => {
           projectName={projectName}
         />
       ) : processName === "QC" ? (
-        <QcScreen
-          projectId={selectedProject?.value || id}
-          processId={processId}
-          lotNo={selectedLot}
-          projectName={projectName}
-        />
+        <>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10 }}>
+            <button
+              className="btn btn-primary"
+              onClick={() => setShowTTF(true)}
+              style={{ marginRight: 10 }}
+            >
+              Transfer
+            </button>
+          </div>
+          <QcScreen
+            projectId={selectedProject?.value || id}
+            processId={processId}
+            lotNo={selectedLot}
+            projectName={projectName}
+          />
+        </>
       ) : processName === "MSS" ? (
         <MSS
           projectId={selectedProject?.value || id}
