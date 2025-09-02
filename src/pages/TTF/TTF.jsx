@@ -283,7 +283,7 @@ const TTF = ({ projectId, processId, lotNo, projectName, onClose }) => {
                 <th style={{ padding: 15, textAlign: "center", border: "1px solid #495057" }}>D</th>
                 <th style={{ padding: 15, textAlign: "center", border: "1px solid #495057" }}>Quantity</th>
                 <th style={{ padding: 15, textAlign: "left", border: "1px solid #495057" }}>Transfer Route</th>
-                <th style={{ padding: 15, textAlign: "center", border: "1px solid #495057" }}>Priority</th>
+               
                 <th style={{ padding: 15, textAlign: "center", border: "1px solid #495057" }}>Status</th>
                 <th style={{ padding: 15, textAlign: "center", border: "1px solid #495057" }}>Action</th>
               </tr>
@@ -321,33 +321,20 @@ const TTF = ({ projectId, processId, lotNo, projectName, onClose }) => {
                     <div style={{ fontSize: 13 }}>
                       <div style={{ color: "#dc3545", marginBottom: 2 }}>📍 From: {getLocationName(item.fromLocation)}</div>
                       <div style={{ color: "#28a745" }}>📍 To: {getLocationName(item.toLocation)}</div>
-                      <div style={{ color: "#007bff", marginTop: 2, fontWeight: 500 }}>
-                        Route: {item.transferRoute}
-                      </div>
+                     
                     </div>
                   </td>
-                  <td style={{ padding: 15, textAlign: "center", border: "1px solid #dee2e6" }}>
-                    <span style={{
-                      padding: "4px 8px",
-                      borderRadius: 12,
-                      fontSize: 11,
-                      fontWeight: "bold",
-                      backgroundColor: getPriorityColor(item.priority),
-                      color: "white"
-                    }}>
-                      {item.priority}
-                    </span>
-                  </td>
+                 
                   <td style={{ padding: 15, textAlign: "center", border: "1px solid #dee2e6" }}>
                     <span style={{
                       padding: "6px 12px",
                       borderRadius: 20,
                       fontSize: 12,
                       fontWeight: "bold",
-                      backgroundColor: item.received ? "#d4edda" : "#fff3cd",
+                     
                       color: item.received ? "#155724" : "#856404"
                     }}>
-                      {item.received ? "✅ Received" : "📦 Pending"}
+                      {item.received ? "✅ Received" : "Pending"}
                     </span>
                   </td>
                   <td style={{ padding: 15, textAlign: "center", border: "1px solid #dee2e6" }}>
