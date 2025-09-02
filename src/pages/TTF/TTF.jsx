@@ -79,7 +79,7 @@ const TTF = ({ projectId, processId, lotNo, projectName, onClose }) => {
       ttfMarkAsReceived: 1
     };
     try {
-      await API.put(`/QuantitySheet/update/${itemId}`, payload);
+      await API.put(`/api/QuantitySheet/${itemId}`, payload);
       setCatchList(prevList =>
         prevList.map(i => i.id === itemId ? { ...i, received: true } : i)
       );
