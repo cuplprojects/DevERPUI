@@ -9,6 +9,7 @@ const ToggleProcess = ({
   initialProcessId,
   onProcessChange,
   customDark,
+  onTransfer,
 }) => {
   const { t } = useTranslation();
   const [visible, setVisible] = useState(false);
@@ -20,22 +21,37 @@ const ToggleProcess = ({
     setVisible(false);
   };
 
+
+  // Find index of QC
+  const qcIndex = processes.findIndex(p => p.processName === "QC");
+
   const menu = (
     <Menu>
-      {processes.map((process) => (
-        <Menu.Item
-          key={process.processId}
-          onClick={() => handleMenuClick(process)}
-          style={{
-            fontSize: "14px",
-            padding: "8px 12px",
-            whiteSpace: "normal",
-            lineHeight: "1.2",
-            wordBreak: "break-word",
-          }}
-        >
-          {process.processName}
-        </Menu.Item>
+      {processes.map((process, idx) => (
+        <React.Fragment key={process.processId}>
+          <Menu.Item
+            onClick={() => handleMenuClick(process)}
+            style={{
+              fontSize: "14px",
+              padding: "8px 12px",
+              whiteSpace: "normal",
+              lineHeight: "1.2",
+              wordBreak: "break-word",
+            }}
+          >
+            {process.processName}
+          </Menu.Item>
+          {/* Show Transfer button only after QC */}
+          {(qcIndex !== -1 && idx === qcIndex) && (
+            <Menu.Item
+              key={`transfer-btn-${idx}`}
+              onClick={() => { setVisible(false); if (onTransfer) onTransfer(); }}
+              style={{  textAlign: "left" }}
+            >
+              Transfer
+            </Menu.Item>
+          )}
+        </React.Fragment>
       ))}
     </Menu>
   );

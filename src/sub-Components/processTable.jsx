@@ -176,6 +176,7 @@ const ProcessTable = () => {
     const selectedProcess = processes.find((p) => p.processId === value);
 
     if (selectedProcess) {
+      setShowTTF(false); // Hide TTF page when process changes
       setProcess(selectedProcess.processId, selectedProcess.processName, true);
       setIsLoading(true);
       try {
@@ -997,6 +998,7 @@ const ProcessTable = () => {
                         initialProcessId={processId}
                         onProcessChange={handleProcessChange}
                         customDark={customDark}
+                        onTransfer={() => setShowTTF(true)}
                       />
                     </Col>
                   </Row>
@@ -1058,23 +1060,12 @@ const ProcessTable = () => {
           projectName={projectName}
         />
       ) : processName === "QC" ? (
-        <>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10 }}>
-            <button
-              className="btn btn-primary"
-              onClick={() => setShowTTF(true)}
-              style={{ marginRight: 10 }}
-            >
-              Transfer
-            </button>
-          </div>
-          <QcScreen
-            projectId={selectedProject?.value || id}
-            processId={processId}
-            lotNo={selectedLot}
-            projectName={projectName}
-          />
-        </>
+        <QcScreen
+          projectId={selectedProject?.value || id}
+          processId={processId}
+          lotNo={selectedLot}
+          projectName={projectName}
+        />
       ) : processName === "MSS" ? (
         <MSS
           projectId={selectedProject?.value || id}

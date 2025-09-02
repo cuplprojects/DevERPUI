@@ -171,7 +171,7 @@ const TTF = ({ projectId, processId, lotNo, projectName, onClose }) => {
   return (
     <div style={{ 
       padding: 20, 
-      maxWidth: 1200, 
+      maxWidth: 2000, 
       margin: "0 auto",
       backgroundColor: "#f8f9fa",
       minHeight: "100vh",
