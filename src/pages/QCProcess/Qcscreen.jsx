@@ -69,6 +69,7 @@ const QcProcess = ({ projectId }) => {
       try {
         const response = await API.get(`/Project/${projectId}`);
         setProjectType(response.data.typeId);
+        console.log("Project type:", response.data );
       } catch (error) {
         console.error('Failed to fetch project type', error);
       }
